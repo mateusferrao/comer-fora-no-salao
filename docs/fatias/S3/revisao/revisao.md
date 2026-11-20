@@ -103,3 +103,4 @@ Merge em avanço rápido na `main` (`b471a40`), com 2,3 GB livres na VPS antes d
 
 ## 9. Dívidas fechadas depois do merge (D150)
 `/apresentacao` a 1280 px (Portal em escala 0,80, barra lateral visível — captura D01), marcador de antecipação, limpezas técnicas (índice redundante, tipos, consulta duplicada, acoplamento), limites diários na meia-noite de SP, polimento (aviso do "Trocar de lado", Validar com contorno, Qualidade sem "D121") e foto colorida do salão (D02). Verificação: unidade 271, integração 85, E2E local 66, migração do zero (6) e build com pico de 1,21 GB.
+Produção: `b369045` (/api/health: db up, seed ok; migração 0005 aplicada). CI run 52 verde, com E2E de produção de 43 testes (4 locais pulados), incluindo `/apresentacao` a 1280 px com a barra lateral do Portal e o aviso do "Trocar de lado". Conferência manual em produção: foto nova (P03), créditos em "Como funciona" e Qualidade sem "D121".
