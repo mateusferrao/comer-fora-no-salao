@@ -5,7 +5,7 @@ import { getQualityViewCached } from "@/src/modules/analytics/application/qualit
 
 export const dynamic = "force-dynamic";
 /** Nota cega do candidato na T3 (D137): atualizada quando ele responde (eval/relatorio-t3.md). */
-const T3_HUMANO = "em andamento";
+const T3_HUMANO = "o candidato preferiu a IA em 8 de 9; concordou com o juiz em 7 de 9 (κ 0,55; amostra pequena)";
 export const metadata: Metadata = { title: "Qualidade da IA · Comer Fora no Salão · protótipo de case" };
 
 const TASK: Record<string, string> = { cardapio: "Leitura do cardápio", pacote: "Pacote da ativação", plano: "Plano da semana", kit: "Chamadas do kit", revisor: "Revisor" };

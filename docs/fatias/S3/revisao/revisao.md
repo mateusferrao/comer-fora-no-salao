@@ -13,7 +13,7 @@ Data: 20/11/2026 · Base: `caf85ff` · Revisado: `b471a40` · Produção: `b471a
   - E2E local: 64 verdes;
   - tipos, lint e fronteiras sem erros;
   - build com heap de 1 GB: pico de 1,08 GB de RSS.
-- **Pendente:** a nota cega do candidato na T3 (D137). A página Qualidade diz "em andamento" até a resposta. Isso não bloqueia o merge.
+- **T3, nota cega do candidato (D137):** concluída depois do merge. Preferiu a IA em 8 de 9; concordância com o juiz 7 de 9 (κ 0,55).
 
 ## 2. Achados consolidados
 Frentes: Ad (aderência), Tec (técnica), Pr (produto/UX), Seg (segurança/IA) e E2E (minha verificação).

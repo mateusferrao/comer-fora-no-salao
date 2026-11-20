@@ -36,18 +36,19 @@ Motivos de reprovação pelas regras (o modo sem IA cobre todos):
 
 | Par | Fixture | Juiz | Candidato |
 |---|---|---|---|
-| 1 | boteco | IA | aguardando |
-| 2 | burger | IA | aguardando |
-| 3 | burger | IA | aguardando |
-| 4 | sushi | IA | aguardando |
-| 5 | sushi | IA | aguardando |
-| 6 | vitrine | linha de base | aguardando |
-| 7 | vitrine | IA | aguardando |
-| 8 | borda | IA | aguardando |
-| 9 | borda | IA | aguardando |
+| 1 | boteco | IA | IA |
+| 2 | burger | IA | IA |
+| 3 | burger | IA | IA |
+| 4 | sushi | IA | IA |
+| 5 | sushi | IA | linha de base |
+| 6 | vitrine | linha de base | IA |
+| 7 | vitrine | IA | IA |
+| 8 | borda | IA | IA |
+| 9 | borda | IA | IA |
 
 Juiz: prefere a IA em 8 de 9 pares.
-Nota do candidato: aguardando as respostas (`1A 2B 3empate …`).
+Candidato: prefere a IA em 8 de 9 pares.
+**Concordância juiz × candidato: 7 de 9 (78%; IC 95% de Wilson 45%–94%) · κ de Cohen 0,55 (indicativo: amostra pequena).**
 
 ## 3. Limitações
 

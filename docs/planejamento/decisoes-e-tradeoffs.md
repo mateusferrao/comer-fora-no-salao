@@ -941,7 +941,7 @@ Detalhes, revisão independente (2 subagentes) e itens [C] em [docs/fatias/S3/pl
 - Kit [C]: segue o vencedor (não foi medido na T3; mesma família de texto curto com referências).
 - Trade-offs: ~10× o custo por chamada (US$ 0,002 contra 0,0002) e ~1,3 s a mais de p50 × melhor nota do juiz. Amostra pequena: a ordem entre modelos próximos pode mudar de uma rodada para outra (o gemini-3.1-flash-lite caiu de 80% para 70% em regras entre as rodadas).
 - Alternativas: gpt-6-luna como principal (mais barato e rápido, nota menor); manter os provisórios (gemini-3.1-flash-lite ficou abaixo de 90% em regras).
-- A concordância com a nota cega do candidato entra em eval/relatorio-t3.md quando ele responder; se o candidato preferir a linha de base na maioria, a escolha volta para discussão.
+- Nota cega do candidato (20/11, 9 pares pelo chat): preferiu a IA em 8 de 9 (só o par 5, desconto em Temaki, ficou com a linha de base). Concordância com o juiz: 7 de 9 (78%; IC 95% de Wilson 45%–94%; κ 0,55, indicativo). A escolha se mantém.
 
 **D148 — Os 5 recursos com flag entram ligados por padrão; revisor fora das contas E2E** (20/11, IA [C]) ✅
 - A, B, C: A/B com "promover vencedora" (só com amostra e diferença significativa), insight 4 (alertas de teto, peça 2× pior e turno com ≥ 30% de códigos sem validação), revisor (deepseek, 3º provedor), aprende (edições do dono que passam no guard viram exemplos de estilo) e MCP (JSON-RPC escrito à mão, token com hash). Todos com testes de unidade e integração.
