@@ -1,0 +1,111 @@
+{
+  "id": "burger",
+  "inputHash": "974046c4a9d80f883af304eb046efc01ea353fe9800535e30ce26999c0e8f783",
+  "model": "google/gemini-3.1-flash-lite",
+  "promptVersion": "cardapio-v1",
+  "at": "2026-11-20T12:14:55.298Z",
+  "extraction": {
+    "ehCardapio": true,
+    "itens": [
+      {
+        "categoria": "entrada",
+        "nome": "Batata rústica",
+        "precoCentavos": 2400,
+        "confira": false
+      },
+      {
+        "categoria": "entrada",
+        "nome": "Onion rings",
+        "precoCentavos": 2600,
+        "confira": false
+      },
+      {
+        "categoria": "entrada",
+        "nome": "Nuggets da casa",
+        "precoCentavos": 2800,
+        "confira": false
+      },
+      {
+        "categoria": "prato",
+        "nome": "Classic Burger",
+        "precoCentavos": 3690,
+        "confira": false
+      },
+      {
+        "categoria": "prato",
+        "nome": "Cheddar Bacon",
+        "precoCentavos": 4290,
+        "confira": false
+      },
+      {
+        "categoria": "prato",
+        "nome": "Burger Duplo 2x",
+        "precoCentavos": 4990,
+        "confira": false
+      },
+      {
+        "categoria": "prato",
+        "nome": "Veggie de grão-de-bico",
+        "precoCentavos": 3800,
+        "confira": false
+      },
+      {
+        "categoria": "prato",
+        "nome": "Chicken Crispy",
+        "precoCentavos": 3750,
+        "confira": false
+      },
+      {
+        "categoria": "prato",
+        "nome": "Smash Simples",
+        "precoCentavos": 2990,
+        "confira": false
+      },
+      {
+        "categoria": "sobremesa",
+        "nome": "Brownie com sorvete",
+        "precoCentavos": 2200,
+        "confira": false
+      },
+      {
+        "categoria": "sobremesa",
+        "nome": "Cookie quente",
+        "precoCentavos": 1600,
+        "confira": false
+      },
+      {
+        "categoria": "bebida",
+        "nome": "Milkshake de baunilha",
+        "precoCentavos": 2490,
+        "confira": false
+      },
+      {
+        "categoria": "bebida",
+        "nome": "Refrigerante 600 ml",
+        "precoCentavos": 900,
+        "confira": false
+      },
+      {
+        "categoria": "bebida",
+        "nome": "Limonada suíça",
+        "precoCentavos": 1400,
+        "confira": false
+      },
+      {
+        "categoria": "bebida",
+        "nome": "Cerveja artesanal IPA",
+        "precoCentavos": 2400,
+        "confira": false
+      },
+      {
+        "categoria": "bebida",
+        "nome": "Água",
+        "precoCentavos": 500,
+        "confira": false
+      }
+    ],
+    "culinaria": "Hamburgueria",
+    "faixaPreco": "$$",
+    "parcial": false
+  }
+}

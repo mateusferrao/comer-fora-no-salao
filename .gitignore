@@ -1,0 +1,23 @@
+
+# Node / Next.js
+node_modules/
+.next/
+out/
+dist/
+coverage/
+
+# Ambiente e segredos
+.env
+.env.*
+!.env.example
+
+# Sistema
+.DS_Store
+*.log
+
+# Build/test
+*.tsbuildinfo
+next-env.d.ts
+playwright-report/
+test-results/
+*.traineddata

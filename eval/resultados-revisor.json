@@ -1,0 +1,75 @@
+{
+  "when": "2026-11-20T19:18:01.671Z",
+  "runs": [
+    {
+      "i": 1,
+      "origem": "ia",
+      "status": "ok",
+      "reasons": []
+    },
+    {
+      "i": 2,
+      "origem": "ia",
+      "status": "atencao",
+      "reasons": [
+        "Primeiro texto está correto, mas o segundo diz que a bruschetta é 'ao chegar à mesa', sendo que a oferta é 'entrada grátis'.",
+        "A oferta não especifica que a bruschetta é servida quando o cliente chega à mesa; isso pode gerar confusão."
+      ]
+    },
+    {
+      "i": 3,
+      "origem": "ia",
+      "status": "atencao",
+      "reasons": [
+        "O texto repete o nome do prato de forma confusa: '...brindar com Taça de vinho da casa!'",
+        "Na segunda frase, 'saborear Bruschetta' soa repetitivo e estranho para convite."
+      ]
+    },
+    {
+      "i": 4,
+      "origem": "ia",
+      "status": "ok",
+      "reasons": []
+    },
+    {
+      "i": 5,
+      "origem": "ia",
+      "status": "ok",
+      "reasons": []
+    },
+    {
+      "i": 6,
+      "origem": "ia",
+      "status": "atencao",
+      "reasons": [
+        "No primeiro convite, a oferta é 'Taça de vinho da casa grátis'; dizer 'como nosso agrado especial' está correto. Porém, o texto usa 'em terça, quarta e quinta',"
+      ]
+    },
+    {
+      "i": 7,
+      "origem": "ia",
+      "status": "ok",
+      "reasons": []
+    },
+    {
+      "i": 8,
+      "origem": "ia",
+      "status": "ok",
+      "reasons": []
+    },
+    {
+      "i": 9,
+      "origem": "ia",
+      "status": "ok",
+      "reasons": []
+    },
+    {
+      "i": 10,
+      "origem": "ia",
+      "status": "ok",
+      "reasons": []
+    }
+  ],
+  "blocked": 0,
+  "total": 10
+}

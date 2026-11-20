@@ -1,0 +1,14 @@
+
+ Test Files  23 passed (23)
+      Tests  165 passed (165)
+   Start at  03:33:34
+   Duration  7.20s (tests 80%, import 17%, transform 2%, worker 1%)
+
+
+ Test Files  4 passed (4)
+      Tests  22 passed (22)
+   Start at  03:33:42
+   Duration  8.15s (tests 81%, import 17%, transform 1%)
+
+E2E local: 34 passed (14.7s) — fumaca, componentes e cliente
+Build webpack: maior processo 676 MB; soma da árvore 826 MB; 26 s

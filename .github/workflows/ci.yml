@@ -1,0 +1,148 @@
+name: CI
+
+# Planejamento S0 §6.5 (D63, D78, D89, D91): check + integração + E2E; deploy só em push na main com os 3 verdes.
+on:
+  push:
+    paths-ignore: ["docs/**", "referencias/**", ".claude/**", "**/*.md"]
+  pull_request:
+    paths-ignore: ["docs/**", "referencias/**", ".claude/**", "**/*.md"]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+
+env:
+  NEXT_TELEMETRY_DISABLED: "1"
+  PROD_URL: https://sites-case-salao-app.lyv8st.easypanel.host
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - run: npx eslint .
+      - run: npx tsc --noEmit
+      - run: npm run check:boundaries
+      - run: npx vitest run --project unit
+      - name: npm audit (relatório "high", não bloqueia)
+        run: npm audit --omit=dev --audit-level=high || true
+      - name: npm audit (bloqueia só "critical" de produção — D89)
+        run: npm audit --omit=dev --audit-level=critical
+
+  integracao:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: salao
+          POSTGRES_PASSWORD: salao
+          POSTGRES_DB: salao_test
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U salao" --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      DATABASE_URL: postgres://salao:salao@localhost:5432/salao_test
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - run: npx vitest run --project integration
+
+  e2e:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: salao
+          POSTGRES_PASSWORD: salao
+          POSTGRES_DB: salao_test
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U salao" --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      DATABASE_URL: postgres://salao:salao@localhost:5432/salao_test
+      # Segredos fictícios só para o servidor de teste do CI (o standalone roda como produção — T-I1).
+      PHONE_HASH_SECRET: ci-phone-hash-secret-ficticio-0001
+      SESSION_SECRET: ci-session-secret-ficticio-00000001
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      # Mesmo teto de heap do Dockerfile (VPS): o build quebra aqui antes de quebrar lá (revisão do plano S3, T-I4).
+      - run: npm run build
+        env:
+          NODE_OPTIONS: --max-old-space-size=1024
+      - run: npx playwright install --with-deps chromium
+      - run: npx playwright test --trace off
+
+  deploy:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: [check, integracao, e2e]
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    concurrency:
+      group: deploy
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+      - name: Disparar o deploy no Easypanel
+        env:
+          EASYPANEL_DEPLOY_WEBHOOK: ${{ secrets.EASYPANEL_DEPLOY_WEBHOOK }}
+        run: |
+          if [ -z "$EASYPANEL_DEPLOY_WEBHOOK" ]; then echo "::error::secret EASYPANEL_DEPLOY_WEBHOOK ausente"; exit 1; fi
+          date -u +%s > /tmp/deploy-start
+          curl -fsS -X POST "$EASYPANEL_DEPLOY_WEBHOOK" -o /dev/null
+          echo "Webhook aceito para ${GITHUB_SHA}"
+      - name: Esperar o commit (ou um descendente) no /api/health
+        id: prod
+        run: |
+          # O webhook builda o HEAD da main: um push de docs no meio pode pôr em produção um descendente deste commit.
+          for i in $(seq 1 90); do
+            body=$(curl -fsS --max-time 10 "$PROD_URL/api/health" || true)
+            echo "[$i] $body"
+            sha=$(echo "$body" | sed -n 's/.*"sha":"\([0-9a-f]\{7,40\}\)".*/\1/p')
+            if [ -n "$sha" ]; then
+              if [ "$sha" = "$GITHUB_SHA" ] || { git fetch -q origin main && git merge-base --is-ancestor "$GITHUB_SHA" "$sha" 2>/dev/null; }; then
+                echo "No ar em $(( $(date -u +%s) - $(cat /tmp/deploy-start) )) s após o webhook (produção em $sha)"
+                echo "sha=$sha" >> "$GITHUB_OUTPUT"
+                exit 0
+              fi
+            fi
+            sleep 10
+          done
+          echo "::error::nem ${GITHUB_SHA} nem um descendente apareceu em produção em 15 min"
+          exit 1
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - run: npx playwright install --with-deps chromium
+      - name: Fumaça contra produção
+        env:
+          BASE_URL: ${{ env.PROD_URL }}
+          EXPECTED_SHA: ${{ steps.prod.outputs.sha }}
+          # D123: libera o login dos e-mails de teste e2e-dono+N@exemplo.invalid (sem envio).
+          E2E_LOGIN_TOKEN: ${{ secrets.E2E_LOGIN_TOKEN }}
+        run: npx playwright test tests/e2e/fumaca.spec.ts tests/e2e/cliente.spec.ts tests/e2e/dono.spec.ts tests/e2e/painel.spec.ts tests/e2e/volta.spec.ts tests/e2e/entrada.spec.ts tests/e2e/apresentacao.spec.ts --trace off

@@ -1,0 +1,50 @@
+{
+  "winner": "gemini-3.8-flash (referência)",
+  "pairs": [
+    {
+      "n": 1,
+      "fixture": "boteco",
+      "ia": "A"
+    },
+    {
+      "n": 2,
+      "fixture": "burger",
+      "ia": "A"
+    },
+    {
+      "n": 3,
+      "fixture": "burger",
+      "ia": "B"
+    },
+    {
+      "n": 4,
+      "fixture": "sushi",
+      "ia": "A"
+    },
+    {
+      "n": 5,
+      "fixture": "sushi",
+      "ia": "B"
+    },
+    {
+      "n": 6,
+      "fixture": "vitrine",
+      "ia": "B"
+    },
+    {
+      "n": 7,
+      "fixture": "vitrine",
+      "ia": "B"
+    },
+    {
+      "n": 8,
+      "fixture": "borda",
+      "ia": "B"
+    },
+    {
+      "n": 9,
+      "fixture": "borda",
+      "ia": "A"
+    }
+  ]
+}

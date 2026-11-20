@@ -1,0 +1,96 @@
+{
+  "culinaria": "Japonesa",
+  "faixaPreco": "$$$",
+  "itens": [
+    {
+      "categoria": "entrada",
+      "nome": "Gyoza",
+      "precoCentavos": 3200
+    },
+    {
+      "categoria": "entrada",
+      "nome": "Sunomono",
+      "precoCentavos": 1800
+    },
+    {
+      "categoria": "entrada",
+      "nome": "Missoshiru",
+      "precoCentavos": 1400
+    },
+    {
+      "categoria": "entrada",
+      "nome": "Harumaki de legumes",
+      "precoCentavos": 2400
+    },
+    {
+      "categoria": "prato",
+      "nome": "Combinado Hanami",
+      "precoCentavos": 13900
+    },
+    {
+      "categoria": "prato",
+      "nome": "Combinado do chef",
+      "precoCentavos": 7900
+    },
+    {
+      "categoria": "prato",
+      "nome": "Sashimi de salmão",
+      "precoCentavos": 5800
+    },
+    {
+      "categoria": "prato",
+      "nome": "Uramaki filadélfia",
+      "precoCentavos": 3600
+    },
+    {
+      "categoria": "prato",
+      "nome": "Temaki de salmão",
+      "precoCentavos": 3400
+    },
+    {
+      "categoria": "prato",
+      "nome": "Temaki skin",
+      "precoCentavos": 2800
+    },
+    {
+      "categoria": "porcao",
+      "nome": "Hot roll",
+      "precoCentavos": 3900
+    },
+    {
+      "categoria": "porcao",
+      "nome": "Ceviche de peixe branco",
+      "precoCentavos": 4600
+    },
+    {
+      "categoria": "sobremesa",
+      "nome": "Harumaki de banana com sorvete",
+      "precoCentavos": 2600
+    },
+    {
+      "categoria": "sobremesa",
+      "nome": "Mochi de morango",
+      "precoCentavos": 1800
+    },
+    {
+      "categoria": "bebida",
+      "nome": "Chá verde gelado",
+      "precoCentavos": 1200
+    },
+    {
+      "categoria": "bebida",
+      "nome": "Saquê",
+      "precoCentavos": 2200
+    },
+    {
+      "categoria": "bebida",
+      "nome": "Refrigerante lata",
+      "precoCentavos": 750
+    },
+    {
+      "categoria": "bebida",
+      "nome": "Água",
+      "precoCentavos": 550
+    }
+  ]
+}

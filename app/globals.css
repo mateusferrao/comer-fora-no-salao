@@ -1,0 +1,39 @@
+@import "tailwindcss";
+@import "../src/ui/tokens.css";
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  background: var(--color-surface);
+  color: var(--color-ink);
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-ink);
+  outline-offset: 2px;
+}
+
+@keyframes aparece {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* Sheet aberto: o fundo não rola (iOS incluído — dívida da revisão da S0). */
+html:has(dialog[open]) {
+  overflow: hidden;
+}
+
+/* Impressão do kit (espec. 3.4): a barra de protótipo aparece na tela, não no papel. */
+@media print {
+  [data-testid="prototype-bar"] {
+    display: none !important;
+  }
+}

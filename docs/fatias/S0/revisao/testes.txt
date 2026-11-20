@@ -1,0 +1,35 @@
+eslint: ok
+tsc: ok
+
+✔ no dependency violations found (35 modules, 35 dependencies cruised)
+
+ RUN  v5.1.1 /home/user/ifood-genai-2027
+ Test Files  10 passed (10)
+      Tests  59 passed (59)
+   Start at  02:02:32
+   Duration  2.23s (import 49%, tests 46%, transform 4%, worker 1%)
+
+Running 19 tests using 2 workers
+
+  ✓   1 [chromium] › tests/e2e/componentes.spec.ts:21:5 › galeria em 390 px › renderiza todos os componentes, o logo e o cabeçalho (344ms)
+  ✓   2 [chromium] › tests/e2e/componentes.spec.ts:30:5 › galeria em 390 px › barra com o texto completo e altura ≤ 44 px (351ms)
+  ✓   4 [chromium] › tests/e2e/componentes.spec.ts:57:5 › galeria em 390 px › Tabs: setas do teclado trocam a aba (220ms)
+  ✓   3 [chromium] › tests/e2e/componentes.spec.ts:40:5 › galeria em 390 px › BottomSheet: abre, Tab circula dentro, Esc fecha e devolve o foco (318ms)
+  ✓   5 [chromium] › tests/e2e/componentes.spec.ts:69:5 › galeria em 390 px › todo alvo interativo tem ao menos 44 × 44 px (171ms)
+  ✓   7 [chromium] › tests/e2e/componentes.spec.ts:21:5 › galeria em 1280 px › renderiza todos os componentes, o logo e o cabeçalho (211ms)
+  ✓   8 [chromium] › tests/e2e/componentes.spec.ts:30:5 › galeria em 1280 px › barra com o texto completo e altura ≤ 28 px (263ms)
+  ✓   6 [chromium] › tests/e2e/componentes.spec.ts:83:5 › galeria em 390 px › axe sem violações (767ms)
+  ✓   9 [chromium] › tests/e2e/componentes.spec.ts:40:5 › galeria em 1280 px › BottomSheet: abre, Tab circula dentro, Esc fecha e devolve o foco (291ms)
+  ✓  10 [chromium] › tests/e2e/componentes.spec.ts:57:5 › galeria em 1280 px › Tabs: setas do teclado trocam a aba (228ms)
+  ✓  11 [chromium] › tests/e2e/componentes.spec.ts:69:5 › galeria em 1280 px › todo alvo interativo tem ao menos 44 × 44 px (182ms)
+  ✓  13 [chromium] › tests/e2e/componentes.spec.ts:94:3 › gaveta do PortalShell no celular › abre, prende o foco, Esc fecha e devolve o foco (256ms)
+  ✓  12 [chromium] › tests/e2e/componentes.spec.ts:83:5 › galeria em 1280 px › axe sem violações (775ms)
+  ✓  14 [chromium] › tests/e2e/componentes.spec.ts:109:3 › gaveta do PortalShell no celular › axe sem violações com a gaveta aberta (658ms)
+  ✓  15 [chromium] › tests/e2e/componentes.spec.ts:119:3 › PortalShell no computador › sidebar fixa visível e sem botão de menu (210ms)
+  ✓  16 [chromium] › tests/e2e/fumaca.spec.ts:6:1 › barra de protótipo com o texto exato (182ms)
+  ✓  17 [chromium] › tests/e2e/fumaca.spec.ts:11:1 › meta robots com noindex (187ms)
+  ✓  18 [chromium] › tests/e2e/fumaca.spec.ts:16:1 › cabeçalho X-Robots-Tag com noindex (22ms)
+  ✓  19 [chromium] › tests/e2e/fumaca.spec.ts:21:1 › /api/health responde 200 com banco no ar (29ms)
+
+  19 passed (4.3s)
+found 0 vulnerabilities

@@ -1,0 +1,6720 @@
+{
+  "promptVersion": "cardapio-v1",
+  "at": "2026-11-20T12:13:31.042Z",
+  "runs": [
+    {
+      "entrant": "deepseek-v4.1-flash",
+      "kind": "visao",
+      "menu": "boteco",
+      "rep": 1,
+      "ok": true,
+      "latencyMs": 2141,
+      "costUsd": 0.000497096,
+      "score": {
+        "f1": 1,
+        "precision": 1,
+        "recall": 1,
+        "priceExact": 1,
+        "category": 1,
+        "matched": 21,
+        "expected": 21,
+        "got": 21
+      },
+      "nota": 1,
+      "items": [
+        {
+          "categoria": "porcao",
+          "nome": "Bolinho de bacalhau",
+          "precoCentavos": 3890,
+          "confira": false
+        },
+        {
+          "categoria": "porcao",
+          "nome": "Mandioca frita",
+          "precoCentavos": 2990,
+          "confira": false
+        },
+        {
+          "categoria": "porcao",
+          "nome": "Calabresa acebolada",
+          "precoCentavos": 3490,
+          "confira": false
+        },
+        {
+          "categoria": "porcao",
+          "nome": "Torresmo pururuca",
+          "precoCentavos": 3200,
+          "confira": false
+        },
+        {
+          "categoria": "porcao",
+          "nome": "Pastel de queijo",
+          "precoCentavos": 2650,
+          "confira": false
+        },
+        {
+          "categoria": "porcao",
+          "nome": "Frango a passarinho",
+          "precoCentavos": 4290,
+          "confira": false
+        },
+        {
+          "categoria": "entrada",
+          "nome": "Caldinho de feijão",
+          "precoCentavos": 1400,
+          "confira": false
+        },
+        {
+          "categoria": "entrada",
+          "nome": "Salada vinagrete",
+          "precoCentavos": 1650,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Feijoada da casa",
+          "precoCentavos": 5490,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Picanha na chapa",
+          "precoCentavos": 11900,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Parmegiana de frango",
+          "precoCentavos": 4850,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Baião de dois",
+          "precoCentavos": 4400,
+          "confira": false
+        },
+        {
+          "categoria": "sobremesa",
+          "nome": "Pudim de leite",
+          "precoCentavos": 1490,
+          "confira": false
+        },
+        {
+          "categoria": "sobremesa",
+          "nome": "Cocada de forno",
+          "precoCentavos": 1200,
+          "confira": false
+        },
+        {
+          "categoria": "sobremesa",
+          "nome": "Romeu e Julieta",
+          "precoCentavos": 1350,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Chopp claro 300 ml",
+          "precoCentavos": 1200,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Chopp claro 500 ml",
+          "precoCentavos": 1800,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Caipirinha de limão",
+          "precoCentavos": 2200,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Refrigerante lata",
+          "precoCentavos": 700,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Água com gás",
+          "precoCentavos": 550,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Suco de caju",
+          "precoCentavos": 900,
+          "confira": false
+        }
+      ]
+    },
+    {
+      "entrant": "gemini-2.5-flash-lite",
+      "kind": "visao",
+      "menu": "boteco",
+      "rep": 1,
+      "ok": true,
+      "latencyMs": 2550,
+      "costUsd": 0.00037304,
+      "score": {
+        "f1": 0.7619047619047619,
+        "precision": 0.7619047619047619,
+        "recall": 0.7619047619047619,
+        "priceExact": 0.7619047619047619,
+        "category": 1,
+        "matched": 16,
+        "expected": 21,
+        "got": 21
+      },
+      "nota": 0.7857142857142857,
+      "items": [
+        {
+          "categoria": "porcao",
+          "nome": "Bolinho de bacalhau 6 unidades",
+          "precoCentavos": 3890,
+          "confira": false
+        },
+        {
+          "categoria": "porcao",
+          "nome": "Mandioca frita com maionese da casa",
+          "precoCentavos": 2990,
+          "confira": false
+        },
+        {
+          "categoria": "porcao",
+          "nome": "Calabresa acebolada",
+          "precoCentavos": 3490,
+          "confira": false
+        },
+        {
+          "categoria": "porcao",
+          "nome": "Torresmo pururuca",
+          "precoCentavos": 3200,
+          "confira": false
+        },
+        {
+          "categoria": "porcao",
+          "nome": "Pastel de queijo 4 unidades",
+          "precoCentavos": 2650,
+          "confira": false
+        },
+        {
+          "categoria": "porcao",
+          "nome": "Frango a passarinho",
+          "precoCentavos": 4290,
+          "confira": false
+        },
+        {
+          "categoria": "entrada",
+          "nome": "Caldinho de feijão",
+          "precoCentavos": 1400,
+          "confira": false
+        },
+        {
+          "categoria": "entrada",
+          "nome": "Salada vinagrete",
+          "precoCentavos": 1650,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Feijoada da casa sábados e domingos",
+          "precoCentavos": 5490,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Picanha na chapa serve 2 pessoas",
+          "precoCentavos": 11900,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Parmegiana de frango",
+          "precoCentavos": 4850,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Baião de dois",
+          "precoCentavos": 4400,
+          "confira": false
+        },
+        {
+          "categoria": "sobremesa",
+          "nome": "Pudim de leite",
+          "precoCentavos": 1490,
+          "confira": false
+        },
+        {
+          "categoria": "sobremesa",
+          "nome": "Cocada de forno",
+          "precoCentavos": 1200,
+          "confira": false
+        },
+        {
+          "categoria": "sobremesa",
+          "nome": "Romeu e Julieta",
+          "precoCentavos": 1350,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Chopp claro 300 ml",
+          "precoCentavos": 1200,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Chopp claro 500 ml",
+          "precoCentavos": 1800,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Caipirinha de limão",
+          "precoCentavos": 2200,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Refrigerante lata",
+          "precoCentavos": 700,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Água com gás",
+          "precoCentavos": 550,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Suco de caju",
+          "precoCentavos": 900,
+          "confira": false
+        }
+      ]
+    },
+    {
+      "entrant": "claude-haiku-5.5",
+      "kind": "visao",
+      "menu": "boteco",
+      "rep": 1,
+      "ok": true,
+      "latencyMs": 3302,
+      "costUsd": 0.0008347,
+      "score": {
+        "f1": 1,
+        "precision": 1,
+        "recall": 1,
+        "priceExact": 1,
+        "category": 1,
+        "matched": 21,
+        "expected": 21,
+        "got": 21
+      },
+      "nota": 1,
+      "items": [
+        {
+          "categoria": "porcao",
+          "nome": "Bolinho de bacalhau",
+          "precoCentavos": 3890,
+          "confira": false
+        },
+        {
+          "categoria": "porcao",
+          "nome": "Mandioca frita",
+          "precoCentavos": 2990,
+          "confira": false
+        },
+        {
+          "categoria": "porcao",
+          "nome": "Calabresa acebolada",
+          "precoCentavos": 3490,
+          "confira": false
+        },
+        {
+          "categoria": "porcao",
+          "nome": "Torresmo pururuca",
+          "precoCentavos": 3200,
+          "confira": false
+        },
+        {
+          "categoria": "porcao",
+          "nome": "Pastel de queijo",
+          "precoCentavos": 2650,
+          "confira": false
+        },
+        {
+          "categoria": "porcao",
+          "nome": "Frango a passarinho",
+          "precoCentavos": 4290,
+          "confira": false
+        },
+        {
+          "categoria": "entrada",
+          "nome": "Caldinho de feijão",
+          "precoCentavos": 1400,
+          "confira": false
+        },
+        {
+          "categoria": "entrada",
+          "nome": "Salada vinagrete",
+          "precoCentavos": 1650,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Feijoada da casa",
+          "precoCentavos": 5490,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Picanha na chapa",
+          "precoCentavos": 11900,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Parmegiana de frango",
+          "precoCentavos": 4850,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Baião de dois",
+          "precoCentavos": 4400,
+          "confira": false
+        },
+        {
+          "categoria": "sobremesa",
+          "nome": "Pudim de leite",
+          "precoCentavos": 1490,
+          "confira": false
+        },
+        {
+          "categoria": "sobremesa",
+          "nome": "Cocada de forno",
+          "precoCentavos": 1200,
+          "confira": false
+        },
+        {
+          "categoria": "sobremesa",
+          "nome": "Romeu e Julieta",
+          "precoCentavos": 1350,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Chopp claro 300 ml",
+          "precoCentavos": 1200,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Chopp claro 500 ml",
+          "precoCentavos": 1800,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Caipirinha de limão",
+          "precoCentavos": 2200,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Refrigerante lata",
+          "precoCentavos": 700,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Água com gás",
+          "precoCentavos": 550,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Suco de caju",
+          "precoCentavos": 900,
+          "confira": false
+        }
+      ]
+    },
+    {
+      "entrant": "gemini-3.1-flash-lite",
+      "kind": "visao",
+      "menu": "boteco",
+      "rep": 1,
+      "ok": true,
+      "latencyMs": 3319,
+      "costUsd": 0.00177675,
+      "score": {
+        "f1": 1,
+        "precision": 1,
+        "recall": 1,
+        "priceExact": 1,
+        "category": 1,
+        "matched": 21,
+        "expected": 21,
+        "got": 21
+      },
+      "nota": 1,
+      "items": [
+        {
+          "categoria": "porcao",
+          "nome": "Bolinho de bacalhau",
+          "precoCentavos": 3890,
+          "confira": false
+        },
+        {
+          "categoria": "porcao",
+          "nome": "Mandioca frita",
+          "precoCentavos": 2990,
+          "confira": false
+        },
+        {
+          "categoria": "porcao",
+          "nome": "Calabresa acebolada",
+          "precoCentavos": 3490,
+          "confira": false
+        },
+        {
+          "categoria": "porcao",
+          "nome": "Torresmo pururuca",
+          "precoCentavos": 3200,
+          "confira": false
+        },
+        {
+          "categoria": "porcao",
+          "nome": "Pastel de queijo",
+          "precoCentavos": 2650,
+          "confira": false
+        },
+        {
+          "categoria": "porcao",
+          "nome": "Frango a passarinho",
+          "precoCentavos": 4290,
+          "confira": false
+        },
+        {
+          "categoria": "entrada",
+          "nome": "Caldinho de feijão",
+          "precoCentavos": 1400,
+          "confira": false
+        },
+        {
+          "categoria": "entrada",
+          "nome": "Salada vinagrete",
+          "precoCentavos": 1650,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Feijoada da casa",
+          "precoCentavos": 5490,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Picanha na chapa",
+          "precoCentavos": 11900,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Parmegiana de frango",
+          "precoCentavos": 4850,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Baião de dois",
+          "precoCentavos": 4400,
+          "confira": false
+        },
+        {
+          "categoria": "sobremesa",
+          "nome": "Pudim de leite",
+          "precoCentavos": 1490,
+          "confira": false
+        },
+        {
+          "categoria": "sobremesa",
+          "nome": "Cocada de forno",
+          "precoCentavos": 1200,
+          "confira": false
+        },
+        {
+          "categoria": "sobremesa",
+          "nome": "Romeu e Julieta",
+          "precoCentavos": 1350,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Chopp claro 300 ml",
+          "precoCentavos": 1200,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Chopp claro 500 ml",
+          "precoCentavos": 1800,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Caipirinha de limão",
+          "precoCentavos": 2200,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Refrigerante lata",
+          "precoCentavos": 700,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Água com gás",
+          "precoCentavos": 550,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Suco de caju",
+          "precoCentavos": 900,
+          "confira": false
+        }
+      ]
+    },
+    {
+      "entrant": "gpt-6-luna",
+      "kind": "visao",
+      "menu": "boteco",
+      "rep": 1,
+      "ok": true,
+      "latencyMs": 3397,
+      "costUsd": 0.00027294,
+      "score": {
+        "f1": 1,
+        "precision": 1,
+        "recall": 1,
+        "priceExact": 1,
+        "category": 1,
+        "matched": 21,
+        "expected": 21,
+        "got": 21
+      },
+      "nota": 1,
+      "items": [
+        {
+          "categoria": "porcao",
+          "nome": "Bolinho de bacalhau",
+          "precoCentavos": 3890,
+          "confira": false
+        },
+        {
+          "categoria": "porcao",
+          "nome": "Mandioca frita",
+          "precoCentavos": 2990,
+          "confira": false
+        },
+        {
+          "categoria": "porcao",
+          "nome": "Calabresa acebolada",
+          "precoCentavos": 3490,
+          "confira": false
+        },
+        {
+          "categoria": "porcao",
+          "nome": "Torresmo pururuca",
+          "precoCentavos": 3200,
+          "confira": false
+        },
+        {
+          "categoria": "porcao",
+          "nome": "Pastel de queijo",
+          "precoCentavos": 2650,
+          "confira": false
+        },
+        {
+          "categoria": "porcao",
+          "nome": "Frango a passarinho",
+          "precoCentavos": 4290,
+          "confira": false
+        },
+        {
+          "categoria": "entrada",
+          "nome": "Caldinho de feijão",
+          "precoCentavos": 1400,
+          "confira": false
+        },
+        {
+          "categoria": "entrada",
+          "nome": "Salada vinagrete",
+          "precoCentavos": 1650,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Feijoada da casa",
+          "precoCentavos": 5490,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Picanha na chapa",
+          "precoCentavos": 11900,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Parmegiana de frango",
+          "precoCentavos": 4850,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Baião de dois",
+          "precoCentavos": 4400,
+          "confira": false
+        },
+        {
+          "categoria": "sobremesa",
+          "nome": "Pudim de leite",
+          "precoCentavos": 1490,
+          "confira": false
+        },
+        {
+          "categoria": "sobremesa",
+          "nome": "Cocada de forno",
+          "precoCentavos": 1200,
+          "confira": false
+        },
+        {
+          "categoria": "sobremesa",
+          "nome": "Romeu e Julieta",
+          "precoCentavos": 1350,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Chopp claro 300 ml",
+          "precoCentavos": 1200,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Chopp claro 500 ml",
+          "precoCentavos": 1800,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Caipirinha de limão",
+          "precoCentavos": 2200,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Refrigerante lata",
+          "precoCentavos": 700,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Água com gás",
+          "precoCentavos": 550,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Suco de caju",
+          "precoCentavos": 900,
+          "confira": false
+        }
+      ]
+    },
+    {
+      "entrant": "deepseek-v4.1-flash",
+      "kind": "visao",
+      "menu": "boteco",
+      "rep": 2,
+      "ok": true,
+      "latencyMs": 1854,
+      "costUsd": 0.000497096,
+      "score": {
+        "f1": 1,
+        "precision": 1,
+        "recall": 1,
+        "priceExact": 1,
+        "category": 1,
+        "matched": 21,
+        "expected": 21,
+        "got": 21
+      },
+      "nota": 1,
+      "items": [
+        {
+          "categoria": "porcao",
+          "nome": "Bolinho de bacalhau",
+          "precoCentavos": 3890,
+          "confira": false
+        },
+        {
+          "categoria": "porcao",
+          "nome": "Mandioca frita",
+          "precoCentavos": 2990,
+          "confira": false
+        },
+        {
+          "categoria": "porcao",
+          "nome": "Calabresa acebolada",
+          "precoCentavos": 3490,
+          "confira": false
+        },
+        {
+          "categoria": "porcao",
+          "nome": "Torresmo pururuca",
+          "precoCentavos": 3200,
+          "confira": false
+        },
+        {
+          "categoria": "porcao",
+          "nome": "Pastel de queijo",
+          "precoCentavos": 2650,
+          "confira": false
+        },
+        {
+          "categoria": "porcao",
+          "nome": "Frango a passarinho",
+          "precoCentavos": 4290,
+          "confira": false
+        },
+        {
+          "categoria": "entrada",
+          "nome": "Caldinho de feijão",
+          "precoCentavos": 1400,
+          "confira": false
+        },
+        {
+          "categoria": "entrada",
+          "nome": "Salada vinagrete",
+          "precoCentavos": 1650,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Feijoada da casa",
+          "precoCentavos": 5490,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Picanha na chapa",
+          "precoCentavos": 11900,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Parmegiana de frango",
+          "precoCentavos": 4850,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Baião de dois",
+          "precoCentavos": 4400,
+          "confira": false
+        },
+        {
+          "categoria": "sobremesa",
+          "nome": "Pudim de leite",
+          "precoCentavos": 1490,
+          "confira": false
+        },
+        {
+          "categoria": "sobremesa",
+          "nome": "Cocada de forno",
+          "precoCentavos": 1200,
+          "confira": false
+        },
+        {
+          "categoria": "sobremesa",
+          "nome": "Romeu e Julieta",
+          "precoCentavos": 1350,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Chopp claro 300 ml",
+          "precoCentavos": 1200,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Chopp claro 500 ml",
+          "precoCentavos": 1800,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Caipirinha de limão",
+          "precoCentavos": 2200,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Refrigerante lata",
+          "precoCentavos": 700,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Água com gás",
+          "precoCentavos": 550,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Suco de caju",
+          "precoCentavos": 900,
+          "confira": false
+        }
+      ]
+    },
+    {
+      "entrant": "gemini-2.5-flash-lite",
+      "kind": "visao",
+      "menu": "boteco",
+      "rep": 2,
+      "ok": true,
+      "latencyMs": 2351,
+      "costUsd": 0.00037464,
+      "score": {
+        "f1": 0.7619047619047619,
+        "precision": 0.7619047619047619,
+        "recall": 0.7619047619047619,
+        "priceExact": 0.7619047619047619,
+        "category": 1,
+        "matched": 16,
+        "expected": 21,
+        "got": 21
+      },
+      "nota": 0.7857142857142857,
+      "items": [
+        {
+          "categoria": "porcao",
+          "nome": "Bolinho de bacalhau 6 unidades",
+          "precoCentavos": 3890,
+          "confira": false
+        },
+        {
+          "categoria": "porcao",
+          "nome": "Mandioca frita com maionese da casa",
+          "precoCentavos": 2990,
+          "confira": false
+        },
+        {
+          "categoria": "porcao",
+          "nome": "Calabresa acebolada",
+          "precoCentavos": 3490,
+          "confira": false
+        },
+        {
+          "categoria": "porcao",
+          "nome": "Torresmo pururuca",
+          "precoCentavos": 3200,
+          "confira": false
+        },
+        {
+          "categoria": "porcao",
+          "nome": "Pastel de queijo 4 unidades",
+          "precoCentavos": 2650,
+          "confira": false
+        },
+        {
+          "categoria": "porcao",
+          "nome": "Frango a passarinho",
+          "precoCentavos": 4290,
+          "confira": false
+        },
+        {
+          "categoria": "entrada",
+          "nome": "Caldinho de feijão",
+          "precoCentavos": 1400,
+          "confira": false
+        },
+        {
+          "categoria": "entrada",
+          "nome": "Salada vinagrete",
+          "precoCentavos": 1650,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Feijoada da casa sábados e domingos",
+          "precoCentavos": 5490,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Picanha na chapa serve 2 pessoas",
+          "precoCentavos": 11900,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Parmegiana de frango",
+          "precoCentavos": 4850,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Baião de dois",
+          "precoCentavos": 4400,
+          "confira": false
+        },
+        {
+          "categoria": "sobremesa",
+          "nome": "Pudim de leite",
+          "precoCentavos": 1490,
+          "confira": false
+        },
+        {
+          "categoria": "sobremesa",
+          "nome": "Cocada de forno",
+          "precoCentavos": 1200,
+          "confira": false
+        },
+        {
+          "categoria": "sobremesa",
+          "nome": "Romeu e Julieta",
+          "precoCentavos": 1350,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Chopp claro 300 ml",
+          "precoCentavos": 1200,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Chopp claro 500 ml",
+          "precoCentavos": 1800,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Caipirinha de limão",
+          "precoCentavos": 2200,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Refrigerante lata",
+          "precoCentavos": 700,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Água com gás",
+          "precoCentavos": 550,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Suco de caju",
+          "precoCentavos": 900,
+          "confira": false
+        }
+      ]
+    },
+    {
+      "entrant": "deepseek-v4.1-flash",
+      "kind": "visao",
+      "menu": "burger",
+      "rep": 1,
+      "ok": true,
+      "latencyMs": 1624,
+      "costUsd": 0.000378964,
+      "score": {
+        "f1": 1,
+        "precision": 1,
+        "recall": 1,
+        "priceExact": 1,
+        "category": 0.8125,
+        "matched": 16,
+        "expected": 16,
+        "got": 16
+      },
+      "nota": 0.9812500000000001,
+      "items": [
+        {
+          "categoria": "porcao",
+          "nome": "Batata rústica",
+          "precoCentavos": 2400,
+          "confira": false
+        },
+        {
+          "categoria": "porcao",
+          "nome": "Onion rings",
+          "precoCentavos": 2600,
+          "confira": false
+        },
+        {
+          "categoria": "porcao",
+          "nome": "Nuggets da casa",
+          "precoCentavos": 2800,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Classic Burger",
+          "precoCentavos": 3690,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Cheddar Bacon",
+          "precoCentavos": 4290,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Burger Duplo 2x",
+          "precoCentavos": 4990,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Veggie de grão-de-bico",
+          "precoCentavos": 3800,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Chicken Crispy",
+          "precoCentavos": 3750,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Smash Simples",
+          "precoCentavos": 2990,
+          "confira": false
+        },
+        {
+          "categoria": "sobremesa",
+          "nome": "Brownie com sorvete",
+          "precoCentavos": 2200,
+          "confira": false
+        },
+        {
+          "categoria": "sobremesa",
+          "nome": "Cookie quente",
+          "precoCentavos": 1600,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Milkshake de baunilha",
+          "precoCentavos": 2490,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Refrigerante 600 ml",
+          "precoCentavos": 900,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Limonada suíça",
+          "precoCentavos": 1400,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Cerveja artesanal IPA",
+          "precoCentavos": 2400,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Água",
+          "precoCentavos": 500,
+          "confira": false
+        }
+      ]
+    },
+    {
+      "entrant": "gemini-3.8-flash (referência)",
+      "kind": "visao",
+      "menu": "boteco",
+      "rep": 1,
+      "ok": true,
+      "latencyMs": 5651,
+      "costUsd": 0.00467325,
+      "score": {
+        "f1": 1,
+        "precision": 1,
+        "recall": 1,
+        "priceExact": 1,
+        "category": 1,
+        "matched": 21,
+        "expected": 21,
+        "got": 21
+      },
+      "nota": 1,
+      "items": [
+        {
+          "categoria": "porcao",
+          "nome": "Bolinho de bacalhau",
+          "precoCentavos": 3890,
+          "confira": false
+        },
+        {
+          "categoria": "porcao",
+          "nome": "Mandioca frita",
+          "precoCentavos": 2990,
+          "confira": false
+        },
+        {
+          "categoria": "porcao",
+          "nome": "Calabresa acebolada",
+          "precoCentavos": 3490,
+          "confira": false
+        },
+        {
+          "categoria": "porcao",
+          "nome": "Torresmo pururuca",
+          "precoCentavos": 3200,
+          "confira": false
+        },
+        {
+          "categoria": "porcao",
+          "nome": "Pastel de queijo",
+          "precoCentavos": 2650,
+          "confira": false
+        },
+        {
+          "categoria": "porcao",
+          "nome": "Frango a passarinho",
+          "precoCentavos": 4290,
+          "confira": false
+        },
+        {
+          "categoria": "entrada",
+          "nome": "Caldinho de feijão",
+          "precoCentavos": 1400,
+          "confira": false
+        },
+        {
+          "categoria": "entrada",
+          "nome": "Salada vinagrete",
+          "precoCentavos": 1650,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Feijoada da casa",
+          "precoCentavos": 5490,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Picanha na chapa",
+          "precoCentavos": 11900,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Parmegiana de frango",
+          "precoCentavos": 4850,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Baião de dois",
+          "precoCentavos": 4400,
+          "confira": false
+        },
+        {
+          "categoria": "sobremesa",
+          "nome": "Pudim de leite",
+          "precoCentavos": 1490,
+          "confira": false
+        },
+        {
+          "categoria": "sobremesa",
+          "nome": "Cocada de forno",
+          "precoCentavos": 1200,
+          "confira": false
+        },
+        {
+          "categoria": "sobremesa",
+          "nome": "Romeu e Julieta",
+          "precoCentavos": 1350,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Chopp claro 300 ml",
+          "precoCentavos": 1200,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Chopp claro 500 ml",
+          "precoCentavos": 1800,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Caipirinha de limão",
+          "precoCentavos": 2200,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Refrigerante lata",
+          "precoCentavos": 700,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Água com gás",
+          "precoCentavos": 550,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Suco de caju",
+          "precoCentavos": 900,
+          "confira": false
+        }
+      ]
+    },
+    {
+      "entrant": "claude-haiku-5.5",
+      "kind": "visao",
+      "menu": "boteco",
+      "rep": 2,
+      "ok": true,
+      "latencyMs": 3108,
+      "costUsd": 0.0008347,
+      "score": {
+        "f1": 1,
+        "precision": 1,
+        "recall": 1,
+        "priceExact": 1,
+        "category": 1,
+        "matched": 21,
+        "expected": 21,
+        "got": 21
+      },
+      "nota": 1,
+      "items": [
+        {
+          "categoria": "porcao",
+          "nome": "Bolinho de bacalhau",
+          "precoCentavos": 3890,
+          "confira": false
+        },
+        {
+          "categoria": "porcao",
+          "nome": "Mandioca frita",
+          "precoCentavos": 2990,
+          "confira": false
+        },
+        {
+          "categoria": "porcao",
+          "nome": "Calabresa acebolada",
+          "precoCentavos": 3490,
+          "confira": false
+        },
+        {
+          "categoria": "porcao",
+          "nome": "Torresmo pururuca",
+          "precoCentavos": 3200,
+          "confira": false
+        },
+        {
+          "categoria": "porcao",
+          "nome": "Pastel de queijo",
+          "precoCentavos": 2650,
+          "confira": false
+        },
+        {
+          "categoria": "porcao",
+          "nome": "Frango a passarinho",
+          "precoCentavos": 4290,
+          "confira": false
+        },
+        {
+          "categoria": "entrada",
+          "nome": "Caldinho de feijão",
+          "precoCentavos": 1400,
+          "confira": false
+        },
+        {
+          "categoria": "entrada",
+          "nome": "Salada vinagrete",
+          "precoCentavos": 1650,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Feijoada da casa",
+          "precoCentavos": 5490,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Picanha na chapa",
+          "precoCentavos": 11900,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Parmegiana de frango",
+          "precoCentavos": 4850,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Baião de dois",
+          "precoCentavos": 4400,
+          "confira": false
+        },
+        {
+          "categoria": "sobremesa",
+          "nome": "Pudim de leite",
+          "precoCentavos": 1490,
+          "confira": false
+        },
+        {
+          "categoria": "sobremesa",
+          "nome": "Cocada de forno",
+          "precoCentavos": 1200,
+          "confira": false
+        },
+        {
+          "categoria": "sobremesa",
+          "nome": "Romeu e Julieta",
+          "precoCentavos": 1350,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Chopp claro 300 ml",
+          "precoCentavos": 1200,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Chopp claro 500 ml",
+          "precoCentavos": 1800,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Caipirinha de limão",
+          "precoCentavos": 2200,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Refrigerante lata",
+          "precoCentavos": 700,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Água com gás",
+          "precoCentavos": 550,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Suco de caju",
+          "precoCentavos": 900,
+          "confira": false
+        }
+      ]
+    },
+    {
+      "entrant": "gpt-6-luna",
+      "kind": "visao",
+      "menu": "boteco",
+      "rep": 2,
+      "ok": true,
+      "latencyMs": 3040,
+      "costUsd": 0.00027294,
+      "score": {
+        "f1": 1,
+        "precision": 1,
+        "recall": 1,
+        "priceExact": 1,
+        "category": 1,
+        "matched": 21,
+        "expected": 21,
+        "got": 21
+      },
+      "nota": 1,
+      "items": [
+        {
+          "categoria": "porcao",
+          "nome": "Bolinho de bacalhau",
+          "precoCentavos": 3890,
+          "confira": false
+        },
+        {
+          "categoria": "porcao",
+          "nome": "Mandioca frita",
+          "precoCentavos": 2990,
+          "confira": false
+        },
+        {
+          "categoria": "porcao",
+          "nome": "Calabresa acebolada",
+          "precoCentavos": 3490,
+          "confira": false
+        },
+        {
+          "categoria": "porcao",
+          "nome": "Torresmo pururuca",
+          "precoCentavos": 3200,
+          "confira": false
+        },
+        {
+          "categoria": "porcao",
+          "nome": "Pastel de queijo",
+          "precoCentavos": 2650,
+          "confira": false
+        },
+        {
+          "categoria": "porcao",
+          "nome": "Frango a passarinho",
+          "precoCentavos": 4290,
+          "confira": false
+        },
+        {
+          "categoria": "entrada",
+          "nome": "Caldinho de feijão",
+          "precoCentavos": 1400,
+          "confira": false
+        },
+        {
+          "categoria": "entrada",
+          "nome": "Salada vinagrete",
+          "precoCentavos": 1650,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Feijoada da casa",
+          "precoCentavos": 5490,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Picanha na chapa",
+          "precoCentavos": 11900,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Parmegiana de frango",
+          "precoCentavos": 4850,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Baião de dois",
+          "precoCentavos": 4400,
+          "confira": false
+        },
+        {
+          "categoria": "sobremesa",
+          "nome": "Pudim de leite",
+          "precoCentavos": 1490,
+          "confira": false
+        },
+        {
+          "categoria": "sobremesa",
+          "nome": "Cocada de forno",
+          "precoCentavos": 1200,
+          "confira": false
+        },
+        {
+          "categoria": "sobremesa",
+          "nome": "Romeu e Julieta",
+          "precoCentavos": 1350,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Chopp claro 300 ml",
+          "precoCentavos": 1200,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Chopp claro 500 ml",
+          "precoCentavos": 1800,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Caipirinha de limão",
+          "precoCentavos": 2200,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Refrigerante lata",
+          "precoCentavos": 700,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Água com gás",
+          "precoCentavos": 550,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Suco de caju",
+          "precoCentavos": 900,
+          "confira": false
+        }
+      ]
+    },
+    {
+      "entrant": "gemini-3.1-flash-lite",
+      "kind": "visao",
+      "menu": "boteco",
+      "rep": 2,
+      "ok": true,
+      "latencyMs": 3135,
+      "costUsd": 0.00177675,
+      "score": {
+        "f1": 1,
+        "precision": 1,
+        "recall": 1,
+        "priceExact": 1,
+        "category": 1,
+        "matched": 21,
+        "expected": 21,
+        "got": 21
+      },
+      "nota": 1,
+      "items": [
+        {
+          "categoria": "porcao",
+          "nome": "Bolinho de bacalhau",
+          "precoCentavos": 3890,
+          "confira": false
+        },
+        {
+          "categoria": "porcao",
+          "nome": "Mandioca frita",
+          "precoCentavos": 2990,
+          "confira": false
+        },
+        {
+          "categoria": "porcao",
+          "nome": "Calabresa acebolada",
+          "precoCentavos": 3490,
+          "confira": false
+        },
+        {
+          "categoria": "porcao",
+          "nome": "Torresmo pururuca",
+          "precoCentavos": 3200,
+          "confira": false
+        },
+        {
+          "categoria": "porcao",
+          "nome": "Pastel de queijo",
+          "precoCentavos": 2650,
+          "confira": false
+        },
+        {
+          "categoria": "porcao",
+          "nome": "Frango a passarinho",
+          "precoCentavos": 4290,
+          "confira": false
+        },
+        {
+          "categoria": "entrada",
+          "nome": "Caldinho de feijão",
+          "precoCentavos": 1400,
+          "confira": false
+        },
+        {
+          "categoria": "entrada",
+          "nome": "Salada vinagrete",
+          "precoCentavos": 1650,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Feijoada da casa",
+          "precoCentavos": 5490,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Picanha na chapa",
+          "precoCentavos": 11900,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Parmegiana de frango",
+          "precoCentavos": 4850,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Baião de dois",
+          "precoCentavos": 4400,
+          "confira": false
+        },
+        {
+          "categoria": "sobremesa",
+          "nome": "Pudim de leite",
+          "precoCentavos": 1490,
+          "confira": false
+        },
+        {
+          "categoria": "sobremesa",
+          "nome": "Cocada de forno",
+          "precoCentavos": 1200,
+          "confira": false
+        },
+        {
+          "categoria": "sobremesa",
+          "nome": "Romeu e Julieta",
+          "precoCentavos": 1350,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Chopp claro 300 ml",
+          "precoCentavos": 1200,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Chopp claro 500 ml",
+          "precoCentavos": 1800,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Caipirinha de limão",
+          "precoCentavos": 2200,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Refrigerante lata",
+          "precoCentavos": 700,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Água com gás",
+          "precoCentavos": 550,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Suco de caju",
+          "precoCentavos": 900,
+          "confira": false
+        }
+      ]
+    },
+    {
+      "entrant": "gemini-2.5-flash-lite",
+      "kind": "visao",
+      "menu": "burger",
+      "rep": 1,
+      "ok": true,
+      "latencyMs": 1912,
+      "costUsd": 0.000334,
+      "score": {
+        "f1": 1,
+        "precision": 1,
+        "recall": 1,
+        "priceExact": 1,
+        "category": 0.8125,
+        "matched": 16,
+        "expected": 16,
+        "got": 16
+      },
+      "nota": 0.9812500000000001,
+      "items": [
+        {
+          "categoria": "porcao",
+          "nome": "Batata rústica",
+          "precoCentavos": 2400,
+          "confira": false
+        },
+        {
+          "categoria": "porcao",
+          "nome": "Onion rings",
+          "precoCentavos": 2600,
+          "confira": false
+        },
+        {
+          "categoria": "porcao",
+          "nome": "Nuggets da casa",
+          "precoCentavos": 2800,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Classic Burger",
+          "precoCentavos": 3690,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Cheddar Bacon",
+          "precoCentavos": 4290,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Burger Duplo 2x",
+          "precoCentavos": 4990,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Veggie de grão-de-bico",
+          "precoCentavos": 3800,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Chicken Crispy",
+          "precoCentavos": 3750,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Smash Simples",
+          "precoCentavos": 2990,
+          "confira": false
+        },
+        {
+          "categoria": "sobremesa",
+          "nome": "Brownie com sorvete",
+          "precoCentavos": 2200,
+          "confira": false
+        },
+        {
+          "categoria": "sobremesa",
+          "nome": "Cookie quente",
+          "precoCentavos": 1600,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Milkshake de baunilha",
+          "precoCentavos": 2490,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Refrigerante 600 ml",
+          "precoCentavos": 900,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Limonada suíça",
+          "precoCentavos": 1400,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Cerveja artesanal IPA",
+          "precoCentavos": 2400,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Água",
+          "precoCentavos": 500,
+          "confira": false
+        }
+      ]
+    },
+    {
+      "entrant": "deepseek-v4.1-flash",
+      "kind": "visao",
+      "menu": "burger",
+      "rep": 2,
+      "ok": true,
+      "latencyMs": 1453,
+      "costUsd": 0.000378964,
+      "score": {
+        "f1": 1,
+        "precision": 1,
+        "recall": 1,
+        "priceExact": 1,
+        "category": 0.8125,
+        "matched": 16,
+        "expected": 16,
+        "got": 16
+      },
+      "nota": 0.9812500000000001,
+      "items": [
+        {
+          "categoria": "porcao",
+          "nome": "Batata rústica",
+          "precoCentavos": 2400,
+          "confira": false
+        },
+        {
+          "categoria": "porcao",
+          "nome": "Onion rings",
+          "precoCentavos": 2600,
+          "confira": false
+        },
+        {
+          "categoria": "porcao",
+          "nome": "Nuggets da casa",
+          "precoCentavos": 2800,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Classic Burger",
+          "precoCentavos": 3690,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Cheddar Bacon",
+          "precoCentavos": 4290,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Burger Duplo 2x",
+          "precoCentavos": 4990,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Veggie de grão-de-bico",
+          "precoCentavos": 3800,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Chicken Crispy",
+          "precoCentavos": 3750,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Smash Simples",
+          "precoCentavos": 2990,
+          "confira": false
+        },
+        {
+          "categoria": "sobremesa",
+          "nome": "Brownie com sorvete",
+          "precoCentavos": 2200,
+          "confira": false
+        },
+        {
+          "categoria": "sobremesa",
+          "nome": "Cookie quente",
+          "precoCentavos": 1600,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Milkshake de baunilha",
+          "precoCentavos": 2490,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Refrigerante 600 ml",
+          "precoCentavos": 900,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Limonada suíça",
+          "precoCentavos": 1400,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Cerveja artesanal IPA",
+          "precoCentavos": 2400,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Água",
+          "precoCentavos": 500,
+          "confira": false
+        }
+      ]
+    },
+    {
+      "entrant": "gemini-2.5-flash-lite",
+      "kind": "visao",
+      "menu": "burger",
+      "rep": 2,
+      "ok": true,
+      "latencyMs": 1452,
+      "costUsd": 0.0002576,
+      "score": {
+        "f1": 1,
+        "precision": 1,
+        "recall": 1,
+        "priceExact": 1,
+        "category": 0.8125,
+        "matched": 16,
+        "expected": 16,
+        "got": 16
+      },
+      "nota": 0.9812500000000001,
+      "items": [
+        {
+          "categoria": "porcao",
+          "nome": "Batata rústica",
+          "precoCentavos": 2400,
+          "confira": false
+        },
+        {
+          "categoria": "porcao",
+          "nome": "Onion rings",
+          "precoCentavos": 2600,
+          "confira": false
+        },
+        {
+          "categoria": "porcao",
+          "nome": "Nuggets da casa",
+          "precoCentavos": 2800,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Classic Burger",
+          "precoCentavos": 3690,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Cheddar Bacon",
+          "precoCentavos": 4290,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Burger Duplo 2x",
+          "precoCentavos": 4990,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Veggie de grão-de-bico",
+          "precoCentavos": 3800,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Chicken Crispy",
+          "precoCentavos": 3750,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Smash Simples",
+          "precoCentavos": 2990,
+          "confira": false
+        },
+        {
+          "categoria": "sobremesa",
+          "nome": "Brownie com sorvete",
+          "precoCentavos": 2200,
+          "confira": false
+        },
+        {
+          "categoria": "sobremesa",
+          "nome": "Cookie quente",
+          "precoCentavos": 1600,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Milkshake de baunilha",
+          "precoCentavos": 2490,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Refrigerante 600 ml",
+          "precoCentavos": 900,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Limonada suíça",
+          "precoCentavos": 1400,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Cerveja artesanal IPA",
+          "precoCentavos": 2400,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Água",
+          "precoCentavos": 500,
+          "confira": false
+        }
+      ]
+    },
+    {
+      "entrant": "gpt-6-luna",
+      "kind": "visao",
+      "menu": "burger",
+      "rep": 1,
+      "ok": true,
+      "latencyMs": 2415,
+      "costUsd": 0.00020168,
+      "score": {
+        "f1": 1,
+        "precision": 1,
+        "recall": 1,
+        "priceExact": 1,
+        "category": 0.8125,
+        "matched": 16,
+        "expected": 16,
+        "got": 16
+      },
+      "nota": 0.9812500000000001,
+      "items": [
+        {
+          "categoria": "porcao",
+          "nome": "Batata rústica",
+          "precoCentavos": 2400,
+          "confira": false
+        },
+        {
+          "categoria": "porcao",
+          "nome": "Onion rings",
+          "precoCentavos": 2600,
+          "confira": false
+        },
+        {
+          "categoria": "porcao",
+          "nome": "Nuggets da casa",
+          "precoCentavos": 2800,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Classic Burger",
+          "precoCentavos": 3690,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Cheddar Bacon",
+          "precoCentavos": 4290,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Burger Duplo 2x",
+          "precoCentavos": 4990,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Veggie de grão-de-bico",
+          "precoCentavos": 3800,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Chicken Crispy",
+          "precoCentavos": 3750,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Smash Simples",
+          "precoCentavos": 2990,
+          "confira": false
+        },
+        {
+          "categoria": "sobremesa",
+          "nome": "Brownie com sorvete",
+          "precoCentavos": 2200,
+          "confira": false
+        },
+        {
+          "categoria": "sobremesa",
+          "nome": "Cookie quente",
+          "precoCentavos": 1600,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Milkshake de baunilha",
+          "precoCentavos": 2490,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Refrigerante 600 ml",
+          "precoCentavos": 900,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Limonada suíça",
+          "precoCentavos": 1400,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Cerveja artesanal IPA",
+          "precoCentavos": 2400,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Água",
+          "precoCentavos": 500,
+          "confira": false
+        }
+      ]
+    },
+    {
+      "entrant": "gemini-3.1-flash-lite",
+      "kind": "visao",
+      "menu": "burger",
+      "rep": 1,
+      "ok": true,
+      "latencyMs": 2409,
+      "costUsd": 0.00146025,
+      "score": {
+        "f1": 1,
+        "precision": 1,
+        "recall": 1,
+        "priceExact": 1,
+        "category": 1,
+        "matched": 16,
+        "expected": 16,
+        "got": 16
+      },
+      "nota": 1,
+      "items": [
+        {
+          "categoria": "entrada",
+          "nome": "Batata rústica",
+          "precoCentavos": 2400,
+          "confira": false
+        },
+        {
+          "categoria": "entrada",
+          "nome": "Onion rings",
+          "precoCentavos": 2600,
+          "confira": false
+        },
+        {
+          "categoria": "entrada",
+          "nome": "Nuggets da casa",
+          "precoCentavos": 2800,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Classic Burger",
+          "precoCentavos": 3690,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Cheddar Bacon",
+          "precoCentavos": 4290,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Burger Duplo 2x",
+          "precoCentavos": 4990,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Veggie de grão-de-bico",
+          "precoCentavos": 3800,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Chicken Crispy",
+          "precoCentavos": 3750,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Smash Simples",
+          "precoCentavos": 2990,
+          "confira": false
+        },
+        {
+          "categoria": "sobremesa",
+          "nome": "Brownie com sorvete",
+          "precoCentavos": 2200,
+          "confira": false
+        },
+        {
+          "categoria": "sobremesa",
+          "nome": "Cookie quente",
+          "precoCentavos": 1600,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Milkshake de baunilha",
+          "precoCentavos": 2490,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Refrigerante 600 ml",
+          "precoCentavos": 900,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Limonada suíça",
+          "precoCentavos": 1400,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Cerveja artesanal IPA",
+          "precoCentavos": 2400,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Água",
+          "precoCentavos": 500,
+          "confira": false
+        }
+      ]
+    },
+    {
+      "entrant": "claude-haiku-5.5",
+      "kind": "visao",
+      "menu": "burger",
+      "rep": 1,
+      "ok": true,
+      "latencyMs": 2469,
+      "costUsd": 0.0005855,
+      "score": {
+        "f1": 1,
+        "precision": 1,
+        "recall": 1,
+        "priceExact": 1,
+        "category": 0.9375,
+        "matched": 16,
+        "expected": 16,
+        "got": 16
+      },
+      "nota": 0.99375,
+      "items": [
+        {
+          "categoria": "entrada",
+          "nome": "Batata rústica",
+          "precoCentavos": 2400,
+          "confira": false
+        },
+        {
+          "categoria": "entrada",
+          "nome": "Onion rings",
+          "precoCentavos": 2600,
+          "confira": false
+        },
+        {
+          "categoria": "porcao",
+          "nome": "Nuggets da casa",
+          "precoCentavos": 2800,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Classic Burger",
+          "precoCentavos": 3690,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Cheddar Bacon",
+          "precoCentavos": 4290,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Burger Duplo 2x",
+          "precoCentavos": 4990,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Veggie de grão-de-bico",
+          "precoCentavos": 3800,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Chicken Crispy",
+          "precoCentavos": 3750,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Smash Simples",
+          "precoCentavos": 2990,
+          "confira": false
+        },
+        {
+          "categoria": "sobremesa",
+          "nome": "Brownie com sorvete",
+          "precoCentavos": 2200,
+          "confira": false
+        },
+        {
+          "categoria": "sobremesa",
+          "nome": "Cookie quente",
+          "precoCentavos": 1600,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Milkshake de baunilha",
+          "precoCentavos": 2490,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Refrigerante 600 ml",
+          "precoCentavos": 900,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Limonada suíça",
+          "precoCentavos": 1400,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Cerveja artesanal IPA",
+          "precoCentavos": 2400,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Água",
+          "precoCentavos": 500,
+          "confira": false
+        }
+      ]
+    },
+    {
+      "entrant": "deepseek-v4.1-flash",
+      "kind": "visao",
+      "menu": "sushi",
+      "rep": 1,
+      "ok": true,
+      "latencyMs": 1958,
+      "costUsd": 0.000430784,
+      "score": {
+        "f1": 1,
+        "precision": 1,
+        "recall": 1,
+        "priceExact": 1,
+        "category": 1,
+        "matched": 18,
+        "expected": 18,
+        "got": 18
+      },
+      "nota": 1,
+      "items": [
+        {
+          "categoria": "entrada",
+          "nome": "Gyoza",
+          "precoCentavos": 3200,
+          "confira": false
+        },
+        {
+          "categoria": "entrada",
+          "nome": "Sunomono",
+          "precoCentavos": 1800,
+          "confira": false
+        },
+        {
+          "categoria": "entrada",
+          "nome": "Missoshiru",
+          "precoCentavos": 1400,
+          "confira": false
+        },
+        {
+          "categoria": "entrada",
+          "nome": "Harumaki de legumes",
+          "precoCentavos": 2400,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Combinado Hanami",
+          "precoCentavos": 13900,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Combinado do chef",
+          "precoCentavos": 7900,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Sashimi de salmão",
+          "precoCentavos": 5800,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Uramaki filadélfia",
+          "precoCentavos": 3600,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Temaki de salmão",
+          "precoCentavos": 3400,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Temaki skin",
+          "precoCentavos": 2800,
+          "confira": false
+        },
+        {
+          "categoria": "porcao",
+          "nome": "Hot roll",
+          "precoCentavos": 3900,
+          "confira": false
+        },
+        {
+          "categoria": "porcao",
+          "nome": "Ceviche de peixe branco",
+          "precoCentavos": 4600,
+          "confira": false
+        },
+        {
+          "categoria": "sobremesa",
+          "nome": "Harumaki de banana com sorvete",
+          "precoCentavos": 2600,
+          "confira": false
+        },
+        {
+          "categoria": "sobremesa",
+          "nome": "Mochi de morango",
+          "precoCentavos": 1800,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Chá verde gelado",
+          "precoCentavos": 1200,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Saquê",
+          "precoCentavos": 2200,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Refrigerante lata",
+          "precoCentavos": 750,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Água",
+          "precoCentavos": 550,
+          "confira": false
+        }
+      ]
+    },
+    {
+      "entrant": "gemini-2.5-flash-lite",
+      "kind": "visao",
+      "menu": "sushi",
+      "rep": 1,
+      "ok": true,
+      "latencyMs": 2058,
+      "costUsd": 0.0003952,
+      "score": {
+        "f1": 0.7222222222222222,
+        "precision": 0.7222222222222222,
+        "recall": 0.7222222222222222,
+        "priceExact": 0.7222222222222222,
+        "category": 1,
+        "matched": 13,
+        "expected": 18,
+        "got": 18
+      },
+      "nota": 0.75,
+      "items": [
+        {
+          "categoria": "entrada",
+          "nome": "Gyoza",
+          "precoCentavos": 3200,
+          "confira": false
+        },
+        {
+          "categoria": "entrada",
+          "nome": "Sunomono",
+          "precoCentavos": 1800,
+          "confira": false
+        },
+        {
+          "categoria": "entrada",
+          "nome": "Missoshiru",
+          "precoCentavos": 1400,
+          "confira": false
+        },
+        {
+          "categoria": "entrada",
+          "nome": "Harumaki de legumes",
+          "precoCentavos": 2400,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Combinado Hanami 30 peças",
+          "precoCentavos": 13900,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Combinado do chef 15 peças",
+          "precoCentavos": 7900,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Sashimi de salmão 10 fatias",
+          "precoCentavos": 5800,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Uramaki filadélfia 8 unidades",
+          "precoCentavos": 3600,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Temaki de salmão",
+          "precoCentavos": 3400,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Temaki skin",
+          "precoCentavos": 2800,
+          "confira": false
+        },
+        {
+          "categoria": "porcao",
+          "nome": "Hot roll 10 unidades",
+          "precoCentavos": 3900,
+          "confira": false
+        },
+        {
+          "categoria": "porcao",
+          "nome": "Ceviche de peixe branco",
+          "precoCentavos": 4600,
+          "confira": false
+        },
+        {
+          "categoria": "sobremesa",
+          "nome": "Harumaki de banana com sorvete",
+          "precoCentavos": 2600,
+          "confira": false
+        },
+        {
+          "categoria": "sobremesa",
+          "nome": "Mochi de morango",
+          "precoCentavos": 1800,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Chá verde gelado",
+          "precoCentavos": 1200,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Saquê dose",
+          "precoCentavos": 2200,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Refrigerante lata",
+          "precoCentavos": 750,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Água",
+          "precoCentavos": 550,
+          "confira": false
+        }
+      ]
+    },
+    {
+      "entrant": "deepseek-v4.1-flash",
+      "kind": "visao",
+      "menu": "sushi",
+      "rep": 2,
+      "ok": true,
+      "latencyMs": 1438,
+      "costUsd": 0.000431434,
+      "score": {
+        "f1": 1,
+        "precision": 1,
+        "recall": 1,
+        "priceExact": 1,
+        "category": 1,
+        "matched": 18,
+        "expected": 18,
+        "got": 18
+      },
+      "nota": 1,
+      "items": [
+        {
+          "categoria": "entrada",
+          "nome": "Gyoza",
+          "precoCentavos": 3200,
+          "confira": false
+        },
+        {
+          "categoria": "entrada",
+          "nome": "Sunomono",
+          "precoCentavos": 1800,
+          "confira": false
+        },
+        {
+          "categoria": "entrada",
+          "nome": "Missoshiru",
+          "precoCentavos": 1400,
+          "confira": false
+        },
+        {
+          "categoria": "entrada",
+          "nome": "Harumaki de legumes",
+          "precoCentavos": 2400,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Combinado Hanami",
+          "precoCentavos": 13900,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Combinado do chef",
+          "precoCentavos": 7900,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Sashimi de salmão",
+          "precoCentavos": 5800,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Uramaki filadélfia",
+          "precoCentavos": 3600,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Temaki de salmão",
+          "precoCentavos": 3400,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Temaki skin",
+          "precoCentavos": 2800,
+          "confira": false
+        },
+        {
+          "categoria": "porcao",
+          "nome": "Hot roll",
+          "precoCentavos": 3900,
+          "confira": false
+        },
+        {
+          "categoria": "porcao",
+          "nome": "Ceviche de peixe branco",
+          "precoCentavos": 4600,
+          "confira": false
+        },
+        {
+          "categoria": "sobremesa",
+          "nome": "Harumaki de banana com sorvete",
+          "precoCentavos": 2600,
+          "confira": false
+        },
+        {
+          "categoria": "sobremesa",
+          "nome": "Mochi de morango",
+          "precoCentavos": 1800,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Chá verde gelado",
+          "precoCentavos": 1200,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Saquê",
+          "precoCentavos": 2200,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Refrigerante lata",
+          "precoCentavos": 750,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Água",
+          "precoCentavos": 550,
+          "confira": false
+        }
+      ]
+    },
+    {
+      "entrant": "deepseek-v4.1-flash",
+      "kind": "visao",
+      "menu": "real",
+      "rep": 1,
+      "ok": true,
+      "latencyMs": 506,
+      "costUsd": 0.000133768,
+      "score": {
+        "f1": 1,
+        "precision": 1,
+        "recall": 1,
+        "priceExact": 1,
+        "category": 1,
+        "matched": 2,
+        "expected": 2,
+        "got": 2
+      },
+      "nota": 1
+    },
+    {
+      "entrant": "gemini-3.8-flash (referência)",
+      "kind": "visao",
+      "menu": "boteco",
+      "rep": 2,
+      "ok": true,
+      "latencyMs": 5369,
+      "costUsd": 0.00467325,
+      "score": {
+        "f1": 1,
+        "precision": 1,
+        "recall": 1,
+        "priceExact": 1,
+        "category": 1,
+        "matched": 21,
+        "expected": 21,
+        "got": 21
+      },
+      "nota": 1,
+      "items": [
+        {
+          "categoria": "porcao",
+          "nome": "Bolinho de bacalhau",
+          "precoCentavos": 3890,
+          "confira": false
+        },
+        {
+          "categoria": "porcao",
+          "nome": "Mandioca frita",
+          "precoCentavos": 2990,
+          "confira": false
+        },
+        {
+          "categoria": "porcao",
+          "nome": "Calabresa acebolada",
+          "precoCentavos": 3490,
+          "confira": false
+        },
+        {
+          "categoria": "porcao",
+          "nome": "Torresmo pururuca",
+          "precoCentavos": 3200,
+          "confira": false
+        },
+        {
+          "categoria": "porcao",
+          "nome": "Pastel de queijo",
+          "precoCentavos": 2650,
+          "confira": false
+        },
+        {
+          "categoria": "porcao",
+          "nome": "Frango a passarinho",
+          "precoCentavos": 4290,
+          "confira": false
+        },
+        {
+          "categoria": "entrada",
+          "nome": "Caldinho de feijão",
+          "precoCentavos": 1400,
+          "confira": false
+        },
+        {
+          "categoria": "entrada",
+          "nome": "Salada vinagrete",
+          "precoCentavos": 1650,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Feijoada da casa",
+          "precoCentavos": 5490,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Picanha na chapa",
+          "precoCentavos": 11900,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Parmegiana de frango",
+          "precoCentavos": 4850,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Baião de dois",
+          "precoCentavos": 4400,
+          "confira": false
+        },
+        {
+          "categoria": "sobremesa",
+          "nome": "Pudim de leite",
+          "precoCentavos": 1490,
+          "confira": false
+        },
+        {
+          "categoria": "sobremesa",
+          "nome": "Cocada de forno",
+          "precoCentavos": 1200,
+          "confira": false
+        },
+        {
+          "categoria": "sobremesa",
+          "nome": "Romeu e Julieta",
+          "precoCentavos": 1350,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Chopp claro 300 ml",
+          "precoCentavos": 1200,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Chopp claro 500 ml",
+          "precoCentavos": 1800,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Caipirinha de limão",
+          "precoCentavos": 2200,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Refrigerante lata",
+          "precoCentavos": 700,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Água com gás",
+          "precoCentavos": 550,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Suco de caju",
+          "precoCentavos": 900,
+          "confira": false
+        }
+      ]
+    },
+    {
+      "entrant": "gpt-6-luna",
+      "kind": "visao",
+      "menu": "burger",
+      "rep": 2,
+      "ok": true,
+      "latencyMs": 2345,
+      "costUsd": 0.00020168,
+      "score": {
+        "f1": 1,
+        "precision": 1,
+        "recall": 1,
+        "priceExact": 1,
+        "category": 0.8125,
+        "matched": 16,
+        "expected": 16,
+        "got": 16
+      },
+      "nota": 0.9812500000000001,
+      "items": [
+        {
+          "categoria": "porcao",
+          "nome": "Batata rústica",
+          "precoCentavos": 2400,
+          "confira": false
+        },
+        {
+          "categoria": "porcao",
+          "nome": "Onion rings",
+          "precoCentavos": 2600,
+          "confira": false
+        },
+        {
+          "categoria": "porcao",
+          "nome": "Nuggets da casa",
+          "precoCentavos": 2800,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Classic Burger",
+          "precoCentavos": 3690,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Cheddar Bacon",
+          "precoCentavos": 4290,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Burger Duplo 2x",
+          "precoCentavos": 4990,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Veggie de grão-de-bico",
+          "precoCentavos": 3800,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Chicken Crispy",
+          "precoCentavos": 3750,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Smash Simples",
+          "precoCentavos": 2990,
+          "confira": false
+        },
+        {
+          "categoria": "sobremesa",
+          "nome": "Brownie com sorvete",
+          "precoCentavos": 2200,
+          "confira": false
+        },
+        {
+          "categoria": "sobremesa",
+          "nome": "Cookie quente",
+          "precoCentavos": 1600,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Milkshake de baunilha",
+          "precoCentavos": 2490,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Refrigerante 600 ml",
+          "precoCentavos": 900,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Limonada suíça",
+          "precoCentavos": 1400,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Cerveja artesanal IPA",
+          "precoCentavos": 2400,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Água",
+          "precoCentavos": 500,
+          "confira": false
+        }
+      ]
+    },
+    {
+      "entrant": "gemini-3.1-flash-lite",
+      "kind": "visao",
+      "menu": "burger",
+      "rep": 2,
+      "ok": true,
+      "latencyMs": 2500,
+      "costUsd": 0.00146025,
+      "score": {
+        "f1": 1,
+        "precision": 1,
+        "recall": 1,
+        "priceExact": 1,
+        "category": 1,
+        "matched": 16,
+        "expected": 16,
+        "got": 16
+      },
+      "nota": 1,
+      "items": [
+        {
+          "categoria": "entrada",
+          "nome": "Batata rústica",
+          "precoCentavos": 2400,
+          "confira": false
+        },
+        {
+          "categoria": "entrada",
+          "nome": "Onion rings",
+          "precoCentavos": 2600,
+          "confira": false
+        },
+        {
+          "categoria": "entrada",
+          "nome": "Nuggets da casa",
+          "precoCentavos": 2800,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Classic Burger",
+          "precoCentavos": 3690,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Cheddar Bacon",
+          "precoCentavos": 4290,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Burger Duplo 2x",
+          "precoCentavos": 4990,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Veggie de grão-de-bico",
+          "precoCentavos": 3800,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Chicken Crispy",
+          "precoCentavos": 3750,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Smash Simples",
+          "precoCentavos": 2990,
+          "confira": false
+        },
+        {
+          "categoria": "sobremesa",
+          "nome": "Brownie com sorvete",
+          "precoCentavos": 2200,
+          "confira": false
+        },
+        {
+          "categoria": "sobremesa",
+          "nome": "Cookie quente",
+          "precoCentavos": 1600,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Milkshake de baunilha",
+          "precoCentavos": 2490,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Refrigerante 600 ml",
+          "precoCentavos": 900,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Limonada suíça",
+          "precoCentavos": 1400,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Cerveja artesanal IPA",
+          "precoCentavos": 2400,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Água",
+          "precoCentavos": 500,
+          "confira": false
+        }
+      ]
+    },
+    {
+      "entrant": "claude-haiku-5.5",
+      "kind": "visao",
+      "menu": "burger",
+      "rep": 2,
+      "ok": true,
+      "latencyMs": 2510,
+      "costUsd": 0.0005855,
+      "score": {
+        "f1": 1,
+        "precision": 1,
+        "recall": 1,
+        "priceExact": 1,
+        "category": 0.9375,
+        "matched": 16,
+        "expected": 16,
+        "got": 16
+      },
+      "nota": 0.99375,
+      "items": [
+        {
+          "categoria": "entrada",
+          "nome": "Batata rústica",
+          "precoCentavos": 2400,
+          "confira": false
+        },
+        {
+          "categoria": "entrada",
+          "nome": "Onion rings",
+          "precoCentavos": 2600,
+          "confira": false
+        },
+        {
+          "categoria": "porcao",
+          "nome": "Nuggets da casa",
+          "precoCentavos": 2800,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Classic Burger",
+          "precoCentavos": 3690,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Cheddar Bacon",
+          "precoCentavos": 4290,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Burger Duplo 2x",
+          "precoCentavos": 4990,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Veggie de grão-de-bico",
+          "precoCentavos": 3800,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Chicken Crispy",
+          "precoCentavos": 3750,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Smash Simples",
+          "precoCentavos": 2990,
+          "confira": false
+        },
+        {
+          "categoria": "sobremesa",
+          "nome": "Brownie com sorvete",
+          "precoCentavos": 2200,
+          "confira": false
+        },
+        {
+          "categoria": "sobremesa",
+          "nome": "Cookie quente",
+          "precoCentavos": 1600,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Milkshake de baunilha",
+          "precoCentavos": 2490,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Refrigerante 600 ml",
+          "precoCentavos": 900,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Limonada suíça",
+          "precoCentavos": 1400,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Cerveja artesanal IPA",
+          "precoCentavos": 2400,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Água",
+          "precoCentavos": 500,
+          "confira": false
+        }
+      ]
+    },
+    {
+      "entrant": "deepseek-v4.1-flash",
+      "kind": "visao",
+      "menu": "real",
+      "rep": 2,
+      "ok": true,
+      "latencyMs": 509,
+      "costUsd": 8.82e-05,
+      "score": {
+        "f1": 1,
+        "precision": 1,
+        "recall": 1,
+        "priceExact": 1,
+        "category": 1,
+        "matched": 2,
+        "expected": 2,
+        "got": 2
+      },
+      "nota": 1
+    },
+    {
+      "entrant": "gemini-2.5-flash-lite",
+      "kind": "visao",
+      "menu": "sushi",
+      "rep": 2,
+      "ok": true,
+      "latencyMs": 2148,
+      "costUsd": 0.0003948,
+      "score": {
+        "f1": 0.7222222222222222,
+        "precision": 0.7222222222222222,
+        "recall": 0.7222222222222222,
+        "priceExact": 0.7222222222222222,
+        "category": 1,
+        "matched": 13,
+        "expected": 18,
+        "got": 18
+      },
+      "nota": 0.75,
+      "items": [
+        {
+          "categoria": "entrada",
+          "nome": "Gyoza",
+          "precoCentavos": 3200,
+          "confira": false
+        },
+        {
+          "categoria": "entrada",
+          "nome": "Sunomono",
+          "precoCentavos": 1800,
+          "confira": false
+        },
+        {
+          "categoria": "entrada",
+          "nome": "Missoshiru",
+          "precoCentavos": 1400,
+          "confira": false
+        },
+        {
+          "categoria": "entrada",
+          "nome": "Harumaki de legumes",
+          "precoCentavos": 2400,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Combinado Hanami 30 peças",
+          "precoCentavos": 13900,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Combinado do chef 15 peças",
+          "precoCentavos": 7900,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Sashimi de salmão 10 fatias",
+          "precoCentavos": 5800,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Uramaki filadélfia 8 unidades",
+          "precoCentavos": 3600,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Temaki de salmão",
+          "precoCentavos": 3400,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Temaki skin",
+          "precoCentavos": 2800,
+          "confira": false
+        },
+        {
+          "categoria": "porcao",
+          "nome": "Hot roll 10 unidades",
+          "precoCentavos": 3900,
+          "confira": false
+        },
+        {
+          "categoria": "porcao",
+          "nome": "Ceviche de peixe branco",
+          "precoCentavos": 4600,
+          "confira": false
+        },
+        {
+          "categoria": "sobremesa",
+          "nome": "Harumaki de banana com sorvete",
+          "precoCentavos": 2600,
+          "confira": false
+        },
+        {
+          "categoria": "sobremesa",
+          "nome": "Mochi de morango",
+          "precoCentavos": 1800,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Chá verde gelado",
+          "precoCentavos": 1200,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Saquê Dose",
+          "precoCentavos": 2200,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Refrigerante lata",
+          "precoCentavos": 750,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Água",
+          "precoCentavos": 550,
+          "confira": false
+        }
+      ]
+    },
+    {
+      "entrant": "gemini-2.5-flash-lite",
+      "kind": "visao",
+      "menu": "real",
+      "rep": 1,
+      "ok": true,
+      "latencyMs": 823,
+      "costUsd": 0.0001188,
+      "score": {
+        "f1": 1,
+        "precision": 1,
+        "recall": 1,
+        "priceExact": 1,
+        "category": 1,
+        "matched": 2,
+        "expected": 2,
+        "got": 2
+      },
+      "nota": 1
+    },
+    {
+      "entrant": "gemini-3.1-flash-lite",
+      "kind": "visao",
+      "menu": "sushi",
+      "rep": 1,
+      "ok": true,
+      "latencyMs": 2231,
+      "costUsd": 0.001848,
+      "score": {
+        "f1": 1,
+        "precision": 1,
+        "recall": 1,
+        "priceExact": 1,
+        "category": 1,
+        "matched": 18,
+        "expected": 18,
+        "got": 18
+      },
+      "nota": 1,
+      "items": [
+        {
+          "categoria": "entrada",
+          "nome": "Gyoza",
+          "precoCentavos": 3200,
+          "confira": false
+        },
+        {
+          "categoria": "entrada",
+          "nome": "Sunomono",
+          "precoCentavos": 1800,
+          "confira": false
+        },
+        {
+          "categoria": "entrada",
+          "nome": "Missoshiru",
+          "precoCentavos": 1400,
+          "confira": false
+        },
+        {
+          "categoria": "entrada",
+          "nome": "Harumaki de legumes",
+          "precoCentavos": 2400,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Combinado Hanami",
+          "precoCentavos": 13900,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Combinado do chef",
+          "precoCentavos": 7900,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Sashimi de salmão",
+          "precoCentavos": 5800,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Uramaki filadélfia",
+          "precoCentavos": 3600,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Temaki de salmão",
+          "precoCentavos": 3400,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Temaki skin",
+          "precoCentavos": 2800,
+          "confira": false
+        },
+        {
+          "categoria": "porcao",
+          "nome": "Hot roll",
+          "precoCentavos": 3900,
+          "confira": false
+        },
+        {
+          "categoria": "porcao",
+          "nome": "Ceviche de peixe branco",
+          "precoCentavos": 4600,
+          "confira": false
+        },
+        {
+          "categoria": "sobremesa",
+          "nome": "Harumaki de banana com sorvete",
+          "precoCentavos": 2600,
+          "confira": false
+        },
+        {
+          "categoria": "sobremesa",
+          "nome": "Mochi de morango",
+          "precoCentavos": 1800,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Chá verde gelado",
+          "precoCentavos": 1200,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Saquê",
+          "precoCentavos": 2200,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Refrigerante lata",
+          "precoCentavos": 750,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Água",
+          "precoCentavos": 550,
+          "confira": false
+        }
+      ]
+    },
+    {
+      "entrant": "claude-haiku-5.5",
+      "kind": "visao",
+      "menu": "sushi",
+      "rep": 1,
+      "ok": true,
+      "latencyMs": 2673,
+      "costUsd": 0.0013683,
+      "score": {
+        "f1": 0.9444444444444444,
+        "precision": 0.9444444444444444,
+        "recall": 0.9444444444444444,
+        "priceExact": 0.9444444444444444,
+        "category": 1,
+        "matched": 17,
+        "expected": 18,
+        "got": 18
+      },
+      "nota": 0.95,
+      "items": [
+        {
+          "categoria": "entrada",
+          "nome": "Gyoza",
+          "precoCentavos": 3200,
+          "confira": false
+        },
+        {
+          "categoria": "entrada",
+          "nome": "Sunomono",
+          "precoCentavos": 1800,
+          "confira": false
+        },
+        {
+          "categoria": "entrada",
+          "nome": "Missoshiru",
+          "precoCentavos": 1400,
+          "confira": false
+        },
+        {
+          "categoria": "entrada",
+          "nome": "Harumaki de legumes",
+          "precoCentavos": 2400,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Combinado Hanami",
+          "precoCentavos": 13900,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Combinado do chef",
+          "precoCentavos": 7900,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Sashimi de salmão",
+          "precoCentavos": 5800,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Uramaki filadélfia",
+          "precoCentavos": 3600,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Temaki de salmão",
+          "precoCentavos": 3400,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Temaki skin",
+          "precoCentavos": 2800,
+          "confira": false
+        },
+        {
+          "categoria": "porcao",
+          "nome": "Hot roll",
+          "precoCentavos": 3900,
+          "confira": false
+        },
+        {
+          "categoria": "porcao",
+          "nome": "Ceviche de peixe branco",
+          "precoCentavos": 4600,
+          "confira": false
+        },
+        {
+          "categoria": "sobremesa",
+          "nome": "Harumaki de banana com sorvete",
+          "precoCentavos": 2600,
+          "confira": false
+        },
+        {
+          "categoria": "sobremesa",
+          "nome": "Mochi de morango",
+          "precoCentavos": 1800,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Chá verde gelado",
+          "precoCentavos": 1200,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Saquê dose",
+          "precoCentavos": 2200,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Refrigerante lata",
+          "precoCentavos": 750,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Água",
+          "precoCentavos": 550,
+          "confira": false
+        }
+      ]
+    },
+    {
+      "entrant": "gemini-2.5-flash-lite",
+      "kind": "visao",
+      "menu": "real",
+      "rep": 2,
+      "ok": true,
+      "latencyMs": 828,
+      "costUsd": 0.0001184,
+      "score": {
+        "f1": 1,
+        "precision": 1,
+        "recall": 1,
+        "priceExact": 1,
+        "category": 1,
+        "matched": 2,
+        "expected": 2,
+        "got": 2
+      },
+      "nota": 1
+    },
+    {
+      "entrant": "gpt-6-luna",
+      "kind": "visao",
+      "menu": "sushi",
+      "rep": 1,
+      "ok": true,
+      "latencyMs": 3413,
+      "costUsd": 0.00027909,
+      "score": {
+        "f1": 1,
+        "precision": 1,
+        "recall": 1,
+        "priceExact": 1,
+        "category": 1,
+        "matched": 18,
+        "expected": 18,
+        "got": 18
+      },
+      "nota": 1,
+      "items": [
+        {
+          "categoria": "entrada",
+          "nome": "Gyoza",
+          "precoCentavos": 3200,
+          "confira": false
+        },
+        {
+          "categoria": "entrada",
+          "nome": "Sunomono",
+          "precoCentavos": 1800,
+          "confira": false
+        },
+        {
+          "categoria": "entrada",
+          "nome": "Missoshiru",
+          "precoCentavos": 1400,
+          "confira": false
+        },
+        {
+          "categoria": "entrada",
+          "nome": "Harumaki de legumes",
+          "precoCentavos": 2400,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Combinado Hanami",
+          "precoCentavos": 13900,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Combinado do chef",
+          "precoCentavos": 7900,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Sashimi de salmão",
+          "precoCentavos": 5800,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Uramaki filadélfia",
+          "precoCentavos": 3600,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Temaki de salmão",
+          "precoCentavos": 3400,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Temaki skin",
+          "precoCentavos": 2800,
+          "confira": false
+        },
+        {
+          "categoria": "porcao",
+          "nome": "Hot roll",
+          "precoCentavos": 3900,
+          "confira": false
+        },
+        {
+          "categoria": "porcao",
+          "nome": "Ceviche de peixe branco",
+          "precoCentavos": 4600,
+          "confira": false
+        },
+        {
+          "categoria": "sobremesa",
+          "nome": "Harumaki de banana com sorvete",
+          "precoCentavos": 2600,
+          "confira": false
+        },
+        {
+          "categoria": "sobremesa",
+          "nome": "Mochi de morango",
+          "precoCentavos": 1800,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Chá verde gelado",
+          "precoCentavos": 1200,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Saquê",
+          "precoCentavos": 2200,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Refrigerante lata",
+          "precoCentavos": 750,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Água",
+          "precoCentavos": 550,
+          "confira": false
+        }
+      ]
+    },
+    {
+      "entrant": "gemini-3.8-flash (referência)",
+      "kind": "visao",
+      "menu": "burger",
+      "rep": 1,
+      "ok": true,
+      "latencyMs": 4540,
+      "costUsd": 0.0038805,
+      "score": {
+        "f1": 1,
+        "precision": 1,
+        "recall": 1,
+        "priceExact": 1,
+        "category": 1,
+        "matched": 16,
+        "expected": 16,
+        "got": 16
+      },
+      "nota": 1,
+      "items": [
+        {
+          "categoria": "entrada",
+          "nome": "Batata rústica",
+          "precoCentavos": 2400,
+          "confira": false
+        },
+        {
+          "categoria": "entrada",
+          "nome": "Onion rings",
+          "precoCentavos": 2600,
+          "confira": false
+        },
+        {
+          "categoria": "entrada",
+          "nome": "Nuggets da casa",
+          "precoCentavos": 2800,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Classic Burger",
+          "precoCentavos": 3690,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Cheddar Bacon",
+          "precoCentavos": 4290,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Burger Duplo 2x",
+          "precoCentavos": 4990,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Veggie de grão-de-bico",
+          "precoCentavos": 3800,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Chicken Crispy",
+          "precoCentavos": 3750,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Smash Simples",
+          "precoCentavos": 2990,
+          "confira": false
+        },
+        {
+          "categoria": "sobremesa",
+          "nome": "Brownie com sorvete",
+          "precoCentavos": 2200,
+          "confira": false
+        },
+        {
+          "categoria": "sobremesa",
+          "nome": "Cookie quente",
+          "precoCentavos": 1600,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Milkshake de baunilha",
+          "precoCentavos": 2490,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Refrigerante 600 ml",
+          "precoCentavos": 900,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Limonada suíça",
+          "precoCentavos": 1400,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Cerveja artesanal IPA",
+          "precoCentavos": 2400,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Água",
+          "precoCentavos": 500,
+          "confira": false
+        }
+      ]
+    },
+    {
+      "entrant": "gemini-3.1-flash-lite",
+      "kind": "visao",
+      "menu": "sushi",
+      "rep": 2,
+      "ok": true,
+      "latencyMs": 2096,
+      "costUsd": 0.0018495,
+      "score": {
+        "f1": 1,
+        "precision": 1,
+        "recall": 1,
+        "priceExact": 1,
+        "category": 1,
+        "matched": 18,
+        "expected": 18,
+        "got": 18
+      },
+      "nota": 1,
+      "items": [
+        {
+          "categoria": "entrada",
+          "nome": "Gyoza",
+          "precoCentavos": 3200,
+          "confira": false
+        },
+        {
+          "categoria": "entrada",
+          "nome": "Sunomono",
+          "precoCentavos": 1800,
+          "confira": false
+        },
+        {
+          "categoria": "entrada",
+          "nome": "Missoshiru",
+          "precoCentavos": 1400,
+          "confira": false
+        },
+        {
+          "categoria": "entrada",
+          "nome": "Harumaki de legumes",
+          "precoCentavos": 2400,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Combinado Hanami",
+          "precoCentavos": 13900,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Combinado do chef",
+          "precoCentavos": 7900,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Sashimi de salmão",
+          "precoCentavos": 5800,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Uramaki filadélfia",
+          "precoCentavos": 3600,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Temaki de salmão",
+          "precoCentavos": 3400,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Temaki skin",
+          "precoCentavos": 2800,
+          "confira": false
+        },
+        {
+          "categoria": "porcao",
+          "nome": "Hot roll",
+          "precoCentavos": 3900,
+          "confira": false
+        },
+        {
+          "categoria": "porcao",
+          "nome": "Ceviche de peixe branco",
+          "precoCentavos": 4600,
+          "confira": false
+        },
+        {
+          "categoria": "sobremesa",
+          "nome": "Harumaki de banana com sorvete",
+          "precoCentavos": 2600,
+          "confira": false
+        },
+        {
+          "categoria": "sobremesa",
+          "nome": "Mochi de morango",
+          "precoCentavos": 1800,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Chá verde gelado",
+          "precoCentavos": 1200,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Saquê",
+          "precoCentavos": 2200,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Refrigerante lata",
+          "precoCentavos": 750,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Água",
+          "precoCentavos": 550,
+          "confira": false
+        }
+      ]
+    },
+    {
+      "entrant": "claude-haiku-5.5",
+      "kind": "visao",
+      "menu": "sushi",
+      "rep": 2,
+      "ok": true,
+      "latencyMs": 2572,
+      "costUsd": 0.0013683,
+      "score": {
+        "f1": 0.9444444444444444,
+        "precision": 0.9444444444444444,
+        "recall": 0.9444444444444444,
+        "priceExact": 0.9444444444444444,
+        "category": 1,
+        "matched": 17,
+        "expected": 18,
+        "got": 18
+      },
+      "nota": 0.95,
+      "items": [
+        {
+          "categoria": "entrada",
+          "nome": "Gyoza",
+          "precoCentavos": 3200,
+          "confira": false
+        },
+        {
+          "categoria": "entrada",
+          "nome": "Sunomono",
+          "precoCentavos": 1800,
+          "confira": false
+        },
+        {
+          "categoria": "entrada",
+          "nome": "Missoshiru",
+          "precoCentavos": 1400,
+          "confira": false
+        },
+        {
+          "categoria": "entrada",
+          "nome": "Harumaki de legumes",
+          "precoCentavos": 2400,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Combinado Hanami",
+          "precoCentavos": 13900,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Combinado do chef",
+          "precoCentavos": 7900,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Sashimi de salmão",
+          "precoCentavos": 5800,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Uramaki filadélfia",
+          "precoCentavos": 3600,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Temaki de salmão",
+          "precoCentavos": 3400,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Temaki skin",
+          "precoCentavos": 2800,
+          "confira": false
+        },
+        {
+          "categoria": "porcao",
+          "nome": "Hot roll",
+          "precoCentavos": 3900,
+          "confira": false
+        },
+        {
+          "categoria": "porcao",
+          "nome": "Ceviche de peixe branco",
+          "precoCentavos": 4600,
+          "confira": false
+        },
+        {
+          "categoria": "sobremesa",
+          "nome": "Harumaki de banana com sorvete",
+          "precoCentavos": 2600,
+          "confira": false
+        },
+        {
+          "categoria": "sobremesa",
+          "nome": "Mochi de morango",
+          "precoCentavos": 1800,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Chá verde gelado",
+          "precoCentavos": 1200,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Saquê dose",
+          "precoCentavos": 2200,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Refrigerante lata",
+          "precoCentavos": 750,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Água",
+          "precoCentavos": 550,
+          "confira": false
+        }
+      ]
+    },
+    {
+      "entrant": "gemini-3.1-flash-lite",
+      "kind": "visao",
+      "menu": "real",
+      "rep": 1,
+      "ok": true,
+      "latencyMs": 1206,
+      "costUsd": 0.000662,
+      "score": {
+        "f1": 1,
+        "precision": 1,
+        "recall": 1,
+        "priceExact": 1,
+        "category": 1,
+        "matched": 2,
+        "expected": 2,
+        "got": 2
+      },
+      "nota": 1
+    },
+    {
+      "entrant": "claude-haiku-5.5",
+      "kind": "visao",
+      "menu": "real",
+      "rep": 1,
+      "ok": true,
+      "latencyMs": 1231,
+      "costUsd": 0.0002004,
+      "score": {
+        "f1": 1,
+        "precision": 1,
+        "recall": 1,
+        "priceExact": 1,
+        "category": 1,
+        "matched": 2,
+        "expected": 2,
+        "got": 2
+      },
+      "nota": 1
+    },
+    {
+      "entrant": "gemini-3.1-flash-lite",
+      "kind": "visao",
+      "menu": "real",
+      "rep": 2,
+      "ok": true,
+      "latencyMs": 1121,
+      "costUsd": 0.000662,
+      "score": {
+        "f1": 1,
+        "precision": 1,
+        "recall": 1,
+        "priceExact": 1,
+        "category": 1,
+        "matched": 2,
+        "expected": 2,
+        "got": 2
+      },
+      "nota": 1
+    },
+    {
+      "entrant": "gpt-6-luna",
+      "kind": "visao",
+      "menu": "sushi",
+      "rep": 2,
+      "ok": true,
+      "latencyMs": 3678,
+      "costUsd": 0.00027909,
+      "score": {
+        "f1": 1,
+        "precision": 1,
+        "recall": 1,
+        "priceExact": 1,
+        "category": 1,
+        "matched": 18,
+        "expected": 18,
+        "got": 18
+      },
+      "nota": 1,
+      "items": [
+        {
+          "categoria": "entrada",
+          "nome": "Gyoza",
+          "precoCentavos": 3200,
+          "confira": false
+        },
+        {
+          "categoria": "entrada",
+          "nome": "Sunomono",
+          "precoCentavos": 1800,
+          "confira": false
+        },
+        {
+          "categoria": "entrada",
+          "nome": "Missoshiru",
+          "precoCentavos": 1400,
+          "confira": false
+        },
+        {
+          "categoria": "entrada",
+          "nome": "Harumaki de legumes",
+          "precoCentavos": 2400,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Combinado Hanami",
+          "precoCentavos": 13900,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Combinado do chef",
+          "precoCentavos": 7900,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Sashimi de salmão",
+          "precoCentavos": 5800,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Uramaki filadélfia",
+          "precoCentavos": 3600,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Temaki de salmão",
+          "precoCentavos": 3400,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Temaki skin",
+          "precoCentavos": 2800,
+          "confira": false
+        },
+        {
+          "categoria": "porcao",
+          "nome": "Hot roll",
+          "precoCentavos": 3900,
+          "confira": false
+        },
+        {
+          "categoria": "porcao",
+          "nome": "Ceviche de peixe branco",
+          "precoCentavos": 4600,
+          "confira": false
+        },
+        {
+          "categoria": "sobremesa",
+          "nome": "Harumaki de banana com sorvete",
+          "precoCentavos": 2600,
+          "confira": false
+        },
+        {
+          "categoria": "sobremesa",
+          "nome": "Mochi de morango",
+          "precoCentavos": 1800,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Chá verde gelado",
+          "precoCentavos": 1200,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Saquê",
+          "precoCentavos": 2200,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Refrigerante lata",
+          "precoCentavos": 750,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Água",
+          "precoCentavos": 550,
+          "confira": false
+        }
+      ]
+    },
+    {
+      "entrant": "claude-haiku-5.5",
+      "kind": "visao",
+      "menu": "real",
+      "rep": 2,
+      "ok": true,
+      "latencyMs": 1263,
+      "costUsd": 0.0002004,
+      "score": {
+        "f1": 1,
+        "precision": 1,
+        "recall": 1,
+        "priceExact": 1,
+        "category": 1,
+        "matched": 2,
+        "expected": 2,
+        "got": 2
+      },
+      "nota": 1
+    },
+    {
+      "entrant": "gpt-6-luna",
+      "kind": "visao",
+      "menu": "real",
+      "rep": 1,
+      "ok": true,
+      "latencyMs": 1092,
+      "costUsd": 0.0001118,
+      "score": {
+        "f1": 1,
+        "precision": 1,
+        "recall": 1,
+        "priceExact": 1,
+        "category": 1,
+        "matched": 2,
+        "expected": 2,
+        "got": 2
+      },
+      "nota": 1
+    },
+    {
+      "entrant": "gemini-3.8-flash (referência)",
+      "kind": "visao",
+      "menu": "burger",
+      "rep": 2,
+      "ok": true,
+      "latencyMs": 4665,
+      "costUsd": 0.0038805,
+      "score": {
+        "f1": 1,
+        "precision": 1,
+        "recall": 1,
+        "priceExact": 1,
+        "category": 1,
+        "matched": 16,
+        "expected": 16,
+        "got": 16
+      },
+      "nota": 1,
+      "items": [
+        {
+          "categoria": "entrada",
+          "nome": "Batata rústica",
+          "precoCentavos": 2400,
+          "confira": false
+        },
+        {
+          "categoria": "entrada",
+          "nome": "Onion rings",
+          "precoCentavos": 2600,
+          "confira": false
+        },
+        {
+          "categoria": "entrada",
+          "nome": "Nuggets da casa",
+          "precoCentavos": 2800,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Classic Burger",
+          "precoCentavos": 3690,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Cheddar Bacon",
+          "precoCentavos": 4290,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Burger Duplo 2x",
+          "precoCentavos": 4990,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Veggie de grão-de-bico",
+          "precoCentavos": 3800,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Chicken Crispy",
+          "precoCentavos": 3750,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Smash Simples",
+          "precoCentavos": 2990,
+          "confira": false
+        },
+        {
+          "categoria": "sobremesa",
+          "nome": "Brownie com sorvete",
+          "precoCentavos": 2200,
+          "confira": false
+        },
+        {
+          "categoria": "sobremesa",
+          "nome": "Cookie quente",
+          "precoCentavos": 1600,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Milkshake de baunilha",
+          "precoCentavos": 2490,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Refrigerante 600 ml",
+          "precoCentavos": 900,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Limonada suíça",
+          "precoCentavos": 1400,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Cerveja artesanal IPA",
+          "precoCentavos": 2400,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Água",
+          "precoCentavos": 500,
+          "confira": false
+        }
+      ]
+    },
+    {
+      "entrant": "qwen3.8-flash",
+      "kind": "visao",
+      "menu": "boteco",
+      "rep": 1,
+      "ok": true,
+      "latencyMs": 20261,
+      "costUsd": 0.000759982,
+      "score": {
+        "f1": 1,
+        "precision": 1,
+        "recall": 1,
+        "priceExact": 1,
+        "category": 1,
+        "matched": 21,
+        "expected": 21,
+        "got": 21
+      },
+      "nota": 1,
+      "items": [
+        {
+          "categoria": "porcao",
+          "nome": "Bolinho de bacalhau",
+          "precoCentavos": 3890,
+          "confira": false
+        },
+        {
+          "categoria": "porcao",
+          "nome": "Mandioca frita",
+          "precoCentavos": 2990,
+          "confira": false
+        },
+        {
+          "categoria": "porcao",
+          "nome": "Calabresa acebolada",
+          "precoCentavos": 3490,
+          "confira": false
+        },
+        {
+          "categoria": "porcao",
+          "nome": "Torresmo pururuca",
+          "precoCentavos": 3200,
+          "confira": false
+        },
+        {
+          "categoria": "porcao",
+          "nome": "Pastel de queijo",
+          "precoCentavos": 2650,
+          "confira": false
+        },
+        {
+          "categoria": "porcao",
+          "nome": "Frango a passarinho",
+          "precoCentavos": 4290,
+          "confira": false
+        },
+        {
+          "categoria": "entrada",
+          "nome": "Caldinho de feijão",
+          "precoCentavos": 1400,
+          "confira": false
+        },
+        {
+          "categoria": "entrada",
+          "nome": "Salada vinagrete",
+          "precoCentavos": 1650,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Feijoada da casa",
+          "precoCentavos": 5490,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Picanha na chapa",
+          "precoCentavos": 11900,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Parmegiana de frango",
+          "precoCentavos": 4850,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Baião de dois",
+          "precoCentavos": 4400,
+          "confira": false
+        },
+        {
+          "categoria": "sobremesa",
+          "nome": "Pudim de leite",
+          "precoCentavos": 1490,
+          "confira": false
+        },
+        {
+          "categoria": "sobremesa",
+          "nome": "Cocada de forno",
+          "precoCentavos": 1200,
+          "confira": false
+        },
+        {
+          "categoria": "sobremesa",
+          "nome": "Romeu e Julieta",
+          "precoCentavos": 1350,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Chopp claro 300 ml",
+          "precoCentavos": 1200,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Chopp claro 500 ml",
+          "precoCentavos": 1800,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Caipirinha de limão",
+          "precoCentavos": 2200,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Refrigerante lata",
+          "precoCentavos": 700,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Água com gás",
+          "precoCentavos": 550,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Suco de caju",
+          "precoCentavos": 900,
+          "confira": false
+        }
+      ]
+    },
+    {
+      "entrant": "gpt-6-luna",
+      "kind": "visao",
+      "menu": "real",
+      "rep": 2,
+      "ok": true,
+      "latencyMs": 1009,
+      "costUsd": 0.0001118,
+      "score": {
+        "f1": 1,
+        "precision": 1,
+        "recall": 1,
+        "priceExact": 1,
+        "category": 1,
+        "matched": 2,
+        "expected": 2,
+        "got": 2
+      },
+      "nota": 1
+    },
+    {
+      "entrant": "gemini-3.8-flash (referência)",
+      "kind": "visao",
+      "menu": "sushi",
+      "rep": 1,
+      "ok": true,
+      "latencyMs": 5439,
+      "costUsd": 0.0049965,
+      "score": {
+        "f1": 0.9444444444444444,
+        "precision": 0.9444444444444444,
+        "recall": 0.9444444444444444,
+        "priceExact": 0.9444444444444444,
+        "category": 1,
+        "matched": 17,
+        "expected": 18,
+        "got": 18
+      },
+      "nota": 0.95,
+      "items": [
+        {
+          "categoria": "entrada",
+          "nome": "Gyoza",
+          "precoCentavos": 3200,
+          "confira": false
+        },
+        {
+          "categoria": "entrada",
+          "nome": "Sunomono",
+          "precoCentavos": 1800,
+          "confira": false
+        },
+        {
+          "categoria": "entrada",
+          "nome": "Missoshiru",
+          "precoCentavos": 1400,
+          "confira": false
+        },
+        {
+          "categoria": "entrada",
+          "nome": "Harumaki de legumes",
+          "precoCentavos": 2400,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Combinado Hanami",
+          "precoCentavos": 13900,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Combinado do chef",
+          "precoCentavos": 7900,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Sashimi de salmão",
+          "precoCentavos": 5800,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Uramaki filadélfia",
+          "precoCentavos": 3600,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Temaki de salmão",
+          "precoCentavos": 3400,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Temaki skin",
+          "precoCentavos": 2800,
+          "confira": false
+        },
+        {
+          "categoria": "porcao",
+          "nome": "Hot roll",
+          "precoCentavos": 3900,
+          "confira": false
+        },
+        {
+          "categoria": "porcao",
+          "nome": "Ceviche de peixe branco",
+          "precoCentavos": 4600,
+          "confira": false
+        },
+        {
+          "categoria": "sobremesa",
+          "nome": "Harumaki de banana com sorvete",
+          "precoCentavos": 2600,
+          "confira": false
+        },
+        {
+          "categoria": "sobremesa",
+          "nome": "Mochi de morango",
+          "precoCentavos": 1800,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Chá verde gelado",
+          "precoCentavos": 1200,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Saquê dose",
+          "precoCentavos": 2200,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Refrigerante lata",
+          "precoCentavos": 750,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Água",
+          "precoCentavos": 550,
+          "confira": false
+        }
+      ]
+    },
+    {
+      "entrant": "gemini-3.8-flash (referência)",
+      "kind": "visao",
+      "menu": "sushi",
+      "rep": 2,
+      "ok": true,
+      "latencyMs": 5143,
+      "costUsd": 0.00499275,
+      "score": {
+        "f1": 1,
+        "precision": 1,
+        "recall": 1,
+        "priceExact": 1,
+        "category": 1,
+        "matched": 18,
+        "expected": 18,
+        "got": 18
+      },
+      "nota": 1,
+      "items": [
+        {
+          "categoria": "entrada",
+          "nome": "Gyoza",
+          "precoCentavos": 3200,
+          "confira": false
+        },
+        {
+          "categoria": "entrada",
+          "nome": "Sunomono",
+          "precoCentavos": 1800,
+          "confira": false
+        },
+        {
+          "categoria": "entrada",
+          "nome": "Missoshiru",
+          "precoCentavos": 1400,
+          "confira": false
+        },
+        {
+          "categoria": "entrada",
+          "nome": "Harumaki de legumes",
+          "precoCentavos": 2400,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Combinado Hanami",
+          "precoCentavos": 13900,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Combinado do chef",
+          "precoCentavos": 7900,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Sashimi de salmão",
+          "precoCentavos": 5800,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Uramaki filadélfia",
+          "precoCentavos": 3600,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Temaki de salmão",
+          "precoCentavos": 3400,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Temaki skin",
+          "precoCentavos": 2800,
+          "confira": false
+        },
+        {
+          "categoria": "porcao",
+          "nome": "Hot roll",
+          "precoCentavos": 3900,
+          "confira": false
+        },
+        {
+          "categoria": "porcao",
+          "nome": "Ceviche de peixe branco",
+          "precoCentavos": 4600,
+          "confira": false
+        },
+        {
+          "categoria": "sobremesa",
+          "nome": "Harumaki de banana com sorvete",
+          "precoCentavos": 2600,
+          "confira": false
+        },
+        {
+          "categoria": "sobremesa",
+          "nome": "Mochi de morango",
+          "precoCentavos": 1800,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Chá verde gelado",
+          "precoCentavos": 1200,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Saquê",
+          "precoCentavos": 2200,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Refrigerante lata",
+          "precoCentavos": 750,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Água",
+          "precoCentavos": 550,
+          "confira": false
+        }
+      ]
+    },
+    {
+      "entrant": "gemini-3.8-flash (referência)",
+      "kind": "visao",
+      "menu": "real",
+      "rep": 1,
+      "ok": true,
+      "latencyMs": 2606,
+      "costUsd": 0.00189225,
+      "score": {
+        "f1": 1,
+        "precision": 1,
+        "recall": 1,
+        "priceExact": 1,
+        "category": 1,
+        "matched": 2,
+        "expected": 2,
+        "got": 2
+      },
+      "nota": 1
+    },
+    {
+      "entrant": "gemini-3.8-flash (referência)",
+      "kind": "visao",
+      "menu": "real",
+      "rep": 2,
+      "ok": true,
+      "latencyMs": 2465,
+      "costUsd": 0.00189975,
+      "score": {
+        "f1": 1,
+        "precision": 1,
+        "recall": 1,
+        "priceExact": 1,
+        "category": 1,
+        "matched": 2,
+        "expected": 2,
+        "got": 2
+      },
+      "nota": 1
+    },
+    {
+      "entrant": "qwen3.8-flash",
+      "kind": "visao",
+      "menu": "boteco",
+      "rep": 2,
+      "ok": true,
+      "latencyMs": 24226,
+      "costUsd": 0.000879362,
+      "score": {
+        "f1": 1,
+        "precision": 1,
+        "recall": 1,
+        "priceExact": 1,
+        "category": 1,
+        "matched": 21,
+        "expected": 21,
+        "got": 21
+      },
+      "nota": 1,
+      "items": [
+        {
+          "categoria": "porcao",
+          "nome": "Bolinho de bacalhau",
+          "precoCentavos": 3890,
+          "confira": false
+        },
+        {
+          "categoria": "porcao",
+          "nome": "Mandioca frita",
+          "precoCentavos": 2990,
+          "confira": false
+        },
+        {
+          "categoria": "porcao",
+          "nome": "Calabresa acebolada",
+          "precoCentavos": 3490,
+          "confira": false
+        },
+        {
+          "categoria": "porcao",
+          "nome": "Torresmo pururuca",
+          "precoCentavos": 3200,
+          "confira": false
+        },
+        {
+          "categoria": "porcao",
+          "nome": "Pastel de queijo",
+          "precoCentavos": 2650,
+          "confira": false
+        },
+        {
+          "categoria": "porcao",
+          "nome": "Frango a passarinho",
+          "precoCentavos": 4290,
+          "confira": false
+        },
+        {
+          "categoria": "entrada",
+          "nome": "Caldinho de feijão",
+          "precoCentavos": 1400,
+          "confira": false
+        },
+        {
+          "categoria": "entrada",
+          "nome": "Salada vinagrete",
+          "precoCentavos": 1650,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Feijoada da casa",
+          "precoCentavos": 5490,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Picanha na chapa",
+          "precoCentavos": 11900,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Parmegiana de frango",
+          "precoCentavos": 4850,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Baião de dois",
+          "precoCentavos": 4400,
+          "confira": false
+        },
+        {
+          "categoria": "sobremesa",
+          "nome": "Pudim de leite",
+          "precoCentavos": 1490,
+          "confira": false
+        },
+        {
+          "categoria": "sobremesa",
+          "nome": "Cocada de forno",
+          "precoCentavos": 1200,
+          "confira": false
+        },
+        {
+          "categoria": "sobremesa",
+          "nome": "Romeu e Julieta",
+          "precoCentavos": 1350,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Chopp claro 300 ml",
+          "precoCentavos": 1200,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Chopp claro 500 ml",
+          "precoCentavos": 1800,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Caipirinha de limão",
+          "precoCentavos": 2200,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Refrigerante lata",
+          "precoCentavos": 700,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Água com gás",
+          "precoCentavos": 550,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Suco de caju",
+          "precoCentavos": 900,
+          "confira": false
+        }
+      ]
+    },
+    {
+      "entrant": "qwen3.8-flash",
+      "kind": "visao",
+      "menu": "burger",
+      "rep": 1,
+      "ok": true,
+      "latencyMs": 17285,
+      "costUsd": 0.000502742,
+      "score": {
+        "f1": 1,
+        "precision": 1,
+        "recall": 1,
+        "priceExact": 1,
+        "category": 1,
+        "matched": 16,
+        "expected": 16,
+        "got": 16
+      },
+      "nota": 1,
+      "items": [
+        {
+          "categoria": "entrada",
+          "nome": "Batata rústica",
+          "precoCentavos": 2400,
+          "confira": false
+        },
+        {
+          "categoria": "entrada",
+          "nome": "Onion rings",
+          "precoCentavos": 2600,
+          "confira": false
+        },
+        {
+          "categoria": "entrada",
+          "nome": "Nuggets da casa",
+          "precoCentavos": 2800,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Classic Burger",
+          "precoCentavos": 3690,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Cheddar Bacon",
+          "precoCentavos": 4290,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Burger Duplo 2x",
+          "precoCentavos": 4990,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Veggie de grão-de-bico",
+          "precoCentavos": 3800,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Chicken Crispy",
+          "precoCentavos": 3750,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Smash Simples",
+          "precoCentavos": 2990,
+          "confira": false
+        },
+        {
+          "categoria": "sobremesa",
+          "nome": "Brownie com sorvete",
+          "precoCentavos": 2200,
+          "confira": false
+        },
+        {
+          "categoria": "sobremesa",
+          "nome": "Cookie quente",
+          "precoCentavos": 1600,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Milkshake de baunilha",
+          "precoCentavos": 2490,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Refrigerante 600 ml",
+          "precoCentavos": 900,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Limonada suíça",
+          "precoCentavos": 1400,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Cerveja artesanal IPA",
+          "precoCentavos": 2400,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Água",
+          "precoCentavos": 500,
+          "confira": false
+        }
+      ]
+    },
+    {
+      "entrant": "qwen3.8-flash",
+      "kind": "visao",
+      "menu": "burger",
+      "rep": 2,
+      "ok": true,
+      "latencyMs": 16568,
+      "costUsd": 0.000472662,
+      "score": {
+        "f1": 1,
+        "precision": 1,
+        "recall": 1,
+        "priceExact": 1,
+        "category": 0.8125,
+        "matched": 16,
+        "expected": 16,
+        "got": 16
+      },
+      "nota": 0.9812500000000001,
+      "items": [
+        {
+          "categoria": "porcao",
+          "nome": "Batata rústica",
+          "precoCentavos": 2400,
+          "confira": false
+        },
+        {
+          "categoria": "porcao",
+          "nome": "Onion rings",
+          "precoCentavos": 2600,
+          "confira": false
+        },
+        {
+          "categoria": "porcao",
+          "nome": "Nuggets da casa",
+          "precoCentavos": 2800,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Classic Burger",
+          "precoCentavos": 3690,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Cheddar Bacon",
+          "precoCentavos": 4290,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Burger Duplo 2x",
+          "precoCentavos": 4990,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Veggie de grão-de-bico",
+          "precoCentavos": 3800,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Chicken Crispy",
+          "precoCentavos": 3750,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Smash Simples",
+          "precoCentavos": 2990,
+          "confira": false
+        },
+        {
+          "categoria": "sobremesa",
+          "nome": "Brownie com sorvete",
+          "precoCentavos": 2200,
+          "confira": false
+        },
+        {
+          "categoria": "sobremesa",
+          "nome": "Cookie quente",
+          "precoCentavos": 1600,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Milkshake de baunilha",
+          "precoCentavos": 2490,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Refrigerante 600 ml",
+          "precoCentavos": 900,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Limonada suíça",
+          "precoCentavos": 1400,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Cerveja artesanal IPA",
+          "precoCentavos": 2400,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Água",
+          "precoCentavos": 500,
+          "confira": false
+        }
+      ]
+    },
+    {
+      "entrant": "qwen3.8-flash",
+      "kind": "visao",
+      "menu": "sushi",
+      "rep": 1,
+      "ok": true,
+      "latencyMs": 23891,
+      "costUsd": 0.000953582,
+      "score": {
+        "f1": 1,
+        "precision": 1,
+        "recall": 1,
+        "priceExact": 1,
+        "category": 1,
+        "matched": 18,
+        "expected": 18,
+        "got": 18
+      },
+      "nota": 1,
+      "items": [
+        {
+          "categoria": "entrada",
+          "nome": "Gyoza",
+          "precoCentavos": 3200,
+          "confira": false
+        },
+        {
+          "categoria": "entrada",
+          "nome": "Sunomono",
+          "precoCentavos": 1800,
+          "confira": false
+        },
+        {
+          "categoria": "entrada",
+          "nome": "Missoshiro",
+          "precoCentavos": 1400,
+          "confira": false
+        },
+        {
+          "categoria": "entrada",
+          "nome": "Harumaki de legumes",
+          "precoCentavos": 2400,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Combinado Hanami",
+          "precoCentavos": 13900,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Combinado do chef",
+          "precoCentavos": 7900,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Sashimi de salmão",
+          "precoCentavos": 5800,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Uramaki filadélfia",
+          "precoCentavos": 3600,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Temaki de salmão",
+          "precoCentavos": 3400,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Temaki skin",
+          "precoCentavos": 2800,
+          "confira": false
+        },
+        {
+          "categoria": "porcao",
+          "nome": "Hot roll",
+          "precoCentavos": 3900,
+          "confira": false
+        },
+        {
+          "categoria": "porcao",
+          "nome": "Ceviche de peixe branco",
+          "precoCentavos": 4600,
+          "confira": false
+        },
+        {
+          "categoria": "sobremesa",
+          "nome": "Harumaki de banana com sorvete",
+          "precoCentavos": 2600,
+          "confira": false
+        },
+        {
+          "categoria": "sobremesa",
+          "nome": "Mochi de morango",
+          "precoCentavos": 1800,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Chá verde gelado",
+          "precoCentavos": 1200,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Saquê",
+          "precoCentavos": 2200,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Refrigerante lata",
+          "precoCentavos": 750,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Água",
+          "precoCentavos": 550,
+          "confira": false
+        }
+      ]
+    },
+    {
+      "entrant": "qwen3.8-flash",
+      "kind": "visao",
+      "menu": "sushi",
+      "rep": 2,
+      "ok": false,
+      "reason": "timeout: timeout (tempo da tentativa esgotado)",
+      "latencyMs": 30003,
+      "costUsd": 0,
+      "score": {
+        "f1": 0,
+        "precision": 0,
+        "recall": 0,
+        "priceExact": 0,
+        "category": 0,
+        "matched": 0,
+        "expected": 18,
+        "got": 0
+      },
+      "nota": 0
+    },
+    {
+      "entrant": "qwen3.8-flash",
+      "kind": "visao",
+      "menu": "real",
+      "rep": 1,
+      "ok": false,
+      "reason": "timeout: timeout (tempo da tentativa esgotado)",
+      "latencyMs": 30001,
+      "costUsd": 0,
+      "score": {
+        "f1": 0,
+        "precision": 0,
+        "recall": 0,
+        "priceExact": 0,
+        "category": 0,
+        "matched": 0,
+        "expected": 2,
+        "got": 0
+      },
+      "nota": 0
+    },
+    {
+      "entrant": "qwen3.8-flash",
+      "kind": "visao",
+      "menu": "real",
+      "rep": 2,
+      "ok": true,
+      "latencyMs": 6317,
+      "costUsd": 0.000184248,
+      "score": {
+        "f1": 1,
+        "precision": 1,
+        "recall": 1,
+        "priceExact": 1,
+        "category": 1,
+        "matched": 2,
+        "expected": 2,
+        "got": 2
+      },
+      "nota": 1
+    },
+    {
+      "entrant": "Tesseract + regras",
+      "kind": "ocr",
+      "menu": "boteco",
+      "rep": 1,
+      "ok": true,
+      "latencyMs": 2506,
+      "costUsd": 0,
+      "score": {
+        "f1": 0.23809523809523808,
+        "precision": 0.23809523809523808,
+        "recall": 0.23809523809523808,
+        "priceExact": 0.19047619047619047,
+        "category": 0.2,
+        "matched": 5,
+        "expected": 21,
+        "got": 21
+      },
+      "nota": 0.21047619047619048
+    },
+    {
+      "entrant": "Google Vision + regras",
+      "kind": "ocr",
+      "menu": "boteco",
+      "rep": 1,
+      "ok": true,
+      "latencyMs": 402,
+      "costUsd": 0.0015,
+      "score": {
+        "f1": 0.47058823529411764,
+        "precision": 0.6153846153846154,
+        "recall": 0.38095238095238093,
+        "priceExact": 0.23809523809523808,
+        "category": 0.625,
+        "matched": 8,
+        "expected": 21,
+        "got": 13
+      },
+      "nota": 0.3697829131652661
+    },
+    {
+      "entrant": "Google Vision + LLM de texto (gemini-2.5-flash-lite)",
+      "kind": "hibrido",
+      "menu": "boteco",
+      "rep": 1,
+      "ok": true,
+      "latencyMs": 2621,
+      "costUsd": 0.0019544000000000002,
+      "score": {
+        "f1": 0.7906976744186046,
+        "precision": 0.7727272727272727,
+        "recall": 0.8095238095238095,
+        "priceExact": 0.47619047619047616,
+        "category": 1,
+        "matched": 17,
+        "expected": 21,
+        "got": 22
+      },
+      "nota": 0.6543743078626799,
+      "items": [
+        {
+          "categoria": "porcao",
+          "nome": "Bolinho de bacalhau 6 unidades",
+          "precoCentavos": 3890,
+          "confira": false
+        },
+        {
+          "categoria": "porcao",
+          "nome": "Mandioca frita",
+          "precoCentavos": 3890,
+          "confira": false
+        },
+        {
+          "categoria": "porcao",
+          "nome": "Calabresa acebolada",
+          "precoCentavos": 3490,
+          "confira": false
+        },
+        {
+          "categoria": "porcao",
+          "nome": "Torresmo pururuca",
+          "precoCentavos": 3200,
+          "confira": false
+        },
+        {
+          "categoria": "porcao",
+          "nome": "Pastel de queijo 4 unidades",
+          "precoCentavos": 2650,
+          "confira": false
+        },
+        {
+          "categoria": "porcao",
+          "nome": "Frango a passarinho",
+          "precoCentavos": 4290,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Feijoada da casa sábados e domingos",
+          "precoCentavos": 5490,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Picanha na chapa serve 2 pessoas",
+          "precoCentavos": 11900,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Parmegiana de frango com maionese da casa",
+          "precoCentavos": 4850,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Baião de dois",
+          "precoCentavos": 4400,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Picanha na chapa",
+          "precoCentavos": 2990,
+          "confira": false
+        },
+        {
+          "categoria": "sobremesa",
+          "nome": "Pudim de leite",
+          "precoCentavos": 1490,
+          "confira": false
+        },
+        {
+          "categoria": "sobremesa",
+          "nome": "Cocada de forno",
+          "precoCentavos": 1200,
+          "confira": false
+        },
+        {
+          "categoria": "sobremesa",
+          "nome": "Romeu e Julieta",
+          "precoCentavos": 1350,
+          "confira": false
+        },
+        {
+          "categoria": "entrada",
+          "nome": "Caldinho de feijão",
+          "precoCentavos": 700,
+          "confira": false
+        },
+        {
+          "categoria": "entrada",
+          "nome": "Salada vinagrete",
+          "precoCentavos": 550,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Chopp claro 300 ml",
+          "precoCentavos": 1200,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Chopp claro 500 ml",
+          "precoCentavos": 1800,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Caipirinha de limão",
+          "precoCentavos": 2200,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Refrigerante lata",
+          "precoCentavos": 900,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Água com gás",
+          "precoCentavos": 1400,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Suco de caju",
+          "precoCentavos": 1650,
+          "confira": false
+        }
+      ]
+    },
+    {
+      "entrant": "Google Vision + LLM de texto (gemini-2.5-flash-lite)",
+      "kind": "hibrido",
+      "menu": "boteco",
+      "rep": 2,
+      "ok": true,
+      "latencyMs": 2364,
+      "costUsd": 0.0019344,
+      "score": {
+        "f1": 0.8571428571428571,
+        "precision": 0.8571428571428571,
+        "recall": 0.8571428571428571,
+        "priceExact": 0.42857142857142855,
+        "category": 0.9444444444444444,
+        "matched": 18,
+        "expected": 21,
+        "got": 21
+      },
+      "nota": 0.6515873015873016,
+      "items": [
+        {
+          "categoria": "porcao",
+          "nome": "Bolinho de bacalhau 6 unidades",
+          "precoCentavos": 3890,
+          "confira": false
+        },
+        {
+          "categoria": "porcao",
+          "nome": "Mandioca frita",
+          "precoCentavos": 3890,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Feijoada da casa",
+          "precoCentavos": 5490,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Picanha na chapa serve 2 pessoas",
+          "precoCentavos": 11900,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Calabresa acebolada",
+          "precoCentavos": 3490,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Parmegiana de frango",
+          "precoCentavos": 4850,
+          "confira": false
+        },
+        {
+          "categoria": "porcao",
+          "nome": "Torresmo pururuca",
+          "precoCentavos": 3200,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Baião de dois",
+          "precoCentavos": 4400,
+          "confira": false
+        },
+        {
+          "categoria": "porcao",
+          "nome": "Pastel de queijo 4 unidades",
+          "precoCentavos": 2650,
+          "confira": false
+        },
+        {
+          "categoria": "porcao",
+          "nome": "Frango a passarinho",
+          "precoCentavos": 4290,
+          "confira": false
+        },
+        {
+          "categoria": "sobremesa",
+          "nome": "Pudim de leite",
+          "precoCentavos": 1400,
+          "confira": false
+        },
+        {
+          "categoria": "sobremesa",
+          "nome": "Cocada de forno",
+          "precoCentavos": 1650,
+          "confira": false
+        },
+        {
+          "categoria": "sobremesa",
+          "nome": "Romeu e Julieta",
+          "precoCentavos": 2200,
+          "confira": false
+        },
+        {
+          "categoria": "entrada",
+          "nome": "Caldinho de feijão",
+          "precoCentavos": 700,
+          "confira": false
+        },
+        {
+          "categoria": "entrada",
+          "nome": "Salada vinagrete",
+          "precoCentavos": 900,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Chopp claro 300 ml",
+          "precoCentavos": 1200,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Chopp claro 500 ml",
+          "precoCentavos": 1800,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Caipirinha de limão",
+          "precoCentavos": 2200,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Refrigerante lata",
+          "precoCentavos": 550,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Água com gás",
+          "precoCentavos": 900,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Suco de caju",
+          "precoCentavos": 1490,
+          "confira": false
+        }
+      ]
+    },
+    {
+      "entrant": "Tesseract + regras",
+      "kind": "ocr",
+      "menu": "burger",
+      "rep": 1,
+      "ok": true,
+      "latencyMs": 2239,
+      "costUsd": 0,
+      "score": {
+        "f1": 1,
+        "precision": 1,
+        "recall": 1,
+        "priceExact": 1,
+        "category": 1,
+        "matched": 16,
+        "expected": 16,
+        "got": 16
+      },
+      "nota": 1
+    },
+    {
+      "entrant": "Google Vision + regras",
+      "kind": "ocr",
+      "menu": "burger",
+      "rep": 1,
+      "ok": true,
+      "latencyMs": 278,
+      "costUsd": 0.0015,
+      "score": {
+        "f1": 0.7857142857142857,
+        "precision": 0.9166666666666666,
+        "recall": 0.6875,
+        "priceExact": 0.25,
+        "category": 1,
+        "matched": 11,
+        "expected": 16,
+        "got": 12
+      },
+      "nota": 0.5392857142857143
+    },
+    {
+      "entrant": "Google Vision + LLM de texto (gemini-2.5-flash-lite)",
+      "kind": "hibrido",
+      "menu": "burger",
+      "rep": 1,
+      "ok": true,
+      "latencyMs": 1727,
+      "costUsd": 0.0018449,
+      "score": {
+        "f1": 0.875,
+        "precision": 0.875,
+        "recall": 0.875,
+        "priceExact": 0.875,
+        "category": 0.8571428571428571,
+        "matched": 14,
+        "expected": 16,
+        "got": 16
+      },
+      "nota": 0.8732142857142858,
+      "items": [
+        {
+          "categoria": "porcao",
+          "nome": "Batata rústica",
+          "precoCentavos": 2400,
+          "confira": false
+        },
+        {
+          "categoria": "porcao",
+          "nome": "Onion rings",
+          "precoCentavos": 2600,
+          "confira": false
+        },
+        {
+          "categoria": "porcao",
+          "nome": "Nuggets da casa 8 unidades",
+          "precoCentavos": 2800,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Classic Burger",
+          "precoCentavos": 3690,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Cheddar Bacon",
+          "precoCentavos": 4290,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Burger Duplo 2x 2 blends de 120 g",
+          "precoCentavos": 4990,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Veggie de grão-de-bico",
+          "precoCentavos": 3800,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Chicken Crispy",
+          "precoCentavos": 3750,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Smash Simples",
+          "precoCentavos": 2990,
+          "confira": false
+        },
+        {
+          "categoria": "sobremesa",
+          "nome": "Brownie com sorvete",
+          "precoCentavos": 2200,
+          "confira": false
+        },
+        {
+          "categoria": "sobremesa",
+          "nome": "Cookie quente",
+          "precoCentavos": 1600,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Milkshake de baunilha",
+          "precoCentavos": 2490,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Refrigerante 600 ml",
+          "precoCentavos": 900,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Limonada suíça",
+          "precoCentavos": 1400,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Cerveja artesanal IPA",
+          "precoCentavos": 2400,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Água",
+          "precoCentavos": 500,
+          "confira": false
+        }
+      ]
+    },
+    {
+      "entrant": "Google Vision + LLM de texto (gemini-2.5-flash-lite)",
+      "kind": "hibrido",
+      "menu": "burger",
+      "rep": 2,
+      "ok": true,
+      "latencyMs": 1871,
+      "costUsd": 0.0018449,
+      "score": {
+        "f1": 0.875,
+        "precision": 0.875,
+        "recall": 0.875,
+        "priceExact": 0.875,
+        "category": 0.8571428571428571,
+        "matched": 14,
+        "expected": 16,
+        "got": 16
+      },
+      "nota": 0.8732142857142858,
+      "items": [
+        {
+          "categoria": "porcao",
+          "nome": "Batata rústica",
+          "precoCentavos": 2400,
+          "confira": false
+        },
+        {
+          "categoria": "porcao",
+          "nome": "Onion rings",
+          "precoCentavos": 2600,
+          "confira": false
+        },
+        {
+          "categoria": "porcao",
+          "nome": "Nuggets da casa 8 unidades",
+          "precoCentavos": 2800,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Classic Burger",
+          "precoCentavos": 3690,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Cheddar Bacon",
+          "precoCentavos": 4290,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Burger Duplo 2x 2 blends de 120 g",
+          "precoCentavos": 4990,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Veggie de grão-de-bico",
+          "precoCentavos": 3800,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Chicken Crispy",
+          "precoCentavos": 3750,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Smash Simples",
+          "precoCentavos": 2990,
+          "confira": false
+        },
+        {
+          "categoria": "sobremesa",
+          "nome": "Brownie com sorvete",
+          "precoCentavos": 2200,
+          "confira": false
+        },
+        {
+          "categoria": "sobremesa",
+          "nome": "Cookie quente",
+          "precoCentavos": 1600,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Milkshake de baunilha",
+          "precoCentavos": 2490,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Refrigerante 600 ml",
+          "precoCentavos": 900,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Limonada suíça",
+          "precoCentavos": 1400,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Cerveja artesanal IPA",
+          "precoCentavos": 2400,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Água",
+          "precoCentavos": 500,
+          "confira": false
+        }
+      ]
+    },
+    {
+      "entrant": "Tesseract + regras",
+      "kind": "ocr",
+      "menu": "sushi",
+      "rep": 1,
+      "ok": true,
+      "latencyMs": 3936,
+      "costUsd": 0,
+      "score": {
+        "f1": 0.06451612903225808,
+        "precision": 0.07692307692307693,
+        "recall": 0.05555555555555555,
+        "priceExact": 0.05555555555555555,
+        "category": 1,
+        "matched": 1,
+        "expected": 18,
+        "got": 13
+      },
+      "nota": 0.153584229390681
+    },
+    {
+      "entrant": "Google Vision + regras",
+      "kind": "ocr",
+      "menu": "sushi",
+      "rep": 1,
+      "ok": true,
+      "latencyMs": 689,
+      "costUsd": 0.003,
+      "score": {
+        "f1": 0.4827586206896552,
+        "precision": 0.6363636363636364,
+        "recall": 0.3888888888888889,
+        "priceExact": 0.1111111111111111,
+        "category": 1,
+        "matched": 7,
+        "expected": 18,
+        "got": 11
+      },
+      "nota": 0.3486590038314177
+    },
+    {
+      "entrant": "Google Vision + LLM de texto (gemini-2.5-flash-lite)",
+      "kind": "hibrido",
+      "menu": "sushi",
+      "rep": 1,
+      "ok": true,
+      "latencyMs": 2770,
+      "costUsd": 0.0033852,
+      "score": {
+        "f1": 0.6111111111111112,
+        "precision": 0.6111111111111112,
+        "recall": 0.6111111111111112,
+        "priceExact": 0.6111111111111112,
+        "category": 1,
+        "matched": 11,
+        "expected": 18,
+        "got": 18
+      },
+      "nota": 0.65,
+      "items": [
+        {
+          "categoria": "entrada",
+          "nome": "Gyoza 6 unidades",
+          "precoCentavos": 3200,
+          "confira": false
+        },
+        {
+          "categoria": "entrada",
+          "nome": "Sunomono",
+          "precoCentavos": 1800,
+          "confira": false
+        },
+        {
+          "categoria": "entrada",
+          "nome": "Missoshiru",
+          "precoCentavos": 1400,
+          "confira": false
+        },
+        {
+          "categoria": "entrada",
+          "nome": "Harumaki de legumes 4 unidades",
+          "precoCentavos": 2400,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Combinado Hanami 30 peças",
+          "precoCentavos": 13900,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Combinado do chef 15 peças",
+          "precoCentavos": 7900,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Sashimi de salmão 10 fatias",
+          "precoCentavos": 5800,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Uramaki filadélfia 8 unidades",
+          "precoCentavos": 3600,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Temaki de salmão",
+          "precoCentavos": 3400,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Temaki skin",
+          "precoCentavos": 2800,
+          "confira": false
+        },
+        {
+          "categoria": "porcao",
+          "nome": "Hot roll 10 unidades",
+          "precoCentavos": 3900,
+          "confira": false
+        },
+        {
+          "categoria": "porcao",
+          "nome": "Ceviche de peixe branco",
+          "precoCentavos": 4600,
+          "confira": false
+        },
+        {
+          "categoria": "sobremesa",
+          "nome": "Harumaki de banana com sorvete",
+          "precoCentavos": 2600,
+          "confira": false
+        },
+        {
+          "categoria": "sobremesa",
+          "nome": "Mochi de morango",
+          "precoCentavos": 1800,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Chá verde gelado",
+          "precoCentavos": 1200,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Saquê dose",
+          "precoCentavos": 2200,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Refrigerante lata",
+          "precoCentavos": 750,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Água",
+          "precoCentavos": 550,
+          "confira": false
+        }
+      ]
+    },
+    {
+      "entrant": "Google Vision + LLM de texto (gemini-2.5-flash-lite)",
+      "kind": "hibrido",
+      "menu": "sushi",
+      "rep": 2,
+      "ok": true,
+      "latencyMs": 2574,
+      "costUsd": 0.0033828,
+      "score": {
+        "f1": 0.6111111111111112,
+        "precision": 0.6111111111111112,
+        "recall": 0.6111111111111112,
+        "priceExact": 0.6111111111111112,
+        "category": 1,
+        "matched": 11,
+        "expected": 18,
+        "got": 18
+      },
+      "nota": 0.65,
+      "items": [
+        {
+          "categoria": "entrada",
+          "nome": "Gyoza 6 unidades",
+          "precoCentavos": 3200,
+          "confira": false
+        },
+        {
+          "categoria": "entrada",
+          "nome": "Sunomono",
+          "precoCentavos": 1800,
+          "confira": false
+        },
+        {
+          "categoria": "entrada",
+          "nome": "Missoshiru",
+          "precoCentavos": 1400,
+          "confira": false
+        },
+        {
+          "categoria": "entrada",
+          "nome": "Harumaki de legumes 4 unidades",
+          "precoCentavos": 2400,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Combinado Hanami 30 peças",
+          "precoCentavos": 13900,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Combinado do chef 15 peças",
+          "precoCentavos": 7900,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Sashimi de salmão 10 fatias",
+          "precoCentavos": 5800,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Uramaki filadélfia 8 unidades",
+          "precoCentavos": 3600,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Temaki de salmão",
+          "precoCentavos": 3400,
+          "confira": false
+        },
+        {
+          "categoria": "prato",
+          "nome": "Temaki skin",
+          "precoCentavos": 2800,
+          "confira": false
+        },
+        {
+          "categoria": "porcao",
+          "nome": "Hot roll 10 unidades",
+          "precoCentavos": 3900,
+          "confira": false
+        },
+        {
+          "categoria": "porcao",
+          "nome": "Ceviche de peixe branco",
+          "precoCentavos": 4600,
+          "confira": false
+        },
+        {
+          "categoria": "sobremesa",
+          "nome": "Harumaki de banana com sorvete",
+          "precoCentavos": 2600,
+          "confira": false
+        },
+        {
+          "categoria": "sobremesa",
+          "nome": "Mochi de morango",
+          "precoCentavos": 1800,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Chá verde gelado",
+          "precoCentavos": 1200,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Saquê dose",
+          "precoCentavos": 2200,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Refrigerante lata",
+          "precoCentavos": 750,
+          "confira": false
+        },
+        {
+          "categoria": "bebida",
+          "nome": "Água",
+          "precoCentavos": 550,
+          "confira": false
+        }
+      ]
+    },
+    {
+      "entrant": "Tesseract + regras",
+      "kind": "ocr",
+      "menu": "real",
+      "rep": 1,
+      "ok": true,
+      "latencyMs": 1224,
+      "costUsd": 0,
+      "score": {
+        "f1": 0,
+        "precision": 0,
+        "recall": 0,
+        "priceExact": 0,
+        "category": 0,
+        "matched": 0,
+        "expected": 2,
+        "got": 0
+      },
+      "nota": 0
+    },
+    {
+      "entrant": "Google Vision + regras",
+      "kind": "ocr",
+      "menu": "real",
+      "rep": 1,
+      "ok": true,
+      "latencyMs": 274,
+      "costUsd": 0.0015,
+      "score": {
+        "f1": 0.5,
+        "precision": 0.5,
+        "recall": 0.5,
+        "priceExact": 0.5,
+        "category": 1,
+        "matched": 1,
+        "expected": 2,
+        "got": 2
+      },
+      "nota": 0.55
+    },
+    {
+      "entrant": "Google Vision + LLM de texto (gemini-2.5-flash-lite)",
+      "kind": "hibrido",
+      "menu": "real",
+      "rep": 1,
+      "ok": true,
+      "latencyMs": 865,
+      "costUsd": 0.0016148,
+      "score": {
+        "f1": 1,
+        "precision": 1,
+        "recall": 1,
+        "priceExact": 1,
+        "category": 1,
+        "matched": 2,
+        "expected": 2,
+        "got": 2
+      },
+      "nota": 1
+    },
+    {
+      "entrant": "Google Vision + LLM de texto (gemini-2.5-flash-lite)",
+      "kind": "hibrido",
+      "menu": "real",
+      "rep": 2,
+      "ok": true,
+      "latencyMs": 1245,
+      "costUsd": 0.0016148,
+      "score": {
+        "f1": 1,
+        "precision": 1,
+        "recall": 1,
+        "priceExact": 1,
+        "category": 1,
+        "matched": 2,
+        "expected": 2,
+        "got": 2
+      },
+      "nota": 1
+    }
+  ]
+}
