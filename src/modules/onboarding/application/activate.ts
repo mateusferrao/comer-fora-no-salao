@@ -10,7 +10,7 @@ import { benefits, benefitVersions, ownerEdits, restaurants, weeklyPlans } from 
 import { planContentFromRow } from "@/src/modules/planos/domain/plan-content";
 import { OFFER_KINDS, MAX_DISCOUNT_PCT, describeOffer, validateOffer, type Offer, type OfferError, offerFromInput, type OfferKind } from "@/src/modules/beneficios/domain/offers";
 import { guardText } from "@/src/modules/ia/guardrails";
-import { slotPhrase } from "../domain/facts";
+import { slotPhrase } from "@/src/modules/beneficios/domain/slot-text";
 import { loadDraft, type PlanDecision } from "./package";
 import { recordStep } from "./wizard";
 import { log } from "@/src/shared/log";

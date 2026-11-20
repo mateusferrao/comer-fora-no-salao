@@ -9,6 +9,7 @@ export const dynamic = "force-dynamic";
 export async function GET(req: Request) {
   const u = new URL(req.url);
   const s = await getOwnerSession();
-  const to = u.searchParams.get("de") === "portal" && s?.current ? `/r/${s.current.slug}` : s ? "/parceiro/salao" : "/parceiro/entrar";
+  // Sem sessão: login com aviso de como entrar no lado do dono (revisão S3 #37).
+  const to = u.searchParams.get("de") === "portal" && s?.current ? `/r/${s.current.slug}` : s ? "/parceiro/salao" : "/parceiro/entrar?de=app";
   return new Response(null, { status: 303, headers: { location: to } });
 }

@@ -8,9 +8,14 @@ import { rateLimits } from "@/src/db/schema";
 
 export type ConsumeResult = { ok: true } | { ok: false; retryAfterSec: number };
 
+/** Meia-noite de SP = 03h UTC. */
+const SP_OFFSET_MS = 3 * 3_600_000;
+
 export async function consume(ex: Executor, key: string, max: number, windowSec: number, now: Date = new Date()): Promise<ConsumeResult> {
   const windowMs = windowSec * 1000;
-  const start = new Date(Math.floor(now.getTime() / windowMs) * windowMs);
+  // Janelas de dia(s) começam à meia-noite de SP (UTC−3, sem horário de verão), não às 21h (D150).
+  const offset = windowSec % 86_400 === 0 ? SP_OFFSET_MS : 0;
+  const start = new Date(Math.floor((now.getTime() - offset) / windowMs) * windowMs + offset);
   const [row] = await ex
     .insert(rateLimits)
     .values({ key, windowStart: start, count: 1 })

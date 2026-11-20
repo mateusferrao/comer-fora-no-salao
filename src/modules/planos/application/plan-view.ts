@@ -6,9 +6,9 @@ import { and, desc, eq, sql } from "drizzle-orm";
 import type { Db } from "@/src/db/client";
 import { weeklyPlans } from "@/src/db/schema";
 import { describeOffer, type Offer, type OfferKind } from "@/src/modules/beneficios/domain/offers";
-import { slotLabel, slotPhrase } from "@/src/modules/onboarding/domain/facts";
+import { slotLabel, slotPhrase } from "@/src/modules/beneficios/domain/slot-text";
 import { renderReferences } from "@/src/modules/textos/domain/references";
-import { loadCustomerRows, toReactivationCustomers } from "@/src/modules/analytics/application/customers";
+import { toReactivationCustomers } from "@/src/modules/analytics/application/customers";
 import { inviteSlots, remainingBySlot, toVersionedOffer } from "@/src/modules/salao/application/context";
 import { weekKeySP } from "@/src/shared/week";
 import { reactivationAudience, reactivationPlan, reactivationQuota, REACTIVATION_SHARE_PCT } from "../domain/reactivation";
@@ -91,7 +91,7 @@ export async function getPlanView(db: Db, restaurantId: string, now: Date, planI
   }
 
   // Prévia da reativação com a regra vigente (a aprovação recalcula com a regra nova).
-  const rows = await loadCustomerRows(db, restaurantId, now);
+  const rows = ins.customers;
   const rc = toReactivationCustomers(rows);
   const audience = reactivationAudience(rc);
   const remaining = await remainingBySlot(db, ctx, weekKeySP(now));

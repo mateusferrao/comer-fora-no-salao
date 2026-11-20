@@ -24,7 +24,8 @@ import { runTask } from "@/src/modules/ia/run-task";
 import { langfuseTracer } from "@/src/modules/ia/tracing";
 import { buildPackagePrompt, buildPackageTask, PACKAGE_PROMPT_VERSION, resolvePackage } from "@/src/modules/ia/tasks/package";
 import { buildCandidates, fallbackChoices, proposeAgora, proposeRecompensa, toPlanCandidate, type SlotCandidates } from "../domain/candidates";
-import { declaredFacts, slotAliases, slotLabel, slotPhrase } from "../domain/facts";
+import { declaredFacts } from "../domain/facts";
+import { slotAliases, slotLabel, slotPhrase } from "@/src/modules/beneficios/domain/slot-text";
 
 export { GENERATING_STALE_MS };
 /** Texto modelo do modo sem IA [C]: só referências, o código escreve horário e oferta. */

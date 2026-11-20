@@ -3,23 +3,9 @@
  * dono declarou. Chaves estáveis por apelido de faixa (A, B… pela prioridade), como nos planos fixos.
  */
 import type { MenuItem } from "@/src/modules/beneficios/domain/menu";
-import { formatDays, formatDaysLong, formatHours, sortByPriority, turnOfMinutes, type Slot } from "@/src/modules/beneficios/domain/slots";
+import { turnOfMinutes, type Slot } from "@/src/modules/beneficios/domain/slots";
 
-export const SLOT_ALIASES = "ABCDEFGH".split("");
-
-/** Apelidos curtos das faixas, na ordem de prioridade (revisão T-I2: nada de UUID dentro do texto da IA). */
-export function slotAliases(slots: readonly Slot[]): Array<{ alias: string; slot: Slot }> {
-  return sortByPriority([...slots]).map((slot, i) => ({ alias: SLOT_ALIASES[i]!, slot }));
-}
-
-export function slotLabel(s: Pick<Slot, "days" | "startMin" | "endMin">): string {
-  return `${formatDays(s.days)} · ${formatHours(s.startMin, s.endMin)}`;
-}
-
-/** Forma para dentro de frases ({horario} nos textos): "terça, quarta e quinta, das 15h às 18h" (revisão da S2). */
-export function slotPhrase(s: Pick<Slot, "days" | "startMin" | "endMin">): string {
-  return `${formatDaysLong(s.days)}, das ${formatHours(s.startMin, s.endMin).replace("–", " às ")}`;
-}
+import { slotAliases } from "@/src/modules/beneficios/domain/slot-text";
 
 const TURN_LABEL: Record<string, string> = { madrugada: "madrugada", manha: "manhã", almoco: "almoço", tarde: "tarde", noite: "noite" };
 

@@ -85,6 +85,18 @@ describe("restaurante de teste: Antecipar (D140, D141) e motivo do holdout (D143
     if (vrow) expect(await advanceInvite(getDb(), { customerId: vrow.customer_id, inviteId: vrow.id, now: SEG_13 })).toEqual({ ok: false, erro: "nao_teste" });
   }, 60_000);
 
+  it("convite emitido ontem SEM antecipar não é liberado fora da faixa (revisão S3 #34: exige o marcador)", async () => {
+    const r = await createRestaurant();
+    const c = await customerWithArm(r.restaurantId, "convidavel");
+    await checkin(r.restaurantId, c, new Date("2026-11-22T16:00:00Z")); // domingo, fora da faixa: convite emitido
+    const [inv] = await getDb().select().from(invites).where(eq(invites.customerId, c));
+    expect(inv?.issuedDay).toBe("2026-11-22");
+    // Segunda 13h (fora da faixa), sem check-in hoje: antes, o ramo "já antecipado" liberava; agora não se aplica.
+    expect(await advanceInvite(getDb(), { customerId: c, inviteId: inv!.id, now: SEG_13 })).toEqual({ ok: false, erro: "nao_se_aplica" });
+    const [after] = await getDb().select().from(invites).where(eq(invites.id, inv!.id));
+    expect(after!.testValidDay).toBeNull();
+  });
+
   it("holdout no teste: sem 2º card, com o motivo; teto esgotado: motivo 'teto'", async () => {
     const r = await createRestaurant();
     const h = await customerWithArm(r.restaurantId, "holdout");

@@ -7,7 +7,7 @@ export const CATEGORY_PHOTOS: Record<string, string | undefined> = {
 };
 
 export const PHOTO_CREDITS = [
-  { file: "salao.jpg", author: "domínio público (CC0)", license: "CC0" },
+  { file: "salao.jpg", author: "Nenad Stojković", license: "CC BY 2.0" },
   { file: "entrada.jpg", author: "Karen and Brad Emerson", license: "CC BY 2.0" },
   { file: "prato.jpg", author: "Popo le Chien", license: "CC0" },
   { file: "porcao.jpg", author: "Andy Li", license: "CC0" },

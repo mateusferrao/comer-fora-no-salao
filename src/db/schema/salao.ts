@@ -323,7 +323,6 @@ export const planSends = pgTable(
   (t) => [
     index("plan_sends_restaurant_idx").on(t.restaurantId),
     // S3: um envio por plano (aprovar 2× → 1 envio).
-    index("plan_sends_plan_idx").on(t.planId),
     uniqueIndex("plan_sends_plan_uq").on(t.planId),
     index("plan_sends_run_idx").on(t.simulationRunId),
   ],
@@ -351,6 +350,8 @@ export const invites = pgTable(
     simulationRunId: runFk(),
     /** S3 (D141): só em restaurante de teste, "Antecipar" libera o convite fora da faixa neste dia (SP). */
     testValidDay: text("test_valid_day"),
+    /** S3 (revisão #34): marcador de "antecipar 1 dia" (só restaurante de teste); a repetição só vale com ele. */
+    advancedAt: ts("advanced_at"),
   },
   (t) => [
     // 1 convite ativo (real ou fantasma) por cliente por restaurante. Predicado literal: o drizzle-kit

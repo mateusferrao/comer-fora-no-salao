@@ -956,3 +956,22 @@ Detalhes, revisão independente (2 subagentes) e itens [C] em [docs/fatias/S3/pl
 - Decisão: revisar só os convites (plano) e as peças e o recado (kit), que chegam ao cliente. Justificativa e "o que aprendemos" são para o dono e já passam pelo guard (referências, sem dígitos da IA). Remedição: 0 de 10 bloqueados, 3 com "atenção" (não bloqueia).
 - Também: a liberação do "bloquear" no plano exige que o dono reescreva TODOS os convites; o veredito do kit não sobrescreve um texto editado durante a revisão; o revisor vale também pelo MCP (está dentro de `generateWeeklyPlan`).
 - Alternativas: rebaixar "bloquear" para "atenção" (perde o freio); passar os fatos ao revisor (mais contexto no prompt, mais chances de erro de leitura).
+
+**D150 — Dívidas da S3 fechadas depois do merge** (20/11, candidato pediu "corrija as dívidas"; foto: candidato escolheu nova busca no Commons; resto IA [C]) ✅
+- **Limites diários:** viram à meia-noite de SP, não às 21h (UTC). Teste nas bordas 20h59/21h01 e 23h59/00h01.
+  - Alternativa: manter UTC (documentado). Trade-off: nenhum relevante.
+- **"Antecipar 1 dia":**
+  - grava `invites.advanced_at`; a repetição idempotente só vale com o marcador;
+  - convite nascido ontem de verdade não ganha liberação fora da faixa (migração aditiva 0005, que também tira o índice redundante `plan_sends_plan_idx`).
+- **Modo apresentação:**
+  - com menos de 1024 px para o Portal, o iframe fica com 1024 px lógicos e é reduzido em escala (ex.: 0,80 a 1280 px), em vez de cair no layout de celular;
+  - a barra lateral "Comer Fora no salão · Novo" fica visível. Alternativa recusada: barra de ícones entre 768 e 1023 px em todo o Portal (mexe no layout real).
+- **Foto do salão:** colorida, "Modern dining area with wooden decor…" (Nenad Stojković, CC BY 2.0, Wikimedia Commons), com crédito em CREDITOS.md e em "Como funciona".
+- **Limpezas:**
+  - texto de faixa em `beneficios/domain/slot-text`; `randomSuffix` em `shared/random`;
+  - tipos `Executor` no kit e na aprovação;
+  - o plano reaproveita as linhas de clientes.
+- **Polimento:**
+  - "Trocar de lado" sem sessão mostra aviso no login;
+  - "Validar código" com contorno;
+  - Qualidade sem "D121".

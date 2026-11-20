@@ -4,13 +4,14 @@ import { BARRA, loginE2E } from "./helpers";
 /** Modo apresentação (planejamento S3 §4.6; revisão P-I7): larguras de demo, barra visível, troca de restaurante. */
 for (const [w, h] of [
   [1536, 864],
+  [1280, 800],
   [1152, 720],
 ] as const) {
   test(`modo apresentação em ${w}×${h}: Portal + app na moldura, barra visível fora dos iframes`, async ({ page }) => {
     test.setTimeout(90_000);
     await page.setViewportSize({ width: w, height: h });
     // Conta própria por tamanho (a 4 é do painel.spec): logins paralelos na mesma conta invalidam o código.
-    await loginE2E(page.request, w === 1536 ? 7 : 8);
+    await loginE2E(page.request, w === 1536 ? 7 : w === 1280 ? 8 : 9);
     await page.goto("/parceiro/salao");
     await expect(page.getByText(/Preparando seu restaurante de demonstração/)).toBeHidden({ timeout: 60_000 });
     await page.goto("/apresentacao");
@@ -18,6 +19,8 @@ for (const [w, h] of [
     const portal = page.frameLocator('iframe[title="Portal do Parceiro"]');
     await expect(portal.getByRole("heading", { name: "Visão geral", level: 1 })).toBeVisible({ timeout: 20_000 });
     await expect(portal.getByTestId("prototype-bar")).toHaveCount(0);
+    // Barra lateral do Portal visível (não cai no layout de celular — revisão S3 #24).
+    await expect(portal.getByRole("navigation", { name: "Menu principal" })).toBeVisible();
     const app = page.frameLocator('iframe[title="App do cliente"]');
     await expect(app.getByRole("button", { name: "Check-in" }).or(app.getByRole("link", { name: "Check-in" })).first()).toBeVisible({ timeout: 20_000 });
     await expect(page.getByRole("combobox", { name: "Restaurante" })).toBeVisible();

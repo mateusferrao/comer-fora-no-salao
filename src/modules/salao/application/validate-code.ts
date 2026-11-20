@@ -9,7 +9,7 @@ import type { Executor } from "@/src/db/executor";
 import { codes, customerContacts, invites, menuItems, restaurants } from "@/src/db/schema";
 import { checkCode, isCodeFormat, normalizeCode, type CodeType } from "@/src/modules/beneficios/domain/codes";
 import type { Slot } from "@/src/modules/beneficios/domain/slots";
-import { slotLabel } from "@/src/modules/onboarding/domain/facts";
+import { slotLabel } from "@/src/modules/beneficios/domain/slot-text";
 import { daySP, TZ_SP } from "@/src/shared/tz";
 import { loadVersion } from "./context";
 import { describeOffer } from "@/src/modules/beneficios/domain/offers";

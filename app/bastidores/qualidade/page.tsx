@@ -85,7 +85,7 @@ export default async function Qualidade() {
           <p className="mt-2 text-sm text-ink">
             {v.aiVsTop.compared === 0 ? "Ainda sem escolhas da IA para comparar." : `${v.aiVsTop.differs} de ${v.aiVsTop.compared} escolhas (${Math.round((100 * v.aiVsTop.differs) / v.aiVsTop.compared)}%)`}
           </p>
-          <p className="mt-1 text-xs text-ink-muted">A nota do código é só econômica; a IA casa item × turno (D121). Se ela sempre escolhesse a maior nota, seria decorativa.</p>
+          <p className="mt-1 text-xs text-ink-muted">Decisão de projeto: a nota do código é só econômica; quem casa item × turno é a IA. Se ela sempre escolhesse a maior nota, seria decorativa.</p>
         </section>
       </div>
       <section className="mt-4 rounded-sm border border-border bg-white p-4" aria-labelledby="avaliacao">

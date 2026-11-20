@@ -13,7 +13,7 @@ import { getPlanInsights } from "@/src/modules/planos/application/insights";
 import { getPlanView } from "@/src/modules/planos/application/plan-view";
 import { generateWeeklyPlan } from "@/src/modules/planos/application/generate-plan";
 import { approvePlan, latestPlan, type FinalPlan } from "@/src/modules/planos/application/approve-plan";
-import { slotLabel } from "@/src/modules/onboarding/domain/facts";
+import { slotLabel } from "@/src/modules/beneficios/domain/slot-text";
 
 export const MCP_PROTOCOL_VERSION = "2025-06-18";
 

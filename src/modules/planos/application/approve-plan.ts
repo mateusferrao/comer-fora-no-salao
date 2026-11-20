@@ -8,10 +8,11 @@
 import { and, desc, eq, isNull, sql } from "drizzle-orm";
 import { z } from "zod";
 import type { Db } from "@/src/db/client";
+import type { Executor } from "@/src/db/executor";
 import { ownerEdits, planSendMembers, planSends, restaurantCustomers, restaurants, weeklyPlans } from "@/src/db/schema";
 import { describeOffer, MAX_DISCOUNT_PCT, OFFER_KINDS, validateOffer, type Offer, offerFromInput, type OfferKind } from "@/src/modules/beneficios/domain/offers";
 import { guardText } from "@/src/modules/ia/guardrails";
-import { slotPhrase } from "@/src/modules/onboarding/domain/facts";
+import { slotPhrase } from "@/src/modules/beneficios/domain/slot-text";
 import { loadContext, remainingBySlot, inviteSlots } from "@/src/modules/salao/application/context";
 import { insertInvite, reserveQuota } from "@/src/modules/salao/application/persistence";
 import { newOfferVersion } from "@/src/modules/config/application/update-settings";
@@ -33,7 +34,7 @@ export type ApproveResult =
 const toOffer = (o: { kind: OfferKind; itemId: string; pct?: number }): Offer => offerFromInput(o);
 const same = (a: Offer, b: Offer) => a.kind === b.kind && a.params.itemId === b.params.itemId && (a.params.pct ?? null) === (b.params.pct ?? null);
 
-async function sentFor(db: Db | Parameters<Parameters<Db["transaction"]>[0]>[0], planId: string) {
+async function sentFor(db: Executor, planId: string): Promise<{ real: number; fantasma: number }> {
   const [s] = await db.select({ id: planSends.id }).from(planSends).where(eq(planSends.planId, planId)).limit(1);
   if (!s) return { real: 0, fantasma: 0 };
   const rows = (await db.execute(sql`select arm, count(*)::int n from plan_send_members where send_id = ${s.id} group by arm`)) as unknown as { rows: Array<{ arm: string; n: number }> };

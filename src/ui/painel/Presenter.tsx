@@ -14,6 +14,19 @@ export function Presenter({ stores, currentId }: { stores: Store[]; currentId: s
   const [zoom, setZoom] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
   const since = useRef(0);
+  // O Portal só mostra a barra lateral a partir de 1024 px (lg). Com menos espaço (ex.: janela de 1280 px), o iframe
+  // fica com 1024 px de largura lógica e é reduzido em escala, em vez de cair no layout de celular (revisão S3 #24).
+  const box = useRef<HTMLDivElement>(null);
+  const [size, setSize] = useState({ w: 1024, h: 720 });
+  useEffect(() => {
+    const el = box.current;
+    if (!el) return;
+    const ro = new ResizeObserver(([e]) => e && setSize({ w: e.contentRect.width, h: e.contentRect.height }));
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+  const PORTAL_MIN = 1024;
+  const scale = size.w > 0 && size.w < PORTAL_MIN ? size.w / PORTAL_MIN : 1;
   const store = stores.find((s) => s.id === cur) ?? stores[0];
 
   useEffect(() => {
@@ -69,7 +82,15 @@ export function Presenter({ stores, currentId }: { stores: Store[]; currentId: s
         )}
       </div>
       <div className="hidden flex-1 gap-4 p-4 lg:flex" style={zoom ? { zoom: 1.25 } : undefined}>
-        <iframe key={`p${nonce}`} title="Portal do Parceiro" src="/parceiro/salao" className="min-h-[720px] flex-1 rounded-sm border border-border bg-white" />
+        <div ref={box} className="relative min-h-[720px] flex-1 overflow-hidden rounded-sm border border-border bg-white" data-testid="portal-box" data-scale={scale.toFixed(3)}>
+          <iframe
+            key={`p${nonce}`}
+            title="Portal do Parceiro"
+            src="/parceiro/salao"
+            className="absolute left-0 top-0 origin-top-left bg-white"
+            style={scale < 1 ? { width: PORTAL_MIN, height: size.h / scale, transform: `scale(${scale})` } : { width: "100%", height: "100%" }}
+          />
+        </div>
         <div className="flex w-[410px] shrink-0 items-start justify-center">
           <div className="rounded-[2.5rem] border-[10px] border-ink bg-ink p-0.5 shadow-lg">
             <iframe key={`a${nonce}`} title="App do cliente" src={`/r/${store.slug}`} className="h-[780px] w-[390px] rounded-[2rem] bg-white" />

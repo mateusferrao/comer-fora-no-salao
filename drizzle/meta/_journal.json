@@ -36,6 +36,13 @@
       "when": 1795190520222,
       "tag": "0004_s3_painel",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1795205329853,
+      "tag": "0005_s3_dividas",
+      "breakpoints": true
     }
   ]
 }

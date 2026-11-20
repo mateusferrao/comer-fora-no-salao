@@ -7,7 +7,7 @@ import { z } from "zod";
 import { describeOffer } from "@/src/modules/beneficios/domain/offers";
 import type { MenuItem } from "@/src/modules/beneficios/domain/menu";
 import type { Slot } from "@/src/modules/beneficios/domain/slots";
-import { slotAliases, slotLabel, slotPhrase } from "@/src/modules/onboarding/domain/facts";
+import { slotAliases, slotLabel, slotPhrase } from "@/src/modules/beneficios/domain/slot-text";
 import type { SlotCandidates } from "@/src/modules/onboarding/domain/candidates";
 import { formatFact, type RefContext } from "@/src/modules/textos/domain/references";
 import { guardText } from "../guardrails";

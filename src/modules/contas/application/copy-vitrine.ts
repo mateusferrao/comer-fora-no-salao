@@ -12,7 +12,7 @@ import { makeVitrineHistory } from "@/src/db/seed/history";
 import { SEED_VERSION } from "@/src/db/seed";
 import { VITRINE_ID, vitrineSpec } from "@/src/db/seed/vitrine";
 import { VITRINE_SIM } from "@/src/modules/simulacao/domain/generator";
-import { randomSuffix } from "@/src/modules/onboarding/application/test-restaurants";
+import { randomSuffix } from "@/src/shared/random";
 import { safeErr } from "@/src/shared/safe-err";
 import { log } from "@/src/shared/log";
 

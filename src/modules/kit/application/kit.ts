@@ -4,6 +4,7 @@
  */
 import { and, asc, eq, inArray, isNull, sql } from "drizzle-orm";
 import type { Db } from "@/src/db/client";
+import type { Executor } from "@/src/db/executor";
 import { kitPieces, ownerEdits, owners, pieceVariants, restaurants, scans } from "@/src/db/schema";
 import { describeOffer } from "@/src/modules/beneficios/domain/offers";
 import { consume } from "@/src/shared/rate-limit";
@@ -222,14 +223,14 @@ function holdoutWarnings(value: string, k: ReturnType<typeof kitCtx>): string[] 
 export type EditResult = { ok: true; warnings: string[] } | { ok: false; erro: "texto"; motivos: string[] } | { ok: false; erro: "nao_encontrado" | "limite" | "travado"; retryAfterSec?: number };
 
 /** Leituras do QR por versão (reais e simuladas). */
-async function scanCounts(db: Db, ids: string[]): Promise<Map<string, number>> {
+async function scanCounts(db: Executor, ids: string[]): Promise<Map<string, number>> {
   if (!ids.length) return new Map();
   const rows = await db.select({ id: scans.variantId, n: sql<number>`count(*)::int` }).from(scans).where(inArray(scans.variantId, ids)).groupBy(scans.variantId);
   return new Map(rows.map((r) => [r.id!, r.n]));
 }
 
 /** Versões vigentes (display e cartaz) de um rótulo A/B. */
-async function activeOfLabel(db: Db, restaurantId: string, label: "A" | "B") {
+async function activeOfLabel(db: Executor, restaurantId: string, label: "A" | "B") {
   return db
     .select({ id: pieceVariants.id, pieceId: pieceVariants.pieceId, texts: pieceVariants.texts, approvedAt: pieceVariants.approvedAt })
     .from(pieceVariants)
@@ -241,7 +242,7 @@ async function activeOfLabel(db: Db, restaurantId: string, label: "A" | "B") {
  * Versão com leituras fica com o texto travado (S2 #28, [C] D145): mudar o texto mistura o que foi medido.
  * Sem leituras, edita no lugar.
  */
-async function isLocked(db: Db, ids: string[]): Promise<boolean> {
+async function isLocked(db: Executor, ids: string[]): Promise<boolean> {
   return [...(await scanCounts(db, ids)).values()].some((n) => n > 0);
 }
 
@@ -252,9 +253,9 @@ async function isLocked(db: Db, ids: string[]): Promise<boolean> {
 export async function newKitVersion(db: Db, p: { restaurantId: string; label: "A" | "B"; now: Date; textsFrom?: VariantTexts }): Promise<{ ok: true; ids: string[] } | { ok: false; erro: "nao_encontrado" | "sem_leituras" }> {
   return db.transaction(async (tx) => {
     await tx.execute(sql`select id from restaurants where id = ${p.restaurantId} for update`);
-    const rows = await activeOfLabel(tx as unknown as Db, p.restaurantId, p.label);
+    const rows = await activeOfLabel(tx, p.restaurantId, p.label);
     if (!rows.length) return { ok: false as const, erro: "nao_encontrado" as const };
-    if (!(await isLocked(tx as unknown as Db, rows.map((r) => r.id)))) return { ok: false as const, erro: "sem_leituras" as const };
+    if (!(await isLocked(tx, rows.map((r) => r.id)))) return { ok: false as const, erro: "sem_leituras" as const };
     const ids: string[] = [];
     for (const r of rows) {
       await tx.update(pieceVariants).set({ retiredAt: p.now }).where(eq(pieceVariants.id, r.id));

@@ -31,8 +31,9 @@ export async function advanceInvite(db: Db, p: { customerId: string; inviteId: s
     const today = daySP(p.now);
     const yesterday = addDaysSP(today, -1);
     const outside = !isInSlot(inv.slotSnapshot as Slot, p.now);
-    // Já antecipado (e ainda sem volta hoje): idempotente.
-    if (inv.issuedDay === yesterday && rc.lastCheckinDay !== today) {
+    // Já antecipado (e ainda sem volta hoje): idempotente. Só com o marcador: um convite que nasceu ontem de
+    // verdade não é "antecipado" e não ganha liberação fora da faixa (revisão S3 #34).
+    if (inv.advancedAt && inv.issuedDay === yesterday && rc.lastCheckinDay !== today) {
       if (outside && inv.testValidDay !== today) await tx.update(invites).set({ testValidDay: today }).where(eq(invites.id, inv.id));
       return { ok: true as const, testValidToday: outside || inv.testValidDay === today };
     }
@@ -43,7 +44,7 @@ export async function advanceInvite(db: Db, p: { customerId: string; inviteId: s
 
     await tx
       .update(invites)
-      .set({ issuedAt: new Date(inv.issuedAt.getTime() - DAY_MS), issuedDay: yesterday, testValidDay: outside ? today : null })
+      .set({ issuedAt: new Date(inv.issuedAt.getTime() - DAY_MS), issuedDay: yesterday, testValidDay: outside ? today : null, advancedAt: p.now })
       .where(eq(invites.id, inv.id));
     await tx
       .update(checkins)

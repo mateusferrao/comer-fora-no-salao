@@ -136,7 +136,7 @@ export default function ComoFunciona() {
       <p className={p}>Fotos de banco livre do Wikimedia Commons (nenhuma mostra pessoas, marcas ou letreiros reais):</p>
       <ul className="mt-1 list-disc pl-5">
         {[
-          "Salão: “Empty restaurant interior HC08164” — CC0",
+          "Salão: “Modern dining area with wooden decor and empty tables…” — Nenad Stojković, CC BY 2.0",
           "Entrada: “Bruschetta (3755334055)” — Karen and Brad Emerson, CC BY 2.0",
           "Prato: “Spaghetti2” — Popo le Chien, CC0",
           "Porção: “Arancini (veggie) - Nanninella 2025-10-21” — Andy Li, CC0",

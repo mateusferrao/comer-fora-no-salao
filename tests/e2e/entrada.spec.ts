@@ -115,3 +115,10 @@ test("Bastidores com senha (local): publicar o tom do kit, ver a versão em uso,
   await flag.setChecked(was);
   await axe(page);
 });
+
+test("'Trocar de lado' sem sessão de dono leva ao login com o aviso de como entrar (revisão S3 #37)", async ({ page }) => {
+  await page.goto("/trocar-lado?de=app");
+  await expect(page).toHaveURL(/\/parceiro\/entrar\?de=app$/);
+  await expect(page.getByTestId("aviso-trocar-lado")).toHaveText("Para ver o lado do dono, entre no Portal (demo): use seu e-mail ou o link de avaliação.");
+  await axe(page);
+});

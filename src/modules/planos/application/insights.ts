@@ -7,7 +7,7 @@ import type { Executor } from "@/src/db/executor";
 import { benefits, benefitVersions, invites } from "@/src/db/schema";
 import { describeOffer } from "@/src/modules/beneficios/domain/offers";
 import { loadContext, type RestaurantContext } from "@/src/modules/salao/application/context";
-import { slotAliases } from "@/src/modules/onboarding/domain/facts";
+import { slotAliases } from "@/src/modules/beneficios/domain/slot-text";
 import { declaredFacts } from "@/src/modules/onboarding/domain/facts";
 import { recalibratedCap } from "@/src/modules/onboarding/domain/candidates";
 import { turnHeatmap, type HeatCell } from "@/src/modules/analytics/domain/insights";
@@ -42,6 +42,8 @@ export type PlanInsights = {
   segments: Record<Segment, { count: number; optIn: number }>;
   learned: LearnedInput[];
   ctx: RestaurantContext;
+  /** Linhas de clientes já carregadas (a prévia da reativação reaproveita — revisão S3 #36). */
+  customers: Awaited<ReturnType<typeof loadCustomerRows>>;
 };
 
 const WD = ["domingo", "segunda", "terça", "quarta", "quinta", "sexta", "sábado"];
@@ -110,7 +112,7 @@ export async function getPlanInsights(ex: Executor, restaurantId: string, now: D
   heatmap.lowUndeclared.forEach((c, i) => (facts[`turno_pouco_${i + 1}`] = `${WD[c.weekday]} no ${TURN[c.turn]}`.replace("no tarde", "à tarde").replace("no noite", "à noite")));
 
   const learned: LearnedInput[] = offers.map((o) => ({ key: o.key, slotId: o.slotId, verdict: o.verdict, gain: o.gain, title: o.title }));
-  return { today, facts, heatmap, offers, segments, learned, ctx };
+  return { today, facts, heatmap, offers, segments, learned, ctx, customers: rows };
 }
 
 /** Versão da oferta de uma chave `<slotId>:v<n>` (para descrever o "o que aprendemos"). */

@@ -18,7 +18,7 @@ import type { GpsStatus } from "@/src/modules/salao/domain/geo";
 import { inviteSlots, loadContext, loadVersion, remainingBySlot, type RestaurantContext, type VersionedOffer } from "./context";
 import { expireInvites, insertInvite, issueCode, reserveQuota } from "./persistence";
 import { renderReferences } from "@/src/modules/textos/domain/references";
-import { slotPhrase } from "@/src/modules/onboarding/domain/facts";
+import { slotPhrase } from "@/src/modules/beneficios/domain/slot-text";
 import { offerView, sanitizeCheckinView, type CheckinView, type CodeView, type InviteView } from "./views";
 
 export type DoCheckinInput = {

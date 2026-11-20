@@ -4,7 +4,7 @@
 import { sql } from "drizzle-orm";
 import type { Executor } from "@/src/db/executor";
 import { loadContext } from "@/src/modules/salao/application/context";
-import { slotAliases, slotPhrase } from "@/src/modules/onboarding/domain/facts";
+import { slotAliases, slotPhrase } from "@/src/modules/beneficios/domain/slot-text";
 import { daySP } from "@/src/shared/tz";
 import { addDaysSP, weekKeySP } from "@/src/shared/week";
 import { abTable, alertText, operationAlerts, type AbRow, type TurnCodes, type VariantStat } from "../domain/operations";

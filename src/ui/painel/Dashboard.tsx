@@ -69,7 +69,7 @@ export function Dashboard({ initial }: { initial: DashboardView }) {
             <p className="text-3xl font-bold text-ink">{int(d.newUsers30d)}</p>
             <p className="text-xs text-ink-muted">1º check-in da vida aqui, vindo de uma peça do kit.</p>
           </div>
-          <Link href="/parceiro/salao/validar" className="flex min-h-11 items-center justify-center rounded-xs bg-red-button px-5 text-sm font-semibold text-white hover:brightness-95">
+          <Link href="/parceiro/salao/validar" className="flex min-h-11 items-center justify-center rounded-xs border border-red-text bg-white px-5 text-sm font-semibold text-red-text hover:bg-red-text/5">
             Validar código
           </Link>
           <PlanCard plan={d.plan} />

@@ -6,17 +6,11 @@ import { and, count, eq } from "drizzle-orm";
 import type { Db } from "@/src/db/client";
 import { owners, restaurants } from "@/src/db/schema";
 import { consume } from "@/src/shared/rate-limit";
-import { secureRandInt } from "@/src/shared/crypto";
+
+import { randomSuffix } from "@/src/shared/random";
 
 export const MAX_TEST_RESTAURANTS = 3;
 export const DEFAULT_ADDRESS = "Rua Exemplo Fictícia, 100 – São Paulo – SP";
-const ALPHA = "abcdefghijkmnpqrstuvwxyz23456789";
-
-export function randomSuffix(n = 6, randInt: (n: number) => number = secureRandInt): string {
-  let s = "";
-  for (let i = 0; i < n; i++) s += ALPHA[randInt(ALPHA.length)];
-  return s;
-}
 
 export type CreateTestResult = { ok: true; restaurantId: string } | { ok: false; erro: "limite_conta" | "limite"; retryAfterSec?: number };
 

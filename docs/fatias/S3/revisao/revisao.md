@@ -43,7 +43,7 @@ Frentes: Ad (aderência), Tec (técnica), Pr (produto/UX), Seg (segurança/IA) e
 | 21 | médio | Pr | Reativação com faixa zerada ("Usa até 0…") | corrigido: "não usa convites desta vez" |
 | 22 | médio | Ad | Visão da plataforma: 20% com denominador diferente; conta de bolso sem meta | corrigido: "% dos criados" + ressalva; meta de ~125 novos usuários/ano por restaurante [H] |
 | 23 | médio | Pr, E2E | Visão geral a 390 px rolava na horizontal; tabelas roláveis sem foco (axe) | corrigido |
-| 24 | médio | Pr | `/apresentacao` a 1280 px abre o Portal no layout de celular | depois (S4): demo em 1536 px (checklist) |
+| 24 | médio | Pr | `/apresentacao` a 1280 px abre o Portal no layout de celular | corrigido (pós-merge, D150): Portal em escala no modo apresentação |
 | 25 | médio | Ad | Revisor sem taxa de falso bloqueio medida | corrigido: `eval/run-revisor.ts`, publicado em Qualidade |
 | 26 | baixo | Seg, Tec | SIGTERM fechava o pool com requisições em andamento | corrigido: folga de 1,5 s antes de fechar o pool |
 | 27 | baixo | Seg | `desde=1e20` derrubava a rota de eventos | corrigido: limitado à última hora |
@@ -53,10 +53,10 @@ Frentes: Ad (aderência), Tec (técnica), Pr (produto/UX), Seg (segurança/IA) e
 | 31 | baixo | Seg | Índice único de `plan_sends` sem pré-checagem na migração | corrigido: deduplicação antes do índice na 0004; migração testada do zero |
 | 32 | baixo | Pr | "Testar como outro cliente" 2×; faltava "Fazer check-in de novo" | corrigido |
 | 33 | baixo | Pr | `summary` da métrica com a frase inteira | corrigido: só "Como medimos" |
-| 34 | baixo | Tec | "Já antecipado" aceita convite emitido ontem sem marcador | depois: só em restaurante de teste |
+| 34 | baixo | Tec | "Já antecipado" aceita convite emitido ontem sem marcador | corrigido (pós-merge, D150): marcador `advanced_at` |
 | 35 | baixo | Ad | Selo "simulado" só na métrica; Plataforma conta ensaios do candidato | não corrigir: o cabeçalho da cópia já declara os 60 dias de exemplo; ensaios são uso real do protótipo |
-| 36 | baixo | Tec | `tx as unknown as Db`; índice `plan_sends_plan_idx` redundante; `loadCustomerRows` 2× no plano | depois (limpeza) |
-| 37 | baixo | Pr | "Trocar de lado" sem aviso; "D121" na Qualidade; "Validar" em vermelho compete com "Revisar plano" | depois (S4, polimento) |
+| 36 | baixo | Tec | `tx as unknown as Db`; índice `plan_sends_plan_idx` redundante; `loadCustomerRows` 2× no plano | corrigido (pós-merge, D150) |
+| 37 | baixo | Pr | "Trocar de lado" sem aviso; "D121" na Qualidade; "Validar" em vermelho compete com "Revisar plano" | corrigido (pós-merge, D150) |
 | — | — | Seg | `isEvalSupported: false` no pdf.js | não procede: a opção não existe no pdf.js 6 (testado na S3.1); o E2E de PDF com a CSP passa |
 | — | — | E2E | Links de 17 px ("Abrir como cliente", "ver Clientes", "Como funciona") | não procede: links dentro de frases (exceção da WCAG 2.5.8) |
 | — | — | Pr (S2 #38) | Raio dos botões 2 px | não procede: 4 px, igual à captura portal/02 |
@@ -100,3 +100,6 @@ Commits "fix(s3): revisão — …", "fix(ia): revisor só nos textos que chegam
 
 ## 8. Produção
 Merge em avanço rápido na `main` (`b471a40`), com 2,3 GB livres na VPS antes do build. Deploy e E2E de produção verdes (§4).
+
+## 9. Dívidas fechadas depois do merge (D150)
+`/apresentacao` a 1280 px (Portal em escala 0,80, barra lateral visível — captura D01), marcador de antecipação, limpezas técnicas (índice redundante, tipos, consulta duplicada, acoplamento), limites diários na meia-noite de SP, polimento (aviso do "Trocar de lado", Validar com contorno, Qualidade sem "D121") e foto colorida do salão (D02). Verificação: unidade 271, integração 85, E2E local 66, migração do zero (6) e build com pico de 1,21 GB.
