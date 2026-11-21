@@ -1364,3 +1364,7 @@ Detalhes, perguntas, revisão independente (2 subagentes) e itens [C] em [docs/f
 - Achado 1: o plano saiu "sem IA" e o assistente não sabia por quê. `gerar_plano` e `ver_plano` passam a dizer o motivo (`motivo_sem_ia`), com um mapa único de motivos também usado no Plano da semana (que mostrava o código cru para "teto_diario" e "erro").
 - Achado 2: os fatos da IA tratavam o nível novo "Mais ou menos" (D240) como "um pouco vazia". Agora: muito / mais ou menos / pouco vazia.
 - Observação, sem mudança: o plano pronto do restaurante de exemplo (origem "fixo") tem texto escrito antes ("18% de uso, manter"), que não acompanha os números de hoje (11%, "trocar"). É o plano de demonstração; o primeiro plano gerado já usa os números atuais.
+
+**D252 — Flag "IA sem teto diário" para testes** (21/11, candidato: "remove esse limite só pra gente testar"; forma [C]) ✅
+- O teto diário da chave pública (US$ 0,50 — D85) continua no código; a flag `ia_sem_teto` nos Bastidores o suspende enquanto estiver ligada. Nasce desligada; ligada pela IA a pedido do candidato, que a desliga ao terminar os testes.
+- Alternativas: apagar o teto (sem volta fácil; risco de gasto por terceiros na chave pública); pôr o e-mail do candidato em `PRESENTER_EMAILS` (chave de demo só para ele, mas exige reescrever todo o ambiente no Easypanel e mandar o e-mail para lá). Trade-off: enquanto ligada, vale para qualquer conta que use a chave pública.

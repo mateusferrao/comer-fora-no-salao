@@ -18,6 +18,8 @@ export const FLAGS = [
   "modo_garcom",
   "plano_agente",
   "porta_conta",
+  // D252 (candidato: "remove esse limite só pra gente testar"): sem teto diário da chave pública. Nasce desligado.
+  "ia_sem_teto",
 ] as const;
 export type Flag = (typeof FLAGS)[number];
 export type Flags = Record<Flag, boolean>;
@@ -37,6 +39,7 @@ export const FLAG_DEFAULTS: Flags = {
   // D225 (candidato): ligado — confiabilidade nas regras vence; a chamada única fica de reserva.
   plano_agente: true,
   porta_conta: false,
+  ia_sem_teto: false,
 };
 export const FLAG_LABEL: Record<Flag, string> = {
   ab: "A/B das peças (status e 'promover vencedora')",
@@ -53,6 +56,7 @@ export const FLAG_LABEL: Record<Flag, string> = {
   modo_garcom: "Link do garçom só com 'Validar código' (S6)",
   plano_agente: "Plano da semana como agente com ferramentas (S6; ligado pela D225, com a chamada única de reserva)",
   porta_conta: "Peça porta-conta no kit (S6)",
+  ia_sem_teto: "IA sem teto diário de gasto na chave pública (só para testes; desligue depois)",
 };
 
 /** Tarefas com bloco de instruções editável ao vivo (D58): só instruções/tom; schema e regras ficam no código. */
