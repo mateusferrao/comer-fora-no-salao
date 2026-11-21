@@ -8,6 +8,7 @@ import { readCustomerId } from "@/src/web/customer-session";
 import { JourneyView } from "./JourneyView";
 import { getFlags } from "@/src/modules/config/application/app-config";
 import { listCustomerPrefs } from "@/src/modules/salao/application/preferences";
+import { getMyContact } from "@/src/modules/salao/application/customer-login";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Sua jornada · Comer Fora" };
@@ -23,5 +24,7 @@ export default async function JornadaPage() {
   // "Ver como cliente reativado" (Ferramentas do avaliador) entra como um cliente do histórico gerado: a Jornada avisa.
   const generated = customerId ? Boolean((await db.select({ run: customers.simulationRunId }).from(customers).where(eq(customers.id, customerId)))[0]?.run) : false;
   const prefs = customerId && journey.firstName !== null ? await listCustomerPrefs(db, customerId) : [];
-  return <JourneyView journey={journey} messages={messages} generated={generated} exploreHref={`/r/${VITRINE_SLUG}`} copyV2={(await getFlags(db)).copy_v2} prefs={prefs} />;
+  // D250: "Seus dados" só para cliente real logado com perfil (o cliente do histórico gerado não edita).
+  const myData = customerId && journey.firstName !== null && !generated ? await getMyContact(db, customerId) : null;
+  return <JourneyView journey={journey} messages={messages} generated={generated} exploreHref={`/r/${VITRINE_SLUG}`} copyV2={(await getFlags(db)).copy_v2} prefs={prefs} myData={myData} />;
 }

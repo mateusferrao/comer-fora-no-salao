@@ -10,6 +10,7 @@ import { Button } from "@/src/ui/components/Button";
 import { CodeDisplay } from "@/src/ui/components/CodeDisplay";
 import { InviteCard } from "@/src/ui/cliente/InviteCard";
 import { NotificationPrefs, type PrefsItem } from "@/src/ui/cliente/NotificationPrefs";
+import { MyData, type MyDataView } from "@/src/ui/cliente/MyData";
 import { TXT } from "@/src/ui/cliente/textos";
 
 /** Jornada (app/13; S4 — D156, D171): "Sair" e "Apagar meus dados" atrás da engrenagem, como no app. */
@@ -20,6 +21,7 @@ export function JourneyView({
   exploreHref,
   copyV2 = false,
   prefs = [],
+  myData = null,
 }: {
   journey: Journey;
   messages?: CustomerMessageView[];
@@ -27,9 +29,11 @@ export function JourneyView({
   exploreHref: string;
   copyV2?: boolean;
   prefs?: PrefsItem[];
+  myData?: MyDataView | null;
 }) {
   const [settings, setSettings] = useState(false);
   const [showPrefs, setShowPrefs] = useState(false);
+  const [showData, setShowData] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [busy, setBusy] = useState(false);
   const leave = async (path: "sair" | "apagar") => {
@@ -161,8 +165,10 @@ export function JourneyView({
           </ul>
         )}
       </main>
-      <BottomSheet open={settings} onClose={() => (setSettings(false), setConfirmDelete(false), setShowPrefs(false))} title={showPrefs ? "Gerenciar notificações" : "Sua conta"}>
-        {showPrefs ? (
+      <BottomSheet open={settings} onClose={() => (setSettings(false), setConfirmDelete(false), setShowPrefs(false), setShowData(false))} title={showPrefs ? "Gerenciar notificações" : showData ? "Seus dados" : "Sua conta"}>
+        {showData && myData ? (
+          <MyData initial={myData} onBack={() => setShowData(false)} />
+        ) : showPrefs ? (
           <div className="flex flex-col gap-3">
             <NotificationPrefs items={prefs} />
             <Button variant="outline-app" onClick={() => setShowPrefs(false)}>
@@ -181,6 +187,12 @@ export function JourneyView({
           </div>
         ) : (
           <div className="flex flex-col gap-3">
+            {/* D250: o cliente corrige o próprio nome e telefone. */}
+            {myData && (
+              <Button variant="outline-app" onClick={() => setShowData(true)}>
+                Seus dados
+              </Button>
+            )}
             {/* S6.1 (D198): central de preferências, como "Gerenciar notificações" do app (print 14). */}
             <Button variant="outline-app" onClick={() => setShowPrefs(true)}>
               Gerenciar notificações

@@ -7,6 +7,8 @@ import { turnOfMinutes, type Slot } from "@/src/modules/beneficios/domain/slots"
 
 import { slotAliases } from "@/src/modules/beneficios/domain/slot-text";
 
+/** D240: 3 níveis, no feminino ("a faixa está mais ou menos vazia"). Antes, "medio" virava "um pouco vazia". */
+const INTENSITY_FEM: Record<string, string> = { muito: "muito vazia", medio: "mais ou menos vazia", um_pouco: "pouco vazia" };
 const TURN_LABEL: Record<string, string> = { madrugada: "madrugada", manha: "manhã", almoco: "almoço", tarde: "tarde", noite: "noite" };
 
 export type DeclaredRestaurant = { tables?: number | null; weeklyCustomers?: number | null; ticketCents?: number | null; marginPct?: number | null };
@@ -14,7 +16,7 @@ export type DeclaredRestaurant = { tables?: number | null; weeklyCustomers?: num
 export function declaredFacts(r: DeclaredRestaurant, slots: readonly Slot[], menu: readonly MenuItem[]): Record<string, number | string> {
   const f: Record<string, number | string> = {};
   for (const { alias, slot } of slotAliases(slots)) {
-    f[`faixa_${alias}_intensidade`] = slot.intensity === "muito" ? "muito vazia" : "um pouco vazia"; // concorda com "a faixa" (revisão da S2)
+    f[`faixa_${alias}_intensidade`] = INTENSITY_FEM[slot.intensity] ?? "pouco vazia"; // concorda com "a faixa" (revisão da S2)
     f[`faixa_${alias}_mesas`] = slot.extraTables;
     f[`faixa_${alias}_turno`] = TURN_LABEL[turnOfMinutes(slot.startMin)]!;
   }

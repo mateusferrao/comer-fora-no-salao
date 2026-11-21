@@ -11,7 +11,7 @@ import { customerContacts, customerLoginCodes, customers, restaurantCustomers } 
 import type { MailSender } from "@/src/modules/contas/adapters/mail-sender";
 import { noteSendResult } from "@/src/modules/contas/adapters/mail-factory";
 import { generateLoginCode, isLoginCodeFormat, LOGIN_CODE_MAX_ATTEMPTS, LOGIN_CODE_TTL_MIN, loginCodeState } from "@/src/modules/contas/domain/login-code";
-import { encryptEmail, encryptPhone, hmacCustomerEmail, hmacLoginCode, hmacPhone, safeEqual, secureRandInt } from "@/src/shared/crypto";
+import { decryptEmail, decryptPhone, encryptEmail, encryptPhone, hmacCustomerEmail, hmacLoginCode, hmacPhone, safeEqual, secureRandInt } from "@/src/shared/crypto";
 import { log } from "@/src/shared/log";
 import { consume, consumeAll } from "@/src/shared/rate-limit";
 import { safeErr } from "@/src/shared/safe-err";
@@ -205,6 +205,41 @@ export async function saveCustomerProfile(db: Db, p: { restaurantId: string; cus
     await upsertConsent(tx, p.restaurantId, p.customerId, optEmail, optApp);
     return { ok: true as const };
   });
+}
+
+/**
+ * "Seus dados" (D250): o próprio cliente vê e corrige nome e telefone. Cadastro antigo sem o número inteiro (só os 4
+ * últimos, antes da D237) volta com `phone` vazio e `oldPhoneLast4`, para a tela pedir o número completo.
+ */
+export type MyContact = { name: string; phone: string; oldPhoneLast4: string | null; email: string };
+
+export async function getMyContact(db: Db, customerId: string): Promise<MyContact | null> {
+  const [c] = await db.select().from(customerContacts).where(eq(customerContacts.customerId, customerId));
+  if (!c) return null;
+  const phone = decryptPhone(c.phoneEnc) ?? "";
+  return { name: c.name ?? "", phone, oldPhoneLast4: phone ? null : (c.phoneLast4 ?? null), email: decryptEmail(c.emailEnc) ?? "" };
+}
+
+const myContactSchema = z.object({
+  name: z.string().trim().min(2).max(60),
+  phone: z.string().refine((v) => v === "" || isPhoneFormat(v)).nullable(),
+});
+
+/** `phone`: null mantém o atual; "" apaga; número no formato `(DD) 9XXXX-XXXX` grava cifrado (como no cadastro). */
+export async function updateMyContact(
+  db: Db,
+  p: { customerId: string; name: string; phone: string | null; now: Date },
+): Promise<{ ok: true } | { ok: false; erro: "dados_invalidos"; campos: string[] } | { ok: false; erro: "sem_cliente" }> {
+  const parsed = myContactSchema.safeParse({ name: p.name, phone: p.phone });
+  if (!parsed.success) return { ok: false, erro: "dados_invalidos", campos: [...new Set(parsed.error.issues.map((i) => String(i.path[0] ?? "")))] };
+  const { name, phone } = parsed.data;
+  const phoneFields = phone === null ? {} : { phoneHmac: phone ? hmacPhone(phoneDigits(phone)) : null, phoneLast4: phone ? last4(phone) : null, phoneEnc: phone ? encryptPhone(phone) : null };
+  const updated = await db
+    .update(customerContacts)
+    .set({ name, ...phoneFields, lastSeenAt: p.now })
+    .where(eq(customerContacts.customerId, p.customerId))
+    .returning({ id: customerContacts.customerId });
+  return updated.length ? { ok: true } : { ok: false, erro: "sem_cliente" };
 }
 
 /** Consentimento por restaurante (revisão S4 I1): cliente já logado aceita este restaurante com 1 toque. */

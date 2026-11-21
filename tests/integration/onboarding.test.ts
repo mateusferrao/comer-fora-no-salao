@@ -75,7 +75,7 @@ describe("assistente de ativação (Postgres)", () => {
     expect(v.slots).toHaveLength(2);
     expect(v.slots[0]!.chosenId).toBe(v.slots[0]!.options[1]!.id);
     expect(v.slots[0]!.inviteRendered).toMatch(/^Volte .+, das \d+h às \d+h e aproveite .+\.$/);
-    expect(v.slots[0]!.justificativa).toMatch(/muito vazia|um pouco vazia/);
+    expect(v.slots[0]!.justificativa).toMatch(/muito vazia|mais ou menos vazia|pouco vazia/);
     // o "agora" e a recompensa não aparecem entre as candidatas
     const ids = v.slots.flatMap((s) => s.options.map((o) => o.offer.params.itemId));
     expect(ids).not.toContain(v.agora.offer.params.itemId);

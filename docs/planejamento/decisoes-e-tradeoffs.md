@@ -1350,6 +1350,21 @@ Detalhes, perguntas, revisão independente (2 subagentes) e itens [C] em [docs/f
 **D271 — Itens [C] da S8** (21/11, IA [C]) ✅
 - Lista em docs/fatias/S8/planejamento.md §9 e §10, entre eles: nome "Assistente do salão"; painel não modal que empurra o conteúdo; histórico só no navegador (12 turnos); proposta expira em 30 min ou se o "antes" mudar (`base_hash`); aplicar com reserva `UPDATE … RETURNING`; `checkOffer` puro extraído de `updateOffer`/`approvePlanInTx`; migração 0010 gerada no fim; guard `chat` (sem número cru nem por extenso, sem URL, lista própria de proibidas); contexto pronto com apelidos; ≤ 3 passos; teto diário próprio de US$ 0,20 na chave pública; gateway falso só no E2E local com `fakeAi:false` no health; chip da demo = trocar a oferta do convite de Ter–Qui 15h–18h.
 
+**D249 — CI automático só na `main`** (21/11, candidato: "tem muitos runs rodando. não poderia ser só um com tudo?"; forma [C]) ✅
+- Cada push ia para o branch da sessão e para a `main`, e o CI rodava duas vezes o mesmo código. Agora o push dispara o CI só na `main` (que também faz o deploy); nos branches, execução manual ou pull request. A suíte completa continua rodando localmente antes de cada publicação.
+- Alternativa: manter nos dois (dobra minutos e fila). Trade-off: branch sem checagem automática no push × uma execução por publicação.
+
+**D250 — "Seus dados" na Jornada: o cliente corrige nome e telefone** (21/11, candidato: trocar o telefone do próprio cadastro antigo — "faz a tela seus dados") ✅
+- Em "Sua conta" (engrenagem), "Seus dados" mostra nome, telefone e o e-mail do login. Nome e telefone podem ser corrigidos; o telefone grava como no cadastro (HMAC, 4 últimos e cifrado — D237). Cadastro antigo com só os 4 últimos dígitos pede o número completo e, se o campo ficar intocado, mantém o antigo.
+- O cliente do histórico gerado (Ferramentas do avaliador) não vê a opção.
+- Alternativa: alterar direto no banco de produção (sem acesso de fora; chave de produção em comando é proibido). Trade-off: uma tela a mais × resolve para todo cadastro antigo, com o aceite e a cifra do produto.
+
+**D251 — Achados do teste de ponta a ponta do conector pelo Claude** (21/11, IA [C]) ✅
+- Teste real pelo Claude, conectado ao restaurante do candidato: ler_insights (sem contato de cliente), ver_plano, gerar_plano, aprovar_plano (91 entregues), aprovar de novo (idempotente, "ja_estava") e plano inexistente (erro claro) — tudo certo.
+- Achado 1: o plano saiu "sem IA" e o assistente não sabia por quê. `gerar_plano` e `ver_plano` passam a dizer o motivo (`motivo_sem_ia`), com um mapa único de motivos também usado no Plano da semana (que mostrava o código cru para "teto_diario" e "erro").
+- Achado 2: os fatos da IA tratavam o nível novo "Mais ou menos" (D240) como "um pouco vazia". Agora: muito / mais ou menos / pouco vazia.
+- Observação, sem mudança: o plano pronto do restaurante de exemplo (origem "fixo") tem texto escrito antes ("18% de uso, manter"), que não acompanha os números de hoje (11%, "trocar"). É o plano de demonstração; o primeiro plano gerado já usa os números atuais.
+
 **D272 — Ícone da aba com o ícone do iFood** (21/11, candidato: "buscar e adicionar o .ico do ifood na barra"; enviou a imagem do ícone) ✅ (estende D42/D81)
 - O `.ico` do site do iFood não pôde ser baixado (página bloqueada para a sessão; o do Portal do Parceiro é outro desenho, uma fachada). O candidato enviou a imagem do ícone (círculo vermelho com o "sorriso"), usada como veio: `app/favicon.ico` (16/32/48 px), `app/icon.png` (256 px) e `app/apple-icon.png` (180 px), servidos pelo Next; cantos fora do círculo transparentes.
 - Risco de confusão com o iFood oficial aumenta um pouco; mantidos a barra de protótipo, o título da aba sem "iFood" e o `noindex` (D88, D164). Alternativa: ícone neutro do projeto.

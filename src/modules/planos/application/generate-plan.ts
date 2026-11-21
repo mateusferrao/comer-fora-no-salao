@@ -35,7 +35,7 @@ import { safeErr } from "@/src/shared/safe-err";
 export const PLAN_FALLBACK_INVITE = "Volte {horario} e aproveite {oferta}.";
 export const PLAN_LIMIT_PER_DAY = 10;
 
-export type GenerateResult = { ok: true; planId: string; generatedBy: "ia" | "sem_ia" } | { ok: false; erro: "gerando" | "limite" | "inativo" | "nao_encontrado"; retryAfterSec?: number };
+export type GenerateResult = { ok: true; planId: string; generatedBy: "ia" | "sem_ia"; semIa?: string } | { ok: false; erro: "gerando" | "limite" | "inativo" | "nao_encontrado"; retryAfterSec?: number };
 
 /** Decisão gravada no plano (o que o código decidiu + as escolhas originais da IA, para "IA ≠ maior nota"). */
 export type WeeklyDecision = {
@@ -178,5 +178,5 @@ export async function generateWeeklyPlan(
       ),
     );
   }
-  return { ok: true, planId: started.planId, generatedBy: semIa ? "sem_ia" : "ia" };
+  return { ok: true, planId: started.planId, generatedBy: semIa ? "sem_ia" : "ia", ...(semIa ? { semIa } : {}) };
 }
