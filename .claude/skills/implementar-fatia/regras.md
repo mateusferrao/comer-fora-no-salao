@@ -13,7 +13,7 @@ Fonte: `docs/planejamento/especificacao.md`, `plano-implementacao.md` (Global Co
 - Drizzle + migrações versionadas; `migrate()` programático no boot.
 - UTC no banco + `day_sp` (`America/Sao_Paulo`); toda data de negócio via `Clock` + `src/shared/tz.ts` (nunca `new Date()` solto no domínio).
 - Eventos append-only com chave de idempotência; `simulation_run_id` nas tabelas de eventos.
-- PII só em `customer_contacts` (HMAC + 4 dígitos). Coordenada do cliente nunca no servidor. Foto de cardápio nunca persistida.
+- PII só em `customer_contacts`: telefone como HMAC + 4 dígitos; desde a S4, e-mail real do cliente como HMAC (`cliente-email:`) + AES-256-GCM e nome em claro (D154, D171, D173). Coordenada do cliente nunca no servidor. Foto de cardápio nunca persistida.
 
 ## IA (D51–D60)
 - Modelos **só via OpenRouter**, pelo `AiGateway`; nada de chamar provedor direto.
@@ -53,5 +53,5 @@ Fonte: `docs/planejamento/especificacao.md`, `plano-implementacao.md` (Global Co
 
 ## Nunca
 - Inventar dado, texto de tela, regra ou comportamento do app real que não esteja nas fontes.
-- Usar dado real (pessoas, restaurantes, iFood).
+- Usar dado real de restaurantes ou do iFood. Dado pessoal real só o que o próprio usuário digita no login (dono: D118; cliente: D154/D171, risco aceito pelo candidato), nunca em log, prompt, MCP ou rastro.
 - Tocar serviços do Easypanel que não sejam os de prefixo `case-salao-` no projeto `sites` (D100).

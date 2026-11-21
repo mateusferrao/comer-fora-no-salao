@@ -991,7 +991,7 @@ Detalhes, itens [C], sub-fatias e revisão independente (2 subagentes) em [docs/
 **D153 — "Avançar 1 dia" nos Bastidores (Ferramentas do avaliador)** (21/11, U) ✅
 - Alternativas: tirar de vez (fere "funciona sem depender do candidato"); regra "voltar hoje" (muda o domínio).
 
-**D154 — Cliente entra com nome, telefone e e-mail + código de 6 dígitos por e-mail; campos livres, sem pré-preenchimento** (21/11, U) ✅ (substitui D22/D30/D31 no que se refere a dados fictícios do cliente)
+**D154 — Cliente entra com nome, telefone e e-mail + código de 6 dígitos por e-mail; campos livres, sem pré-preenchimento** (ajustada pela D173: e-mail primeiro, telefone opcional) (21/11, U) ✅ (substitui D22/D30/D31 no que se refere a dados fictícios do cliente)
 - Alternativas: identificação em degraus (recomendado); só telefone; pré-preenchido realista.
 - Risco aceito: dado pessoal real de clientes (ver D161).
 
@@ -1013,7 +1013,7 @@ Detalhes, itens [C], sub-fatias e revisão independente (2 subagentes) em [docs/
 **D160 — Ordem de corte** (21/11, U) ✅
 - (1) limpeza + login do cliente + reativação entregue + Bastidores; (2) painel em R$ + meta + feed; (3) landing, página do QR, convite com agenda; (4) "Por que esta oferta?"; (5) ciclo semanal por e-mail; (6) modo garçom; (7) agente; (8) porta-conta. Corte: domingo 22h, por flag.
 
-**D161 — Login completo no check-in, com linha de consentimento e retenção de 7 dias** (21/11, U, após a revisão de produto) ✅
+**D161 — Login completo no check-in, com linha de consentimento e retenção de 7 dias** (⚠ retenção substituída pela D171; ordem dos campos ajustada pela D173) (21/11, U, após a revisão de produto) ✅
 - "Protótipo de case, não é o iFood. Seus dados são apagados em 7 dias" + "Apagar meus dados" na Jornada. Aparelhos da demo logados antes (cookie de 180 dias).
 - A revisão de produto apontou como bloqueante o anti-objetivo "página confundida com o iFood que colete dados reais" e a queda do funil. Alternativas: e-mail só para guardar o convite (recomendado); sem aviso.
 
@@ -1046,3 +1046,32 @@ Detalhes, itens [C], sub-fatias e revisão independente (2 subagentes) em [docs/
 - A S4 fica com o planejamento detalhado; S5 e S6 guardam só o escopo combinado; a S7 (entregáveis) é planejada na segunda.
 - A S4.1 (migração 0006, criptografia do e-mail, seed v4) já tinha sido feita no branch da sessão (`7b01c74`), fora da `main`, e fica parada lá.
 - Alternativa: planejar S4–S6 de uma vez (o que estava em curso).
+
+### Rodada própria da S4 (`planejar-fatia`, 21/11)
+Detalhes, revisão independente (2 subagentes) e itens [C] em [docs/fatias/S4/planejamento.md](../fatias/S4/planejamento.md) §15.
+
+**D171 — Sem apagamento automático dos dados do cliente** (21/11, U) ✅ (substitui a retenção de 7 dias da D161)
+- Achado do planejamento: apagar a PII com 7 dias contradizia a reativação (só mira quem "sumiu" há ≥ 14 dias; convite vale 30 dias).
+- A IA explicou que apagar é proteção de protótipo (case: "dados pessoais de ninguém"; LGPD), não exigência de produto (um CRM real guarda enquanto há relação). O candidato escolheu guardar como produto real, com "Apagar meus dados" sempre disponível. Linha: "Protótipo de case, não é o iFood. Você pode apagar seus dados quando quiser."
+- Alternativas: produto real + data final 31/12/2026 (recomendado); 30 dias após a última visita; manter 7 dias. Risco aceito: dado pessoal real sem prazo num protótipo (declarado em "Como funciona").
+
+**D172 — O dono vê o grupo de controle já na S4** (21/11, U) ✅
+- "Últimos check-ins de hoje" na Visão geral (sem flag), com a marca "grupo de controle · sem convite (mede o efeito)"; dica no roteiro: "saia e entre com outro e-mail (ex.: seu+2@gmail.com)". O cliente continua sem saber do controle.
+- Alternativas: ferramenta "novo cliente" sem e-mail nos Bastidores; só a dica.
+
+**D173 — E-mail primeiro, telefone opcional** (21/11, U, após a revisão de produto) ✅ (ajusta D154/D161)
+- Passo 1: e-mail + aceite → código; passo 2 só para quem é novo: nome, telefone opcional e os interruptores "E-mail" e "Notificação no app". Quem volta digita só e-mail e código.
+- Alternativas: sem telefone (recomendado: o telefone não tem uso — minimização); manter os 3 campos de uma vez.
+
+**D174 — Link, telefone ou e-mail no texto do dono não vão por e-mail** (21/11, U) ✅ (complementa D125)
+- O convite com esse conteúdo vai só para o app; o dono vê "textos com link ou contato não vão por e-mail". Alternativas: só texto da IA/modelo por e-mail; enviar como está.
+
+**D175 — Remetente dos e-mails aos clientes continua `msg.automato.pro`** (21/11, U) ✅ (estende D135)
+- Texto simples, link de descadastro em todo e-mail (+ `List-Unsubscribe`), teto diário, nada para endereços de teste. Alternativa: domínio novo neutro (DNS e verificação a tempo).
+
+**D176 — Cantina pública como restaurante normal; dono logado vai à própria cópia** (21/11, U) ✅
+- O candidato perguntou "por que não deixamos como um restaurante normal, com seed como única diferença?"; a IA explicou que ela já é normal, mas o dono é a conta do seed (ninguém valida os códigos). Decisão: check-in liberado, sem aviso; "Veja o que seu cliente vê" leva o dono logado à página da própria cópia; o roteiro manda usar "Ver minha página".
+- Alternativas: só para ver; normal sem ajuste.
+
+**D177 — Itens [C] da rodada da S4** (21/11, IA [C]) ✅
+- Lista em docs/fatias/S4/planejamento.md §15 ("Revisão independente"): correção do ON CONFLICT em `phone_hmac` quebrado pela 0006 (o branch estava vermelho na identificação); `opt_email` no simulador e `hasOptIn` único; consentimento por restaurante; sem vínculo com telefone antigo; envio depois do commit com `email_status` e `SKIP LOCKED`; "Avançar 1 dia" também nas cópias; descadastro em todo e-mail; Primeiros passos terminando em "1º cliente voltou com convite"; textos "Convite entregue a N clientes em Sua jornada"; fidelidade da Jornada aos prints.

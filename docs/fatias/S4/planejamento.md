@@ -1,8 +1,8 @@
 # Planejamento da fatia S4 — Produto real e identidade
 
-Status: ✅ escopo e decisões aprovados em 21/11/2026 pelo candidato (replanejamento de 21/11, decisões D151–D169). Este documento guarda o que é comum ao replanejamento (contexto, decisões, perguntas e revisão independente) e o detalhe da S4. **Cada fatia seguinte (S5, S6, S7) é planejada com `planejar-fatia` só quando for a vez dela** (pedido do candidato, 21/11): os documentos delas guardam por enquanto só o escopo combinado.
+Status: ✅ **aprovado em 21/11/2026 pelo candidato** depois da rodada própria de `planejar-fatia` (D171–D176; a seção "Rodada própria da S4" no fim **prevalece** sobre o texto anterior onde houver conflito). Escopo e decisões do replanejamento aprovados antes (replanejamento de 21/11, decisões D151–D169). Este documento guarda o que é comum ao replanejamento (contexto, decisões, perguntas e revisão independente) e o detalhe da S4. **Cada fatia seguinte (S5, S6, S7) é planejada com `planejar-fatia` só quando for a vez dela** (pedido do candidato, 21/11): os documentos delas guardam por enquanto só o escopo combinado.
 
-> **Execução suspensa (21/11, ~01h).** O candidato pediu "primeiro registrar tudo". A sub-fatia S4.1 tinha sido feita antes desse pedido, só no branch da sessão (commit `7b01c74`), e ficou parada lá. O resto só começa com a liberação dele. Ver §14.
+> **Execução suspensa (21/11, ~01h) e retomada depois da aprovação da rodada própria da S4.** O candidato pediu "primeiro registrar tudo". A sub-fatia S4.1 tinha sido feita antes desse pedido, só no branch da sessão (commit `7b01c74`), e ficou parada lá. O resto só começa com a liberação dele. Ver §14.
 
 ## 0. Fatiamento novo (D151)
 | Fatia | Nome | Sub-fatias | Flag | Planejamento |
@@ -402,3 +402,124 @@ WhatsApp/push real; login iFood real; o painel em R$, o feed, as landings e o "P
   - **ajuste [C]:** a chave do e-mail é **derivada do `SESSION_SECRET` por HKDF** (`email-enc:v1`), no lugar de uma variável `CUSTOMER_EMAIL_KEY`. Motivo: trocar variáveis no Easypanel exige substituir o ambiente inteiro (`updateAppEnv` destrutivo) perto do congelamento. Trade-off: girar o `SESSION_SECRET` invalida os e-mails guardados (aceitável: retenção de 7 dias).
   - Verificado: teste de unidade 3/3; integração db/seed/copy-vitrine 10/10; `tsc` e fronteiras limpos.
   - A execução ficou suspensa depois disso, a pedido do candidato.
+
+
+---
+
+## 15. Rodada própria da S4 (`planejar-fatia`, 21/11) — prevalece sobre as seções acima
+
+## Decisões novas do candidato
+| ID | Decisão | Alternativas recusadas |
+|---|---|---|
+| D171 | **Sem apagamento automático da PII do cliente.** Os dados ficam enquanto houver relação, como num CRM real (a base é do restaurante, H5). "Apagar meus dados" fica sempre disponível na Jornada. A linha do formulário passa a ser: "**Protótipo de case, não é o iFood. Você pode apagar seus dados quando quiser.**" Substitui a retenção de 7 dias da D161; o resto da D161 continua (login completo no check-in, aparelhos da demo logados antes). | Real + data final 31/12/2026 (recomendado); 30 dias depois da última visita; manter 7 dias |
+| D172 | **O dono vê o grupo de controle já na S4.** A Visão geral ganha "Últimos check-ins de hoje" (lista curta, sem flag), e cada check-in do controle leva a marca "grupo de controle · sem convite (mede o efeito)". É a semente do feed da S5.1. O roteiro do avaliador ganha a dica "para testar outro cliente, saia e entre com outro e-mail (ex.: seu+2@gmail.com)". Para o cliente nada muda. | Ferramenta "novo cliente" sem e-mail nos Bastidores; só a dica no roteiro |
+
+Explicação dada ao candidato antes da D171:
+- apagar não é exigência do produto, é proteção de protótipo (o case proíbe "dados pessoais de ninguém"; LGPD, necessidade);
+- um CRM real guarda o cliente enquanto há relação e consentimento;
+- os 7 dias vinham do revisor, copiando a regra das contas de dono.
+
+O candidato escolheu "sem apagar", aceitando o risco de dado pessoal real guardado sem prazo num protótipo. O risco fica declarado em "Como funciona" e preparado para a entrevista.
+
+### Ajustes ao rascunho `docs/fatias/S4/planejamento.md`
+- **§4.3** (login do cliente):
+  - sai "Retenção (D161): a PII é apagada 7 dias sem atividade…";
+  - entra: a PII fica até "Apagar meus dados" (D171);
+  - `last_seen_at` continua sendo gravado (dado de atividade, útil para os segmentos);
+  - a linha fixa do formulário fica com o texto novo da D171.
+- **§4.4 / Visão geral:**
+  - "Últimos check-ins de hoje" (D172): até 10 linhas;
+  - cada linha: hora, primeiro nome + inicial, "1ª visita / volta", a marca do controle quando o cliente caiu nele, e "código validado" quando validou;
+  - mesma consulta de ~3 s do painel;
+  - estado vazio: "Nenhum check-in hoje ainda".
+- **§4.6** (roteiro): + a dica do e-mail com "+".
+- **§6.1:**
+  - `customer-privacy.ts` fica só com `deleteCustomerData` (sai `purgeStaleCustomerPii`);
+  - `cleanup.ts` só apaga códigos de cliente com mais de 1 dia;
+  - novo `analytics/application/recent-checkins.ts` (consulta do dia em SP, restaurante da sessão);
+  - novo `src/ui/painel/RecentCheckins.tsx`.
+- **§6.5 / §8:** o risco "dado pessoal real sem prazo" é aceito pelo candidato (D171), mitigado por criptografia, HMAC, "Apagar meus dados" e fora de log, prompt e MCP.
+- **§7 (testes):**
+  - sai o teste de retenção de 7 dias;
+  - entram: "Últimos check-ins" só do dia em SP e só do restaurante; marca do controle só para clientes do holdout; nome mascarado;
+  - E2E: o check-in do cliente no grupo de controle aparece no painel do dono com a marca.
+- **§13 [C]:** o nome do cliente para o dono passa a ser primeiro nome + inicial já na S4, porque a lista nova mostra nomes.
+- **Itens [C] desta rodada:**
+  - a página do cliente da Cantina não leva o selo "Restaurante de exemplo" (o selo é só no Portal; o fluxo do cliente é real);
+  - no `/apresentacao`, a moldura do celular usa o mesmo cookie do aparelho da demo, que fica logado antes;
+  - os e-mails do convite (mesa e reativação) são texto funcional e simples nesta fatia, e a copy fica para a S5.2.
+- **Decisões a registrar:** D171 e D172 em `decisoes-e-tradeoffs.md`; D161 marcada como "ajustada por D171"; a especificação v3 (bloco do topo) ajustada; uma linha no log.
+
+### Decisões do candidato depois da revisão independente
+| ID | Decisão | Alternativas recusadas |
+|---|---|---|
+| D173 | **Formulário com o e-mail primeiro e telefone opcional.** Passo 1: e-mail + aceite → código. Passo 2, só para quem é novo: nome, telefone (opcional) e os interruptores "E-mail" e "Notificação no app". Quem volta digita só o e-mail e o código. Ajusta D154/D161 (os 3 campos de uma vez) | Sem telefone (recomendado); como decidido |
+| D174 | **Link, telefone ou e-mail no texto do dono não vão por e-mail.** O convite com esse conteúdo vai só para o app, e o dono vê "textos com link ou contato não vão por e-mail". Na tela, o texto livre continua (D125) | Só texto da IA/modelo por e-mail; enviar como está |
+| D175 | **Remetente dos e-mails aos clientes continua `msg.automato.pro`** (estende a D135). Texto simples, link de descadastro em todo e-mail, teto diário, nada para endereços de teste; risco com o candidato | Domínio novo neutro |
+| D176 | **A Cantina pública é um restaurante normal** (a única diferença é o histórico do seed), com check-in liberado e sem aviso. Quem está logado como dono e clica em "Veja o que seu cliente vê" vai para a página da própria cópia. O roteiro manda usar "Ver minha página" | Só para ver (recomendado antes da explicação); normal sem ajuste |
+
+### Revisão independente (21/11, 2 subagentes — D95)
+Os dois leram o plano antes de a D171/D172 estar gravada. B3 (técnico) e B1/B2 (produto) já estavam cobertos por D171 e D172.
+
+**Técnico:**
+- **B1 (confirmado no código) → [C], corrigir no início da S4.2.** A 0006 tirou a unicidade do telefone, mas `identify-customer.ts:54` usa `onConflictDoNothing({ target: phoneHmac })`. O Postgres dá erro 42P10, e o branch está vermelho na identificação. Correção:
+  - `upsertCustomerIdentity` com ON CONFLICT em `email_hmac`;
+  - com a flag de emergência desligada, nunca casar cliente por e-mail sem código: cria cliente novo com `email_hmac` nulo;
+  - suíte de integração inteira antes de seguir.
+- **B2 → [C].** O simulador não grava `opt_email`:
+  - `UPDATE restaurant_customers SET opt_email = opt_app` na 0006 (ainda não está na `main`, dá para editar e regenerar o snapshot);
+  - `optEmail: c.optIn` em `simulacao/application/persist.ts`;
+  - uma função única `hasOptIn` usada em `customers.ts:79`, `insights.ts:107` e `CustomersView`.
+- **I1 → [C].** Consentimento por restaurante: na 1ª vez num restaurante novo, uma folha de 1 toque com o aceite daquele restaurante; `opt_email=false` até o aceite.
+- **I2 → [C].** Sai a regra de vínculo com o telefone antigo. Os clientes antigos tinham dados fictícios, e a regra permitiria tomar outro cliente.
+- **I3 → [C].** Duas confirmações ao mesmo tempo: código com `FOR UPDATE` + ON CONFLICT no `email_hmac` + apagar o cliente órfão (o padrão de `verify-code.ts`). E-mail que volta atualiza nome, telefone e interruptores só se o cliente mudar.
+- **I4 → [C].** Envio depois do commit:
+  - `customer_messages.email_status` (pendente / enviado / pulado / falhou) com índice parcial, na 0006;
+  - reserva com `UPDATE … WHERE email_status='pendente' … FOR UPDATE SKIP LOCKED RETURNING`;
+  - varredura por `plan_send_id` ou por cliente;
+  - gancho com `after()` na rota do plano, na aprovação via MCP (`mcp/server.ts:83`) e na rota do check-in;
+  - o "M também por e-mail" do dono = número enfileirado.
+- **I5 → [C].** "Avançar 1 dia":
+  - também nas cópias da Cantina (hoje `advance-invite.ts:23` exige `kind='teste'`), só em clientes reais;
+  - age nos convites emitidos hoje;
+  - uma transação por convite;
+  - `liberatedToday` neutro na view;
+  - `do-checkin.ts:73` passa a usar `anyTimeDay === hoje`;
+  - E2E de produção: a conta e2e pode avançar no restaurante E2E fixo.
+- **I6 → [C].** Completar a lista de remoção e de testes:
+  - código: `entrar/page.tsx:15`, `simulate-test.ts`, `extract-menu.ts:21,30`, `cardapio/extrair/route.ts:19`, `Presenter.tsx:57`, `mcp/server.ts:84`, `Roteiro.tsx` (reescrito), `textos.ts:11`, `portal-context.ts:14`, `PlanManager.tsx:106,242,250`, `Step4Pacote.tsx:22`, `RestaurantView.tsx:107`, `Dashboard.tsx:61,133,156`, `BastidoresConfig.tsx:217`;
+  - testes: `apresentacao.spec.ts:16`, `fumaca.spec.ts:4`, `componentes.spec.ts:5`, `helpers.ts:5` (barra), e todo POST direto a `/identificacao` (`cliente.spec.ts:26`, `dono.spec.ts:49,179,232`, `painel.spec.ts:46`, `volta.spec.ts:52`), que passa a usar o helper `loginCustomer()`;
+  - documentos: `regras.md:16,34,56` e espec. 4.2 e 4.7 também mudam.
+- **I7 → [C].** E2E de produção:
+  - id largo no e-mail de teste (`e2e-cliente+<timestamp><n>@exemplo.invalid`);
+  - simulador do SES com `success+<execução>@simulator.amazonses.com`, isento do limite por e-mail.
+- **Menores → [C]:**
+  - o nome no código de login vai criptografado (ou o pendente é apagado em "Apagar meus dados");
+  - o check-in exige o contato (cookie de cliente apagado → login);
+  - o check-in atualiza `last_seen_at`;
+  - "Últimos check-ins" no payload de 3 s (`funil`), pelo índice `checkins_restaurant_at_idx`, sem seed, `LIMIT 10`;
+  - uma função única de mascarar nome; "Cliente" quando apagado;
+  - o controle só atrás de `requireStore`;
+  - slug definido no passo 2 e congelado quando existe kit;
+  - corrigir "SEED_VERSION recria as cópias": as cópias antigas dependem do UPDATE.
+
+**Produto:**
+- **B3 (Cantina pública) → candidato → D176.**
+- **I1 → [C].** Link "Não quero mais receber · Apagar meus dados" em todo e-mail ao cliente (token assinado + confirmação por POST), mais o cabeçalho `List-Unsubscribe`.
+- **I2 → candidato → D174.**
+- **I3/I4 → candidato → D173.** Também [C]: `type="email"`, `autocomplete` certo, estado salvo em `sessionStorage`, "Não chegou? Veja o spam" e espera de 30 s no "Reenviar".
+- **I5 → [C].** O aceite obrigatório cobre só o uso dos dados ("O restaurante vê seu primeiro nome e a inicial. Seus dados ficam guardados até você apagar."). Os interruptores são as únicas escolhas de marketing.
+- **I6 → [C].** No passo do código, mostrar o e-mail inteiro + "Trocar e-mail".
+- **I7 → [C].** "Primeiros passos": 1) "Kit pronto e marcado no salão (não precisa imprimir)"; 2) 1º check-in; 3) 1º código validado; 4) "1º cliente voltou com convite" (link para as Ferramentas do avaliador). Sai "1º plano aprovado".
+- **I8 → [C].** "Ver como cliente reativado" avisa antes de trocar, marca a Jornada com "Cliente do histórico gerado" e oferece "Voltar ao meu login".
+- **I9 → [C].** "Convite entregue a N clientes em Sua jornada · M também por e-mail"; "Plano pronto do restaurante de exemplo (escrito antes, sem IA ao vivo)".
+- **M1/M2/M3 → [C].** Inventário completado (como I6 técnico + a coluna de opt-in em `CustomersView` vira E-mail/App). A varredura sem diferenciar maiúsculas, com `testar`, `\bdemo\b` e `protótipo` fora da barra e dos rodapés, e cobrindo `/apresentacao`. "Prévia nesta faixa".
+- **M4 → [C]** (fidelidade a `referencias/app/13-jornada.png` e `14-notificacoes.png`):
+  - "Seus convites" atrás do ícone de balão, com ponto vermelho e `aria-label`;
+  - interruptores, "Sair" e "Apagar meus dados" atrás da engrenagem;
+  - mantém "Comunicações de promoções" e "Notificação no app"; o interruptor novo é "E-mail".
+- **M5 → [C].** Botão principal fixo no rodapé da folha; a linha de consentimento logo acima dele.
+
+### Ordem de implementação
+S4.1 (✅ no branch) → S4.2 login do cliente → S4.3 limpeza + Primeiros passos + "Últimos check-ins" + Ferramentas do avaliador → S4.4 reativação entregue. Cada sub-fatia fecha verde antes da próxima. A revisão e o merge acontecem depois da S6 (D167).
+
