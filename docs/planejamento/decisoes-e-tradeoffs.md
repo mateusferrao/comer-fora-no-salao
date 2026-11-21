@@ -975,3 +975,68 @@ Detalhes, revisão independente (2 subagentes) e itens [C] em [docs/fatias/S3/pl
   - "Trocar de lado" sem sessão mostra aviso no login;
   - "Validar código" com contorno;
   - Qualidade sem "D121".
+
+## M. Replanejamento de 21/11 — Produto real e valor ao dono (fatias S4, S5, S6; entregáveis viram S7)
+Detalhes, itens [C], sub-fatias e revisão independente (2 subagentes) em [docs/fatias/S4/planejamento.md](../fatias/S4/planejamento.md). Origem: o candidato pediu foco em valor para o dono e conversão de clientes (skill de copywriting), e tirar do produto tudo que o apresenta como teste/simulação, mantendo só a barra de protótipo. Ele também apontou "pouca inovação, resultado e técnica"; a análise crítica concordou: o diferencial mora nas regras e só aparece em "Como funciona", o resultado vem de um efeito programado e a técnica fica nos Bastidores.
+
+**D151 — Fatias novas S4–S6 até segunda 23/11 às 10h; entregáveis (antiga S4) viram a S7, a última** (21/11, U) ✅
+- Alternativas: fatia única até domingo 18h (recomendado pela IA); só limpeza + landing.
+- Trade-off: mais produto × S7 (slide, vídeo, repositório público, preparação) espremida entre 10h e 15h de segunda.
+
+**D152 — Sistema real só com seed** (21/11, U) ✅ (substitui D140, D141, D143 e a "simulação declarada" da espec. 3.1)
+- A cópia da Cantina aparece sem "demonstração"/"simulado". O restaurante criado é real e começa vazio, com "Primeiros passos".
+- Saem do produto: "Simular 30 dias", "Limpar simulação", "Antecipar 1 dia", "Importar do delivery (simulado)" e o motivo do grupo de controle mostrado ao cliente.
+- Alternativa: manter "Simular" com outro nome.
+
+**D153 — "Avançar 1 dia" nos Bastidores (Ferramentas do avaliador)** (21/11, U) ✅
+- Alternativas: tirar de vez (fere "funciona sem depender do candidato"); regra "voltar hoje" (muda o domínio).
+
+**D154 — Cliente entra com nome, telefone e e-mail + código de 6 dígitos por e-mail; campos livres, sem pré-preenchimento** (21/11, U) ✅ (substitui D22/D30/D31 no que se refere a dados fictícios do cliente)
+- Alternativas: identificação em degraus (recomendado); só telefone; pré-preenchido realista.
+- Risco aceito: dado pessoal real de clientes (ver D161).
+
+**D155 — Reativação entregue de verdade** (21/11, U) ✅
+- Convite na Jornada ("Seus convites", com aviso de novo) e por e-mail para quem consentiu. Alternativa: só tirar "(simulado)".
+
+**D156 — Atalhos: fica só "Como funciona" na barra** (21/11, U) ✅
+- Saem o roteiro da entrada, "Trocar de lado" e "Testar como outro cliente" (vira "Sair" na Jornada). Caminho real para o cliente: QR do kit e "Ver minha página".
+
+**D157 — Vídeo da S7 com telas reais (roteiro automatizado no Playwright, legendas e narração por IA)** (21/11, U) ✅
+- Alternativas: vídeo gerado por IA (inventa telas); sem vídeo.
+
+**D158 — Apostas: ciclo semanal por e-mail com Aprovar, plano como agente com ferramentas e "Por que esta oferta?"; kit ampliado só no porta-conta** (21/11, U) ✅
+- Alternativa recusada: arte do kit gerada por IA (prato que não existe; contraria o kit sem fotos).
+
+**D159 — Agente decidido por número** (21/11, U) ✅
+- T3 refeita com código + juiz cego, agente × chamada única no mesmo modelo, em pares cegos (revisão técnica). Vira padrão com regras ok ≥ 90%, p50 ≤ 20 s e juiz não pior; senão fica atrás de flag desligada. Critério indicativo (n pequeno).
+
+**D160 — Ordem de corte** (21/11, U) ✅
+- (1) limpeza + login do cliente + reativação entregue + Bastidores; (2) painel em R$ + meta + feed; (3) landing, página do QR, convite com agenda; (4) "Por que esta oferta?"; (5) ciclo semanal por e-mail; (6) modo garçom; (7) agente; (8) porta-conta. Corte: domingo 22h, por flag.
+
+**D161 — Login completo no check-in, com linha de consentimento e retenção de 7 dias** (21/11, U, após a revisão de produto) ✅
+- "Protótipo de case, não é o iFood. Seus dados são apagados em 7 dias" + "Apagar meus dados" na Jornada. Aparelhos da demo logados antes (cookie de 180 dias).
+- A revisão de produto apontou como bloqueante o anti-objetivo "página confundida com o iFood que colete dados reais" e a queda do funil. Alternativas: e-mail só para guardar o convite (recomendado); sem aviso.
+
+**D162 — Selo "Restaurante de exemplo · histórico gerado" na Cantina** (21/11, U, após a revisão de produto) ✅ (mantém D209)
+- Topo em R$: "R$ X a mais em margem entre N convidados até agora" (a margem soma todas as janelas fechadas, não "30 dias"). Alternativa: sem rótulo.
+
+**D163 — Tudo por e-mail** (21/11, U) ✅ (reabre a mitigação "e-mail sem logo e sem link" da D118)
+- Resumo semanal do dono com "Revisar e aprovar" + convite, lembrete e reativação por e-mail aos clientes com consentimento. Texto simples, sem logo, links só para o nosso domínio, aprovação por POST. Alternativas: só o resumo do dono (recomendado); sem agendador.
+
+**D164 — Rodapé "Protótipo" no impresso e no e-mail; barra sem "dados fictícios"** (21/11, U) ✅
+- Barra: "Protótipo de case · não é produto oficial do iFood".
+
+**D165 — Consentimento continua ligado por padrão** (21/11, U) ✅
+- A IA propôs desmarcado (LGPD, dado real); o candidato manteve como na espec. e no app. Risco registrado e declarado em "Como funciona".
+
+**D166 — Plano como agente reabre a D215** (21/11, U via D158) ✅
+- Defesas da D215 mantidas: ferramentas só de leitura sobre fatos agregados (sem texto livre do cardápio nem PII), saída final presa às candidatas, decisão por número (D159).
+
+**D167 — 1 merge no fim da S6** (21/11, U) ✅ (mantém D12/D136)
+- Alternativa: 2 merges, o 1º no sábado (recomendado pela revisão técnica, porque a S4 não tem flag).
+
+**D168 — E-mails por evento + agendador; meta de merge antes de segunda 08:30** (21/11, U) ✅
+- Por evento: convite ao nascer, reativação ao aprovar, "Enviar agora". Agendador: resumo do dono segunda 08:30 e lembrete no dia do convite, com regra de recuperação e estados reservado → enviado. Alternativa: só por evento (recomendado).
+
+**D169 — Itens [C] do replanejamento** (21/11, IA [C]) ✅
+- Lista completa em docs/fatias/S4/planejamento.md §3 e "Correções da revisão técnica": e-mail do cliente com HMAC (`cliente-email:`) + AES-256-GCM (`CUSTOMER_EMAIL_KEY`), e-mail como chave do cliente (telefone deixa de ser único), `owners.email_enc` (muda D118), enums internos mantidos, slugs pelo nome, seed v4 com sobrenomes comuns, .ics de 1 evento, 4 estados do topo, varredura de textos pelo Playwright, flag de emergência `login_cliente_email`.

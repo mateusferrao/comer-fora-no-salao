@@ -1,10 +1,19 @@
 # Especificação — "Comer Fora no Salão"
 
-Status: ✅ **v2 — replanejamento de produto em 20/11/2026** (diferenciação; decisões D201–D224), revisada por um builder check e 2 revisões independentes (técnica e produto). A v1 foi fechada em 19/11, depois de brainstorming e 5 rodadas de revisão independente (ver [revisoes.md](revisoes.md)); os ajustes técnicos da S0 são D77–D100. Este documento é a **fonte única** para a construção. A parte [00](00-contexto-problema-recorte.md) guarda o contexto, o recorte e as alternativas descartadas.
+Status: ✅ **v3 — replanejamento "produto real e valor ao dono" em 21/11/2026** (D151–D169, fatias S4–S6; detalhes em [../fatias/S4/planejamento.md](../fatias/S4/planejamento.md)). Antes: **v2 — replanejamento de produto em 20/11/2026** (diferenciação; decisões D201–D224), revisada por um builder check e 2 revisões independentes (técnica e produto). A v1 foi fechada em 19/11, depois de brainstorming e 5 rodadas de revisão independente (ver [revisoes.md](revisoes.md)); os ajustes técnicos da S0 são D77–D100. Este documento é a **fonte única** para a construção. A parte [00](00-contexto-problema-recorte.md) guarda o contexto, o recorte e as alternativas descartadas.
 
 Legenda: **[B]** briefing · **[P]** pesquisa pública · **[O]** observado nos prints do app/Portal · **[H]** hipótese declarada · **[C]** decisão do assistente de IA, aberta a correção.
 
 > **O que mudou na v2:** o momento de valor do dono passou a ser **encher o horário vazio**. Agora o cliente ganha **algo na hora e um convite de volta** para o horário vazio. P7 virou o **plano da semana**, com análise de dados pelo código e IA que escolhe e explica. A métrica principal passou a ser **visitas e margem incrementais contra o holdout**, com intervalo. A ativação agora **propõe um pacote** (sistema propõe, dono aprova). Mudanças de escopo: **Avaliar** saiu, **Clientes** virou segmentos acionáveis e o **MCP** voltou, por último na fila.
+
+> **O que mudou na v3 (21/11) — prevalece sobre o texto abaixo onde conflitar:**
+> - **Produto real (D152, D156):** saem das telas "teste", "simulado", "demonstração", "Simular 30 dias", "Antecipar 1 dia", "Importar do delivery" e o motivo do grupo de controle ao cliente (3.1, 3.2, 3.6, 3.8 ficam só para o seed e os Bastidores). A Cantina leva o selo "Restaurante de exemplo · histórico gerado" (D162). Restaurante criado = real, com "Primeiros passos". "Avançar 1 dia" e o roteiro vão para Bastidores › Ferramentas do avaliador (D153).
+> - **Barra (D164):** "Protótipo de case · não é produto oficial do iFood"; só o link "Como funciona". Impresso e e-mail levam 1 linha de rodapé igual.
+> - **Cliente (3.5, 4.6 — D154, D161, D165):** entra com nome, telefone e e-mail reais + código de 6 dígitos por e-mail; linha "Protótipo de case, não é o iFood. Seus dados são apagados em 7 dias"; consentimento ligado por padrão; "Sair" e "Apagar meus dados"; e-mail guardado como HMAC + AES-256-GCM e apagado em 7 dias sem visita. O pré-preenchimento fictício sai.
+> - **Reativação e e-mails (3.7, D155, D163, D168):** a reativação é entregue no app (Jornada › Seus convites) e por e-mail a quem consentiu; convite por e-mail ao nascer; resumo semanal do dono com "Revisar e aprovar" (POST, `via: email`) toda segunda 08:30 e lembrete no dia do convite.
+> - **Valor e conversão (S5):** topo da Visão geral em R$ ("R$ X a mais em margem entre N convidados até agora", 4 estados), meta por faixa, feed "Hoje no salão"; landing e página do QR reescritas com a skill de copywriting; convite com "Adicionar à agenda" (.ics); "Por que esta oferta?" no plano e no pacote.
+> - **IA que opera (S6):** plano como agente com ferramentas só de leitura (decidido por número — D159, D166), modo garçom por link, porta-conta no kit.
+> - **Fatias e cronograma (seção 7):** S4 (produto real e identidade), S5 (valor e conversão), S6 (IA que opera), 1 merge no fim (D167) com meta antes de 23/11 08:30; corte por flag domingo 22h; S7 = entregáveis (slide, vídeo de telas reais — D157, repositório público, preparação), segunda 10h–15h.
 
 ---
 

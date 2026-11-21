@@ -224,3 +224,9 @@ Entrega verificável: link estável, envio pelos dois canais, slide PPTX, materi
 Ajustes do planejamento da S0 (D77–D96) aplicados acima; detalhes em `docs/fatias/S0/planejamento.md`.
 
 Decisões marcadas [C] neste plano (abertas a correção): limiar de 300 m para "perto"; código de 6 caracteres; telefone fictício com DDD 00; tabela fixa de turnos; limite de 5 extrações por visitante por dia; teto inicial = mesas × 4; limiares do veredito por oferta; parâmetros da simulação (+0,20 visita/14 d, 25% migração, ~200 novos/semana — D104). (Da v1, saíram: definição de "voltou" em 30 dias e limiares das 6 ações candidatas.)
+
+
+---
+
+## Replanejamento de 21/11 — S4, S5, S6 e S7
+As fatias S4 (produto real e identidade), S5 (valor e conversão) e S6 (IA que opera) foram planejadas juntas: tarefas (sub-fatias S4.1–S6.4), testes, arquivos e ordem de corte em [../fatias/S4/planejamento.md](../fatias/S4/planejamento.md) (decisões D151–D169). Revisão e merge únicos depois da S6 (D167). A antiga S4 (entregáveis) passa a ser a **S7**, planejada com `planejar-fatia` na segunda 23/11 de manhã.
