@@ -12,8 +12,8 @@ import { requireOwner } from "@/src/web/portal-context";
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: "Configurações · Portal do Parceiro" };
 
-export default async function ConfigPage({ searchParams }: { searchParams: Promise<{ aba?: string }> }) {
-  const { aba } = await searchParams;
+export default async function ConfigPage({ searchParams }: { searchParams: Promise<{ aba?: string; v?: string }> }) {
+  const { aba, v: applied } = await searchParams;
   const s = await requireOwner();
   const cur = s.current;
   if (!cur || cur.status !== "ativo") {
@@ -39,6 +39,8 @@ export default async function ConfigPage({ searchParams }: { searchParams: Promi
         <p className="mt-1 text-sm text-ink-muted">Tudo o que a IA propôs é editável. Cada mudança vira uma nova versão; convites já emitidos continuam com a oferta e o horário de quando foram emitidos.</p>
       </header>
       <ConfigManager
+        // S8: depois de "Aplicar" no assistente, a URL ganha `v` e o formulário remonta com os dados novos.
+        key={typeof applied === "string" && /^[a-f0-9-]{1,40}$/.test(applied) ? applied : "base"}
         v={v}
         isTest={cur.kind === "teste" && !cur.copiedFrom}
         restaurantId={cur.id}

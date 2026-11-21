@@ -4,13 +4,13 @@ import { useState, type MouseEvent, type ReactNode } from "react";
 import { Logo } from "./Logo";
 import { useModalDialog } from "./useModalDialog";
 
-type Props = { nav: ReactNode; children: ReactNode; top?: ReactNode; footer?: ReactNode; mobileTitle?: string };
+type Props = { nav: ReactNode; children: ReactNode; top?: ReactNode; footer?: ReactNode; mobileTitle?: string; assistant?: ReactNode };
 
 /**
  * Casca do Portal: sidebar fixa a partir de 1024 px; abaixo disso, gaveta com botão (44 px),
  * foco preso, Esc fecha e devolve o foco. Logo iFood no topo (portal/05).
  */
-export function PortalShell({ nav, children, top, footer, mobileTitle }: Props) {
+export function PortalShell({ nav, children, top, footer, mobileTitle, assistant }: Props) {
   const [open, setOpen] = useState(false);
   const close = () => setOpen(false);
   const { ref, dialogProps } = useModalDialog(open, close);
@@ -21,7 +21,7 @@ export function PortalShell({ nav, children, top, footer, mobileTitle }: Props) 
   };
 
   return (
-    <div className="min-h-dvh bg-surface lg:grid lg:grid-cols-[256px_1fr]">
+    <div className="min-h-dvh bg-surface lg:grid lg:grid-cols-[256px_1fr] lg:pr-[var(--copiloto-w,0px)]">
       {/* "Pular para o conteúdo" fica na barra de protótipo, antes dos links dela (1º foco da página). */}
       <aside className="hidden border-r border-divider lg:sticky lg:top-[var(--proto-h,24px)] lg:flex lg:h-[calc(100dvh-var(--proto-h,24px))] lg:flex-col">
         <div className="px-6 py-5">
@@ -80,6 +80,8 @@ export function PortalShell({ nav, children, top, footer, mobileTitle }: Props) 
       <div id="conteudo" tabIndex={-1} className="min-w-0 scroll-mt-12 focus:outline-none">
         {children}
       </div>
+      {/* S8: Assistente do salão (painel do computador empurra o conteúdo por --copiloto-w). */}
+      {assistant}
     </div>
   );
 }

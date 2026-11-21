@@ -22,7 +22,7 @@ export function fakeCopilotGateway(): AiGateway {
       const q = norm(last);
       const menu = [...req.system.matchAll(/^- (P\d+): (.+?) \((\w+), [^;)]*(?:; ([^)]*))?\)$/gm)].map((m) => ({ alias: m[1]!, name: m[2]!, cat: m[3]!, flags: m[4] ?? "" }));
       const slotA = /^- A: .*convite: \w+ com (P\d+)/m.exec(req.system);
-      let output: unknown = { resposta: "Nos últimos trinta dias foram {fato:checkins_30d}.", propostas: [], sugestoes: ["Trocar a oferta do convite"] };
+      let output: unknown = { resposta: "No último mês foram {fato:checkins_30d}.", propostas: [], sugestoes: ["Trocar a oferta do convite"] };
       if (q.includes("oferta") && slotA) {
         const pick = menu.find((m) => m.cat === "sobremesa" && m.alias !== slotA[1] && !m.flags.includes("fora")) ?? menu.find((m) => m.cat === "entrada");
         if (pick) output = { resposta: "Preparei a proposta abaixo para {horario:A}. Confira e aplique se estiver certo.", propostas: [{ ...EMPTY, acao: "oferta", papel: "convite", faixa: "A", prato: pick.alias, tipo: pick.cat === "sobremesa" ? "doce_gratis" : "entrada_gratis" }], sugestoes: ["Mudar o teto desse horário"] };
