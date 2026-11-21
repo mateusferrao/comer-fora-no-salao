@@ -1,0 +1,79 @@
+import { afterAll, beforeEach, describe, expect, it } from "vitest";
+import { and, eq, isNull } from "drizzle-orm";
+import { closeDb, getDb } from "@/src/db/client";
+import { agentProposals, benefitVersions, menuItems, ownerEdits } from "@/src/db/schema";
+import { createProposals, decideProposal, PROPOSAL_TTL_MS } from "@/src/modules/agente/application/proposals";
+import { updateOffer } from "@/src/modules/config/application/update-settings";
+import { createRestaurant, resetDb } from "./helpers/db";
+
+const NOW = new Date("2026-11-23T16:00:00Z");
+const later = (ms: number) => new Date(NOW.getTime() + ms);
+
+describe("propostas do copiloto (S8 — D261, D269)", () => {
+  beforeEach(resetDb);
+  afterAll(closeDb);
+
+  it("proposta de convite → aplicar → versão nova, owner_edits e status aplicada", async () => {
+    const r = await createRestaurant();
+    const [card] = await createProposals(getDb(), { restaurantId: r.restaurantId, origin: "copiloto", payloads: [{ acao: "oferta", papel: "convite", slotId: r.slots.A!, offer: { kind: "entrada_gratis", itemId: r.items.bruschetta! }, weeklyCap: 12 }], now: NOW });
+    expect(card!.status).toBe("pendente");
+    const res = await decideProposal(getDb(), { restaurantId: r.restaurantId, proposalId: card!.id!, origin: "copiloto", acao: "aplicar", now: later(1000) });
+    expect(res).toMatchObject({ ok: true, status: "aplicada", aba: "convites" });
+    const [v] = await getDb().select().from(benefitVersions).where(and(eq(benefitVersions.restaurantId, r.restaurantId), isNull(benefitVersions.supersededAt), eq(benefitVersions.weeklyCap, 12)));
+    expect(v!.params).toMatchObject({ itemId: r.items.bruschetta });
+    expect(v!.inviteText).toBeTruthy();
+    const edits = await getDb().select().from(ownerEdits).where(eq(ownerEdits.restaurantId, r.restaurantId));
+    expect(edits.some((e) => e.kind === "config:convite")).toBe(true);
+    const [row] = await getDb().select().from(agentProposals).where(eq(agentProposals.id, card!.id!));
+    expect(row!.status).toBe("aplicada");
+  });
+
+  it("Tiramisù (recompensa) indisponível → recusada, nada gravado", async () => {
+    const r = await createRestaurant();
+    const [card] = await createProposals(getDb(), { restaurantId: r.restaurantId, origin: "copiloto", payloads: [{ acao: "item", itemId: r.items.tiramisu!, mudanca: "indisponivel" }], now: NOW });
+    expect(card).toMatchObject({ id: null, status: "recusada", motivo: "“Tiramisù” é a recompensa da cartela. Troque a recompensa antes de tirar o prato do cardápio." });
+    expect(await getDb().select().from(agentProposals)).toHaveLength(0);
+  });
+
+  it("2 aplicar em paralelo → 1 efeito", async () => {
+    const r = await createRestaurant();
+    const [card] = await createProposals(getDb(), { restaurantId: r.restaurantId, origin: "copiloto", payloads: [{ acao: "oferta", papel: "convite", slotId: r.slots.A!, offer: { kind: "entrada_gratis", itemId: r.items.bruschetta! } }], now: NOW });
+    const res = await Promise.all([1, 2, 3].map(() => decideProposal(getDb(), { restaurantId: r.restaurantId, proposalId: card!.id!, origin: "copiloto", acao: "aplicar", now: later(1000) })));
+    expect(res.every((x) => x.ok)).toBe(true);
+    const vs = await getDb().select().from(benefitVersions).where(and(eq(benefitVersions.restaurantId, r.restaurantId), eq(benefitVersions.kind, "entrada_gratis")));
+    expect(vs).toHaveLength(1);
+  });
+
+  it("outra loja, outra porta ou vencida → não aplica", async () => {
+    const r = await createRestaurant();
+    const other = await createRestaurant();
+    const [card] = await createProposals(getDb(), { restaurantId: r.restaurantId, origin: "copiloto", payloads: [{ acao: "item", itemId: r.items.bruschetta!, mudanca: "preco", priceCents: 3000 }], now: NOW });
+    expect(await decideProposal(getDb(), { restaurantId: other.restaurantId, proposalId: card!.id!, origin: "copiloto", acao: "aplicar", now: later(1) })).toMatchObject({ ok: false, status: "nao_encontrada" });
+    expect(await decideProposal(getDb(), { restaurantId: r.restaurantId, proposalId: card!.id!, origin: "mcp", acao: "aplicar", now: later(1) })).toMatchObject({ ok: false, status: "nao_encontrada" });
+    expect(await decideProposal(getDb(), { restaurantId: r.restaurantId, proposalId: card!.id!, origin: "copiloto", acao: "aplicar", now: later(PROPOSAL_TTL_MS + 1) })).toMatchObject({ ok: false, status: "expirada" });
+    const [it] = await getDb().select().from(menuItems).where(eq(menuItems.id, r.items.bruschetta!));
+    expect(it!.priceCents).toBe(2600);
+  });
+
+  it("o 'antes' mudou depois da prévia → expirada, sem aplicar", async () => {
+    const r = await createRestaurant();
+    const [card] = await createProposals(getDb(), { restaurantId: r.restaurantId, origin: "copiloto", payloads: [{ acao: "oferta", papel: "convite", slotId: r.slots.A!, offer: { kind: "entrada_gratis", itemId: r.items.bruschetta! } }], now: NOW });
+    await updateOffer(getDb(), { restaurantId: r.restaurantId, role: "convite", slotId: r.slots.A!, offer: { kind: "doce_gratis", itemId: r.items.panna! }, weeklyCap: 20, inviteText: "", now: later(10) });
+    expect(await decideProposal(getDb(), { restaurantId: r.restaurantId, proposalId: card!.id!, origin: "copiloto", acao: "aplicar", now: later(20) })).toMatchObject({ ok: false, status: "expirada" });
+    const vs = await getDb().select().from(benefitVersions).where(and(eq(benefitVersions.restaurantId, r.restaurantId), eq(benefitVersions.kind, "entrada_gratis")));
+    expect(vs).toHaveLength(0);
+  });
+
+  it("descartar → descartada; aplicar depois não grava", async () => {
+    const r = await createRestaurant();
+    const [card] = await createProposals(getDb(), { restaurantId: r.restaurantId, origin: "mcp", payloads: [{ acao: "item", itemId: r.items.bruschetta!, mudanca: "fora_das_ofertas" }], now: NOW });
+    expect(await decideProposal(getDb(), { restaurantId: r.restaurantId, proposalId: card!.id!, origin: "mcp", acao: "descartar", now: later(1) })).toEqual({ ok: true, status: "descartada" });
+    expect(await decideProposal(getDb(), { restaurantId: r.restaurantId, proposalId: card!.id!, origin: "mcp", acao: "aplicar", now: later(2) })).toMatchObject({ ok: false, status: "descartada" });
+  });
+
+  it("texto de convite da IA sem o horário → recusada com a regra (D226)", async () => {
+    const r = await createRestaurant();
+    const [card] = await createProposals(getDb(), { restaurantId: r.restaurantId, origin: "copiloto", payloads: [{ acao: "oferta", papel: "convite", slotId: r.slots.A!, offer: { kind: "entrada_gratis", itemId: r.items.bruschetta! }, inviteText: "Volte logo e aproveite {oferta}." }], now: NOW });
+    expect(card!.status).toBe("recusada");
+  });
+});

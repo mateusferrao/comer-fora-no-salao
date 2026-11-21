@@ -1,0 +1,164 @@
+/**
+ * Propostas (S8 — D261, D269): grava a prévia do código e aplica SÓ pela proposta guardada no banco, com reserva
+ * atômica (dois cliques ou botão + MCP → um efeito — revisão técnica B4) e conferência do "antes" (`base_hash`): se o
+ * alvo mudou desde a prévia, a proposta expira em vez de aplicar algo que o dono não viu (B5). A gravação usa as
+ * MESMAS funções das Configurações, que revalidam tudo.
+ */
+import { createHash } from "node:crypto";
+import { and, eq, gt, sql } from "drizzle-orm";
+import type { Db } from "@/src/db/client";
+import { agentProposals } from "@/src/db/schema";
+import { describeOffer, offerFromInput } from "@/src/modules/beneficios/domain/offers";
+import { slotPhrase } from "@/src/modules/beneficios/domain/slot-text";
+import { guardText } from "@/src/modules/ia/guardrails";
+import { textIssues } from "@/src/modules/ia/guardrails/messages";
+import { deactivateSlot, getSettingsView, setItemOfferAllowed, setMenuItemActive, updateMenuItem, updateOffer, updateSlot } from "@/src/modules/config/application/update-settings";
+import { previewProposal, type PreviewOk, type ProposalPayload, type Snapshot } from "../domain/proposals";
+
+export const PROPOSAL_TTL_MS = 30 * 60_000;
+export type Origin = "copiloto" | "mcp";
+
+export type ProposalCard = { id: string; status: "pendente"; preview: PreviewOk; payload: ProposalPayload } | { id: null; status: "recusada"; motivo: string; payload: ProposalPayload };
+
+/** JSON com chaves ordenadas: o mesmo "antes" dá sempre o mesmo hash. */
+export function stableJson(v: unknown): string {
+  if (Array.isArray(v)) return `[${v.map(stableJson).join(",")}]`;
+  if (v && typeof v === "object") return `{${Object.keys(v as object).sort().filter((k) => (v as Record<string, unknown>)[k] !== undefined).map((k) => `${JSON.stringify(k)}:${stableJson((v as Record<string, unknown>)[k])}`).join(",")}}`;
+  return JSON.stringify(v ?? null);
+}
+export const baseHash = (antes: unknown) => createHash("sha256").update(stableJson(antes)).digest("hex");
+
+export async function loadSnapshot(db: Db, restaurantId: string): Promise<Snapshot | null> {
+  const v = await getSettingsView(db, restaurantId);
+  if (!v) return null;
+  return {
+    marginPct: v.restaurant.marginPct,
+    opening: v.restaurant.opening,
+    agora: v.agora,
+    recompensa: v.recompensa,
+    slots: v.slots.map((s) => ({ id: s.id, days: s.days, startMin: s.startMin, endMin: s.endMin, intensity: s.intensity, extraTables: s.extraTables, offer: s.offer, weeklyCap: s.weeklyCap, inviteText: s.inviteText })),
+    menu: v.menu.map((m) => ({ id: m.id, name: m.name, category: m.category, priceCents: m.priceCents, active: m.active, inUse: m.inUse, offerAllowed: m.offerAllowed })),
+  };
+}
+
+/** Texto de convite escrito pela IA ou pelo agente: regras do guard em modo IA (D226), com a mensagem que diz o porquê. */
+function inviteTextProblem(snap: Snapshot, p: Extract<ProposalPayload, { acao: "oferta" }>, text: string): string | null {
+  const slot = snap.slots.find((s) => s.id === p.slotId)!;
+  const menu = snap.menu.map((m) => ({ id: m.id, name: m.name, category: m.category, priceCents: m.priceCents }));
+  const ctx = { items: Object.fromEntries(menu.map((m) => [m.id, m.name])), slots: { [slot.id]: slotPhrase(slot) }, oferta: describeOffer(offerFromInput(p.offer), menu, "convite").gain };
+  const g = guardText(text, ctx, { allowed: ["prato", "horario", "oferta"], maxLen: 160, field: "textoConvite", mode: "ia", requireSlot: slot.id });
+  if (g.ok) return null;
+  return textIssues(g, { maxLen: 160 }).errors[0] ?? "O texto do convite não passou nas regras.";
+}
+
+/** Prévia + gravação (status `pendente`). Recusas do código voltam com o motivo e não são gravadas. */
+export async function createProposals(db: Db, p: { restaurantId: string; origin: Origin; payloads: readonly ProposalPayload[]; aiCallId?: string | null; now: Date }): Promise<ProposalCard[]> {
+  const snap = await loadSnapshot(db, p.restaurantId);
+  if (!snap) return p.payloads.map((payload) => ({ id: null, status: "recusada" as const, motivo: "Restaurante não encontrado.", payload }));
+  const out: ProposalCard[] = [];
+  for (const payload of p.payloads) {
+    const pv = previewProposal(snap, payload);
+    if (!pv.ok) {
+      out.push({ id: null, status: "recusada", motivo: pv.motivo, payload });
+      continue;
+    }
+    if (payload.acao === "oferta" && payload.papel === "convite" && payload.inviteText?.trim()) {
+      const bad = inviteTextProblem(snap, payload, payload.inviteText);
+      if (bad) {
+        out.push({ id: null, status: "recusada", motivo: bad, payload });
+        continue;
+      }
+    }
+    const [row] = await db
+      .insert(agentProposals)
+      .values({ restaurantId: p.restaurantId, origin: p.origin, action: payload.acao, payload, preview: pv, baseHash: baseHash(pv.antes), aiCallId: p.aiCallId ?? null, createdAt: p.now })
+      .returning({ id: agentProposals.id });
+    out.push({ id: row!.id, status: "pendente", preview: pv, payload });
+  }
+  return out;
+}
+
+export type DecideResult =
+  | { ok: true; status: "aplicada" | "descartada"; already?: boolean; aba?: PreviewOk["aba"]; warnings?: string[] }
+  | { ok: false; status: "expirada" | "falhou" | "nao_encontrada" | "descartada"; motivo: string };
+
+const APPLY_ERR: Record<string, string> = {
+  em_uso: "O prato está numa oferta em vigor. Troque a oferta antes.",
+  ultima_faixa: "É o único horário vazio: o convite precisa de pelo menos um.",
+  sem_opcao: "Sem esse prato, o horário ficaria sem nenhuma oferta possível.",
+  nao_encontrado: "Não encontrei o que essa proposta muda.",
+  oferta: "A oferta não passou nas regras.",
+  texto: "O texto do convite não passou nas regras.",
+  faixa: "O horário não passou nas regras.",
+};
+
+async function run(db: Db, restaurantId: string, payload: ProposalPayload, snap: Snapshot, pv: PreviewOk, now: Date): Promise<{ ok: true; warnings?: string[] } | { ok: false; erro: string }> {
+  switch (payload.acao) {
+    case "oferta":
+      return updateOffer(db, { restaurantId, role: payload.papel, slotId: payload.slotId, offer: payload.offer, ...(payload.papel === "convite" ? { weeklyCap: Math.max(1, Math.min(999, Math.round(payload.weeklyCap ?? snap.slots.find((s) => s.id === payload.slotId)?.weeklyCap ?? 4))), inviteText: pv.inviteText } : {}), now });
+    case "item": {
+      const it = snap.menu.find((m) => m.id === payload.itemId)!;
+      if (payload.mudanca === "indisponivel" || payload.mudanca === "disponivel") return setMenuItemActive(db, { restaurantId, itemId: it.id, active: payload.mudanca === "disponivel", now });
+      if (payload.mudanca === "fora_das_ofertas" || payload.mudanca === "nas_ofertas") return setItemOfferAllowed(db, { restaurantId, itemId: it.id, allowed: payload.mudanca === "nas_ofertas", now });
+      return updateMenuItem(db, { restaurantId, itemId: it.id, name: it.name, category: it.category, priceCents: Math.round(payload.priceCents!), now });
+    }
+    case "faixa": {
+      if (payload.mudanca === "desativar") return deactivateSlot(db, { restaurantId, slotId: payload.slotId, now });
+      const s = snap.slots.find((x) => x.id === payload.slotId)!;
+      return updateSlot(db, { restaurantId, slotId: s.id, days: payload.days ?? s.days, startMin: payload.startMin ?? s.startMin, endMin: payload.endMin ?? s.endMin, intensity: payload.intensity ?? s.intensity, extraTables: payload.extraTables ?? s.extraTables, now });
+    }
+  }
+}
+
+/**
+ * Aplicar ou descartar. A proposta precisa ser da loja atual e da mesma porta (no MCP só as do MCP — D269), estar
+ * pendente e ter menos de 30 min; o "antes" é recalculado e comparado.
+ */
+export async function decideProposal(db: Db, p: { restaurantId: string; proposalId: string; origin: Origin; acao: "aplicar" | "descartar"; now: Date }): Promise<DecideResult> {
+  const where = and(eq(agentProposals.id, p.proposalId), eq(agentProposals.restaurantId, p.restaurantId), eq(agentProposals.origin, p.origin));
+  if (p.acao === "descartar") {
+    const upd = await db.update(agentProposals).set({ status: "descartada", decidedAt: p.now }).where(and(where, eq(agentProposals.status, "pendente"))).returning({ id: agentProposals.id });
+    if (upd.length) return { ok: true, status: "descartada" };
+    return explain(db, where);
+  }
+  const fresh = new Date(p.now.getTime() - PROPOSAL_TTL_MS);
+  const [row] = await db
+    .update(agentProposals)
+    .set({ status: "aplicando" })
+    .where(and(where, eq(agentProposals.status, "pendente"), gt(agentProposals.createdAt, fresh)))
+    .returning();
+  if (!row) {
+    // Vencida: marca como expirada (se ainda estiver pendente) e explica.
+    await db.update(agentProposals).set({ status: "expirada", decidedAt: p.now }).where(and(where, eq(agentProposals.status, "pendente"), sql`${agentProposals.createdAt} <= ${fresh}`));
+    return explain(db, where);
+  }
+  const finish = (status: "aplicada" | "expirada" | "falhou", error?: string) => db.update(agentProposals).set({ status, error: error ?? null, decidedAt: p.now }).where(eq(agentProposals.id, row.id));
+  const payload = row.payload as ProposalPayload;
+  const snap = await loadSnapshot(db, p.restaurantId);
+  const pv = snap ? previewProposal(snap, payload) : null;
+  if (!snap || !pv?.ok || baseHash(pv.antes) !== row.baseHash) {
+    await finish("expirada", "antes_mudou");
+    return { ok: false, status: "expirada", motivo: "Algo mudou desde a proposta. Peça de novo para ver a versão atual." };
+  }
+  try {
+    const res = await run(db, p.restaurantId, payload, snap, pv, p.now);
+    if (!res.ok) {
+      await finish("falhou", res.erro);
+      return { ok: false, status: "falhou", motivo: APPLY_ERR[res.erro] ?? "Não deu para aplicar." };
+    }
+    await finish("aplicada");
+    return { ok: true, status: "aplicada", aba: pv.aba, ...(res.warnings?.length ? { warnings: res.warnings } : {}) };
+  } catch (e) {
+    await finish("falhou", "erro_interno");
+    throw e;
+  }
+}
+
+async function explain(db: Db, where: ReturnType<typeof and>): Promise<DecideResult> {
+  const [r] = await db.select({ status: agentProposals.status }).from(agentProposals).where(where);
+  if (!r) return { ok: false, status: "nao_encontrada", motivo: "Proposta não encontrada." };
+  if (r.status === "aplicada" || r.status === "aplicando") return { ok: true, status: "aplicada", already: true };
+  if (r.status === "descartada") return { ok: false, status: "descartada", motivo: "Essa proposta foi descartada." };
+  if (r.status === "falhou") return { ok: false, status: "falhou", motivo: "Essa proposta não pôde ser aplicada." };
+  return { ok: false, status: "expirada", motivo: "A proposta venceu (30 minutos). Peça de novo para ver a versão atual." };
+}

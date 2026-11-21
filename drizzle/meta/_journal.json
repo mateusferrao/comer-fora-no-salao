@@ -71,6 +71,13 @@
       "when": 1795297924320,
       "tag": "0009_intensidade_3_niveis",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1795300894091,
+      "tag": "0010_s8_copiloto",
+      "breakpoints": true
     }
   ]
 }
