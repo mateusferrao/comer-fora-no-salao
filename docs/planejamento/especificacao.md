@@ -21,6 +21,7 @@ Legenda: **[B]** briefing · **[P]** pesquisa pública · **[O]** observado nos 
 >   - **IA:** "Por que esta oferta?" em 2 camadas.
 > - **IA que opera (S6):** plano como agente com ferramentas só de leitura (decidido por número — D159, D166), modo garçom por link, porta-conta no kit.
 > - **S6 detalhada (21/11, D187–D200 — [../fatias/S6/planejamento.md](../fatias/S6/planejamento.md)):** agendador gera o plano e manda o resumo no dia/hora do dono, com "Revisar e aprovar" por link; lembrete 1 por convite, X h antes; link do garçom com QR; agente com cadeia de reserva e linha visível; porta-conta DL; **sistema configurável**: "Avisos e automação" e "IA do restaurante" (instruções opcionais e seguras, pratos fora das ofertas, cardápio manual) para o dono e "Gerenciar notificações" para o cliente.
+> - **S8 — Copiloto do salão (21/11, D260–D271 — [../fatias/S8/planejamento.md](../fatias/S8/planejamento.md)):** reabre a D211. Painel "Assistente do salão" no Portal: o pedido do dono vira cartão "antes → depois" com impacto do código e só vale com o clique (D261); "IA nunca escreve número" também no chat (D264); modelo vê nome e atributos de clientes, nunca contato (D262); onboarding preenche "Seu salão" por frase (D265); catálogo único de ferramentas para copiloto e MCP, com MCP vendo clientes sem contato e editando por propor + aplicar (D267–D269); 60 s na demo, no bloco do plano (D263); tudo por flag, corte domingo 22h (D270). Roda antes da S7.
 > - **Fatias e cronograma (seção 7):** S4 (produto real e identidade), S5 (valor e conversão), S6 (IA que opera), 1 merge no fim (D167) com meta antes de 23/11 08:30; corte por flag domingo 22h; S7 = entregáveis (slide, vídeo de telas reais — D157, repositório público, preparação), segunda 10h–15h.
 
 ---
@@ -55,7 +56,7 @@ Legenda: **[B]** briefing · **[P]** pesquisa pública · **[O]** observado nos 
 | Check-in no app | **Peças físicas com QR por peça e versão** (atribuição, A/B) |
 | Resultados de campanha, histórico do cliente | **Plano da semana**: insights calculados por código + IA que escolhe a oferta e explica + **"o que aprendemos"** |
 | (não encontrado em fontes públicas) | **Incremento medido com holdout**, com intervalo honesto; validação registrada do código pelo garçom |
-| Toqan (chat) | **Sistema operável por agentes** (MCP sobre as mesmas rotas), sem ser um chat |
+| Toqan (assistente de IA do Portal, voltado ao delivery) | **Copiloto do salão (S8):** pedidos viram **propostas conferidas pelo código** e aplicadas com 1 clique do dono, sobre o **mesmo catálogo de ferramentas** que o MCP expõe a agentes externos |
 
 - **Por que os 80% não divulgam:** não sabemos. Declaramos hipóteses e o produto mede cada uma:
 
@@ -454,7 +455,7 @@ Todas as rotas são validadas com Zod, têm limite de uso e tiram o restaurante 
   - nomes de itens limpos e limitados antes de entrar em outros prompts;
   - IA sem ferramentas (o MCP expõe o **nosso** sistema a agentes externos; nossos prompts continuam sem ferramentas);
   - imagem que não é cardápio → caminho de saída;
-  - **PII nunca entra no prompt, por construção:** fatos agregados e público resolvido pelo código.
+  - **PII nunca entra no prompt, por construção:** fatos agregados e público resolvido pelo código. **Exceção declarada (S8, D262/D268):** o copiloto e o MCP recebem primeiro nome + inicial e atributos de clientes por apelido (`{cliente:C3}`); **contato (e-mail, telefone) nunca**; o Langfuse não grava entrada nem saída da tarefa do copiloto.
 - **Latência:**
   - extrações dos 3 exemplos em **cache por hash** (rotuladas "processado anteriormente");
   - kit e pacote em paralelo/streaming, com esqueleto;
@@ -581,7 +582,7 @@ Todas as rotas são validadas com Zod, têm limite de uso e tiram o restaurante 
 | 0:00–0:45 | Problema (20% divulgam), promessa ("seu salão cheio divulga seu horário vazio") e **contraste com o print 04**: "benefício por turno já existe: público, para qualquer um, sem medida → aqui: convite só para quem já veio, com teto de custo e incremento medido". H1–H5 ficam para as perguntas |
 | 0:45–2:30 | **Ativação "uau"** com exemplo em cache: cardápio → faixas vazias → **pacote proposto** (agora + convite + 1º plano, com custo e justificativa) → aprovar → kit (revisor) → QR |
 | 2:30–3:45 | Cliente e garçom: QR → check-in → GPS → identificação → agora + código + **2º card do convite** → garçom **valida o código** → funil atualiza |
-| 3:45–5:30 | Frase de transição ("este restaurante tem 60 dias de dados") → vitrine: **plano da semana** (insights, IA escolhe e explica, **"o que aprendemos"** com veredito do código) → aprovar (reativação simulada) |
+| 3:45–5:30 | Frase de transição ("este restaurante tem 60 dias de dados") → vitrine: **plano da semana** (insights, IA escolhe e explica, **"o que aprendemos"** com veredito do código) → aprovar (reativação simulada). **Copiloto (S8, D263), ≤ 60 s:** chip "Trocar a oferta de Ter–Qui 15h–18h" → cartão com custo do código → Aplicar → campo destacado |
 | 5:30–6:45 | Incremento com IC e os 4 estados, proteção contra migração, negócio com 1 conta de bolso [H] (quem paga, custo de IA por restaurante) |
 | 6:45–8:00 | **Mudança ao vivo** (tom ou prompt na página de configurações) + guardrails e rastro no Langfuse. MCP só se perguntarem |
 
@@ -613,7 +614,7 @@ Todas as rotas são validadas com Zod, têm limite de uso e tiram o restaurante 
   - ~20 perguntas prováveis com respostas, entre elas:
     - **"isso já não existe no Comer Fora?"** (tabela já existe × novo);
     - **"não é só migração de horário?"** (métrica de proteção);
-    - **"por que não um chat?"** (Toqan; IA que decide entre opções válidas e fecha o ciclo), **"por que não LangGraph/LangChain?"** (D215: tarefas de chamada única, humano no meio como estado de banco; reabre se o plano virar agente com ferramentas);
+    - **"por que não um chat?" / "isso não é um chat?"** (S8: não é conversa sozinha — o pedido vira proposta conferida pelo código, sobre as mesmas ferramentas do MCP; no Portal nada muda sem o clique do dono; o número é sempre do código), **"por que não LangGraph/LangChain?"** (D215: tarefas de chamada única, humano no meio como estado de banco; reabre se o plano virar agente com ferramentas);
     - causalidade e amostra do holdout;
     - ROI do dono e quem paga;
     - escala para 400 mil;
