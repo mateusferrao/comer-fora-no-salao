@@ -1,490 +1,404 @@
-# Replanejamento de 21/11 — Produto real e valor ao dono (fatias S4, S5, S6; entregáveis viram S7)
+# Planejamento da fatia S4 — Produto real e identidade
 
-Status: ✅ aprovado em 21/11/2026 pelo candidato (planejamento conjunto das fatias S4, S5 e S6; este documento é a fonte das três).
+Status: ✅ escopo e decisões aprovados em 21/11/2026 pelo candidato (replanejamento de 21/11, decisões D151–D169). Este documento guarda o que é comum ao replanejamento (contexto, decisões, perguntas e revisão independente) e o detalhe da S4. **Cada fatia seguinte (S5, S6, S7) é planejada com `planejar-fatia` só quando for a vez dela** (pedido do candidato, 21/11): os documentos delas guardam por enquanto só o escopo combinado.
 
-**Novo fatiamento** (pedido do candidato: a antiga S4 de entregáveis vai para o fim e as fatias novas entram na frente):
+> **Execução suspensa (21/11, ~01h).** O candidato pediu "primeiro registrar tudo". A sub-fatia S4.1 tinha sido feita antes desse pedido, só no branch da sessão (commit `7b01c74`), e ficou parada lá. O resto só começa com a liberação dele. Ver §14.
 
-| Fatia | Nome | Conteúdo (sub-fatias da seção 9b) | Flag |
-|---|---|---|---|
-| **S4** | Produto real e identidade | S4.1 base de dados e identidade · S4.2 login do cliente · S4.3 limpeza + Ferramentas do avaliador · S4.4 reativação entregue | Sem flag (núcleo) |
-| **S5** | Valor e conversão | S5.1 painel em R$ + meta + "Hoje no salão" · S5.2 landing, página do QR e convite com agenda · S5.3 "Por que esta oferta?" | Com flag |
-| **S6** | IA que opera | S6.1 ciclo semanal por e-mail + agendador · S6.2 modo garçom · S6.3 plano como agente · S6.4 porta-conta | Com flag |
-| **S7** | Entregáveis (era a S4) | Slide PPTX, vídeo de telas reais (D157), repositório público limpo, preparação da entrevista; segunda 10h–15h | — |
+## 0. Fatiamento novo (D151)
+| Fatia | Nome | Sub-fatias | Flag | Planejamento |
+|---|---|---|---|---|
+| **S4** | Produto real e identidade | S4.1 base de dados e identidade · S4.2 login do cliente · S4.3 limpeza + Ferramentas do avaliador · S4.4 reativação entregue | Sem flag (núcleo); só `login_cliente_email` como saída de emergência | este documento |
+| **S5** | Valor e conversão | S5.1 painel em R$ + meta + "Hoje no salão" · S5.2 landing, página do QR e convite com agenda · S5.3 "Por que esta oferta?" | `painel_valor`, `copy_v2`, `explica_ia` | a planejar na vez dela ([escopo](../S5/planejamento.md)) |
+| **S6** | IA que opera | S6.1 resumo semanal por e-mail + agendador · S6.2 modo garçom · S6.3 plano como agente · S6.4 porta-conta | `resumo_email`, `agendador`, `modo_garcom`, `plano_agente`, `porta_conta` | a planejar na vez dela ([escopo](../S6/planejamento.md)) |
+| **S7** | Entregáveis (era a S4) | Slide, vídeo de telas reais, repositório público, preparação | — | a planejar na vez dela (segunda de manhã) |
 
-Como fica a execução:
-- **Planejamento:** um documento por fatia, `docs/fatias/{S4,S5,S6}/planejamento.md`, todos gerados deste plano e aprovados juntos agora.
-- **Revisão e merge:** por D167 (1 merge no fim), S4 a S6 passam por uma revisão (4 revisores + E2E) e **um merge** depois da S6, com meta antes de segunda 08:30.
-- **Corte:** a ordem das fatias é a ordem de corte. O que da S5/S6 não estiver pronto no domingo às 22h fica desligado por flag.
-- **S7:** planejada com `planejar-fatia` na segunda de manhã.
-- **CLAUDE.md:** a menção "S0–S4" vira "S0–S7".
+**Ritmo (D160, D167, D168):**
+- a ordem das fatias é a ordem de corte;
+- cada sub-fatia fecha verde (testes, tipos, lint, fronteiras) antes da próxima;
+- a S4 não tem flag: se uma sub-fatia dela não fechar, as seguintes esperam;
+- corte no domingo 22/11 às 22h: o que da S5/S6 não estiver pronto e testado fica desligado;
+- **uma revisão** (4 revisores + E2E profunda) e **um merge** depois da S6, com meta antes de segunda 23/11 às 08:30;
+- construção até segunda às 10h no máximo; a S7 vai de 10h às 15h (congelamento).
 
-## 1. Contexto e objetivo
+## 1. Contexto, objetivo e entrega testável
 O candidato pediu duas coisas:
-- um replanejamento com foco em **valor para o dono** e em **conversão de clientes**, usando a skill de copywriting;
-- tirar do produto tudo que o apresenta como teste ou simulação. Só a barra de protótipo do cabeçalho fica.
+- um replanejamento com foco em **valor para o dono** e em **conversão de clientes**, usando a skill de copywriting (`coreyhaines31/marketingskills`, `copywriting`);
+- tirar do produto **tudo que o apresenta como teste ou simulação**. Só o título de protótipo no cabeçalho fica.
 
-A análise crítica, que o candidato aceitou, encontrou três problemas:
-- **A inovação não aparece.** O diferencial está nas regras (grupo de controle, convite invisível para quem está nele, teto) e só é explicado em "Como funciona".
-- **O resultado parece programado.** O painel mostra um efeito simulado, e o restaurante que o avaliador cria fica vazio sem "Simular".
-- **A técnica está escondida** nos Bastidores.
+Ele também disse sentir "pouca inovação, resultado e técnica". A análise crítica concordou, com evidência:
+- **Inovação invisível:** o diferencial (convite nascido na mesa, grupo de controle com convite invisível, teto) mora nas regras e só aparece em "Como funciona". Na tela, o produto parece um clone do Portal.
+- **Resultado que parece programado:** o painel mostra um efeito simulado (+0,20). O restaurante que o avaliador cria fica vazio sem "Simular 30 dias".
+- **Técnica escondida:** a profundidade (avaliação de modelos, juiz cego, revisor de outro provedor, guardrails, MCP, estatística) só aparece nos Bastidores.
 
-Ao fim da fatia:
-- o produto se comporta como solução real;
-- o resultado aparece em reais e ao vivo;
-- a IA aparece trabalhando: explica a escolha, investiga como agente e opera o ciclo semanal por e-mail;
-- as páginas do dono e do cliente têm copy de conversão.
+**Entrega testável da S4:**
+- o produto não se apresenta mais como teste nem simulação;
+- o cliente entra com nome, telefone e e-mail reais + código por e-mail;
+- o restaurante criado é real, começa vazio e tem "Primeiros passos";
+- a reativação chega de verdade ao cliente (Jornada e e-mail);
+- o avaliador continua fechando o ciclo sozinho, pelas Ferramentas do avaliador nos Bastidores.
 
-**Prazo (decidido pelo candidato).** Construção até **segunda 23/11 às 10h**, com a meta de merge antes das 08:30 (D168). **Corte no domingo às 22h:** o que não estiver pronto e testado fica desligado por flag. A S7 (entregáveis) vai de segunda 10h às 15h (congelamento).
+Provas: suíte verde, a varredura de textos pelo Playwright e a E2E do ciclo completo.
 
-## 2. Decisões do candidato nesta rodada (registrar como D151–D160)
-| ID | Decisão | Alternativas recusadas |
+## 2. Requisitos e rastreabilidade
+| Requisito | Fonte | Como será provado |
 |---|---|---|
-| D151 | Fatias novas S4–S6 até segunda 10h; entregáveis (antiga S4) viram a S7, a última | Fatia até domingo 18h (recomendado); só limpeza + landing |
-| D152 | **Sistema real só com seed.** A cópia da Cantina aparece sem rótulo de demonstração ou simulação. O restaurante criado é real e começa vazio, com "Primeiros passos". Saem do produto "Simular 30 dias", "Limpar simulação", "Antecipar 1 dia", "Importar do delivery (simulado)" e o motivo do grupo de controle mostrado ao cliente | Manter "Simular", renomeado |
-| D153 | "Avançar 1 dia" vai para os **Bastidores** (ferramenta do avaliador) | Tirar de vez; regra "voltar hoje" |
-| D154 | **Cliente entra com nome, telefone e e-mail + código de 6 dígitos por e-mail** (SES). Dados digitados livremente, **sem pré-preenchimento fictício**. Risco aceito: dado pessoal real (D118 já aceitava isso para o dono) | Degraus (recomendado); só telefone; pré-preenchido realista |
-| D155 | Reativação **entregue de verdade**: na Jornada do cliente ("Seus convites", com aviso de novo) e por e-mail para quem tem consentimento | Só tirar "(simulado)" |
-| D156 | Atalhos: fica só "Como funciona" na barra. Saem o roteiro da entrada, "Trocar de lado" e "Testar como outro cliente" (vira "Sair" real na Jornada) | Manter "Trocar de lado" |
-| D157 | Vídeo da S7 com **telas reais** gravadas por roteiro automatizado (Playwright), com legendas e narração por IA | Vídeo gerado por IA; sem vídeo |
-| D158 | Apostas: **ciclo semanal por e-mail com Aprovar**, **plano como agente com ferramentas** e **"Por que esta oferta?"**. O kit ampliado fica só no porta-conta | Arte do kit por IA |
-| D159 | Agente decidido **por número**: T3 refeita com código + juiz cego (5 casos de teste × 2), agente contra chamada única no mesmo modelo. O agente vira padrão se tiver regras ok ≥ 90%, p50 ≤ 20 s e nota do juiz ≥ à da chamada única; senão fica atrás de flag desligada | Ligar sem medir; medir + nota cega |
-| D160 | Ordem de corte: (1) limpeza + login do cliente + reativação entregue + Bastidores; (2) painel em R$ + meta + atividade ao vivo; (3) página do QR, convite com agenda, landing; (4) "Por que esta oferta?"; (5) ciclo semanal por e-mail; (6) modo garçom; (7) plano como agente; (8) porta-conta | Inovação antes da conversão |
+| Nada de "teste/simulado/fictício/demonstração" nas telas do produto | Pedido do candidato; D152, D156 | Varredura de textos pelo Playwright no texto renderizado, numa lista de rotas (exceções: barra, Bastidores, rodapés do impresso e do e-mail) |
+| Funciona sem depender do candidato | Case (critério 2) | E2E: criar restaurante → ativar → kit → cliente entra → check-in → validar → Avançar 1 dia → volta com convite |
+| Cliente entra com dados reais + código por e-mail | D154, D161 | Integração do login; E2E com o padrão da D123 |
+| Dado pessoal tratado (consentimento, 7 dias, apagar) | Case ("nada de dados reais" → risco aceito D154/D161); LGPD | Integração da retenção e do "Apagar meus dados"; linha de consentimento na tela |
+| Reativação entregue de verdade | D155, D163 | Integração: só convidáveis, grupo de controle sem nada, e-mail só com consentimento e depois do commit; E2E na Jornada |
+| Honestidade sobre o histórico gerado | D162, D209 | E2E: selo só na Cantina |
+| Barra nova | D164 | E2E: texto exato da barra |
 
-### Decisões depois da revisão de produto (candidato, 21/11)
-| ID | Decisão | Alternativas recusadas |
+## 3. Decisões (D151–D169)
+Todas registradas em [decisoes-e-tradeoffs.md](../../planejamento/decisoes-e-tradeoffs.md), seção M.
+
+| ID | Decisão | Alternativas recusadas | Quem |
+|---|---|---|---|
+| D151 | Fatias novas S4–S6 até segunda 10h; entregáveis viram a S7, a última | Fatia única até domingo 18h (recomendado); só limpeza + landing | Candidato |
+| D152 | **Sistema real só com seed.** A cópia da Cantina sem "demonstração/simulado". O restaurante criado é real e começa vazio, com "Primeiros passos". Saem: "Simular 30 dias", "Limpar simulação", "Antecipar 1 dia", "Importar do delivery (simulado)" e o motivo do grupo de controle mostrado ao cliente | Manter "Simular" com outro nome | Candidato |
+| D153 | "Avançar 1 dia" nos Bastidores (Ferramentas do avaliador) | Tirar de vez; regra "voltar hoje" | Candidato |
+| D154 | Cliente entra com nome, telefone e e-mail + código de 6 dígitos por e-mail. Campos livres, sem pré-preenchimento | Degraus (recomendado); só telefone; pré-preenchido realista | Candidato |
+| D155 | Reativação entregue: Jornada ("Seus convites", aviso de novo) + e-mail para quem consentiu | Só tirar "(simulado)" | Candidato |
+| D156 | Na barra, só "Como funciona". Saem o roteiro da entrada, "Trocar de lado" e "Testar como outro cliente" (vira "Sair" na Jornada) | Manter "Trocar de lado" | Candidato |
+| D157 | Vídeo da S7 com telas reais (Playwright, legendas, narração por IA) | Vídeo gerado por IA; sem vídeo | Candidato |
+| D158 | Apostas: ciclo semanal por e-mail com Aprovar, plano como agente, "Por que esta oferta?"; kit ampliado só no porta-conta | Arte do kit por IA | Candidato |
+| D159 | Agente decidido por número (T3 refeita, pares cegos; critério indicativo) | Ligar sem medir; medir + nota cega | Candidato |
+| D160 | Ordem de corte: (1) limpeza + login + reativação + Bastidores; (2) R$ + meta + feed; (3) landing, QR, agenda; (4) "Por que esta oferta?"; (5) resumo por e-mail; (6) garçom; (7) agente; (8) porta-conta | Inovação antes da conversão | Candidato |
+| D161 | Login completo no check-in + linha "Protótipo de case, não é o iFood. Seus dados são apagados em 7 dias" + retenção de 7 dias + "Apagar meus dados". Aparelhos da demo logados antes | E-mail só no convite (recomendado); sem aviso | Candidato (após a revisão de produto) |
+| D162 | Selo "Restaurante de exemplo · histórico gerado" na Cantina; topo "R$ X a mais em margem entre N convidados até agora" | Sem rótulo | Candidato (após a revisão de produto) |
+| D163 | Tudo por e-mail (resumo do dono + convite, lembrete e reativação aos clientes). Reabre a mitigação "e-mail sem logo e sem link" da D118 | Só o resumo do dono (recomendado); sem agendador | Candidato (após a revisão de produto) |
+| D164 | Rodapé "Protótipo" no impresso e no e-mail; barra "Protótipo de case · não é produto oficial do iFood" (sem "dados fictícios") | — | Candidato |
+| D165 | Consentimento continua ligado por padrão | Desmarcado (proposto pela IA) | Candidato |
+| D166 | O agente reabre a D215, com as defesas dela | Cortar o agente (revisor de produto) | Candidato (via D158) |
+| D167 | 1 merge no fim da S6 | 2 merges, o 1º no sábado (recomendado) | Candidato (após a revisão técnica) |
+| D168 | E-mails por evento + agendador; meta de merge antes de segunda 08:30 | Só por evento (recomendado) | Candidato (após a revisão técnica) |
+| D169 | Itens [C] (§13) | — | IA [C] |
+
+## 4. Produto e fluxos da S4
+
+### 4.1 Personas e caminhos
+- **Avaliador como dono:** login por e-mail ou pelo link privado de avaliação → Portal com a Cantina (selo "Restaurante de exemplo") → "Cadastrar meu restaurante" → assistente → ativar → kit → "Ver minha página" → depois volta ao Portal e vê "Primeiros passos" se marcando.
+- **Avaliador como cliente:** QR do kit ou "Ver minha página" → página do restaurante → Check-in → entrar (nome, telefone, e-mail, consentimento) → código por e-mail → check-in → código do benefício (+ convite, se for sorteado) → Jornada.
+- **Garçom:** "Validar código" no Portal (o link próprio do garçom vem na S6).
+- **Ferramentas do avaliador (Bastidores, `/bastidores/avaliador`):** roteiro "Como testar sozinho", "Avançar 1 dia" e "Ver como cliente reativado".
+
+### 4.2 Limpeza (inventário de 21/11)
+Cada item do inventário é reescrito ou sai. Classes:
+- **(a)** texto;
+- **(b)** comportamento só do restaurante de teste;
+- **(c)** simulação;
+- **(d)** ajuda ao avaliador.
+
+| Onde | Hoje | Depois |
 |---|---|---|
-| D161 | **Login completo no check-in** (nome, telefone, e-mail + código), com **uma linha de consentimento** ("Protótipo de case, não é o iFood. Seus dados são apagados em 7 dias"), **retenção de 7 dias** e "Apagar meus dados" na Jornada. Na demo, o aparelho do cliente é logado na véspera (cookie de 180 dias) | E-mail só para guardar o convite (recomendado); login sem aviso |
-| D162 | A Cantina ganha o selo **"Restaurante de exemplo · histórico gerado"** (link para "Como funciona"). O restaurante criado não tem selo. O título do topo diz "R$ X a mais em margem entre N convidados até agora", não "em 30 dias" (a margem soma todas as janelas fechadas) | Sem rótulo |
-| D163 | **Tudo por e-mail:** resumo semanal do dono com "Revisar e aprovar" + convite, lembrete e reativação por e-mail aos clientes com consentimento. Reabre a mitigação de D118 ("e-mail sem logo e sem link"), com risco aceito pelo candidato. Os e-mails saem em texto simples, sem logo, com links só para o nosso domínio, e a aprovação é um POST na página | Só o resumo do dono (recomendado); sem agendador |
-| D164 | Rodapé "Protótipo de case · não é produto oficial do iFood" no impresso e no e-mail. A barra perde "dados fictícios" e vira "Protótipo de case · não é produto oficial do iFood" | — |
-| D165 | **Consentimento continua ligado por padrão** (como na especificação e no app). O candidato não aprovou a troca para desmarcado. Risco LGPD com dado real registrado, e declarado em "Como funciona" | Desmarcado (proposto pela IA) |
-| D166 | O plano como agente (P7) **reabre a D215** (que tinha recusado o agente com ferramentas) por escolha do candidato (D158), com as defesas da D215: ferramentas só de leitura sobre fatos já agregados (sem texto livre do cardápio nem PII), saída final presa às candidatas e decisão por número (D159) | Cortar P7 (revisor de produto) |
+| Barra (`PrototypeBar.tsx`) | "Protótipo de case · não é produto oficial do iFood · dados fictícios" + "Trocar de lado" + "Como funciona" | "Protótipo de case · não é produto oficial do iFood" + "Como funciona" (D164, D156) |
+| `BottomSheet.tsx` | repete o texto da barra | sai (a barra já está na página) |
+| `layout.tsx` (título/descrição) | "protótipo de case… Dados fictícios" | "Comer Fora no Salão · protótipo de case" (sem "dados fictícios") |
+| `not-found.tsx` | "…ainda não existe neste protótipo" | "Página não encontrada" + link para o início |
+| `/trocar-lado` | atalho | sai (D156) |
+| Entrada `/` | "Sou dono: abrir Portal (demo)", "Sou cliente", roteiro | Landing nova (S5.2); até lá, "Entrar no Portal" e "Veja o que seu cliente vê", sem roteiro |
+| Login (`entrar/page.tsx`, `LoginForm.tsx`) | "Portal (demo)… link de avaliação", "Protótipo de case: usamos seu e-mail…" | "Entre no Portal do Parceiro" + a linha de privacidade sem "protótipo" (o e-mail continua guardado como HMAC + criptografado — D169) |
+| E-mail de login do dono | "Portal do protótipo… protótipo de case" no assunto e no corpo | assunto "Seu código de acesso: 123456 · Comer Fora no Salão"; rodapé de 1 linha "Protótipo de case · não é produto oficial do iFood" (D164) |
+| Link de avaliação (`acesso/[token]`) | "Acesso de avaliação", "restaurante de demonstração", "dados fictícios" | "Acesso de avaliação" (página privada, meta) + roteiro "Como testar sozinho" (revisão de produto B3) |
+| Visão geral | "Restaurante de demonstração com 60 dias de dados de exemplo"; `DemoStatus` "Preparando seu restaurante de demonstração"; `TestGuide`; "Teste com outro cardápio"; "Criar outro restaurante" | selo "Restaurante de exemplo · histórico gerado" (só na Cantina); "Preparando o restaurante de exemplo"; "Primeiros passos" (restaurante criado); "Cadastrar outro restaurante" |
+| Dashboard | "Para ver o painel cheio, use Simular 30 dias"; "Dados simulados · efeito programado: +0,20 visita · Como funciona" | estado vazio real ("Seu 1º check-in aparece aqui"); o selo do restaurante substitui o rótulo |
+| Seletor de loja (`storeLabel`) | "demonstração" / "teste · ativo" / "teste · em ativação" | "exemplo" / "ativo" / "em ativação" |
+| Assistente passo 1 | "Ou use um exemplo (fictício)"; "Importar do delivery (simulado)" + "Por quê?" | "Não tem o cardápio à mão? Use um de exemplo"; a importação sai (o "Por quê" vai para o FAQ da landing) |
+| `ExtractionStatus` | "· importação simulada" / "processado anteriormente" | sai |
+| Passo 4 | "O limite diário de IA desta demonstração…" | "O limite diário de IA foi atingido…" |
+| Passo 5 | "Teste como cliente: leia o QR…" | "Veja como o cliente vê: leia o QR…" |
+| Plano e histórico | "Exemplo pronto (escrito antes, sem IA ao vivo)"; "enviado para N clientes (simulado)"; "simulado: nada foi enviado"; "exemplo com cliente fictício"; "Reativação (simulada)" | "Plano pronto do restaurante de exemplo"; "Enviado para N clientes no app Comer Fora · M também por e-mail"; prévia "como o cliente recebe"; "Reativação" |
+| Clientes | "Neste protótipo, use só dados fictícios"; "Cliente (fictício)" | "Esta base é do seu restaurante" (H5); primeiro nome + inicial |
+| Configurações | "Endereço (fictício)"; "Excluir restaurante de teste"; "Faixa para testar" | "Endereço"; "Excluir restaurante"; "Faixa para ver como fica" |
+| `CreateRestaurantButton` | "já tem 3 restaurantes de teste" | "já tem 3 restaurantes cadastrados" |
+| Impresso (`KitPiece.tsx`) | "protótipo de case, não oficial" | mantém 1 linha "Protótipo de case · não é produto oficial do iFood" (D164) |
+| Validar código | "· Só no teste: liberado hoje, fora do horário" | "· liberado hoje pelas ferramentas do avaliador" |
+| Página do cliente | título "Comer Fora (protótipo)"; "Endereço fictício."; descrição "Restaurante fictício…" | título "{Restaurante} · Comer Fora"; sem a linha; descrição neutra (seed v4 + UPDATE da 0006) |
+| Identificação | pré-preenchida (sobrenomes "Fictício/Teste…", DDD 00), "Gerar outros dados fictícios", "Aceito usar estes dados neste protótipo", "Nada é enviado neste protótipo" | §4.3 |
+| `CheckinResult` | caixa "teste · Só no restaurante de teste" + "Testar como outro cliente (fictício)" | sai; o grupo de controle passa a aparecer só para o dono no feed da S5.1; "Sair" na Jornada |
+| Convite (`TestAdvance`) | "Para testar: antecipar 1 dia" | sai (vai para os Bastidores) |
+| Jornada | título "(protótipo)"; "Testar como outro cliente (fictício)" | "Sua jornada"; "Sair" e "Apagar meus dados"; "Seus convites" (§4.5) |
+| MCP | descrição "reativação simulada" | "reativação (app e e-mail)" |
+| Seed | sobrenomes "Fictício/Exemplo/Teste/Demonstração/Protótipo/Simulado"; endereço "Rua das Laranjeiras Fictícias"; descrição "Restaurante fictício…" | 6 sobrenomes comuns (mesma lista, mesmo tamanho → mesma sequência do gerador); "Rua Nonna Lucia, 120 – São Paulo – SP"; descrição sem a frase. `SEED_VERSION` 4 |
+| Restaurante criado | `kind='teste'`, slug `teste-xxxxxxxx`, endereço "Rua Exemplo Fictícia, 100" | enum interno mantido (§13); slug pelo nome (`pizzaria-do-joao-3f2a`); endereço do assistente ou "Endereço não informado" |
+| Rotas que saem | `api/parceiro/simular/*`, `api/cliente/convite/antecipar`, `api/cliente/trocar`, `/trocar-lado`, adaptador `delivery-import-simulated`, `fictitious-identity`, `TestGuide`, `TestAdvance`, `testNote` | o mecanismo `advance-invite.ts` fica, chamado só pelas Ferramentas do avaliador |
+| Rodadas antigas de "Simular" | `simulation_runs.kind='botao'` em restaurantes de donos | `clearRun` no boot, uma vez (revisão técnica B4) |
 
-### Decisões depois da revisão técnica (candidato, 21/11)
-| ID | Decisão | Alternativas recusadas |
-|---|---|---|
-| D167 | **1 merge no fim** (mantém D12/D136), mesmo com a P1 sem flag | 2 merges, o 1º no sábado (recomendado) |
-| D168 | **E-mails por evento + agendador.** Por evento: convite ao cliente quando nasce, reativação ao aprovar e "Enviar agora". Agendador: resumo do dono toda segunda às 08:30 e lembrete na manhã do dia do convite. **Meta: merge antes de segunda às 08:30**, para o 1º envio automático acontecer no dia 23. Agendador com regra de recuperação: se passou da hora e não há registro, envia | Só por evento (recomendado) |
+### 4.3 Identificação e login do cliente (D154, D161, D165)
+1. **Formulário** (bottom sheet "Entre para ativar seus benefícios"):
+   - campos vazios: **Nome**, **Telefone** (máscara `(00) 90000-0000`), **E-mail**;
+   - interruptores "**Convites por e-mail**" e "**Avisos no app**", ligados (D165). WhatsApp e Push saem da tela, porque não são enviados; nas linhas novas, `opt_whatsapp=false` e `opt_push=false`;
+   - aceite obrigatório: "Aceito receber o código e os convites deste restaurante";
+   - a linha fixa: "**Protótipo de case, não é o iFood. Seus dados são apagados em 7 dias.**";
+   - botão "Enviar código".
+2. **Código:** "Enviamos um código para a•••@g•••.com" → 6 dígitos → "Entrar". Também "Reenviar" (com limite) e "Trocar e-mail".
+3. Ao confirmar: o cliente é criado ou reconhecido, o cookie é gravado e o check-in segue sozinho, como hoje depois da identificação.
 
-## Correções da revisão técnica aceitas como [C]
-Detalhe técnico, sem mudar produto:
-- **B1 · E-mail do dono:** `owners.email_enc` (AES-GCM), gravado no próximo login. Muda a D118 ("e-mail nunca gravado"), consequência da D163. Contas antigas e as do link do avaliador ficam só com a prévia.
-- **B2 · Identidade do cliente:**
-  - o e-mail vira a chave (`email_hmac` único, com finalidade `cliente-email:`);
-  - a 0006 troca a unicidade do telefone por um índice comum (declarado como não aditivo);
-  - regra de vínculo: e-mail novo + telefone existente + mesmo nome → vincula; nome diferente → erro;
-  - o prefixo do cookie do cliente muda, para forçar novo login.
-- **B3 · E2E:**
-  - login de cliente na E2E pelo padrão da D123 (`e2e-cliente+N@exemplo.invalid` + token, código na resposta); um único teste passa pelo simulador do SES;
-  - nova ferramenta do avaliador "Ver como cliente reativado" (entra como um cliente do seed da cópia do próprio dono), que serve à E2E e à demo da reativação.
-- **B4 · Dados de produção:**
-  - UPDATE na 0006 da descrição, do endereço e dos sobrenomes das cópias existentes;
-  - no boot, `clearRun` de toda rodada `botao` ("Simular" antigo).
-- **B5 · Saída de emergência:** flag `login_cliente_email`, que volta para nome + telefone sem código se o SES falhar. Aparelhos da demo logados na segunda de manhã. `PRESENTER_EMAILS` fora do limite global.
-- **I1 · Gateway com ferramentas:**
-  - `tools`, `stopWhen` e `prepareStep` opcionais no gateway, com o último passo forçando `toolChoice:'none'`;
-  - `steps` devolvidos para `agent_steps`; custo somado de todos os passos; tempo próprio para o agente;
-  - ferramentas puras sobre os fatos (o `eval` reaproveita); nome `ler_insights` como no MCP;
-  - **teste de 15 min do provedor** (ferramentas + saída estruturada no Gemini 3.8 Flash) antes da P7.
-- **I2 · Agendador (D168):**
-  - linha `weekly_digests` com estados `reservado` → `enviado` e retomada do que ficou parado;
-  - espera pelo revisor antes de montar o e-mail;
-  - não envia para `.invalid` nem para o simulador;
-  - aprovação pelo e-mail atualiza `lastSeenAt`.
-- **I3 · Aprovação pelo e-mail:**
-  - `via: "email"` em `approvePlan`, com o `final` montado a partir do proposto;
-  - token amarrado ao `plan_id`, gasto só se aprovar deu certo;
-  - `rejectCrossSite`;
-  - `Referrer-Policy: no-referrer` nessa página e no link do garçom; o token do garçom vira cookie no 1º acesso.
-- **I4 · Reativação por e-mail:**
-  - `optApp=true` para clientes novos;
-  - e-mails enviados depois do commit;
-  - formato do e-mail validado e teto diário de envios.
-- **I5 · Especificação v3** cita as decisões que caem ou mudam: D22, D30, D31, D118, D140, D141, D143, "PII fictícia" (4.6) e os itens 1 e 7 do Review Focus. No ensaio, usar endereços com "+".
-- **I6 · Topo em R$:** sem "últimos 30 dias"; texto dos 4 estados conforme §3.
-- **I7 · Medição do agente:**
-  - o juiz compara agente × chamada única **em pares cegos**;
-  - o critério da D159 fica declarado como indicativo (n pequeno);
-  - teto diário da chave pública revisto para caber o agente e o resumo.
-- **I8 · Varredura de textos:** feita pelo Playwright sobre o texto renderizado, numa lista de rotas, excluindo a barra, os Bastidores e os rodapés. Não varre o código-fonte.
-- **Menores:**
-  - DROP + ADD de `kit_pieces_kind_check` para o `porta_conta`;
-  - `CUSTOMER_EMAIL_KEY` no CI, no Playwright, no Easypanel e no health, com 32 bytes validados no boot;
-  - limite por e-mail e global no login do cliente (o IP do Wi-Fi do salão é compartilhado);
-  - "Avançar 1 dia" só em convites sem `simulation_run_id`;
-  - `como-funciona` sem importar `simulate-test`;
-  - .ics em UTC.
-- **E2E e testes a reescrever:**
-  - `volta.spec` inteiro;
-  - `cliente.spec`, `dono.spec`, `painel.spec`, `entrada.spec`;
-  - `teste-restaurante.test.ts`, `checkin.test.ts:181-197`, `salao/misc.test.ts:59`.
+**Regras:**
+- **Identidade = e-mail** (`email_hmac`, finalidade `cliente-email:`).
+- **Vínculo:**
+  - e-mail já existe → mesmo cliente;
+  - e-mail novo + telefone existente sem e-mail + mesmo nome → o e-mail é gravado nesse cliente (clientes de antes da S4);
+  - qualquer outro caso → cliente novo (o telefone deixou de ser único).
+- **Código:** 6 dígitos, 10 min, 5 tentativas, uso único. O código novo invalida o anterior do mesmo e-mail.
+- **Limites:**
+  - por e-mail: 3 em 15 min e 6 por dia;
+  - por IP: 30 por hora (Wi-Fi do salão é compartilhado);
+  - global: 500 por dia, com isenção para `PRESENTER_EMAILS`;
+  - confirmar: 30 por hora por IP.
+- **Cookie:** 180 dias, com finalidade nova (`cliente2:`). Os cookies antigos deixam de valer e o cliente entra de novo.
+- **Retenção (D161):** a PII (nome, telefone, e-mail) é apagada **7 dias sem atividade** (último check-in ou login), de carona no `cleanup`. O cliente continua como linha anônima para as métricas. "Apagar meus dados" faz o mesmo na hora e limpa o cookie.
+- **E2E:** padrão da D123: `e2e-cliente+N@exemplo.invalid` + cabeçalho com o token. O código volta na resposta, sem envio e sem limites. Um único teste passa pelo simulador do SES.
+- **Saída de emergência:** flag `login_cliente_email` (ligada). Desligada, o formulário envia direto, sem código, e o cliente é criado com o e-mail não verificado.
 
-## 3. Itens [C] (decisão da IA, corrigível)
-- **E-mail do cliente:**
-  - guardado como HMAC (para busca) e criptografado com AES-256-GCM (para envio), com a chave `CUSTOMER_EMAIL_KEY` em variável de ambiente;
-  - apagado depois de 7 dias sem visita (D161), junto com o nome e o telefone;
-  - nunca entra em log, prompt, MCP ou rastro.
-  - O telefone continua como HMAC + 4 dígitos.
-- **Nome do cliente** aparece para o dono só como primeiro nome + inicial.
-- **.ics:** um evento no próximo dia válido, com "válido até dd/mm" na descrição. Sem recorrência, para não criar ~13 entradas na agenda.
-- **Topo em R$, os 4 estados:**
-  - positivo: "R$ X a mais";
-  - inconclusivo: "ainda não dá para afirmar";
-  - negativo: "o convite não está trazendo retorno · veja o plano";
-  - amostra insuficiente: "ainda medindo".
-- **A landing mantém o link "Veja o que seu cliente vê"**, que abre a página da Cantina. O "Por quê?" do "Importar do delivery" vira uma pergunta do FAQ.
+**E-mail do código** (texto simples, sem logo):
+- assunto "Seu código: 123456 · {Restaurante}";
+- corpo: o código, a validade de 10 min, "Se não foi você, ignore este e-mail";
+- rodapé "Protótipo de case · não é produto oficial do iFood".
+
+### 4.4 Restaurante real e "Primeiros passos"
+- "Cadastrar meu restaurante" cria o restaurante com slug pelo nome (depois do passo 2 do assistente). O enum interno continua `teste`.
+- "Primeiros passos" aparece na Visão geral do restaurante criado. É uma checklist que se marca sozinha pelos eventos:
+  1. Kit impresso e marcado "no salão";
+  2. 1º check-in;
+  3. 1º código validado;
+  4. 1º plano aprovado.
+
+  Cada item leva à tela certa. Um link discreto: "Avaliando o produto? Ferramentas do avaliador".
+- "Ver minha página" (Portal, cabeçalho da Visão geral) abre `/r/<slug>` em nova aba.
+
+### 4.5 Reativação entregue (D155, D163)
+- Ao aprovar o plano, para cada convite real da reativação, é criada uma `customer_messages` (`kind='reativacao'`), e o cliente vê o convite em **Jornada › Seus convites**, com o selo "Novo" até abrir.
+- **Depois do commit**, um e-mail sai para quem tem `opt_email` e um e-mail válido:
+  - texto simples, com o convite escrito pelo plano (o mesmo texto que o revisor confere), a faixa, a validade, o link para a página do restaurante e o rodapé de protótipo;
+  - teto de 200 e-mails por restaurante por dia;
+  - não envia para `.invalid` nem para o simulador do SES.
+- O **convite nascido na mesa** também gera uma mensagem (`kind='convite_mesa'`) e um e-mail na hora.
+- O **grupo de controle** continua com o convite invisível: nenhuma mensagem, nenhum e-mail.
+- Texto do dono: "Enviado para N clientes no app Comer Fora · M também por e-mail". `plan_sends.channel='app_email'` nas linhas novas.
+- O público da reativação usa `optApp OR optEmail`.
+
+### 4.6 Ferramentas do avaliador (`/bastidores/avaliador`, D153)
+Exige a sessão do dono e mostra só os restaurantes dele.
+- **Roteiro "Como testar sozinho"** (4 passos), que também aparece na página do link de avaliação.
+- **"Avançar 1 dia":**
+  - escolhe o restaurante e recua 1 dia os convites ativos e os check-ins de hoje dos clientes reais (sem `simulation_run_id`), usando `advance-invite.ts`;
+  - se agora estiver fora da faixa, libera o convite só hoje;
+  - o código e a tela Validar mostram "liberado hoje pelas ferramentas do avaliador".
+- **"Ver como cliente reativado":** grava neste aparelho o cookie de um cliente do histórico da cópia do próprio dono que recebeu convite de reativação, e abre a Jornada. Serve à demo e à E2E da reativação.
+- **"Como funciona"** (público) ganha:
+  - o que é histórico gerado (seed) e seus parâmetros;
+  - o que é real (login, e-mail, check-in, códigos, convites, IA);
+  - o dado pessoal real e o risco (D154, D161, D165);
+  - as Ferramentas do avaliador.
+
+## 5. Telas, estados e textos
+- **Identificação, formulário:**
+  - estados: vazio, erro por campo ("Informe seu nome", "Use o formato (00) 90000-0000", "Informe um e-mail válido", "Marque o aceite para continuar"), enviando, limite ("Muitas tentativas. Tente de novo em N min");
+  - envio indisponível: "Não conseguimos enviar o código agora. Tente de novo em instantes."
+- **Identificação, código:**
+  - estados: aguardando, incorreto ("Código incorreto · N tentativas restantes"), expirado ("O código venceu. Peça outro."), bloqueado, confirmando.
+  - Foco no campo; `inputMode="numeric"`; `autocomplete="one-time-code"`.
+- **Primeiros passos:** 4 itens com ícone de feito/pendente; todos feitos → some. Celular e computador.
+- **Seus convites (Jornada):** lista com o selo "Novo"; vazio: "Quando um restaurante te convidar, o convite aparece aqui."
 - **Ferramentas do avaliador:**
-  - o roteiro "Como testar sozinho" fica na página privada do link de avaliação (`/parceiro/acesso/<token>`) e em "Primeiros passos";
-  - "Avançar 1 dia" libera o convite fora da faixa com o rótulo neutro "liberado hoje pelas ferramentas do avaliador".
-- **Prova social na página do QR:** "N check-ins aqui nos últimos 7 dias", só com N ≥ 5. Abaixo disso não aparece, porque um número pequeno afasta mais do que convence.
-- **Sessão do cliente:** cookie assinado de 180 dias; o código é pedido só no 1º acesso do aparelho. Código de 6 dígitos com validade de 10 min e 5 tentativas. Limites por e-mail, por IP e global. O endereço do simulador do SES fica para a E2E, como no login do dono (D123).
-- **Enums internos ficam** (`kind='teste'`, `simulation_runs`, `channel='crm_simulado'`, que vira `app_email` em linhas novas). Só os textos da interface mudam, sem migração arriscada. Slugs novos saem do nome (`pizzaria-do-joao-3f2a`), não mais `teste-xxxx`.
-- **Peças impressas e e-mails mantêm 1 linha discreta "Protótipo de case · não é produto oficial do iFood".** O papel e o e-mail saem do site levando a marca iFood, pela mesma razão da barra do cabeçalho. Exceção ao pedido "só no cabeçalho", destacada para o candidato corrigir.
-- **Seed:**
-  - os sobrenomes "Fictício/Teste/Simulado" do gerador viram 6 sobrenomes comuns. A lista tem o mesmo tamanho, então a sequência do gerador e o teste do IC da semente 20261157 não mudam;
-  - a descrição e o endereço da Cantina ficam realistas e neutros;
-  - `SEED_VERSION` 4, para recriar a vitrine e as cópias.
-- **Assistente:** sai "Importar do delivery". Fica "Usar um cardápio de exemplo" (dado de amostra é comum em produto real), sem "(fictício)" nem "processado anteriormente". Entra o campo opcional "Endereço"; sem ele, "Endereço não informado".
-- **"Como funciona"** (Bastidores) continua dizendo o que é seed e simulação e quais são os parâmetros, e ganha "Ferramentas do avaliador": Avançar 1 dia e roteiro.
+  - sem sessão do dono: "Entre no Portal para usar as ferramentas";
+  - resultado do "Avançar": "Pronto: N convites avançados. Faça check-in de novo para receber o código."
+- **Acessibilidade:** alvos ≥ 44 px, foco preso no sheet, Esc fecha, contraste AA, rótulos completos.
 
-## 4. Produto e fluxos (por prioridade)
+## 6. Técnica
 
-### P1 — Limpeza e produto real
-- Tirar ou reescrever cada item (a)/(b)/(c) do inventário. Telas: entrada, login, acesso, Visão geral, `DemoStatus`, `TestGuide`, Dashboard, `storeLabel`, assistente, Plano e histórico, Clientes, Configurações, Validar, página do cliente, check-in, Jornada, `not-found`, `BottomSheet`, descrição do MCP.
-- O que sai:
-  - `TestGuide`, `TestAdvance`, `testNote`, as rotas `api/parceiro/simular/*` e `api/cliente/convite/antecipar`;
-  - o adaptador `delivery-import-simulated`;
-  - `fictitious-identity` (o pré-preenchimento).
-- **"Primeiros passos"** no restaurante novo, em vez do roteiro de teste. Uma checklist real que se marca sozinha pelos eventos: Kit impresso/no salão → 1º check-in → 1º código validado → 1º plano aprovado.
-- **"Ver minha página"** no Portal (abre `/r/<slug>`), e QR do kit, como caminhos reais para o lado do cliente.
-- **Bastidores › Ferramentas do avaliador:**
-  - "Avançar 1 dia": exige sessão do dono e age só nos restaurantes dele. Reaproveita `advance-invite.ts`, aplicado aos convites ativos do restaurante escolhido.
-  - O roteiro "Como testar sozinho" muda para cá.
-- **Login do cliente (D154, D161):** o check-in pede nome, telefone, e-mail, o consentimento (ligado por padrão, D165) e a linha "Protótipo de case, não é o iFood. Seus dados são apagados em 7 dias" → "Enviamos um código para a***@g***.com" → código → check-in. Reaproveita o desenho de `contas` (`login-code.ts`, `hmacEmail`, `hmacLoginCode`, `mail-sender`) num caso de uso novo `salao/application/customer-login.ts`. A Jornada ganha "Sair".
-- **Reativação entregue (D155):**
-  - cria `customer_messages` (convite entregue no app; lido/não lido);
-  - envia e-mail com convite + .ics para quem consentiu;
-  - texto do dono: "Enviado para N clientes no app Comer Fora · M também por e-mail";
-  - o grupo de controle continua com o convite invisível (nada é entregue).
-
-### P2 — Painel em reais, meta e atividade ao vivo
-- **Topo da Visão geral:** "**R$ X a mais em margem entre N convidados até agora** (estimativa: entre R$ a e R$ b)", vindo da margem incremental já calculada (espec. 2), em 4 estados.
-  - Sem ticket ou margem declarados: mostra visitas, com o link "informe ticket e margem para ver em reais".
-  - Amostra insuficiente: "Ainda medindo · faltam ~N clientes por grupo" e os indicadores antecipados.
-- **Meta:** por faixa, as "mesas a mais por semana" declaradas × os convites usados na faixa por semana (rótulo "convites usados · não causal").
-- **"Hoje no salão":** feed ao vivo (a mesma consulta de ~3 s) com check-ins, códigos validados, convites emitidos e "cliente no grupo de controle · sem convite (mede o efeito)". O grupo de controle só aparece para o dono e substitui o motivo que antes aparecia ao cliente.
-
-### P3 — Conversão (skill de copywriting)
-Diagnóstico **B**: já há uma voz e um ângulo ("Seu salão cheio divulga seu horário vazio"), que ficam. Corrigir o lide enterrado, as linhas vagas e os vícios de texto de IA.
-- **Landing (`/`)**, falando com o dono:
-  - herói: dor → visão → caminho;
-  - 3 passos: Foto do cardápio → Kit no salão → Clientes voltam no horário vazio;
-  - "o que você vê toda semana" (painel em R$ e plano);
-  - prova: números do restaurante de exemplo, rotulados como exemplo;
-  - objeções em FAQ: custo do benefício com teto, os dados são do restaurante, quanto tempo leva;
-  - CTA único "Ativar meu salão" (+ "Já tenho conta").
-  - Sem número inventado. Gargalos de prova marcados `[NEED: …]` na revisão de copy.
-  - Os títulos e os CTAs saem da skill (2–3 opções para cada) e são escolhidos pela autoverificação do texto (vícios de IA, "Now you can", teste de troca).
-- **Página do QR:**
-  - topo com o ganho concreto ("Ganhe {item} hoje");
-  - um botão "Fazer check-in e ganhar";
-  - prova real: "N check-ins aqui nos últimos 7 dias", só quando N ≥ 5;
-  - "+ convite para voltar" mantido genérico, para não contaminar o grupo de controle.
-- **Convite que traz de volta:**
-  - "Adicionar à agenda", com um .ics real (dias da faixa, até a validade);
-  - na Jornada, "Seu convite vale hoje" no dia válido;
-  - e-mail de lembrete na manhã do 1º dia válido, só para quem consentiu (o mesmo agendador de P5).
-
-### P4 — "Por que esta oferta?"
-No plano e no pacote, uma gaveta por faixa com:
-- as candidatas, a pontuação do código e os critérios;
-- a escolhida pela IA;
-- os fatos citados, resolvidos;
-- os guardrails que passaram;
-- o veredito do revisor;
-- o modelo, a reserva usada, o custo e a latência (`ai_calls`);
-- no modo agente, os passos do agente.
-
-Só leitura de dados que já existem.
-
-### P5 — Ciclo semanal por e-mail
-- **Quando:** toda segunda às 08:30 de SP, um agendador no processo (intervalo em `instrumentation.ts`, idempotente por restaurante e semana numa tabela `weekly_digests` com chave única).
-- **Para quem:** cada restaurante ativo de conta com e-mail.
-- **O que faz:** gera o plano (se não houver) e envia o resumo: R$/visitas da semana, a meta, o plano proposto em linguagem de dono e o botão **"Revisar e aprovar"**.
-- **O link:** token assinado de uso único e validade de 7 dias. Ele abre uma página de confirmação com o botão "Aprovar" (POST), para que scanners de e-mail que fazem GET não aprovem. A aprovação fica registrada como "via e-mail". O revisor bloqueou → o e-mail diz "precisa da sua revisão no Portal".
-- **No Portal:** "Ver o e-mail desta semana" (prévia, para todos, inclusive quem entrou pelo link do avaliador) e "Enviar agora" (contas com e-mail).
-
-### P6 — Modo garçom
-- Em Configurações: "Link do garçom", com token por restaurante (hash, revogável, como o do MCP).
-- Abre só "Validar código", sem expor o resto do Portal, e funciona no celular (adicionar à tela inicial).
-
-### P7 — Plano como agente com ferramentas (D159)
-- **Laço:** AI SDK 7 com ferramentas somente leitura, que são funções puras sobre fatos já calculados: `ver_insights`, `listar_candidatas(faixa)`, `custo_estimado(candidata)`, `semana_anterior(oferta)`. Limite de 6 passos e orçamento de tempo.
-- **Saída final:** o mesmo schema da tarefa 3 (só ids de candidatas e referências), o mesmo guard e o mesmo revisor.
-- **Rastro:** os passos ficam em `weekly_plans.agent_steps` e no Langfuse, e aparecem em P4.
-- **Medição:** `eval/run-t3.ts --modo agente`, com relatório em `eval/relatorio-t3-agente.md`.
-- **Flag:** `plano_agente`.
-
-### P8 — Porta-conta
-- Peça nova no kit, no tamanho de um porta-conta (~10×20 cm), com QR por versão.
-- Chamada da IA para o momento de pagar: "ganhe {beneficio} agora: faça check-in antes de sair".
-
-## 5. Técnica (arquivos principais)
-- **Dados:** migração aditiva `0006`.
-  - `customer_contacts`: `email_hmac` (único) e `email_enc`;
-  - `customer_login_codes`;
-  - `restaurant_customers.email_optin`;
-  - `customer_messages`;
-  - `weekly_digests` + `digest_tokens` (hash, `used_at`);
-  - `waiter_tokens`;
-  - `weekly_plans.agent_steps` (jsonb);
-  - `restaurants.address` editável;
-  - `kit_pieces`: tipo `porta_conta`.
-- **Reaproveitar:**
-  - `src/shared/crypto.ts` (`hmacEmail`, `signValue`/`verifySigned`, `safeEqual`);
-  - `src/modules/contas/{domain/login-code,adapters/mail-*}`;
-  - `src/web/customer-session.ts`;
-  - `planos/application/{generate-plan,approve-plan,insights}.ts`;
-  - `analytics` (margem incremental, estados);
-  - `mcp/tokens.ts` (padrão do token com hash), para o garçom e o resumo;
-  - `ia/runTask` (laço de reserva, guards e Zod), que ganha um modo com ferramentas.
+### 6.1 Arquivos
 - **Novos:**
-  - `salao/application/customer-login.ts`;
-  - `planos/application/{weekly-digest,digest-approve}.ts`;
-  - `planos/application/deliver-reactivation.ts`;
-  - `ia/tasks/plan-agent.ts`;
-  - `app/api/cliente/{entrar,confirmar,sair,agenda}`;
-  - `app/parceiro/aprovar/[token]`;
-  - `app/garcom/[token]`;
-  - `app/bastidores/avaliador`.
-- **Agendador:** `src/shared/scheduler.ts` (intervalo de 60 s, trava por linha no banco, para no SIGTERM).
-- **Segurança:**
-  - todos os tokens com hash e comparação em tempo constante;
-  - aprovação por POST com CSRF (mesma origem);
-  - limites de uso em entrar/confirmar/aprovar;
-  - e-mail sem PII além do necessário;
-  - fronteiras (dependency-cruiser) mantidas.
+  - `src/modules/salao/application/customer-login.ts` (pedir e confirmar código; vínculo; e-mail do código);
+  - `src/modules/salao/application/customer-privacy.ts` (apagar meus dados; retenção de 7 dias);
+  - `src/modules/salao/application/deliver-messages.ts` (mensagens no app + e-mails depois do commit);
+  - `src/modules/salao/application/evaluator-tools.ts` ("Avançar 1 dia" por restaurante; "Ver como cliente reativado");
+  - `src/modules/onboarding/application/first-steps.ts` (Primeiros passos derivados dos eventos);
+  - rotas: `app/api/r/[slug]/identificacao/confirmar/route.ts`, `app/api/cliente/{sair,apagar}/route.ts`, `app/api/bastidores/avaliador/route.ts`;
+  - páginas: `app/bastidores/avaliador/page.tsx`;
+  - UI: `src/ui/cliente/LoginSheet.tsx` (substitui `IdentifySheet`), `src/ui/cliente/InviteInbox.tsx`, `src/ui/portal/FirstSteps.tsx`.
+- **Alterados:**
+  - `identify-customer.ts` (lógica de vínculo por e-mail, que vira a função interna `upsertCustomerIdentity`);
+  - `customer-session.ts` (finalidade `cliente2:`);
+  - `approve-plan.ts` (canal `app_email`; mensagens; e-mails depois do commit);
+  - `do-checkin.ts` (mensagem do convite da mesa; sem `testNote`);
+  - `contas/application/cleanup.ts` (PII de cliente com 7 dias; códigos de cliente com 1 dia);
+  - `contas/application/{request-code,verify-code}.ts` (texto do e-mail; `owners.email_enc`);
+  - `test-restaurants.ts` (slug pelo nome; sem endereço fictício);
+  - `config/domain/flags.ts` (flags novas, §6.4);
+  - os arquivos de tela do inventário (§4.2).
+- **Removidos:** `TestGuide.tsx`, `TestAdvance.tsx`, `fictitious-identity.ts`, `delivery-import-simulated.ts`, `app/api/parceiro/simular/*`, `app/api/cliente/convite/antecipar`, `app/api/cliente/trocar`, `app/trocar-lado`.
 
-## 6. Testes
-- **Unidade e integração (TDD):**
-  - login do cliente (código certo, errado, expirado, 5 tentativas, limites, e-mail já existente reconhece o cliente);
-  - criptografia ida e volta do e-mail;
-  - reativação entregue (só para convidáveis, com consentimento no e-mail; o grupo de controle não recebe nada);
-  - .ics (dias, faixa, validade, fuso SP);
-  - resumo idempotente por semana;
-  - token de aprovação (uso único, expirado, GET não aprova);
-  - token do garçom (só Validar, revogado);
-  - agente (respeita o limite de passos; uma saída fora das candidatas é reprovada pelo guard; modo sem IA);
-  - "Primeiros passos" derivados dos eventos;
-  - feed do dia;
-  - estados do topo em R$;
-  - o IC da semente 20261157 continua positivo com o `SEED_VERSION` 4.
-- **Varredura:** um teste falha se aparecerem "simulad", "fictíci", "de teste", "Para testar", "demonstração" ou "Só no teste" fora dos Bastidores, da barra e do rodapé do impresso/e-mail.
-- **E2E local e em produção (atualizar as existentes que usavam Antecipar, Simular e o pré-preenchido):**
-  - dono cria restaurante → ativa → kit → "Ver minha página" → cliente entra por e-mail (endereço do simulador do SES + token de E2E) → check-in → código → garçom valida pelo link do garçom → feed e Primeiros passos atualizam → Bastidores "Avançar 1 dia" → volta com o código do convite;
-  - Cantina: topo em R$, plano com "Por que esta oferta?" → aprovar → reativação aparece na Jornada de um cliente;
-  - página de aprovação por e-mail (GET não aprova; POST aprova uma vez);
-  - landing e página do QR com axe e alvos ≥ 44 px.
+### 6.2 Interfaces produzidas (assinaturas)
+```ts
+// salao/application/customer-login.ts
+export const customerLoginInputSchema: z.ZodType<{ name: string; phone: string; email: string; optEmail: boolean; optApp: boolean; accept: true }>;
+export function requestCustomerCode(db: Db, p: { restaurantId: string; restaurantName: string; input: CustomerLoginInput; ip: string; now: Date; sender: MailSender | null; env: LoginEnv; e2eToken?: string | null }): Promise<{ ok: true; hint: string; e2eCode?: string } | { ok: false; erro: "email_invalido" | "limite" | "envio_indisponivel" | "envio"; retryAfterSec?: number }>;
+export function confirmCustomerCode(db: Db, p: { restaurantId: string; email: string; code: string; ip: string; now: Date }): Promise<{ ok: true; customerId: string; created: boolean } | { ok: false; erro: "email_invalido" | "formato" | "incorreto" | "expirado" | "bloqueado" | "sem_codigo" | "limite"; restantes?: number }>;
+// salao/application/customer-privacy.ts
+export function deleteCustomerData(db: Db, customerId: string): Promise<void>;
+export function purgeStaleCustomerPii(db: Db, now: Date): Promise<number>; // 7 dias sem atividade
+// salao/application/deliver-messages.ts
+export function queueInviteMessages(tx: Executor, p: { restaurantId: string; inviteIds: string[]; kind: "convite_mesa" | "reativacao"; now: Date }): Promise<number>;
+export function sendPendingInviteEmails(db: Db, p: { restaurantId: string; sender: MailSender | null; now: Date; limitPerDay?: number }): Promise<{ sent: number; skipped: number }>;
+// salao/application/evaluator-tools.ts
+export function advanceRestaurantOneDay(db: Db, p: { ownerId: string; restaurantId: string; now: Date }): Promise<{ ok: true; advanced: number } | { ok: false; erro: "nao_e_seu" | "nada_para_avancar" }>;
+export function pickReactivatedCustomer(db: Db, p: { ownerId: string; now: Date }): Promise<string | null>;
+// onboarding/application/first-steps.ts
+export type FirstSteps = { kitNoSalao: boolean; primeiroCheckin: boolean; primeiroCodigo: boolean; primeiroPlano: boolean };
+export function firstSteps(db: Db, restaurantId: string): Promise<FirstSteps>;
+// shared/crypto.ts (feito na S4.1)
+export function hmacCustomerEmail(normalizedEmail: string): string;
+export function encryptEmail(email: string): string;
+export function decryptEmail(enc: string | null | undefined): string | null;
+```
 
-## 7. Riscos
+### 6.3 Dados — migração `0006_s4_produto_real` (feita na S4.1, no branch)
+- **Tabelas novas** (as da S6 entram já aqui, para ter uma migração só):
+  - `customer_login_codes` (`email_hmac`, `code_hmac`, `restaurant_id`, `payload` jsonb sem PII em claro, `attempts`, `expires_at`, `used_at`);
+  - `customer_messages` (`customer_id`, `restaurant_id`, `invite_id`, `kind` ∈ convite_mesa | reativacao | lembrete, `read_at`, `emailed_at`; único `(invite_id, kind)`);
+  - `weekly_digests` (único `(restaurant_id, week_key)`; `status` ∈ reservado | enviado | falhou);
+  - `digest_tokens` (hash; `plan_id`; uso único);
+  - `waiter_tokens` (hash único; `revoked_at`).
+- **Colunas novas:**
+  - `customer_contacts`: `email_hmac` (único), `email_enc`, `email_hint`, `last_seen_at`;
+  - `owners.email_enc`;
+  - `restaurant_customers.opt_email` (padrão `true`);
+  - `weekly_plans.agent_steps`.
+- **Mudanças em restrições** (declaradas como não aditivas):
+  - `customer_contacts.phone_hmac` perde o `UNIQUE` e ganha índice comum;
+  - `kit_pieces_kind_check` aceita `porta_conta`.
+- **Dados:**
+  - UPDATE da descrição e do endereço das cópias da Cantina e do endereço padrão dos restaurantes criados;
+  - troca dos 6 sobrenomes nos clientes existentes.
+- `SEED_VERSION` 4.
+
+### 6.4 Flags (`config/domain/flags.ts`)
+- **Existentes:** `ab`, `revisor`, `aprende`, `insight_operacao`, `mcp`.
+- **Novas:**
+  - `login_cliente_email` (S4, emergência; ligada);
+  - `painel_valor`, `copy_v2`, `explica_ia` (S5);
+  - `resumo_email`, `agendador`, `modo_garcom`, `porta_conta` (S6, ligadas quando prontas);
+  - `plano_agente` (S6; ligada só se ganhar na medida — D159).
+- **Regra de corte:** a flag de um recurso que não fechar até domingo às 22h nasce desligada.
+
+### 6.5 Segurança e privacidade
+- **E-mail:** HMAC com finalidade própria + AES-256-GCM. A chave é derivada do `SESSION_SECRET` por HKDF (`email-enc:v1`) — §14, ajuste da S4.1, sem variável de ambiente nova.
+- **Onde a PII nunca entra:** log, prompt, MCP, rastro e resposta de API (só a dica mascarada).
+- Rotas de cliente com `rejectCrossSite` (JSON), limites e restaurante pelo slug.
+- O código do cliente é guardado como HMAC amarrado ao e-mail (`hmacLoginCode`).
+- As Ferramentas do avaliador exigem a sessão do dono e checam o dono de cada restaurante.
+- **Riscos aceitos pelo candidato:** dado pessoal real de clientes (D154/D161, retenção de 7 dias) e consentimento ligado por padrão (D165).
+
+### 6.6 Operação
+- **E-mail:** SES de `sa-east-1` com o remetente da D135. Preflight antes do merge.
+- **Aparelhos da demo:** logados na segunda de manhã, com endereços com "+".
+- **Nada novo no Easypanel** (a chave vem por HKDF).
+
+## 7. Testes
+- **Unidade:**
+  - `email-crypto.test.ts`: ida e volta, IV novo, adulteração → `null`, finalidade própria do HMAC (✅ na S4.1);
+  - `customer-login` (domínio): normalização e máscara do e-mail; E2E só com o padrão `e2e-cliente+N@exemplo.invalid`;
+  - `first-steps`: os 4 itens a partir de eventos;
+  - simulador: o IC da semente 20261157 continua positivo com os sobrenomes novos (o teste da S3, sem alteração).
+- **Integração:**
+  - **login do cliente:** código certo → cliente criado e `optEmail/optApp` gravados; código errado → `restantes` 4…0 e depois `bloqueado`; expirado; código novo invalida o anterior; e-mail existente → mesmo cliente; telefone antigo + mesmo nome sem e-mail → vincula; telefone antigo + outro nome → cliente novo; limites por e-mail, IP e global (isenção do apresentador); `login_cliente_email` desligada → cliente sem código;
+  - **privacidade:** "Apagar meus dados" remove o contato e mantém as métricas; a retenção apaga a PII com 7 dias e não toca o seed;
+  - **mensagens:** reativação cria mensagem só para convidáveis; o grupo de controle não tem nada; e-mail só com `optEmail`, depois do commit; teto diário; `.invalid` e o simulador não contam; convite da mesa gera mensagem e e-mail;
+  - **avaliador:** "Avançar 1 dia" só nos restaurantes do dono e só em clientes reais; "Ver como cliente reativado" devolve um cliente com mensagem de reativação na cópia do dono;
+  - **migração 0006** sobre o banco da S3: cópias atualizadas, nenhum nome com os sobrenomes antigos (✅ parcial na S4.1: db/seed/copy-vitrine verdes).
+- **Reescritos:** `teste-restaurante.test.ts` (vira `restaurante.test.ts`), `checkin.test.ts:181-197` (sem `testNote`), `salao/misc.test.ts:59` (sem `fictitious-identity`).
+- **E2E (Playwright, local e produção):**
+  - **ciclo completo:** dono cria restaurante → ativa → kit → "Ver minha página" → cliente entra por e-mail (padrão D123) → check-in → código → dono valida → Primeiros passos marcados → Ferramentas do avaliador "Avançar 1 dia" → check-in de novo → código do convite → validar mostra "liberado hoje pelas ferramentas do avaliador";
+  - **reativação:** aprovar o plano na Cantina → "Ver como cliente reativado" → "Seus convites" com o selo "Novo";
+  - **grupo de controle:** clientes em sequência até um sem convite. Nenhum texto sobre grupo de controle aparece para o cliente;
+  - **selo:** só na Cantina; restaurante criado sem selo;
+  - **varredura de textos:** nas rotas do produto (entrada, login, Visão geral, Plano, Kit, Clientes, Configurações, Validar, `/r/<slug>`, check-in, Jornada), sem "simulad", "fictíci", "de teste", "Para testar", "demonstração" nem "Só no teste", fora das exceções;
+  - **SES:** 1 teste pelo simulador do SES;
+  - **reescritos:** `volta.spec.ts` (inteiro), `cliente.spec.ts`, `dono.spec.ts`, `painel.spec.ts`, `entrada.spec.ts`.
+
+## 8. Riscos e mitigação
 | Risco | Mitigação |
 |---|---|
-| Escopo de ~38 h | Ordem de corte D160, flags, corte domingo 22h |
-| Atrito do código por e-mail derruba o funil | Cookie de 180 dias; e-mail chega em segundos (SES); funil mede "pediu código → confirmou" |
-| SES falhar no dia | Preflight; mensagem clara; E2E com o simulador do SES |
-| Dado pessoal real de clientes | Criptografia + HMAC, apagado em 7 dias, linha de consentimento, fora de log e prompt; declarado em "Como funciona" (D161, D165) |
-| Scanner de e-mail aprova plano | Aprovação só por POST na página de confirmação |
-| Agente lento ou pior | D159: só vira padrão se ganhar na medida |
-| Copy com promessa sem prova | Skill de copy: alegação só com dado do sistema; `[NEED]` vira pergunta |
-| Tirar "simulado" esconde que os dados de exemplo são simulados | Selo "Restaurante de exemplo · histórico gerado" (D162) + "Como funciona" + slide e entrevista |
+| A S4 não tem flag e troca a identidade do cliente | Sub-fatias verdes antes da próxima; E2E reescritas cedo; flag de emergência `login_cliente_email` |
+| SES cai na demo ou na avaliação | Preflight; mensagem clara; flag de emergência; aparelhos logados antes; `PRESENTER_EMAILS` fora do limite global |
+| Atrito do código por e-mail derruba leitura → check-in | Cookie de 180 dias; e-mail em segundos; funil mede "pediu código → confirmou" (S5.1) |
+| Dado pessoal real + cara de iFood (anti-objetivo) | Linha de consentimento, 7 dias, "Apagar meus dados", criptografia, fora de log/prompt/MCP; declarado em "Como funciona"; risco aceito (D154, D161) |
+| Reputação do remetente compartilhado (D135) | Formato validado, teto diário, sem `.invalid`/simulador, texto simples |
+| Avaliador não acha "Avançar 1 dia" | Link em Primeiros passos e no roteiro da página do link de avaliação |
+| Esconder que o histórico é gerado | Selo da Cantina (D162) + "Como funciona" + slide e entrevista |
+| Dados antigos em produção ("Fictício", rodadas "Simular") | UPDATE na 0006 + `clearRun` das rodadas `botao` |
 
-## 8. Fora de escopo
-WhatsApp/push real, arte gerada por IA, "traga um amigo", adesivo de porta e post de Instagram (cortados por D158), login iFood real.
+## 9. Fora de escopo da S4
+WhatsApp/push real; login iFood real; o painel em R$, o feed, as landings e o "Por que" (S5); o resumo semanal, o garçom, o agente e o porta-conta (S6); renomear enums internos.
 
-## 9b. Sub-fatias testáveis por fatia (ordem de execução = ordem de corte D160)
+## 10. Perguntas respondidas pelo candidato (21/11, em ordem)
+1. **Prazo:** S4+ até segunda 10h (não domingo 18h nem só limpeza).
+2. **Valor ao dono:** painel em R$ + meta; atividade ao vivo + garçom; kit ampliado. Junto, a pergunta "sinto pouca inovação, resultado e técnica; seja crítico".
+3. **Conversão:** página do QR, convite com agenda, landing (sem "traga um amigo").
+4. **Apostas:** ciclo semanal por e-mail, plano como agente e "Por que esta oferta?" (kit ampliado só no porta-conta).
+5. **Volta sem "Antecipar":** ferramenta nos Bastidores.
+6. **Dados do restaurante:** pediu exemplo e sugeriu "vídeo com IA + sistema real só com seed" → confirmou "sistema real só com seed" e vídeo de telas reais.
+7. **Identificação:** primeiro "campos vazios, digitar livre"; depois perguntou "como é o login do cliente? pelo e-mail identificaria?" e escolheu "login por nome, telefone e e-mail + código por e-mail".
+8. **Reativação:** entregar no app do cliente.
+9. **Atalhos:** só "Como funciona" na barra.
+10. **Agente:** decidir por número.
+11. **Ordem de corte:** a proposta.
+12. **Depois da revisão de produto:** login completo no check-in (com consentimento e 7 dias); selo "Restaurante de exemplo"; tudo por e-mail; rodapé no impresso e no e-mail + barra sem "dados fictícios" (não aprovou consentimento desmarcado).
+13. **Depois da revisão técnica:** 1 merge no fim; com exemplos, "por evento + agendador; provável que entregue antes de segunda 8:30".
+14. **Fatiamento:** "precisa ser dividido de forma detalhada em fatias testáveis"; "a antiga S4 vai para a última fatia e as outras entram na frente".
+15. "Não é pra começar a implementar nenhuma fatia ainda. Primeiro registrar tudo."
+16. "Vamos planejar uma a uma quando formos fazer" → S5, S6 e S7 ganham planejamento próprio (com perguntas e os 2 revisores) na vez de cada uma; o detalhe da S4 é o deste documento.
 
-**S4 — Produto real e identidade:** S4.1–S4.4 · **S5 — Valor e conversão:** S5.1–S5.3 · **S6 — IA que opera:** S6.1–S6.4.
-Cada sub-fatia termina **verde** antes da próxima:
-- testes da sub-fatia;
-- `npx tsc --noEmit`, lint e `check:boundaries`;
-- commit + push no branch da sessão.
-
-As sub-fatias da S4 (sem flag) são o núcleo: se uma não fechar, as seguintes esperam. As da S5 e S6 (com flag) podem ser desligadas no corte (domingo 22h). Merge único no fim (D167), com meta antes de segunda 08:30 (D168).
-
-### S4.1 Base de dados e identidade (sem flag) · ~3 h
-- **Entrega:**
-  - migração `0006` com:
-    - `customer_contacts.email_hmac` (único) e `email_enc`;
-    - telefone com índice comum;
-    - `customer_login_codes`, `customer_messages`;
-    - `weekly_digests` + `digest_tokens`, `waiter_tokens`;
-    - `owners.email_enc`, `weekly_plans.agent_steps`, `restaurants.address`;
-    - `kit_pieces_kind_check` com `porta_conta`;
-    - UPDATE das cópias existentes (descrição, endereço, sobrenomes);
-  - `src/shared/crypto.ts`: `encryptEmail`/`decryptEmail` (AES-256-GCM) e `hmacCustomerEmail` (`cliente-email:`);
-  - `CUSTOMER_EMAIL_KEY` validada no boot e no health, e presente no CI e no Playwright.
-- **Testes:**
-  - unidade: criptografia ida e volta; chave inválida falha no boot; HMAC do cliente ≠ HMAC do dono para o mesmo e-mail;
-  - integração: a migração roda sobre o banco da S3 (cópias atualizadas, sem "Fictício").
-- **Pronto quando:** a migração roda limpa local e no CI, e o health mostra a chave configurada.
-
-### S4.2 Login do cliente por e-mail + código (sem flag de produto; `login_cliente_email` como saída de emergência) · ~5 h
-- **Entrega:**
-  - `salao/application/customer-login.ts`: pedir código (nome, telefone, e-mail, consentimento) e confirmar código;
-  - regra de vínculo e retenção de 7 dias de carona no `cleanup`;
-  - rotas `api/cliente/{entrar,confirmar,sair,apagar}`;
-  - nova tela de identificação: campos vazios, a linha "Protótipo de case, não é o iFood. Seus dados são apagados em 7 dias", consentimento ligado (D165) e a tela do código;
-  - "Sair" e "Apagar meus dados" na Jornada;
-  - novo prefixo de cookie;
-  - desvio de E2E pelo padrão da D123 (`e2e-cliente+N@exemplo.invalid` + token);
-  - limites por e-mail e global.
-  - Sai `fictitious-identity`.
-- **Testes:**
-  - integração: código certo, errado, expirado e a 5ª tentativa; e-mail existente reconhece o cliente; telefone existente + mesmo nome vincula, nome diferente dá erro; limites; apagar remove contato e e-mail; a flag desligada volta a nome + telefone;
-  - E2E: QR → entrar → código → check-in → código do benefício; um teste pelo simulador do SES.
-- **Pronto quando:** o check-in completo roda local com o e-mail de memória e no CI.
-
-### S4.3 Limpeza "teste/simulação" + produto real + Ferramentas do avaliador (sem flag) · ~5 h
-- **Entrega:**
-  - todos os itens do inventário reescritos ou removidos;
-  - saem `TestGuide`, `TestAdvance`, `testNote`, `simular/*`, `antecipar`, `delivery-import-simulated` e o roteiro da entrada;
-  - `clearRun` no boot das rodadas `botao`;
-  - nova barra (D164);
-  - selo "Restaurante de exemplo · histórico gerado" (D162);
-  - slugs pelo nome;
-  - "Primeiros passos" derivados dos eventos;
-  - "Ver minha página";
-  - campo "Endereço" no assistente;
-  - rodapé "Protótipo" no impresso e no e-mail;
-  - `SEED_VERSION` 4 com os sobrenomes trocados;
-  - **Bastidores › Ferramentas do avaliador:**
-    - roteiro;
-    - "Avançar 1 dia" (sessão do dono, só convites sem `simulation_run_id`, rótulo neutro);
-    - "Ver como cliente reativado";
-  - roteiro também na página do link de avaliação;
-  - "Como funciona" atualizado: o que é seed, o que é real, o dado pessoal real e o risco.
-- **Testes:**
-  - unidade: Primeiros passos por evento; IC da semente 20261157 continua positivo com o seed v4;
-  - integração: "Avançar 1 dia" só nos restaurantes do dono e não toca o seed;
-  - E2E: varredura de textos pelo Playwright nas rotas do produto; volta com convite via "Avançar 1 dia"; selo só na Cantina.
-  - Reescritas: `volta.spec`, `cliente.spec`, `dono.spec`, `painel.spec`, `entrada.spec`, `teste-restaurante.test`, `checkin.test`, `salao/misc.test`.
-- **Pronto quando:** a suíte inteira está verde e a varredura não acha "simulad", "fictíci", "de teste", "Para testar", "demonstração" nem "Só no teste" fora das exceções.
-
-### S4.4 Reativação entregue (app + e-mail por evento) (sem flag) · ~3 h
-- **Entrega:**
-  - `planos/application/deliver-reactivation.ts`: cria `customer_messages` (convite no app) e, depois do commit, envia e-mail a quem tem consentimento, com formato validado e teto diário;
-  - `optApp=true` para clientes novos;
-  - "Seus convites" na Jornada, com aviso de novo;
-  - e-mail do convite ao cliente quando o convite nasce na mesa;
-  - textos do dono: "Enviado para N clientes no app Comer Fora · M também por e-mail";
-  - `channel='app_email'` nas linhas novas.
-- **Testes:**
-  - integração: só convidáveis recebem; o grupo de controle não recebe nada; e-mail só com consentimento e depois do commit; o teto diário corta o excedente; `.invalid` e o simulador não contam;
-  - E2E: aprovar o plano na Cantina → "Ver como cliente reativado" → o convite aparece na Jornada.
-
-### S5.1 Painel em reais + meta + "Hoje no salão" (flag `painel_valor`) · ~4 h
-- **Entrega:**
-  - topo com os 4 estados e "R$ X a mais em margem entre N convidados até agora" (estimativa com intervalo); sem ticket ou margem, mostra visitas + link;
-  - meta por faixa (mesas desejadas × convites usados por semana, "não causal");
-  - feed do dia com check-ins, códigos validados, convites e o grupo de controle (só para o dono), na mesma consulta de ~3 s;
-  - nome do cliente como primeiro nome + inicial.
-- **Testes:**
-  - unidade: texto de cada estado (positivo, inconclusivo, negativo, amostra insuficiente; sem margem declarada); feed ordenado e só do dia em SP;
-  - E2E: check-in do avaliador aparece no feed em ≤ 6 s; a Cantina mostra R$ com intervalo.
-
-### S5.2 Conversão: landing, página do QR, convite com agenda (flag `copy_v2`) · ~4 h
-- **Entrega:**
-  - **copy pela skill:** diagnóstico B; 2–3 opções por título e por CTA; autoverificação de vícios de IA; teste "Now you can"; teste de troca;
-  - **landing:** herói, 3 passos, "o que você vê toda semana", prova rotulada como exemplo, FAQ (com o "Por quê" do delivery), CTA "Ativar meu salão" + "Já tenho conta" + "Veja o que seu cliente vê";
-  - **página do QR:** ganho no topo, um botão "Fazer check-in e ganhar", prova "N check-ins aqui nos últimos 7 dias" só com N ≥ 5;
-  - **convite:** rota `api/cliente/agenda` (.ics, 1 evento no próximo dia válido, UTC, "válido até" na descrição); "Seu convite vale hoje" na Jornada.
-- **Testes:**
-  - unidade: .ics (próximo dia válido, fuso, escape); limiar da prova social;
-  - E2E: axe sem violações e alvos ≥ 44 px na landing e na página do QR; o .ics baixa com o `content-type` certo.
-- **Pronto quando:** a copy foi revista pela autoverificação e nenhum número aparece sem fonte no banco.
-
-### S5.3 "Por que esta oferta?" (flag `explica_ia`) · ~3 h
-- **Entrega:** uma gaveta por faixa no plano e no pacote, com:
-  - candidatas + pontuação e critérios;
-  - a escolha;
-  - os fatos citados, resolvidos;
-  - os guardrails;
-  - o revisor;
-  - modelo, reserva, custo e latência (`ai_calls`);
-  - os passos do agente, quando houver.
-- **Testes:**
-  - integração: a montagem da explicação a partir de um plano gravado;
-  - E2E: abrir a gaveta na Cantina (plano fixo, sem IA) e conferir as candidatas e a escolha.
-
-### S6.1 Ciclo semanal por e-mail + agendador (flags `resumo_email` e `agendador`) · ~5 h
-- **Entrega:**
-  - `weekly-digest.ts`: gera o plano se faltar, espera o revisor e monta o e-mail em texto simples, sem logo, com R$, meta, plano e o link "Revisar e aprovar";
-  - página `parceiro/aprovar/[token]`: GET só mostra, POST aprova (`via:"email"`); token amarrado ao `plan_id`, gasto só se aprovar deu certo; `no-referrer`; atualiza `lastSeenAt`;
-  - "Ver o e-mail desta semana" e "Enviar agora" no Portal;
-  - `src/shared/scheduler.ts` (intervalo de 60 s, trava por linha, recuperação, estados `reservado` → `enviado`, para no SIGTERM): resumo na segunda 08:30 SP e lembrete na manhã do dia do convite.
-- **Testes:**
-  - unidade: a próxima execução e a recuperação ("passou da hora e não há registro → envia");
-  - integração: idempotência com 2 instâncias (só 1 envio); GET não aprova; token usado, expirado ou de plano trocado é recusado; "revisor bloqueou" não gasta o token; o lembrete só sai para quem tem convite válido hoje e consentimento;
-  - E2E: "Enviar agora" → abrir o link (código da E2E) → aprovar uma vez.
-
-### S6.2 Modo garçom (flag `modo_garcom`) · ~2 h
-- **Entrega:**
-  - "Link do garçom" em Configurações (token com hash, revogável), que vira cookie no 1º acesso;
-  - `app/garcom/[token]` só com "Validar código";
-  - `no-referrer`.
-- **Testes:**
-  - integração: token revogado é recusado; o token não dá acesso a outras rotas do Portal;
-  - E2E: validar um código pelo link do garçom.
-
-### S6.3 Plano como agente com ferramentas (flag `plano_agente`, padrão definido pela medida) · ~6 h
-- **Entrega:**
-  - teste de 15 min do provedor (ferramentas + saída estruturada no Gemini 3.8 Flash);
-  - gateway com `tools`, `stopWhen` e `prepareStep` (último passo sem ferramentas), `steps` e custo somado;
-  - `ia/tasks/plan-agent.ts`, com as ferramentas puras `ler_insights`, `listar_candidatas`, `custo_estimado` e `semana_anterior` sobre os fatos, e limite de 6 passos;
-  - `agent_steps` gravados;
-  - `eval/run-t3.ts --modo agente` + juiz em pares cegos (agente × chamada única);
-  - `eval/relatorio-t3-agente.md`;
-  - D159 aplicada (indicativa).
-- **Testes:**
-  - unidade: limite de passos; uma saída fora das candidatas é reprovada pelo guard; falha → chamada única → modo sem IA;
-  - integração com o gateway falso: os passos ficam gravados e aparecem na S5.3.
-
-### S6.4 Porta-conta (flag `porta_conta`) · ~1,5 h
-- **Entrega:**
-  - peça nova no kit (~10×20 cm), com QR por versão e chamada da IA para o momento de pagar;
-  - página de impressão.
-- **Testes:**
-  - unidade: o contrato da chamada (referências);
-  - E2E: imprimir a peça com o QR certo.
-
-### Fechamento (S4–S6)
-- **Atualizar documentos:** especificação v3, decisões D151–D168, `plano-implementacao`, log e "Como funciona".
-- **Suíte completa** com a saída à vista.
-- **`revisar-fatia`:** 4 revisores + E2E profunda, local e depois em produção.
-- **Correções, conferência da memória da VPS e merge único**, com meta antes de segunda 08:30.
-- **Deploy, E2E em produção** e verificação de que `/api/health` responde com o SHA novo.
-- **Aparelhos da demo logados.**
-
-## 9a. Revisão independente do plano (D95)
-**Produto:**
-- B1 (dado real numa página que parece o iFood) → **levado ao candidato** → D161: login completo, com consentimento e 7 dias.
-- B2 (resultado programado sem rótulo) → **levado ao candidato** → D162: selo "Restaurante de exemplo".
-- B3 (avaliador sozinho) → **aceito [C]**: roteiro na página privada e em Primeiros passos, rótulo neutro, "Ver como cliente reativado".
-- I1 e I2 (atrito e demo) → **levados ao candidato** → D161: aparelho logado antes da demo.
-- I3 (e-mails com link) → **levado ao candidato** → D163: tudo por e-mail.
-- I4 (agente contradiz a D215) → **registrado** como D166.
-- I5 (itens que eram do candidato) → **levados ao candidato** → D164 e D165.
-- Menores → **aceitos [C]**: .ics, link para o cliente, 4 estados, FAQ.
-- Corte de P6 e P8 → **mantidos** no fim da ordem de corte (D160).
+## 11. Revisão independente do plano (21/11, 2 subagentes — D95)
+**Produto** (bloqueante / importante / menor → destino):
+- **B1** dado real numa página com cara de iFood, sem aviso → candidato → **D161**.
+- **B2** resultado programado sem rótulo; "30 dias" errado → candidato → **D162**.
+- **B3** avaliador sozinho (beco do grupo de controle, "Avançar" escondido, rótulo, roteiro) → **[C]**: roteiro na página do link e em Primeiros passos, rótulo neutro, "Ver como cliente reativado".
+- **I1/I2** atrito e demo → candidato → **D161** (aparelhos logados antes).
+- **I3** e-mails com link contra a D118 → candidato → **D163**.
+- **I4** agente contra a D215 → registrado como **D166**.
+- **I5** itens que eram do candidato → candidato → **D164, D165**.
+- **Menores:** .ics de 1 evento, link "Veja o que seu cliente vê", 4 estados, FAQ → **[C]**.
+- Cortar P6/P8 → mantidos no fim da ordem de corte (D160).
 
 **Técnica:**
-- B1 a B5 e I1 a I8 → **aceitos [C]** (seção acima).
-- Merge intermediário → **levado ao candidato** → D167: 1 merge no fim.
-- Corte do agendador → **levado ao candidato** → D168: fica, com recuperação.
-- Fato conferido: a S3 inteira levou ~4 h do plano aprovado à produção. O gargalo é a P1 sem flag, as E2E e o SES, e não as horas de código.
+- **B1** sem destinatário para o resumo → `owners.email_enc` **[C]**.
+- **B2** identidade do cliente → e-mail como chave, telefone não único, vínculo **[C]**.
+- **B3** E2E inviáveis → padrão D123 + "Ver como cliente reativado" **[C]**.
+- **B4** dados de produção → UPDATE + `clearRun` **[C]**.
+- **B5** SES como ponto único → flag de emergência + aparelhos logados **[C]**.
+- **I1–I8** → **[C]**: gateway com ferramentas, agendador robusto, aprovação por e-mail, consentimento/envio, contradições na espec. v3, topo em R$, juiz em pares, varredura pelo Playwright.
+- **Menores** → **[C]**.
+- Merge intermediário → candidato → **D167**. Cortar o agendador → candidato → **D168**.
+- **Fato conferido:** a S3 levou ~4 h do plano aprovado à produção; o gargalo é a S4 sem flag, as E2E e o SES.
 
-## 9. Execução depois da aprovação
-1. Gravar este plano dividido em `docs/fatias/{S4,S5,S6}/planejamento.md` (+ CLAUDE.md "S0–S7"), as decisões D151–D160 + [C] em `decisoes-e-tradeoffs.md`, a especificação v3 (seções 3.1, 3.5, 3.8, 4.2, 4.6 e 7), `plano-implementacao.md` e o log. Commit e push na `main`.
-2. `implementar-fatia` na ordem S4.1→S6.4, com commit por tarefa no branch da sessão e flags nas apostas.
-3. `revisar-fatia`: 4 revisores + E2E profunda, correções, merge, deploy e E2E em produção até segunda 10h.
-4. Verificação: suíte completa, lint, tipos, fronteiras, a varredura de textos, a T3 do agente e `/api/health` com o SHA novo.
+## 12. Ordem de implementação (S4)
+1. **S4.1** (✅ no branch, `7b01c74`): 0006, criptografia, seed v4.
+2. **S4.2:** login do cliente: caso de uso (TDD) → rotas → `LoginSheet` → Jornada (Sair/Apagar) → retenção → E2E do login.
+3. **S4.3:** limpeza do inventário (§4.2) → Primeiros passos → slug pelo nome → Ferramentas do avaliador → "Como funciona" → varredura de textos → E2E reescritas.
+4. **S4.4:** mensagens + e-mails depois do commit → "Seus convites" → textos do dono → E2E da reativação.
+
+## 13. Itens [C] (D169)
+- **E-mail do cliente:** HMAC `cliente-email:` + AES-256-GCM; PII apagada com 7 dias sem atividade.
+- **Nome do cliente para o dono:** primeiro nome + inicial (aplicado na S5.1, junto com o feed).
+- **Enums internos mantidos:** `kind='teste'`, `simulation_runs`, `channel='crm_simulado'` nas linhas antigas.
+- **Slugs pelo nome.**
+- **Interruptores:** "Convites por e-mail" + "Avisos no app"; WhatsApp/Push saem da tela.
+- **Cookie:** finalidade `cliente2:` (força novo login).
+- **Limites do login do cliente:** §4.3.
+- **Teto de e-mails:** 200 por restaurante por dia.
+- **Texto do e-mail do código:** §4.3.
+- **"Ver como cliente reativado"** e o rótulo neutro do "Avançar".
+- **`owners.email_enc`** (muda a D118; contas antigas e as do link do avaliador ficam sem resumo por e-mail, só com a prévia da S6).
+
+## 14. Mudanças durante a implementação
+- **21/11, S4.1** (antes do pedido "primeiro registrar tudo"; commit `7b01c74` no branch da sessão, fora da `main`):
+  - a migração 0006 foi gerada com as tabelas de S4–S6;
+  - criptografia e HMAC do e-mail com teste;
+  - seed v4;
+  - **ajuste [C]:** a chave do e-mail é **derivada do `SESSION_SECRET` por HKDF** (`email-enc:v1`), no lugar de uma variável `CUSTOMER_EMAIL_KEY`. Motivo: trocar variáveis no Easypanel exige substituir o ambiente inteiro (`updateAppEnv` destrutivo) perto do congelamento. Trade-off: girar o `SESSION_SECRET` invalida os e-mails guardados (aceitável: retenção de 7 dias).
+  - Verificado: teste de unidade 3/3; integração db/seed/copy-vitrine 10/10; `tsc` e fronteiras limpos.
+  - A execução ficou suspensa depois disso, a pedido do candidato.

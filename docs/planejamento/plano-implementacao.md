@@ -172,7 +172,7 @@ Entrega testável: painel com métrica principal (4 estados), indicadores anteci
 
 ---
 
-## Fatia S4 — Entregáveis (23/11, até 15h)
+## Fatia S7 — Entregáveis (23/11, até 15h) — era a S4 (renumerada no replanejamento de 21/11, D151)
 Entrega verificável: link estável, envio pelos dois canais, slide PPTX, material extra e preparação.
 
 ### Tarefa 4.1: Congelamento e checagem final
@@ -229,4 +229,10 @@ Decisões marcadas [C] neste plano (abertas a correção): limiar de 300 m para 
 ---
 
 ## Replanejamento de 21/11 — S4, S5, S6 e S7
-As fatias S4 (produto real e identidade), S5 (valor e conversão) e S6 (IA que opera) foram planejadas juntas: tarefas (sub-fatias S4.1–S6.4), testes, arquivos e ordem de corte em [../fatias/S4/planejamento.md](../fatias/S4/planejamento.md) (decisões D151–D169). Revisão e merge únicos depois da S6 (D167). A antiga S4 (entregáveis) passa a ser a **S7**, planejada com `planejar-fatia` na segunda 23/11 de manhã.
+Decisões D151–D169. As fatias passam a ser:
+- **S4 — Produto real e identidade** ([planejamento](../fatias/S4/planejamento.md), detalhado): limpeza de "teste/simulação", login do cliente por e-mail + código, reativação entregue (app + e-mail), Ferramentas do avaliador nos Bastidores. Sub-fatias S4.1–S4.4 (S4.1 feita no branch antes da suspensão).
+- **S5 — Valor e conversão** ([escopo](../fatias/S5/planejamento.md)): painel em R$ + meta + feed; landing, página do QR e convite com agenda (copywriting); "Por que esta oferta?".
+- **S6 — IA que opera** ([escopo](../fatias/S6/planejamento.md)): resumo semanal por e-mail + agendador; modo garçom; plano como agente; porta-conta.
+- **S7 — Entregáveis** (era a "Fatia S4 — Entregáveis" acima): slide, vídeo de telas reais (D157), repositório público, preparação; segunda 23/11, 10h–15h.
+
+Cada fatia (S5, S6, S7) é planejada com `planejar-fatia` na vez dela. Ordem de corte D160; corte por flag domingo 22h; uma revisão e um merge depois da S6 (D167), com meta antes de segunda 08:30 (D168).

@@ -1039,4 +1039,10 @@ Detalhes, itens [C], sub-fatias e revisão independente (2 subagentes) em [docs/
 - Por evento: convite ao nascer, reativação ao aprovar, "Enviar agora". Agendador: resumo do dono segunda 08:30 e lembrete no dia do convite, com regra de recuperação e estados reservado → enviado. Alternativa: só por evento (recomendado).
 
 **D169 — Itens [C] do replanejamento** (21/11, IA [C]) ✅
-- Lista completa em docs/fatias/S4/planejamento.md §3 e "Correções da revisão técnica": e-mail do cliente com HMAC (`cliente-email:`) + AES-256-GCM (`CUSTOMER_EMAIL_KEY`), e-mail como chave do cliente (telefone deixa de ser único), `owners.email_enc` (muda D118), enums internos mantidos, slugs pelo nome, seed v4 com sobrenomes comuns, .ics de 1 evento, 4 estados do topo, varredura de textos pelo Playwright, flag de emergência `login_cliente_email`.
+- Lista completa em docs/fatias/S4/planejamento.md §13: e-mail do cliente com HMAC (`cliente-email:`) + AES-256-GCM com chave **derivada do `SESSION_SECRET` por HKDF** (`email-enc:v1`; ajuste da S4.1 no lugar de uma variável `CUSTOMER_EMAIL_KEY`, para não substituir o ambiente do Easypanel perto do congelamento), e-mail como chave do cliente (telefone deixa de ser único), `owners.email_enc` (muda D118), enums internos mantidos, slugs pelo nome, seed v4 com sobrenomes comuns, .ics de 1 evento, 4 estados do topo, varredura de textos pelo Playwright, flag de emergência `login_cliente_email`.
+
+**D170 — Uma fatia por vez: S5, S6 e S7 planejadas só na vez delas** (21/11, U) ✅
+- O candidato suspendeu a implementação ("não é pra começar a implementar nenhuma fatia ainda; primeiro registrar tudo") e pediu "vamos planejar uma a uma quando formos fazer".
+- A S4 fica com o planejamento detalhado; S5 e S6 guardam só o escopo combinado; a S7 (entregáveis) é planejada na segunda.
+- A S4.1 (migração 0006, criptografia do e-mail, seed v4) já tinha sido feita no branch da sessão (`7b01c74`), fora da `main`, e fica parada lá.
+- Alternativa: planejar S4–S6 de uma vez (o que estava em curso).
