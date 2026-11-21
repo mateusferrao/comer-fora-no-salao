@@ -27,7 +27,7 @@ import { langfuseTracer } from "@/src/modules/ia/tracing";
 import { buildKitPrompt, buildKitTask, KIT_PROMPT_VERSION, resolveKit } from "@/src/modules/ia/tasks/kit";
 import { renderReferences, type RefContext } from "@/src/modules/textos/domain/references";
 import { loadContext, type RestaurantContext } from "@/src/modules/salao/application/context";
-import { FALLBACK_KIT, FIELD_MAX, WAITER_TEMPLATE, waiterPhrase, type KitTexts, type VersionField } from "../domain/templates";
+import { BILL_TEMPLATE, FALLBACK_KIT, FIELD_MAX, WAITER_TEMPLATE, waiterPhrase, type KitTexts, type VersionField } from "../domain/templates";
 import { log } from "@/src/shared/log";
 import { abTable } from "@/src/modules/analytics/domain/operations";
 import { getVariantStats } from "@/src/modules/analytics/application/operations";
@@ -84,11 +84,14 @@ export async function generateKit(db: Db, p: { restaurantId: string; ownerId: st
       const lim = await consume(tx, `kit:${p.restaurantId}`, 6, 86_400, p.now);
       if (!lim.ok) throw new KitLimitError();
     }
-    for (const kind of ["display", "cartaz", "garcom"] as const) {
+    // S6.4 (D192): com a flag `porta_conta`, o kit novo já nasce com o porta-conta (1 versão, texto modelo).
+    const withBill = (await getFlags(db)).porta_conta;
+    for (const kind of [...(["display", "cartaz", "garcom"] as const), ...(withBill ? (["porta_conta"] as const) : [])]) {
       const [piece] = await tx.insert(kitPieces).values({ restaurantId: p.restaurantId, kind, status: "rascunho", createdAt: p.now }).returning({ id: kitPieces.id });
-      const labels = kind === "garcom" ? ["A"] : ["A", "B"];
+      const labels = kind === "garcom" || kind === "porta_conta" ? ["A"] : ["A", "B"];
       for (const label of labels) {
-        await tx.insert(pieceVariants).values({ pieceId: piece!.id, restaurantId: p.restaurantId, label, qrToken: token(), texts: kind === "garcom" ? { frase: WAITER_TEMPLATE } : { gerando: true }, createdAt: p.now });
+        const texts = kind === "garcom" ? { frase: WAITER_TEMPLATE } : kind === "porta_conta" ? { ...BILL_TEMPLATE } : { gerando: true };
+        await tx.insert(pieceVariants).values({ pieceId: piece!.id, restaurantId: p.restaurantId, label, qrToken: token(), texts, createdAt: p.now });
       }
     }
     return true;
@@ -155,7 +158,7 @@ async function writeVersionTexts(db: Db, restaurantId: string, texts: KitTexts, 
     .innerJoin(kitPieces, eq(kitPieces.id, pieceVariants.pieceId))
     .where(eq(pieceVariants.restaurantId, restaurantId));
   for (const r of rows) {
-    if (r.kind === "garcom") continue;
+    if (r.kind === "garcom" || r.kind === "porta_conta") continue;
     const v = texts[r.label === "B" ? "B" : "A"];
     await db.update(pieceVariants).set({ texts: { ...v, origem, sugerido: v } }).where(eq(pieceVariants.id, r.id));
   }
@@ -173,7 +176,7 @@ export async function startKitGeneration(db: Db, restaurantId: string, ownerId: 
 // ---------- Vista ----------
 
 export type KitVariantView = { id: string; label: string; token: string; texts: VariantTexts; rendered: Record<string, string>; approvedAt: Date | null; scans: number; locked: boolean; review: StoredReview | null };
-export type KitPieceView = { id: string; kind: "display" | "cartaz" | "garcom"; status: string; inSalonAt: Date | null; variants: KitVariantView[] };
+export type KitPieceView = { id: string; kind: "display" | "cartaz" | "garcom" | "porta_conta"; status: string; inSalonAt: Date | null; variants: KitVariantView[] };
 export type KitView = { pieces: KitPieceView[]; generating: boolean; origem: "ia" | "sem_ia" | "dono" | null; recado: string | null; slug: string };
 
 export async function getKit(db: Db, restaurantId: string, now: Date): Promise<KitView | null> {
@@ -199,13 +202,13 @@ export async function getKit(db: Db, restaurantId: string, now: Date): Promise<K
           await db.update(pieceVariants).set({ texts }).where(eq(pieceVariants.id, v.id));
         } else generating = true;
       }
-      if (texts.origem && piece.kind !== "garcom") origem = origem === "dono" ? "dono" : texts.origem;
+      if (texts.origem && piece.kind !== "garcom" && piece.kind !== "porta_conta") origem = origem === "dono" ? "dono" : texts.origem;
       const fb = FALLBACK_KIT[v.label === "B" ? "B" : "A"];
-      const raw = piece.kind === "garcom" ? { frase: texts.frase ?? WAITER_TEMPLATE } : { titulo: texts.titulo ?? fb.titulo, subtitulo: texts.subtitulo ?? fb.subtitulo, acao: texts.acao ?? fb.acao };
+      const raw = piece.kind === "garcom" ? { frase: texts.frase ?? WAITER_TEMPLATE } : piece.kind === "porta_conta" ? { ...BILL_TEMPLATE } : { titulo: texts.titulo ?? fb.titulo, subtitulo: texts.subtitulo ?? fb.subtitulo, acao: texts.acao ?? fb.acao };
       const rendered = Object.fromEntries(Object.entries(raw).map(([key, t]) => [key, renderReferences(key === "frase" ? waiterPhrase(t, waiterLink) : t, k.refCtx)]));
       const n = counts.get(v.id) ?? 0;
       const stored = v.reviewerStatus ? ({ status: v.reviewerStatus, ...((v.reviewerReasons as { reasons: string[]; at: string } | null) ?? { reasons: [], at: v.createdAt.toISOString() }) } as StoredReview) : null;
-      vs.push({ id: v.id, label: v.label, token: v.qrToken, texts: { ...texts, ...raw }, rendered, approvedAt: v.approvedAt, scans: n, locked: piece.kind !== "garcom" && n > 0, review: effectiveReview(stored, now) });
+      vs.push({ id: v.id, label: v.label, token: v.qrToken, texts: { ...texts, ...raw }, rendered, approvedAt: v.approvedAt, scans: n, locked: piece.kind !== "garcom" && piece.kind !== "porta_conta" && n > 0, review: effectiveReview(stored, now) });
     }
     out.push({ id: piece.id, kind: piece.kind as KitPieceView["kind"], status: piece.status, inSalonAt: piece.inSalonAt, variants: vs });
   }
@@ -368,4 +371,21 @@ export async function pieceBlocked(db: Db, pieceId: string, now: Date, variantId
     .from(pieceVariants)
     .where(and(eq(pieceVariants.pieceId, pieceId), isNull(pieceVariants.retiredAt), variantId ? eq(pieceVariants.id, variantId) : undefined));
   return rows.some((r) => r.status && reviewBlocks({ status: r.status, ...((r.reasons as { reasons: string[]; at: string } | null) ?? { reasons: [], at: r.createdAt.toISOString() }) } as StoredReview, now));
+}
+
+
+/**
+ * "Adicionar porta-conta" (S6.4 — D192) para kits que já existem: POST, sob o mesmo lock do kit (2 cliques = 1
+ * peça). Nunca dentro de um GET (revisão técnica I6).
+ */
+export async function addBillHolder(db: Db, p: { restaurantId: string; now: Date }): Promise<{ ok: true; created: boolean } | { ok: false; erro: "sem_kit" }> {
+  return db.transaction(async (tx) => {
+    await tx.execute(sql`select pg_advisory_xact_lock(hashtext(${"kit:" + p.restaurantId}))`);
+    const pieces = await tx.select({ kind: kitPieces.kind }).from(kitPieces).where(eq(kitPieces.restaurantId, p.restaurantId));
+    if (!pieces.length) return { ok: false as const, erro: "sem_kit" as const };
+    if (pieces.some((x) => x.kind === "porta_conta")) return { ok: true as const, created: false };
+    const [piece] = await tx.insert(kitPieces).values({ restaurantId: p.restaurantId, kind: "porta_conta", status: "rascunho", createdAt: p.now }).returning({ id: kitPieces.id });
+    await tx.insert(pieceVariants).values({ pieceId: piece!.id, restaurantId: p.restaurantId, label: "A", qrToken: token(), texts: { ...BILL_TEMPLATE }, createdAt: p.now });
+    return { ok: true as const, created: true };
+  });
 }

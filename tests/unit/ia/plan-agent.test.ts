@@ -36,7 +36,7 @@ describe("ferramentas do agente (S6.3b, D166): só leitura, números do código,
     const o = cands[0]!.options[0]!;
     const r = (await tools.custo_semana!.execute({ candidata: "A1" })) as Record<string, string>;
     expect(r.teto).toBe("12 convites");
-    expect(r.custo_maximo_semana.replace(/\s/g, " ")).toBe(new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 }).format((o.unitCostCents * 12) / 100).replace(/\s/g, " "));
+    expect(r.custo_maximo_semana!.replace(/\s/g, " ")).toBe(new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 }).format((o.unitCostCents * 12) / 100).replace(/\s/g, " "));
   });
 
   it("checar_texto = o mesmo guard (inclui o 'O que evitar')", async () => {

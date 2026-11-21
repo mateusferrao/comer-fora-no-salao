@@ -5,7 +5,7 @@ import { getDb } from "@/src/db/client";
 import { kitPieces, pieceVariants, restaurants } from "@/src/db/schema";
 import { getKit } from "@/src/modules/kit/application/kit";
 import { qrUrl } from "@/src/modules/kit/domain/qr";
-import { KitPiece, WaiterCard } from "@/src/ui/kit/KitPiece";
+import { BillHolder, KitPiece, WaiterCard } from "@/src/ui/kit/KitPiece";
 import { PrintToolbar } from "@/src/ui/kit/PrintToolbar";
 import { getOwnerSession } from "@/src/web/owner-session";
 import { publicBaseUrl, qrDataUri } from "@/src/web/qr";
@@ -54,9 +54,16 @@ export default async function ImprimirPage({ params }: { params: Promise<{ varia
   return (
     <main className="flex flex-col items-center gap-4 bg-page py-6 print:bg-white print:p-0">
       <style>{`@page { size: ${page}; margin: 0 } @media print { body { background: #fff } }`}</style>
-      <PrintToolbar kind={row.kind as "display" | "cartaz" | "garcom"} />
+      <PrintToolbar kind={row.kind as "display" | "cartaz" | "garcom" | "porta_conta"} />
       <div className="shadow-medium print:shadow-none">
-        {row.kind === "garcom" ? (
+        {row.kind === "porta_conta" ? (
+          <div className="flex flex-col bg-white" style={{ width: "210mm" }}>
+            {await (async () => {
+              const qr = await qrDataUri(qrUrl(publicBaseUrl(), row.slug, variant.token));
+              return [0, 1, 2].map((i) => <BillHolder key={i} restaurantName={row.name} qrSrc={qr} texts={{ titulo: variant.rendered.titulo ?? "", subtitulo: variant.rendered.subtitulo ?? "", acao: variant.rendered.acao ?? "" }} />);
+            })()}
+          </div>
+        ) : row.kind === "garcom" ? (
           <div className="grid grid-cols-2 bg-white" style={{ width: "210mm" }}>
             {[0, 1, 2, 3].map((i) => (
               <WaiterCard key={i} restaurantName={row.name} frase={variant.rendered.frase ?? ""} />

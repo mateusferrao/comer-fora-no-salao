@@ -8,7 +8,7 @@ import { Badge } from "../components/Badge";
 import { Button } from "../components/Button";
 import { SidePanel } from "../components/SidePanel";
 import { Switch } from "../components/Switch";
-import { KitPiece, WaiterCard } from "./KitPiece";
+import { BillHolder, KitPiece, WaiterCard } from "./KitPiece";
 
 const FIELD_LABEL: Record<VersionField, string> = { titulo: "Título", subtitulo: "Subtítulo", acao: "Frase de ação" };
 const ORIGEM: Record<string, string> = { ia: "Escrito pela IA", sem_ia: "Texto modelo (sem IA)", dono: "Editado por você" };
@@ -21,7 +21,7 @@ async function call(url: string, method: string, body?: unknown) {
 }
 
 /** Gestão do kit (espec. 3.4): editar, regenerar campo, aprovar, imprimir e marcar "no salão". */
-export function KitManager({ initial, restaurantName, qrs }: { initial: KitView; restaurantName: string; qrs: Record<string, string> }) {
+export function KitManager({ initial, restaurantName, qrs, billHolder = false }: { initial: KitView; restaurantName: string; qrs: Record<string, string>; billHolder?: boolean }) {
   const router = useRouter();
   const [kit, setKit] = useState(initial);
   const [editing, setEditing] = useState<"A" | "B" | null>(null);
@@ -87,6 +87,15 @@ export function KitManager({ initial, restaurantName, qrs }: { initial: KitView;
   const piece = (kind: "display" | "cartaz") => kit.pieces.find((p) => p.kind === kind);
   const byLabel = (label: "A" | "B") => piece("display")?.variants.find((v) => v.label === label) ?? piece("cartaz")?.variants.find((v) => v.label === label);
   const waiter = kit.pieces.find((p) => p.kind === "garcom");
+  const bill = kit.pieces.find((p) => p.kind === "porta_conta");
+  async function addBill() {
+    setBusy("porta_conta");
+    const r = await call("/api/parceiro/kit/porta-conta", "POST");
+    setBusy(null);
+    if (r.ok) setKit(r.data as unknown as KitView);
+    else setMsg("Não conseguimos adicionar o porta-conta agora. Tente de novo.");
+    router.refresh();
+  }
 
   async function pieceAction(pieceId: string, acao: "aprovar" | "no_salao" | "fora_do_salao") {
     setBusy(`${pieceId}:${acao}`);
@@ -203,6 +212,61 @@ export function KitManager({ initial, restaurantName, qrs }: { initial: KitView;
               </Button>
             )}
           </div>
+        </section>
+      )}
+
+      {/* S6.4 (D192): porta-conta — texto modelo, 1 versão, QR próprio. */}
+      {billHolder && bill && (
+        <section aria-labelledby="peca-porta_conta" className="flex flex-col gap-3 rounded-sm border border-border p-4">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <h2 id="peca-porta_conta" className="text-lg font-bold text-ink">
+              {PIECE_LABEL.porta_conta}
+            </h2>
+            <Badge tone={bill.status === "no_salao" ? "green" : "neutral"}>{bill.status === "no_salao" ? "No salão" : bill.status === "aprovado" ? "Aprovada" : "Rascunho"}</Badge>
+          </div>
+          <p className="text-sm text-ink-muted">Vai junto da conta: lembra o check-in na hora de pagar. Texto fixo, sem IA; fala do convite só como possibilidade (grupo de controle).</p>
+          {bill.variants[0] && qrs[bill.variants[0].id] && (
+            <div aria-hidden="true" className="overflow-hidden rounded-sm border border-border" style={{ width: `${210 * 0.4}mm`, height: `${99 * 0.4}mm` }}>
+              <div style={{ transform: "scale(0.4)", transformOrigin: "top left" }}>
+                <BillHolder
+                  restaurantName={restaurantName}
+                  qrSrc={qrs[bill.variants[0].id]!}
+                  texts={{ titulo: bill.variants[0].rendered.titulo ?? "", subtitulo: bill.variants[0].rendered.subtitulo ?? "", acao: bill.variants[0].rendered.acao ?? "" }}
+                />
+              </div>
+            </div>
+          )}
+          <p className="text-sm text-ink" data-testid="porta-conta-texto">
+            {bill.variants[0]?.rendered.titulo} · {bill.variants[0]?.rendered.subtitulo}
+          </p>
+          <div className="flex flex-wrap items-center gap-4">
+            <a className="inline-flex min-h-11 items-center text-sm font-semibold text-red-text underline" href={`/parceiro/imprimir/${bill.variants[0]?.id}`}>
+              Imprimir porta-contas (3 por folha)
+            </a>
+            {bill.variants[0] && (
+              <a className="inline-flex min-h-11 items-center text-sm font-semibold text-red-text underline" href={`/r/${kit.slug}?p=${bill.variants[0].token}`} target="_blank" rel="noopener">
+                Abrir o QR do porta-conta
+              </a>
+            )}
+            {bill.status === "rascunho" ? (
+              <Button variant="outline-portal" loading={busy === `${bill.id}:aprovar`} onClick={() => pieceAction(bill.id, "aprovar")}>
+                Aprovar porta-conta
+              </Button>
+            ) : (
+              <Switch label="Está no salão" checked={bill.status === "no_salao"} onChange={(on) => pieceAction(bill.id, on ? "no_salao" : "fora_do_salao")} />
+            )}
+          </div>
+        </section>
+      )}
+      {billHolder && !bill && (
+        <section aria-labelledby="peca-porta_conta-novo" className="flex flex-col gap-2 rounded-sm border border-dashed border-ink-muted p-4">
+          <h2 id="peca-porta_conta-novo" className="text-lg font-bold text-ink">
+            Porta-conta
+          </h2>
+          <p className="text-sm text-ink">Uma peça nova que vai junto da conta e lembra o check-in na hora de pagar, com QR próprio.</p>
+          <Button variant="outline-portal" className="self-start" loading={busy === "porta_conta"} onClick={() => void addBill()}>
+            Adicionar porta-conta
+          </Button>
         </section>
       )}
 

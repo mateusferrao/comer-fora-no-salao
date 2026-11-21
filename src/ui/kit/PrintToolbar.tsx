@@ -2,9 +2,9 @@
 
 import Link from "next/link";
 
-const SIZE = { display: "meia A4 (A5)", cartaz: "A4", garcom: "A4 com 4 cartões para recortar" };
+const SIZE = { display: "meia A4 (A5)", cartaz: "A4", garcom: "A4 com 4 cartões para recortar", porta_conta: "A4 com 3 porta-contas de 21 × 9,9 cm para recortar" };
 
-export function PrintToolbar({ kind }: { kind: "display" | "cartaz" | "garcom" }) {
+export function PrintToolbar({ kind }: { kind: "display" | "cartaz" | "garcom" | "porta_conta" }) {
   return (
     <div className="flex w-full max-w-3xl flex-wrap items-center justify-between gap-3 px-4 print:hidden">
       <Link href="/parceiro/salao/kit" className="min-h-11 content-center text-sm font-semibold text-red-text underline">
