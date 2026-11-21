@@ -71,13 +71,17 @@ test("plano da semana: exemplo pronto → gerar (sem IA local / IA em produção
   await expect(page.getByRole("heading", { name: "O que aprendemos" })).toBeVisible();
   await expect(page.getByText("O veredito é do código, por indicadores antecipados; não é causal.")).toBeVisible();
   await axe(page);
-  // Descartar a proposta atual (com motivo) e gerar uma nova.
-  if ((await page.getByTestId("plan-status").getAttribute("data-status")) === "proposto") {
-    await page.getByRole("button", { name: "Descartar" }).click();
-    await page.getByLabel("Teto alto demais").check();
-    await page.getByRole("button", { name: "Confirmar descarte" }).click();
-    await expect(page.getByText("Plano descartado.")).toBeVisible();
+  // Descartar uma proposta (com motivo) nesta execução e gerar uma nova. Sem proposta (a conta já aprovou antes), gera
+  // uma para descartar: o histórico desta execução sempre tem um "Descartado".
+  if ((await page.getByTestId("plan-status").getAttribute("data-status")) !== "proposto") {
+    page.once("dialog", (d) => void d.accept());
+    await page.getByRole("button", { name: "Gerar plano da semana" }).click();
+    await expect(page.getByTestId("plan-status")).toHaveAttribute("data-status", "proposto", { timeout: 60_000 });
   }
+  await page.getByRole("button", { name: "Descartar" }).click();
+  await page.getByLabel("Teto alto demais").check();
+  await page.getByRole("button", { name: "Confirmar descarte" }).click();
+  await expect(page.getByText("Plano descartado.")).toBeVisible();
   page.once("dialog", (d) => void d.accept());
   await page.getByRole("button", { name: "Gerar plano da semana" }).click();
   await expect(page.getByTestId("plan-status")).toHaveAttribute("data-status", "proposto", { timeout: 60_000 });
