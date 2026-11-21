@@ -17,16 +17,16 @@ import { examplesBlock } from "../examples";
 import { toneForPrompt } from "@/src/modules/config/domain/tone";
 import { hasOwnerData, OWNER_DATA_SYSTEM, ownerDataLines, type OwnerData } from "../owner-data";
 
-export const PACKAGE_PROMPT_VERSION = "pacote-v2";
+export const PACKAGE_PROMPT_VERSION = "pacote-v3";
 /** Plano da semana (S3): mesma tarefa, com "o que aprendemos" por oferta da semana anterior (D220). */
-export const PLAN_PROMPT_VERSION = "plano-v2";
+export const PLAN_PROMPT_VERSION = "plano-v3";
 
 export const PACKAGE_INSTRUCTIONS = `Você ajuda o dono de um restaurante a encher os horários vazios com um convite de volta, oferecido ao cliente que já está no salão.
 Tom: caloroso, simples e direto, na voz do restaurante. Português do Brasil.`;
 
 const RULES = `Para cada faixa (horário vazio), escolha UMA candidata pelo apelido (ex.: "A2"), casando o item com o turno e com quem costuma vir nesse horário (ex.: sobremesa ou café à tarde, porção para dividir à noite, bebida no fim de tarde). Considere os fatos declarados pelo dono.
 Escreva:
-- textoConvite (até 160 caracteres): um recado curto da casa para o cliente, convidando a voltar. Pode usar {oferta}, {horario:X} e {prato:pN}, trocando X pela letra da faixa e pN pelo apelido do prato (ex.: {horario:A}, {prato:p3}). O cartão já mostra dias, horário e oferta escritos pelo sistema: não repita os dois juntos.
+- textoConvite (até 160 caracteres): um recado curto da casa para o cliente, convidando a voltar. Pode usar {oferta}, {horario:X} e {prato:pN}, trocando X pela letra da faixa e pN pelo apelido do prato (ex.: {horario:A}, {prato:p3}). Inclua SEMPRE {horario:X} da própria faixa: ele vira os dias e o horário (ex.: "terça, quarta e quinta, das 15h às 18h"). Escreva "Volte {horario:X}…" ou "De {horario:X}…", sem "no", "na" ou "em" antes. {oferta} já diz o benefício inteiro: não escreva "grátis", "por nossa conta" nem o prato logo depois dela.
 - justificativa (até 400 caracteres): para o dono, por que esta oferta casa com este horário, citando fatos com {fato:chave}.
 Regras fixas:
 - Nunca escreva números, preços, percentuais, dias da semana ou nomes de pratos por extenso: use só as referências entre chaves listadas abaixo.
@@ -147,7 +147,8 @@ export function packageGuard(pp: PackagePrompt): (d: PackageOut) => GuardResult 
       const c = pp.candByAlias.get(e.candidata);
       if (!c || c.slotAlias !== e.faixa) reasons.push(`candidata_fora_da_faixa:${e.candidata}`);
       const ctx = { ...pp.ctxBase, oferta: c?.gain };
-      const g1 = guardText(e.textoConvite, ctx, { allowed: ["prato", "horario", "oferta"], maxLen: 160, field: "textoConvite", mode: "ia", avoid: pp.avoid });
+      // D226: o convite cita o {horario:X} da própria faixa, sem artigo antes e sem repetir a oferta (determinístico).
+      const g1 = guardText(e.textoConvite, ctx, { allowed: ["prato", "horario", "oferta"], maxLen: 160, field: "textoConvite", mode: "ia", avoid: pp.avoid, requireSlot: e.faixa });
       if (!g1.ok) reasons.push(...g1.reasons.map((r) => `textoConvite:${r}`));
       const g2 = guardText(e.justificativa, ctx, { allowed: ["fato", "prato", "horario", "oferta"], maxLen: 400, field: "justificativa", mode: "ia", avoid: pp.avoid });
       if (!g2.ok) reasons.push(...g2.reasons.map((r) => `justificativa:${r}`));

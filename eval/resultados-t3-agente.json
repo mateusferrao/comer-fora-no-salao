@@ -1,41 +1,55 @@
 {
-  "when": "2026-11-21T15:09:12.659Z",
+  "when": "2026-11-21T15:27:39.917Z",
   "model": "google/gemini-3.8-flash",
   "judge": "moonshotai/kimi-k3.1-pro",
   "reps": 2,
   "agente": {
     "n": 10,
-    "ok": 9,
-    "okPct": 0.9,
-    "p50": 13953,
-    "costPerCall": 0.013138050000000002,
-    "avgSteps": 9.11111111111111
+    "ok": 10,
+    "okPct": 1,
+    "p50": 13775,
+    "costPerCall": 0.014189249999999997,
+    "avgSteps": 9.3
   },
   "unica": {
     "n": 10,
-    "ok": 8,
-    "okPct": 0.8,
-    "p50": 2648,
-    "costPerCall": 0.002125725,
+    "ok": 10,
+    "okPct": 1,
+    "p50": 3557,
+    "costPerCall": 0.0021576,
     "avgSteps": 0
   },
   "juiz": {
-    "wins": 3,
-    "ties": 0,
-    "losses": 4,
-    "notWorse": false
+    "wins": 6,
+    "ties": 1,
+    "losses": 3,
+    "notWorse": true
   },
-  "turnOn": false,
-  "totalCostUsd": 0.18654255000000003,
+  "deterministico": {
+    "agente": {
+      "n": 14,
+      "comHorario": 1,
+      "artigo": 0,
+      "repetida": 0
+    },
+    "unica": {
+      "n": 14,
+      "comHorario": 1,
+      "artigo": 0,
+      "repetida": 0
+    }
+  },
+  "turnOn": true,
+  "totalCostUsd": 0.2136165,
   "runs": [
     {
       "mode": "agente",
       "fixture": "boteco",
       "rep": 1,
       "ok": true,
-      "latencyMs": 17436,
-      "costUsd": 0.0156495,
-      "steps": 11,
+      "latencyMs": 13775,
+      "costUsd": 0.015682500000000002,
+      "steps": 10,
       "stepLabels": [
         "Viu as ofertas possíveis da faixa A",
         "Viu as ofertas possíveis da faixa B",
@@ -46,7 +60,6 @@
         "Conferiu a justificativa nas regras",
         "Conferiu o texto do convite nas regras",
         "Conferiu a justificativa nas regras",
-        "Conferiu o texto do convite nas regras",
         "Conferiu o texto do convite nas regras"
       ]
     },
@@ -54,10 +67,9 @@
       "mode": "unica",
       "fixture": "boteco",
       "rep": 1,
-      "ok": false,
-      "reason": "invalid: textoConvite:referencia:fato:faixa_A_turno (não permitida aqui)",
-      "latencyMs": 3118,
-      "costUsd": 0.002547,
+      "ok": true,
+      "latencyMs": 7182,
+      "costUsd": 0.00252975,
       "steps": 0,
       "stepLabels": []
     },
@@ -65,20 +77,30 @@
       "mode": "agente",
       "fixture": "boteco",
       "rep": 2,
-      "ok": false,
-      "reason": "invalid: textoConvite:tamanho:161>160",
-      "latencyMs": 14945,
-      "costUsd": 0.01622325,
-      "steps": 0,
-      "stepLabels": []
+      "ok": true,
+      "latencyMs": 13973,
+      "costUsd": 0.01363575,
+      "steps": 10,
+      "stepLabels": [
+        "Viu as ofertas possíveis da faixa A",
+        "Viu as ofertas possíveis da faixa B",
+        "Consultou os números do restaurante",
+        "Calculou o custo máximo da semana (A1)",
+        "Calculou o custo máximo da semana (B2)",
+        "Conferiu o texto do convite nas regras",
+        "Conferiu a justificativa nas regras",
+        "Conferiu o texto do convite nas regras",
+        "Conferiu a justificativa nas regras",
+        "Conferiu o texto do convite nas regras"
+      ]
     },
     {
       "mode": "unica",
       "fixture": "boteco",
       "rep": 2,
       "ok": true,
-      "latencyMs": 3588,
-      "costUsd": 0.00249825,
+      "latencyMs": 3557,
+      "costUsd": 0.002586,
       "steps": 0,
       "stepLabels": []
     },
@@ -87,19 +109,17 @@
       "fixture": "burger",
       "rep": 1,
       "ok": true,
-      "latencyMs": 15510,
-      "costUsd": 0.012674999999999999,
-      "steps": 9,
+      "latencyMs": 12854,
+      "costUsd": 0.0126105,
+      "steps": 7,
       "stepLabels": [
         "Viu as ofertas possíveis da faixa A",
         "Consultou os números do restaurante",
         "Calculou o custo máximo da semana (A2)",
-        "Calculou o custo máximo da semana (A3)",
-        "Calculou o custo máximo da semana (A1)",
         "Conferiu o texto do convite nas regras",
         "Conferiu a justificativa nas regras",
         "Conferiu o texto do convite nas regras",
-        "Conferiu o texto do convite nas regras"
+        "Conferiu a justificativa nas regras"
       ]
     },
     {
@@ -107,8 +127,8 @@
       "fixture": "burger",
       "rep": 1,
       "ok": true,
-      "latencyMs": 2060,
-      "costUsd": 0.00153225,
+      "latencyMs": 2399,
+      "costUsd": 0.00172125,
       "steps": 0,
       "stepLabels": []
     },
@@ -117,8 +137,8 @@
       "fixture": "burger",
       "rep": 2,
       "ok": true,
-      "latencyMs": 15253,
-      "costUsd": 0.012362999999999999,
+      "latencyMs": 11038,
+      "costUsd": 0.012822749999999997,
       "steps": 8,
       "stepLabels": [
         "Viu as ofertas possíveis da faixa A",
@@ -136,8 +156,8 @@
       "fixture": "burger",
       "rep": 2,
       "ok": true,
-      "latencyMs": 1751,
-      "costUsd": 0.00161475,
+      "latencyMs": 2207,
+      "costUsd": 0.00170625,
       "steps": 0,
       "stepLabels": []
     },
@@ -146,15 +166,14 @@
       "fixture": "sushi",
       "rep": 1,
       "ok": true,
-      "latencyMs": 13953,
-      "costUsd": 0.012924,
-      "steps": 9,
+      "latencyMs": 12808,
+      "costUsd": 0.01316175,
+      "steps": 8,
       "stepLabels": [
         "Viu as ofertas possíveis da faixa A",
         "Consultou os números do restaurante",
-        "Calculou o custo máximo da semana (A1)",
-        "Calculou o custo máximo da semana (A2)",
         "Calculou o custo máximo da semana (A3)",
+        "Calculou o custo máximo da semana (A2)",
         "Conferiu o texto do convite nas regras",
         "Conferiu a justificativa nas regras",
         "Conferiu o texto do convite nas regras",
@@ -166,8 +185,8 @@
       "fixture": "sushi",
       "rep": 1,
       "ok": true,
-      "latencyMs": 2648,
-      "costUsd": 0.00179475,
+      "latencyMs": 3650,
+      "costUsd": 0.00168,
       "steps": 0,
       "stepLabels": []
     },
@@ -176,16 +195,18 @@
       "fixture": "sushi",
       "rep": 2,
       "ok": true,
-      "latencyMs": 7882,
-      "costUsd": 0.0084285,
-      "steps": 6,
+      "latencyMs": 18471,
+      "costUsd": 0.013121250000000001,
+      "steps": 8,
       "stepLabels": [
         "Viu as ofertas possíveis da faixa A",
         "Consultou os números do restaurante",
-        "Calculou o custo máximo da semana (A2)",
         "Calculou o custo máximo da semana (A3)",
+        "Calculou o custo máximo da semana (A2)",
         "Conferiu o texto do convite nas regras",
-        "Conferiu a justificativa nas regras"
+        "Conferiu a justificativa nas regras",
+        "Conferiu o texto do convite nas regras",
+        "Conferiu o texto do convite nas regras"
       ]
     },
     {
@@ -193,8 +214,8 @@
       "fixture": "sushi",
       "rep": 2,
       "ok": true,
-      "latencyMs": 2294,
-      "costUsd": 0.00179475,
+      "latencyMs": 2550,
+      "costUsd": 0.0018675,
       "steps": 0,
       "stepLabels": []
     },
@@ -203,43 +224,9 @@
       "fixture": "vitrine",
       "rep": 1,
       "ok": true,
-      "latencyMs": 11794,
-      "costUsd": 0.0156975,
-      "steps": 12,
-      "stepLabels": [
-        "Viu as ofertas possíveis da faixa A",
-        "Viu as ofertas possíveis da faixa B",
-        "Consultou os números do restaurante",
-        "Calculou o custo máximo da semana (A1)",
-        "Calculou o custo máximo da semana (B2)",
-        "Conferiu o texto do convite nas regras",
-        "Conferiu a justificativa nas regras",
-        "Conferiu o texto do convite nas regras",
-        "Conferiu a justificativa nas regras",
-        "Conferiu a justificativa nas regras",
-        "Conferiu o “o que aprendemos” nas regras",
-        "Conferiu o “o que aprendemos” nas regras"
-      ]
-    },
-    {
-      "mode": "unica",
-      "fixture": "vitrine",
-      "rep": 1,
-      "ok": false,
-      "reason": "invalid: textoConvite:referencia:fato:faixa_A_turno (não permitida aqui); textoConvite:referencia:fato:faixa_B_turno (não permitida aqui)",
-      "latencyMs": 4768,
-      "costUsd": 0.00326475,
-      "steps": 0,
-      "stepLabels": []
-    },
-    {
-      "mode": "agente",
-      "fixture": "vitrine",
-      "rep": 2,
-      "ok": true,
-      "latencyMs": 14450,
-      "costUsd": 0.01854525,
-      "steps": 13,
+      "latencyMs": 15662,
+      "costUsd": 0.01931625,
+      "steps": 15,
       "stepLabels": [
         "Viu as ofertas possíveis da faixa A",
         "Viu as ofertas possíveis da faixa B",
@@ -249,11 +236,45 @@
         "Calculou o custo máximo da semana (B2)",
         "Conferiu o texto do convite nas regras",
         "Conferiu a justificativa nas regras",
-        "Conferiu o “o que aprendemos” nas regras",
+        "Conferiu o texto do convite nas regras",
+        "Conferiu a justificativa nas regras",
         "Conferiu o texto do convite nas regras",
         "Conferiu a justificativa nas regras",
         "Conferiu o “o que aprendemos” nas regras",
-        "Conferiu a justificativa nas regras"
+        "Conferiu o “o que aprendemos” nas regras",
+        "Conferiu o texto do convite nas regras"
+      ]
+    },
+    {
+      "mode": "unica",
+      "fixture": "vitrine",
+      "rep": 1,
+      "ok": true,
+      "latencyMs": 4046,
+      "costUsd": 0.0031275,
+      "steps": 0,
+      "stepLabels": []
+    },
+    {
+      "mode": "agente",
+      "fixture": "vitrine",
+      "rep": 2,
+      "ok": true,
+      "latencyMs": 14453,
+      "costUsd": 0.0179775,
+      "steps": 11,
+      "stepLabels": [
+        "Viu as ofertas possíveis da faixa A",
+        "Viu as ofertas possíveis da faixa B",
+        "Consultou os números do restaurante",
+        "Calculou o custo máximo da semana (A1)",
+        "Calculou o custo máximo da semana (B2)",
+        "Conferiu o texto do convite nas regras",
+        "Conferiu a justificativa nas regras",
+        "Conferiu o texto do convite nas regras",
+        "Conferiu a justificativa nas regras",
+        "Conferiu o “o que aprendemos” nas regras",
+        "Conferiu o “o que aprendemos” nas regras"
       ]
     },
     {
@@ -261,8 +282,8 @@
       "fixture": "vitrine",
       "rep": 2,
       "ok": true,
-      "latencyMs": 4322,
-      "costUsd": 0.003111,
+      "latencyMs": 3568,
+      "costUsd": 0.00321375,
       "steps": 0,
       "stepLabels": []
     },
@@ -271,9 +292,9 @@
       "fixture": "borda",
       "rep": 1,
       "ok": true,
-      "latencyMs": 10037,
-      "costUsd": 0.00945375,
-      "steps": 7,
+      "latencyMs": 13740,
+      "costUsd": 0.0117,
+      "steps": 8,
       "stepLabels": [
         "Viu as ofertas possíveis da faixa A",
         "Consultou os números do restaurante",
@@ -281,6 +302,7 @@
         "Calculou o custo máximo da semana (A3)",
         "Conferiu o texto do convite nas regras",
         "Conferiu a justificativa nas regras",
+        "Conferiu o texto do convite nas regras",
         "Conferiu o texto do convite nas regras"
       ]
     },
@@ -289,8 +311,8 @@
       "fixture": "borda",
       "rep": 1,
       "ok": true,
-      "latencyMs": 2669,
-      "costUsd": 0.00150675,
+      "latencyMs": 1933,
+      "costUsd": 0.001512,
       "steps": 0,
       "stepLabels": []
     },
@@ -299,9 +321,9 @@
       "fixture": "borda",
       "rep": 2,
       "ok": true,
-      "latencyMs": 10487,
-      "costUsd": 0.00942075,
-      "steps": 7,
+      "latencyMs": 11348,
+      "costUsd": 0.01186425,
+      "steps": 8,
       "stepLabels": [
         "Viu as ofertas possíveis da faixa A",
         "Consultou os números do restaurante",
@@ -309,6 +331,7 @@
         "Calculou o custo máximo da semana (A3)",
         "Conferiu o texto do convite nas regras",
         "Conferiu a justificativa nas regras",
+        "Conferiu o texto do convite nas regras",
         "Conferiu o texto do convite nas regras"
       ]
     },
@@ -317,61 +340,82 @@
       "fixture": "borda",
       "rep": 2,
       "ok": true,
-      "latencyMs": 2162,
-      "costUsd": 0.001593,
+      "latencyMs": 2306,
+      "costUsd": 0.001632,
       "steps": 0,
       "stepLabels": []
     }
   ],
   "judged": [
     {
-      "fixture": "burger",
+      "fixture": "boteco",
       "rep": 1,
       "pref": "unica",
-      "motivo": "A é mais completa e natural: informa os dias e horários no convite, enquanto B é mais genérica e repete 'atrativo/atrair' na justificativa.",
-      "costUsd": 0.0046998
+      "motivo": "As duas propostas acertam os itens para cada turno e citam a ocupação e a meta de mesas, mas sem fatos específicos do restaurante além do cardápio. A tem convites um pouco mais desenvolvidos e calorosos, mantendo o clima de boteco sem exageros.",
+      "costUsd": 0.0050274
+    },
+    {
+      "fixture": "boteco",
+      "rep": 2,
+      "pref": "agente",
+      "motivo": "As duas acertam os itens nos turnos e usam as metas e a ocupação na justificativa. A prefere uma voz mais calorosa e natural, enquanto B soa um pouco mais promocional e engessada.",
+      "costUsd": 0.0058104
+    },
+    {
+      "fixture": "burger",
+      "rep": 1,
+      "pref": "agente",
+      "motivo": "As duas ofertas combinam bem com o almoço e citam o horário vazio e a meta de 4 mesas. B tem convite um pouco mais caloroso e contextualizado com a pausa para o almoço.",
+      "costUsd": 0.0043002
     },
     {
       "fixture": "burger",
       "rep": 2,
-      "pref": "unica",
-      "motivo": "As duas acertam ao oferecer uma bebida refrescante no almoço e usam convites naturais, mas A traz uma justificativa mais concreta ao mencionar também o ticket de R$ 65,00 e o cuidado com a canibalização.",
-      "costUsd": 0.0044568
+      "pref": "agente",
+      "motivo": "B tem convite um pouco mais caloroso e justificativa mais específica ao almoço, ligando a limonada ao burger do meio-dia e ao retorno; ambas citam corretamente as 4 mesas desejadas.",
+      "costUsd": 0.0043362
     },
     {
       "fixture": "sushi",
       "rep": 1,
       "pref": "unica",
-      "motivo": "A mantém a oferta adequada ao jantar e traz uma justificativa um pouco mais completa, ligando a entrada leve aos pratos principais e à rentabilidade. O convite também é mais específico sobre dias e horários.",
-      "costUsd": 0.0041094
+      "motivo": "A oferece a justificativa mais completa e concreta, incluindo as 3 mesas e o tíquete de R$ 120,00, além de um convite um pouco mais natural.",
+      "costUsd": 0.004257
     },
     {
       "fixture": "sushi",
       "rep": 2,
+      "pref": "agente",
+      "motivo": "B tem justificativa mais clara e coerente: relaciona a leveza do sunomono ao jantar e às 3 mesas desejadas. A traz mais números, mas “preservando o R$ 120,00 da casa” fica ambíguo.",
+      "costUsd": 0.0053622
+    },
+    {
+      "fixture": "vitrine",
+      "rep": 1,
       "pref": "unica",
-      "motivo": "A apresenta o Sunomono de forma clara e calorosa e justifica a oferta com dados concretos da casa, como a meta de 3 mesas e a margem de 55%; B é mais vaga tanto no convite quanto na análise.",
-      "costUsd": 0.0048204
+      "motivo": "B mantém as ofertas adequadas aos turnos, mas explica melhor a escolha dos itens e usa convites mais naturais e menos repetitivos.",
+      "costUsd": 0.0049284
     },
     {
       "fixture": "vitrine",
       "rep": 2,
-      "pref": "agente",
-      "motivo": "As ofertas são igualmente adequadas e ambas citam metas e resultados concretos, mas os convites de B soam mais naturais, calorosos e fluidos; A tem construções burocráticas e alguns problemas de concordância.",
-      "costUsd": 0.0054504
+      "pref": "empate",
+      "motivo": "As duas acertam os itens para cada turno e usam números concretos. B detalha melhor as ofertas anteriores, enquanto A tem convites um pouco mais naturais e calorosos.",
+      "costUsd": 0.0080892
     },
     {
       "fixture": "borda",
       "rep": 1,
       "pref": "agente",
-      "motivo": "B comunica claramente que o bolo é grátis e tem um convite mais curto, caloroso e natural; A repete todos os dias e horários e não deixa a gratuidade explícita no convite.",
-      "costUsd": 0.0057006
+      "motivo": "As duas acertam o doce à tarde, mas B tem um convite um pouco mais caloroso e natural. Ambas as justificativas são genéricas, citando apenas o horário vazio e a meta de duas mesas.",
+      "costUsd": 0.0033786
     },
     {
       "fixture": "borda",
       "rep": 2,
       "pref": "agente",
-      "motivo": "A tem convite mais natural e conciso, com boa combinação entre bolo de cenoura e café da tarde. B traz uma justificativa mais concreta ao citar a margem de 70%, mas o convite fica robótico ao repetir todos os dias e horários.",
-      "costUsd": 0.0046674
+      "motivo": "As duas ofertas combinam com a pausa da tarde e citam o salão vazio e a meta de 2 mesas. A é mais direta e evita a alegação de custos e margem de B, que não é sustentada pelos dados fornecidos.",
+      "costUsd": 0.0046584
     }
   ]
 }

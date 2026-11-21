@@ -45,7 +45,7 @@ describe("ferramentas do agente (S6.3b, D166): só leitura, números do código,
     const bad = (await tools.checar_texto!.execute({ campo: "textoConvite", faixa: "A", texto: "Ganhe 50% e um drink sem alcool" })) as { ok: boolean; problemas: string[] };
     expect(bad.ok).toBe(false);
     expect(bad.problemas).toEqual(expect.arrayContaining(["numero", "evitar:álcool"]));
-    const g = guardText("Ganhe 50% e um drink sem alcool", { ...pp.ctxBase, oferta: "x" }, { allowed: ["prato", "horario", "oferta"], maxLen: 160, field: "textoConvite", mode: "ia", avoid: ["álcool"] });
+    const g = guardText("Ganhe 50% e um drink sem alcool", { ...pp.ctxBase, oferta: "x" }, { allowed: ["prato", "horario", "oferta"], maxLen: 160, field: "textoConvite", mode: "ia", avoid: ["álcool"], requireSlot: "A" });
     expect(g.ok === false && g.reasons).toEqual(bad.problemas);
   });
 

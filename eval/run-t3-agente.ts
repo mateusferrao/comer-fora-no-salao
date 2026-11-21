@@ -88,6 +88,20 @@ async function main() {
   };
   const ag = stat("agente");
   const un = stat("unica");
+  // Métricas determinísticas (D226), pelo código, sobre o convite RENDERIZADO (o que o cliente lê), não pelo juiz.
+  const DAYS = /(segunda|terça|quarta|quinta|sexta|sábado|domingo)/i;
+  const det = (mode: Mode) => {
+    const cs = runs.filter((x) => x.mode === mode && x.ok).flatMap((x) => x.proposal!.slots);
+    const n = cs.length || 1;
+    return {
+      n: cs.length,
+      comHorario: cs.filter((c) => c.phrase && c.convite.includes(c.phrase)).length / n,
+      artigo: cs.filter((c) => new RegExp(`\\b(no|na|nos|nas|em)\\s+${DAYS.source}`, "i").test(c.convite)).length / n,
+      repetida: cs.filter((c) => { const gain = c.offer.split(": ").slice(1).join(": "); return !!gain && new RegExp(`${gain.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\s*(grátis|gratis|de graça|por (nossa |minha )?conta)`, "i").test(c.convite); }).length / n,
+    };
+  };
+  const dAg = det("agente");
+  const dUn = det("unica");
   const wins = judged.filter((j) => j.pref === "agente").length;
   const ties = judged.filter((j) => j.pref === "empate").length;
   const losses = judged.filter((j) => j.pref === "unica").length;
@@ -106,11 +120,18 @@ Rodada de ${new Date().toISOString().slice(0, 10)} · prompt do agente \`${AGENT
 | Agente (ferramentas) | ${ag.ok}/${ag.n} (${pct(ag.okPct)}) | ${sec(ag.p50)} | US$ ${ag.costPerCall.toFixed(4)} | ${ag.avgSteps.toFixed(1)} |
 | Chamada única | ${un.ok}/${un.n} (${pct(un.okPct)}) | ${sec(un.p50)} | US$ ${un.costPerCall.toFixed(4)} | — |
 
+Checagens determinísticas no convite renderizado (pelo código, nos planos que passaram — D226):
+
+| Modo | Convites | Com dia e horário | Artigo antes do dia ("no terça") | Oferta repetida ("grátis por nossa conta") |
+|---|---|---|---|---|
+| Agente | ${dAg.n} | ${pct(dAg.comHorario)} | ${pct(dAg.artigo)} | ${pct(dAg.repetida)} |
+| Chamada única | ${dUn.n} | ${pct(dUn.comHorario)} | ${pct(dUn.artigo)} | ${pct(dUn.repetida)} |
+
 Juiz (pares agente × única): agente ${wins} · empate ${ties} · única ${losses} → ${notWorse ? "não pior" : "pior"}.
 
 Regra fixada antes da rodada (D159): liga \`plano_agente\` com regras ok ≥ 90%, p50 ≤ 20 s e juiz não pior (vitórias + empates ≥ derrotas).
 
-**Pela regra da D159: ${turnOn ? "ligaria `plano_agente`" : "não ligaria `plano_agente`"}.** Decisão do candidato (D225): ligado, com a chamada única de reserva — confiabilidade nas regras vence; as rodadas anteriores estão em \`eval/relatorio-t3-agente-rodada1.md\` (prompt \`plano-agente-v1\`; a rodada com 429 foi descartada).
+**Pela regra da D159: ${turnOn ? "ligaria `plano_agente`" : "não ligaria `plano_agente`"}.** Decisão do candidato (D225): ligado, com a chamada única de reserva — confiabilidade nas regras vence. Rodadas anteriores: \`eval/relatorio-t3-agente-rodada1.md\` (\`plano-agente-v1\`) e \`eval/relatorio-t3-agente-rodada2.md\` (\`plano-agente-v2\`); a rodada com 429 foi descartada. Nesta rodada (v3), o convite precisa citar dia e horário da faixa (regra do código — D226).
 
 ${reasons.length ? `Falhas:\n${reasons.join("\n")}\n` : ""}
 Exemplo de passos do agente: ${runs.find((x) => x.mode === "agente" && x.ok)?.stepLabels.join(" → ") ?? "—"}
@@ -120,7 +141,7 @@ Exemplo de passos do agente: ${runs.find((x) => x.mode === "agente" && x.ok)?.st
 - As fixtures e os fatos são fictícios; o agente tem as mesmas regras e o mesmo schema da chamada única.
 `;
   writeFileSync("eval/relatorio-t3-agente.md", md);
-  writeFileSync("eval/resultados-t3-agente.json", JSON.stringify({ when: new Date().toISOString(), model: MODEL.id, judge: JUDGE.id, reps: REPS, agente: ag, unica: un, juiz: { wins, ties, losses, notWorse }, turnOn, totalCostUsd: totalCost, runs: runs.map(({ proposal: _p, ...r }) => r), judged }, null, 2));
+  writeFileSync("eval/resultados-t3-agente.json", JSON.stringify({ when: new Date().toISOString(), model: MODEL.id, judge: JUDGE.id, reps: REPS, agente: ag, unica: un, juiz: { wins, ties, losses, notWorse }, deterministico: { agente: dAg, unica: dUn }, turnOn, totalCostUsd: totalCost, runs: runs.map(({ proposal: _p, ...r }) => r), judged }, null, 2));
   process.stdout.write(`\nagente ${pct(ag.okPct)} p50 ${sec(ag.p50)} · única ${pct(un.okPct)} p50 ${sec(un.p50)} · juiz ${wins}/${ties}/${losses} · ligar: ${turnOn} · US$ ${totalCost.toFixed(4)}\n`);
 }
 

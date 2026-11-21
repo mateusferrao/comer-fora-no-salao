@@ -21,7 +21,7 @@ const task = buildPackageTask(pp, []);
 const good: PackageOut = {
   escolhas: [
     { faixa: "A", candidata: "A1", textoConvite: "Volte {horario:A} e aproveite {oferta}.", justificativa: "A tarde está {fato:faixa_A_intensidade}; algo leve combina com o turno da {fato:faixa_A_turno}." },
-    { faixa: "B", candidata: "B2", textoConvite: "À noite, {oferta} para fechar o dia.", justificativa: "Faixa {fato:faixa_B_intensidade}." },
+    { faixa: "B", candidata: "B2", textoConvite: "Volte {horario:B}: {oferta} para fechar o dia.", justificativa: "Faixa {fato:faixa_B_intensidade}." },
   ],
   ordem: ["A", "B"],
   aprendemos: [],

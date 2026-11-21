@@ -29,7 +29,8 @@ let withTools = 0;
 let withoutTools = 0;
 
 /** Agente falso: chama as ferramentas de verdade (o código) e devolve os passos, como o gateway real. */
-function agentGateway(opts: { agentFails?: boolean } = {}): AiGateway {
+function agentGateway(opts: { agentFails?: boolean; firstWithoutHour?: boolean } = {}): AiGateway {
+  let first = true;
   return {
     async generate(req: AiGenerateRequest) {
       const text = "text" in req.input ? req.input.text : "";
@@ -40,6 +41,12 @@ function agentGateway(opts: { agentFails?: boolean } = {}): AiGateway {
         const steps = [];
         for (const [tool, input] of [["ver_candidatas", { faixa: "A" }], ["ver_fatos", { grupo: "faixas" }], ["custo_semana", { candidata: "A1" }], ["checar_texto", { campo: "textoConvite", faixa: "A", texto: "Volte {horario:A} e aproveite {oferta}." }]] as const) {
           steps.push({ tool, input, output: await t[tool]!.execute(input), ms: 5 });
+        }
+        // D226: 1ª resposta com convite sem dia e horário → o guard reprova e o laço tenta de novo.
+        if (opts.firstWithoutHour && first) {
+          first = false;
+          const out = answer(text);
+          return { output: { ...out, escolhas: out.escolhas.map((e) => ({ ...e, textoConvite: "Volte logo e aproveite {oferta}." })) }, usage, model: "fake/agente", steps };
         }
         return { output: answer(text), usage, model: "fake/agente", steps };
       }
@@ -72,6 +79,17 @@ describe("plano como agente (S6.3b, D159, D194)", () => {
     expect(call!.task).toBe("plano_agente");
     const v = (await getPlanView(getDb(), VITRINE_ID, NOW))!;
     expect(v.plan!.agentSteps).toHaveLength(4);
+  });
+
+  it("D226: convite sem dia e horário é reprovado pelo guard; nenhum plano gravado fica sem {horario}", async () => {
+    const r = await generateWeeklyPlan(getDb(), { restaurantId: VITRINE_ID, ownerId: VITRINE_OWNER_ID, now: NOW, gateway: agentGateway({ firstWithoutHour: true }), agent: true });
+    expect(r).toMatchObject({ ok: true, generatedBy: "ia" });
+    const [plan] = await getDb().select().from(weeklyPlans).where(eq(weeklyPlans.id, (r as { planId: string }).planId));
+    const choices = plan!.choices as Array<{ slotId: string; textoConvite: string }>;
+    for (const c of choices) expect(c.textoConvite).toContain(`{horario:${c.slotId}}`);
+    const [call] = await getDb().select().from(aiCalls).where(and(eq(aiCalls.planId, plan!.id), eq(aiCalls.task, "plano_agente")));
+    const notes = (call!.attempts as Array<{ notes?: string[] }>).flatMap((a) => a.notes ?? []);
+    expect(notes.some((n) => n.endsWith("sem_horario"))).toBe(true);
   });
 
   it("agente falha → cai na chamada única (já medida), sem passos; flag/recurso desligado → sem agente", async () => {
