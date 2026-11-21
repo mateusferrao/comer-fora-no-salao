@@ -20,6 +20,7 @@ Legenda: **[B]** briefing · **[P]** pesquisa pública · **[O]** observado nos 
 >   - **Convite:** `.ics` no 1º dia em que o código pode nascer.
 >   - **IA:** "Por que esta oferta?" em 2 camadas.
 > - **IA que opera (S6):** plano como agente com ferramentas só de leitura (decidido por número — D159, D166), modo garçom por link, porta-conta no kit.
+> - **S6 detalhada (21/11, D187–D200 — [../fatias/S6/planejamento.md](../fatias/S6/planejamento.md)):** agendador gera o plano e manda o resumo no dia/hora do dono, com "Revisar e aprovar" por link; lembrete 1 por convite, X h antes; link do garçom com QR; agente com cadeia de reserva e linha visível; porta-conta DL; **sistema configurável**: "Avisos e automação" e "IA do restaurante" (instruções opcionais e seguras, pratos fora das ofertas, cardápio manual) para o dono e "Gerenciar notificações" para o cliente.
 > - **Fatias e cronograma (seção 7):** S4 (produto real e identidade), S5 (valor e conversão), S6 (IA que opera), 1 merge no fim (D167) com meta antes de 23/11 08:30; corte por flag domingo 22h; S7 = entregáveis (slide, vídeo de telas reais — D157, repositório público, preparação), segunda 10h–15h.
 
 ---

@@ -1137,3 +1137,55 @@ Detalhes, revisão independente (2 subagentes) e itens [C] em [docs/fatias/S5/pl
   - filtro da prova social pela dica mascarada;
   - rota única do "Por que esta oferta?" para plano e pacote.
 
+
+### Rodada própria da S6 (`planejar-fatia`, 21/11)
+Detalhes, revisão independente (2 subagentes, 2 rodadas) e itens [C] em [docs/fatias/S6/planejamento.md](../fatias/S6/planejamento.md).
+
+**D187 — O agendador gera o plano da semana antes do resumo** (21/11, U) ✅
+- IA com a chave do dono; falha ou sem verba → modo sem IA rotulado. Não apaga plano `proposto` nem gera de novo um aprovado recente (achado B2 da revisão técnica).
+- Alternativas: e-mail só se o plano já existir; gerar ao abrir o link.
+
+**D188 — Resumo = resultado da semana fechada + plano proposto com "Revisar e aprovar"** (21/11, U) ✅
+- Números do código e topo em R$ nas 2 camadas da S5. Alternativas: só o plano; só o resultado.
+
+**D189 — Lembrete ao cliente: 1 por convite, no 1º dia válido, X horas antes da janela (dono escolhe 1–24 h, padrão 3 h), nunca antes das 07h nem depois do início** (21/11, U) ✅
+- O candidato pediu explicação com exemplo antes de decidir; depois pediu que o dono escolha a antecedência.
+- Alternativas: 1 por semana até vencer; sem lembrete; 10h fixo; 2 h antes.
+
+**D190 — Link do garçom: link + QR, sem PIN, 1 ativo, revogável** (21/11, U) ✅
+- Alternativas: link + PIN; só link.
+
+**D191 — Agente medido pelo código + juiz cego, sem nota do candidato** (21/11, U) ✅ (aplica D159)
+
+**D192 — Porta-conta "Antes de pagar", texto modelo do código, 1 versão, 3 por A4 (formato DL)** (21/11, U) ✅
+- Texto corrigido na revisão: o benefício vale só na 1ª visita. Alternativas: foco na volta; igual ao display; texto por IA.
+
+**D193 — Agendador sem data de fim; o candidato desliga a flag** (21/11, U) ✅
+- Descadastro em todo e-mail (clientes e dono). Alternativas: parar em 31/12/2026 (recomendado); depois da entrevista.
+
+**D194 — Com o agente ligado, linha visível no plano: "Montado por agente de IA · N consultas · ver passos"** (21/11, U) ✅
+- Alternativa: só no recolhido "Como a IA decidiu".
+
+**D195 — Página "Revisar e aprovar" com o logo do iFood** (21/11, U) ✅
+- Risco de parecer phishing apontado pela revisão de produto e aceito. Alternativa: sem logo (recomendado).
+
+**D196 — Aba "Avisos e automação" do dono, tudo ligado por padrão** (21/11, U) ✅
+- Resumo liga/desliga + dia e hora; aprovar pelo e-mail (dentro do resumo); plano automático independente do resumo (explicado com o exemplo da Cantina); e-mails aos clientes por tipo + antecedência do lembrete.
+- Origem: o candidato pediu "todas essas partes devem ser configuráveis… faz uma busca" (código + web: Bloomreach, Gorgias, Zendesk, Klaviyo; Braze/Litmus/Suped).
+- Alternativas: plano automático dependente do resumo; aprovar por e-mail desligado por padrão; automáticos desligados. Trade-off: controle × uma aba a mais.
+
+**D197 — Aba "IA do restaurante": instruções do dono opcionais e seguras** (21/11, U) ✅ (complementa D138)
+- Tom (movido), "Fatos para a IA" (≤ 500), "O que evitar" (≤ 200; bloqueia o texto da IA e gera de novo), pratos fora das ofertas (filtro no código e no servidor), liga/desliga por restaurante só do agente e do "aprender" (o revisor fica fora). Cardápio editável à mão no cadastro e em Configurações (exclusão lógica).
+- Vazio = prompt idêntico ao de hoje com os dados já existentes. Segurança em camadas contra injeção de prompt, SQL e cabeçalho (planejamento S6 §6.5), com fixtures de ataque e de textos legítimos.
+- Alternativas: "Evitar" só como instrução; revisor desligável pelo dono. Trade-off: voz do dono × superfície de injeção.
+
+**D198 — Central de preferências do cliente ("Gerenciar notificações" + link do e-mail)** (21/11, U) ✅
+- E-mail (mestre) com "Convites" e "Lembretes"; "Convites de volta no app" (opt_app) mantido com efeito claro.
+- A 1ª resposta tirava "Avisos no app" com base numa premissa errada (sem efeito); a revisão técnica mostrou que é o consentimento da reativação (`hasOptIn`) e o candidato decidiu manter.
+- Alternativas: só e-mail decide; app sempre ligado; só na Jornada; como estava.
+
+**D199 — Configuração entra junto do recurso dela, na ordem de corte da D160** (21/11, U) ✅
+- A S6.3a (sem flag) entra inteira ou é revertida. Alternativas: S6.5 no fim; antes de tudo.
+
+**D200 — Itens [C] da rodada da S6** (21/11, IA [C]) ✅
+- Lista em docs/fatias/S6/planejamento.md §12, entre eles: recuperação `T + 24 h` com virada de semana; reservas idempotentes sem advisory lock de sessão; `approvePlanInTx`; cadeia agente → chamada única → sem IA com `prepareStep`; cookie do garçom de 30 dias; exclusão lógica do item; `email_skip_reason`; jsonb com `.catch` por campo; padrões de injeção só em "Fatos"; migração 0007 aditiva.
