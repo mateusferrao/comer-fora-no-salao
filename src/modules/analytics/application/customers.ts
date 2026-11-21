@@ -1,6 +1,6 @@
 /**
  * Clientes como segmentos acionáveis (espec. 3.6; planejamento S3 §4.5). Só o restaurante da sessão; nome como
- * "primeiro nome + inicial" (D106) e telefone só com os 4 últimos dígitos. Nunca o HMAC.
+ * nome, telefone e e-mail completos, decifrados na hora (D237). Nunca o HMAC.
  */
 import { sql } from "drizzle-orm";
 import type { Executor } from "@/src/db/executor";
@@ -12,8 +12,10 @@ import type { ReactivationCustomer } from "@/src/modules/planos/domain/reactivat
 
 export type CustomerRow = {
   id: string;
+  /** D237: nome completo, telefone e e-mail inteiros (o dono vê o contato dos clientes dele). */
   displayName: string;
-  phoneHint: string;
+  phone: string;
+  email: string;
   firstDay: string | null;
   lastDay: string | null;
   visits: number;
@@ -37,15 +39,20 @@ export type SegmentsView = {
 };
 
 import { shortName } from "@/src/shared/name";
+import { contactOf, fullName } from "@/src/shared/contact";
 export { shortName };
 
 type Row = Record<string, unknown>;
 
-export async function loadCustomerRows(ex: Executor, restaurantId: string, now: Date): Promise<CustomerRow[]> {
+/**
+ * `contact: true` só para a tela de Clientes do dono: decifra telefone e e-mail (D237). Os demais usos (insights do
+ * plano, aprovação/reativação) nunca recebem o contato — PII fora de qualquer caminho que chegue à IA (D161).
+ */
+export async function loadCustomerRows(ex: Executor, restaurantId: string, now: Date, opts: { contact?: boolean } = {}): Promise<CustomerRow[]> {
   const today = daySP(now);
   const from30 = addDaysSP(today, -29);
   const res = (await ex.execute(sql`
-    select rc.customer_id, cc.name, cc.phone_last4, rc.card_stamps, rc.card_completed_day, rc.arm,
+    select rc.customer_id, cc.name, cc.phone_last4, ${opts.contact ? sql`cc.phone_enc, cc.email_enc,` : sql``} rc.card_stamps, rc.card_completed_day, rc.arm,
            rc.opt_whatsapp, rc.opt_app, rc.opt_push, rc.opt_email, kp.kind as piece_kind, pv.label as piece_label,
            (select count(*) from checkins c where c.restaurant_id = rc.restaurant_id and c.customer_id = rc.customer_id) as visits,
            (select count(*) from checkins c where c.restaurant_id = rc.restaurant_id and c.customer_id = rc.customer_id and c.day_sp >= ${from30}) as visits30,
@@ -67,8 +74,12 @@ export async function loadCustomerRows(ex: Executor, restaurantId: string, now: 
     const segs = segmentOf({ visits, lastDay, stamps, visits30d: Number(r.visits30 ?? 0), hasActiveInvite: !!r.active_real }, today);
     return {
       id: String(r.customer_id),
-      displayName: shortName(r.name == null ? null : String(r.name)),
-      phoneHint: r.phone_last4 ? `•••• ${String(r.phone_last4)}` : "—",
+      ...(() => {
+        const name = r.name == null ? null : String(r.name);
+        if (!opts.contact) return { displayName: fullName(name), phone: "", email: "" };
+        const c = contactOf({ name, phoneEnc: r.phone_enc as string | null, phoneLast4: r.phone_last4 as string | null, emailEnc: r.email_enc as string | null });
+        return { displayName: c.name, phone: c.phone, email: c.email };
+      })(),
       firstDay: (r.first_day as string | null) ?? null,
       lastDay,
       visits,
@@ -90,7 +101,7 @@ export function toReactivationCustomers(rows: readonly CustomerRow[]): Reactivat
 }
 
 export async function getSegments(ex: Executor, restaurantId: string, now: Date, segment: Segment = "sumiu", query: ListQuery = DEFAULT_QUERY): Promise<SegmentsView> {
-  const all = await loadCustomerRows(ex, restaurantId, now);
+  const all = await loadCustomerRows(ex, restaurantId, now, { contact: true });
   const counts = Object.fromEntries(SEGMENTS.map((s) => [s, { count: 0, optIn: 0 }])) as SegmentsView["counts"];
   for (const c of all) for (const s of c.segments) {
     counts[s].count++;

@@ -57,6 +57,13 @@
       "when": 1795267801393,
       "tag": "0007_s6_configuravel",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1795289096721,
+      "tag": "0008_s7_contato_completo",
+      "breakpoints": true
     }
   ]
 }

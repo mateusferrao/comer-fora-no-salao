@@ -17,6 +17,7 @@ const BASE = "/parceiro/salao/clientes";
 const COLS: Array<{ label: string; sort?: SortKey }> = [
   { label: "Cliente", sort: "cliente" },
   { label: "Telefone" },
+  { label: "E-mail" },
   { label: "1ª visita", sort: "primeira" },
   { label: "Última", sort: "ultima" },
   { label: "Selos", sort: "selos" },
@@ -73,13 +74,13 @@ export function CustomersView({ data }: { data: SegmentsView }) {
           <input type="hidden" name="ordem" value={data.query.sort} />
           <input type="hidden" name="dir" value={data.query.dir} />
           <label className="flex min-w-0 flex-1 flex-col gap-1 text-sm font-medium text-ink">
-            Buscar por nome
+            Buscar por nome, telefone ou e-mail
             <input
               type="search"
               name="q"
               defaultValue={data.query.q}
               maxLength={60}
-              placeholder="Ex.: Ana"
+              placeholder="Ex.: Ana, 98765 ou @gmail"
               className="min-h-11 rounded-sm border border-border bg-white px-3 text-base font-normal"
             />
           </label>
@@ -96,10 +97,10 @@ export function CustomersView({ data }: { data: SegmentsView }) {
           {data.query.q ? `${int(data.total)} ${data.total === 1 ? "cliente encontrado" : "clientes encontrados"} para “${data.query.q}”` : `${int(data.total)} ${data.total === 1 ? "cliente" : "clientes"} neste grupo`}
         </p>
         {data.list.length === 0 ? (
-          <p className="text-sm text-ink">{data.query.q ? "Nenhum cliente com esse nome neste grupo." : "Nenhum cliente neste grupo ainda."}</p>
+          <p className="text-sm text-ink">{data.query.q ? "Nenhum cliente encontrado neste grupo." : "Nenhum cliente neste grupo ainda."}</p>
         ) : (
           <div className="relative overflow-x-auto" tabIndex={0} role="region" aria-label="Lista de clientes (rolável)">
-            <table className="w-full min-w-[640px] text-sm">
+            <table className="w-full min-w-[900px] text-sm">
               <thead>
                 <tr className="border-b border-divider text-left text-xs text-ink-muted">
                   {COLS.map((c) => {
@@ -129,7 +130,8 @@ export function CustomersView({ data }: { data: SegmentsView }) {
                 {data.list.map((c) => (
                   <tr key={c.id} className="border-b border-divider last:border-0">
                     <td className="py-2 text-ink">{c.displayName}</td>
-                    <td className="text-ink-muted">{c.phoneHint}</td>
+                    <td className="whitespace-nowrap text-ink">{c.phone}</td>
+                    <td className="break-all text-ink">{c.email}</td>
                     <td>{fmtDay(c.firstDay)}</td>
                     <td>{fmtDay(c.lastDay)}</td>
                     <td>{c.stamps}/6</td>
@@ -162,7 +164,7 @@ export function CustomersView({ data }: { data: SegmentsView }) {
             )}
           </nav>
         )}
-        <p className="text-xs text-ink-muted">20 por página. Nome só com a inicial do sobrenome; telefone só com os 4 últimos dígitos.</p>
+        <p className="text-xs text-ink-muted">20 por página. Contato que o cliente informou no cadastro, com o aceite dele.</p>
       </section>
     </div>
   );

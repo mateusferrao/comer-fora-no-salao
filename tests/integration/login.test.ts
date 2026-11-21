@@ -26,7 +26,8 @@ describe("login do dono por e-mail + código (D118)", () => {
 
   it("envia o código, cria a conta no 1º acesso e guarda só o HMAC do e-mail", async () => {
     const r = await ask("  Dono@Exemplo.com ");
-    expect(r).toEqual({ ok: true, hint: "d•••@e•••.com" });
+    // D237: a tela mostra o e-mail inteiro (é o que a pessoa digitou); o banco guarda a dica e o cifrado.
+    expect(r).toEqual({ ok: true, hint: "dono@exemplo.com" });
     const msg = outbox().at(-1)!;
     expect(msg.to).toBe("dono@exemplo.com");
     expect(msg.subject).toMatch(/^Seu código de acesso: \d{6} · Comer Fora no Salão \(protótipo de case\)$/);

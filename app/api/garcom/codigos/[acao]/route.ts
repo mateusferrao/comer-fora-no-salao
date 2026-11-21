@@ -32,11 +32,11 @@ export async function POST(req: Request, ctx: { params: Promise<{ acao: string }
     const b = consultar.safeParse(raw);
     if (!b.success) return Response.json({ status: "INVALIDO" }, { status: 400 });
     const r = await lookupCode(db, { ownerId: s.ownerId, restaurantId: s.restaurantId, raw: b.data.codigo, now });
-    // O garçom vê só o restaurante dele: código de outra loja do mesmo dono = "não encontrado"; sem telefone.
-    return Response.json(r.status === "OUTRO_RESTAURANTE" ? { status: "INVALIDO" } : { ...r, phone: undefined });
+    // O garçom vê só o restaurante dele: código de outra loja do mesmo dono = "não encontrado"; contato completo (D237).
+    return Response.json(r.status === "OUTRO_RESTAURANTE" ? { status: "INVALIDO" } : r);
   }
   const b = confirmar.safeParse(raw);
   if (!b.success) return Response.json({ status: "INVALIDO" }, { status: 400 });
   const r = await confirmCode(db, { restaurantId: s.restaurantId, raw: b.data.codigo, idempotencyKey: b.data.chave, now });
-  return Response.json(r.status === "OUTRO_RESTAURANTE" ? { status: "INVALIDO" } : { ...r, phone: undefined });
+  return Response.json(r.status === "OUTRO_RESTAURANTE" ? { status: "INVALIDO" } : r);
 }

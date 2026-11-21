@@ -126,7 +126,7 @@ export default function ComoFunciona() {
 
       <h2 className={h2}>Dados pessoais, IA e segurança</h2>
       <ul className="mt-2 list-disc pl-5">
-        <li className={li}>O cliente entra com o próprio e-mail e um código de 6 dígitos. O e-mail fica guardado como código (HMAC) e criptografado (AES-256-GCM), só para enviar convites; o nome aparece para o restaurante como primeiro nome + inicial; o telefone é opcional e fica só como código + 4 últimos dígitos.</li>
+        <li className={li}>O cliente entra com o próprio e-mail e um código de 6 dígitos. O e-mail fica guardado como código (HMAC) e criptografado (AES-256-GCM); o telefone é opcional e também fica criptografado. O restaurante vê o contato completo dos clientes dele (nome, e-mail e telefone), com o aceite do cliente no cadastro; no restaurante de exemplo, os contatos são fictícios (DDD 00 e e-mails em exemplo.invalid). Contato nunca vai para log, prompt de IA, MCP nem rastro.</li>
         <li className={li}>Os dados do cliente não são apagados sozinhos: ficam enquanto houver relação com o restaurante, como num CRM real, e o cliente apaga tudo quando quiser em &quot;Sua jornada&quot; › engrenagem › &quot;Apagar meus dados&quot;. Por ser um protótipo que recebe dados reais, isso é um risco aceito e declarado.</li>
         <li className={li}>Os interruptores de comunicação (e-mail e notificação no app) vêm ligados, como no app. Em produção, a LGPD pede consentimento ativo.</li>
         <li className={li}>O e-mail do dono é guardado só como código (HMAC) + uma dica mascarada; o AWS SES processa o endereço para entregar o código de login.</li>

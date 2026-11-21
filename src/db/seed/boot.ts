@@ -1,6 +1,7 @@
 import { getSeedDb } from "@/src/db/client";
 import { ensureMigrated } from "@/src/db/migrate";
 import { clearButtonRuns } from "@/src/modules/simulacao/application/clear-button-runs";
+import { backfillSimulatedContacts } from "@/src/modules/simulacao/application/backfill-contacts";
 import { systemClock } from "@/src/shared/clock";
 import { canRetrySeed, seedAll, seedStatus, startSeed } from "./index";
 import { vitrineHistory } from "./history";
@@ -16,6 +17,8 @@ export function ensureSeeded(): Promise<void> {
     await ensureMigrated();
     const r = await seedAll(getSeedDb(), systemClock, vitrineHistory);
     await clearButtonRuns(getSeedDb());
+    // D237: contato fictício nos clientes simulados que ainda não têm (exemplo e cópias antigas).
+    await backfillSimulatedContacts(getSeedDb());
     return r;
   });
 }

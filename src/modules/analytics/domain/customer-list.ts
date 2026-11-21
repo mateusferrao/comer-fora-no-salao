@@ -1,7 +1,6 @@
 /**
  * Lista de clientes de um grupo (ajuste de 21/11): todos, 20 por página, busca por nome e ordenação por coluna.
- * Puro: a busca é sobre o nome mostrado (primeiro nome + inicial, D106) — buscar pelo sobrenome revelaria o que a
- * tela esconde.
+ * Puro. Desde D237 a busca vale para nome completo, telefone e e-mail (o dono vê o contato inteiro).
  */
 export const PAGE_SIZE = 20;
 export const SORT_KEYS = ["cliente", "primeira", "ultima", "selos", "peca", "optin"] as const;
@@ -10,7 +9,7 @@ export type SortDir = "asc" | "desc";
 export type ListQuery = { q: string; sort: SortKey; dir: SortDir; page: number };
 export const DEFAULT_QUERY: ListQuery = { q: "", sort: "ultima", dir: "desc", page: 1 };
 
-type Listable = { displayName: string; firstDay: string | null; lastDay: string | null; stamps: number; piece: string | null; optIn: { email: boolean; app: boolean } };
+type Listable = { displayName: string; phone?: string; email?: string; firstDay: string | null; lastDay: string | null; stamps: number; piece: string | null; optIn: { email: boolean; app: boolean } };
 
 export const normalize = (s: string) =>
   s
@@ -43,7 +42,10 @@ function compare(a: Listable, b: Listable, key: SortKey): number {
 /** Filtra, ordena (desempate pelo nome) e corta a página pedida (fora do intervalo → a mais próxima). */
 export function listPage<T extends Listable>(rows: readonly T[], query: ListQuery, size = PAGE_SIZE): { items: T[]; total: number; page: number; pages: number } {
   const q = normalize(query.q);
-  const found = q ? rows.filter((r) => normalize(r.displayName).includes(q)) : [...rows];
+  const qDigits = q.replace(/\D/g, "");
+  const found = q
+    ? rows.filter((r) => normalize(`${r.displayName} ${r.email ?? ""}`).includes(q) || (qDigits.length >= 3 && (r.phone ?? "").replace(/\D/g, "").includes(qDigits)))
+    : [...rows];
   const sign = query.dir === "asc" ? 1 : -1;
   found.sort((a, b) => {
     const c = compare(a, b, query.sort);

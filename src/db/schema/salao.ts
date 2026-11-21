@@ -192,7 +192,7 @@ const customerFk = () =>
     .references(() => customers.id, { onDelete: "cascade" });
 
 /**
- * PII isolada: apagar a pessoa = 1 linha. Telefone só como HMAC + 4 dígitos.
+ * PII isolada: apagar a pessoa = 1 linha. Telefone como HMAC + 4 dígitos + cifrado (D237).
  * S4 (D154, D169): o e-mail é a identidade do cliente (`email_hmac` único, finalidade `cliente-email:`) e fica
  * criptografado (AES-256-GCM) só para enviar convites; o telefone deixou de ser único.
  */
@@ -205,6 +205,8 @@ export const customerContacts = pgTable(
     /** S4 (D173): telefone opcional e nome preenchido no 2º passo do login (nulos até lá). */
     phoneHmac: text("phone_hmac"),
     phoneLast4: text("phone_last4"),
+    /** D237: telefone inteiro cifrado (AES-GCM, chave própria) — o dono vê o contato completo do cliente. */
+    phoneEnc: text("phone_enc"),
     name: text("name"),
     createdAt: ts("created_at").notNull().defaultNow(),
     emailHmac: text("email_hmac").unique(),

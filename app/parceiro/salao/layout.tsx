@@ -1,3 +1,4 @@
+import { decryptEmail } from "@/src/shared/crypto";
 import type { ReactNode } from "react";
 import { PortalShell } from "@/src/ui/components/PortalShell";
 import { AccountFooter } from "@/src/ui/portal/AccountFooter";
@@ -22,7 +23,7 @@ export default async function SalaoLayout({ children }: { children: ReactNode })
         />
       }
       nav={<PortalNav showActivation={cur?.kind === "teste" && cur.status !== "ativo"} />}
-      footer={<AccountFooter hint={s.owner.emailHint ?? "conta"} />}
+      footer={<AccountFooter hint={decryptEmail(s.owner.emailEnc) ?? s.owner.emailHint ?? "conta"} />}
     >
       {children}
     </PortalShell>

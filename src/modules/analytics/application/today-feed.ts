@@ -1,12 +1,12 @@
 /**
  * "Hoje no salão" (S5.1, D172, D185): o que aconteceu hoje (dia em SP) no restaurante — leituras do QR, check-ins
  * (com a marca do grupo de controle, só para o dono), convites emitidos na mesa e códigos validados. Só clientes
- * reais (sem o histórico gerado); nome só como primeiro nome + inicial; cada evento com id estável.
+ * reais (sem o histórico gerado); nome completo (D237); cada evento com id estável.
  * O grupo de controle não gera linha de convite (o fantasma não existe para ninguém além da medida).
  */
 import { sql } from "drizzle-orm";
 import type { Executor } from "@/src/db/executor";
-import { shortName } from "@/src/shared/name";
+import { fullName } from "@/src/shared/contact";
 import { daySP, instantSP } from "@/src/shared/tz";
 
 export type FeedItem = {
@@ -26,7 +26,7 @@ type Row = Record<string, unknown>;
 const rows = async (ex: Executor, q: ReturnType<typeof sql>): Promise<Row[]> => ((await ex.execute(q)) as unknown as { rows: Row[] }).rows;
 const PIECE: Record<string, string> = { display: "Display mesa", cartaz: "Cartaz", garcom: "Cartão do garçom", porta_conta: "Porta-conta" };
 const iso = (v: unknown) => new Date(String(v)).toISOString();
-const name = (v: unknown) => shortName(v == null ? null : String(v));
+const name = (v: unknown) => fullName(v == null ? null : String(v));
 
 export async function getTodayFeed(ex: Executor, restaurantId: string, now: Date, limit = 15): Promise<TodayFeed> {
   const start = instantSP(daySP(now), 0).toISOString();

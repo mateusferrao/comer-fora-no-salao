@@ -16,6 +16,12 @@ describe("lista de clientes: busca, ordenação e páginas (ajuste de 21/11)", (
   it("padrão: última visita mais recente primeiro", () => {
     expect(listPage(rows, DEFAULT_QUERY).items.map((r) => r.displayName)).toEqual(["Júlia M.", "Bruno C.", "Ana S.", "Álvaro P."]);
   });
+  it("busca por telefone (só dígitos) e e-mail (D237)", () => {
+    const withContact = [{ ...row("Ana Souza", "2026-11-10"), phone: "(11) 98765-4321", email: "ana@exemplo.com" }, { ...row("Bruno Costa", "2026-11-11"), phone: "(21) 91111-2222", email: "bruno@outro.com" }];
+    expect(listPage(withContact, { ...DEFAULT_QUERY, q: "98765" }).items.map((r) => r.displayName)).toEqual(["Ana Souza"]);
+    expect(listPage(withContact, { ...DEFAULT_QUERY, q: "(21) 9111" }).items.map((r) => r.displayName)).toEqual(["Bruno Costa"]);
+    expect(listPage(withContact, { ...DEFAULT_QUERY, q: "@outro" }).items.map((r) => r.displayName)).toEqual(["Bruno Costa"]);
+  });
   it("busca sem acento nem caixa, pelo nome mostrado", () => {
     expect(listPage(rows, { ...DEFAULT_QUERY, q: "julia" }).items.map((r) => r.displayName)).toEqual(["Júlia M."]);
     expect(listPage(rows, { ...DEFAULT_QUERY, q: "ALV" }).total).toBe(1);

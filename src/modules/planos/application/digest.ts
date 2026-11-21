@@ -128,7 +128,7 @@ export async function previewDigest(db: Db, p: { restaurantId: string; now: Date
     approveUrl: d.token ? `${p.baseUrl}${approvePath(d.token)}` : null,
     hasPlan: !!d.planId,
     aprovarEmail: settings.aprovarEmail,
-    to: d.restaurant.owner?.emailEnc ? d.restaurant.owner.emailHint : null,
+    to: d.restaurant.owner?.emailEnc ? (decryptEmail(d.restaurant.owner.emailEnc) ?? d.restaurant.owner.emailHint) : null,
     ownerVia: d.restaurant.owner?.via ?? null,
   };
 }
@@ -143,7 +143,7 @@ export async function sendDigestNow(db: Db, p: { restaurantId: string; now: Date
   const d = (await buildDigest(db, { ...p, withToken: true }))!;
   try {
     await p.sender.send({ to: email, ...d.mail });
-    return { ok: true as const, to: r.owner!.emailHint };
+    return { ok: true as const, to: decryptEmail(r.owner!.emailEnc) ?? r.owner!.emailHint };
   } catch (err) {
     log.error("falha no envio do resumo", { area: "resumo_email", err: safeErr(err) });
     return { ok: false as const, erro: "falhou" as const };

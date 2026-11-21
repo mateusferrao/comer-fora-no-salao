@@ -32,9 +32,9 @@ async function uiLogin(page: Page) {
   const sheet = page.getByRole("dialog", { name: "Entre para ativar seus benefícios" });
   await expect(sheet).toBeVisible();
   await expect(sheet.getByText("Protótipo de case, não é o iFood. Você pode apagar seus dados quando quiser.")).toBeVisible();
-  await expect(sheet.getByLabel("E-mail")).toHaveAttribute("autocomplete", "email");
+  await expect(sheet.getByLabel("E-mail", { exact: true })).toHaveAttribute("autocomplete", "email");
   const email = e2eCustomerEmail();
-  await sheet.getByLabel("E-mail").fill(email);
+  await sheet.getByLabel("E-mail", { exact: true }).fill(email);
   await sheet.getByRole("checkbox").check();
   const resp = page.waitForResponse((r) => r.url().endsWith("/entrar") && r.request().method() === "POST");
   await sheet.getByRole("button", { name: "Enviar código" }).click();
@@ -227,7 +227,7 @@ test.describe("check-in no restaurante E2E", () => {
     await page.getByRole("button", { name: "Fazer check-in" }).click();
     await page.getByRole("button", { name: "Confirmar localização" }).click();
     const id = page.getByRole("dialog", { name: "Entre para ativar seus benefícios" });
-    await id.getByLabel("E-mail").fill("sem-arroba");
+    await id.getByLabel("E-mail", { exact: true }).fill("sem-arroba");
     await id.getByRole("button", { name: "Enviar código" }).click();
     await expect(id.getByText("Informe um e-mail válido")).toBeVisible();
     await expect(id.getByText("Marque o aceite para continuar")).toBeVisible();

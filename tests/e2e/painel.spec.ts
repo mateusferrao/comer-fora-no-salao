@@ -49,13 +49,14 @@ test("check-in feito em outra aba aparece no funil em até 5 s", async ({ page, 
   await expect.poll(count, { timeout: 5_000 }).toBe(before + 1);
 });
 
-test("Clientes: 4 segmentos, lista sem telefone completo e aviso de que a base é do restaurante", async ({ page }) => {
+test("Clientes: 4 segmentos, contato completo (fictício no exemplo, D237) e aviso de que a base é do restaurante", async ({ page }) => {
   await openCopy(page);
   await page.getByRole("link", { name: "Clientes" }).first().click();
   await expect(page.getByRole("heading", { name: "Clientes", level: 1 })).toBeVisible();
   await expect(page.getByText("Esta base é do seu restaurante.")).toBeVisible();
   for (const s of ["sumiu", "perto", "convite_ativo", "frequente"]) await expect(page.getByTestId(`seg-${s}`)).toBeVisible();
-  await expect(page.getByRole("cell", { name: /^•••• \d{4}$/ }).first()).toBeVisible();
+  await expect(page.getByRole("cell", { name: /^\(00\) 9\d{4}-\d{4}$/ }).first()).toBeVisible();
+  await expect(page.getByRole("cell", { name: /@exemplo\.invalid$/ }).first()).toBeVisible();
   await page.getByRole("link", { name: /Frequentes/ }).click();
   await expect(page.getByText(/Não recebem reativação/)).toBeVisible();
   await axe(page);

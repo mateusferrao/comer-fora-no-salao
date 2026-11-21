@@ -1,3 +1,4 @@
+import { encryptEmail, encryptPhone } from "@/src/shared/crypto";
 import { afterAll, beforeEach, describe, expect, it } from "vitest";
 import { eq } from "drizzle-orm";
 import { closeDb, getDb } from "@/src/db/client";
@@ -15,7 +16,7 @@ async function customer(restaurantId: string, name = "Ana Souza") {
   let id = crypto.randomUUID();
   while (assignArm(id, restaurantId) !== "convidavel") id = crypto.randomUUID();
   await getDb().insert(customers).values({ id });
-  await getDb().insert(customerContacts).values({ customerId: id, phoneHmac: crypto.randomUUID(), phoneLast4: "4321", name });
+  await getDb().insert(customerContacts).values({ customerId: id, phoneHmac: crypto.randomUUID(), phoneLast4: "4321", phoneEnc: encryptPhone("(11) 98765-4321"), emailEnc: encryptEmail("ana@exemplo.com"), name });
   return id;
 }
 
@@ -23,14 +24,14 @@ describe("Validar código (garçom — espec. 3.3)", () => {
   beforeEach(resetDb);
   afterAll(closeDb);
 
-  it("1ª visita: consulta mostra tipo, cliente mascarado e item; confirmar 2× com a mesma chave = 1 efeito", async () => {
+  it("1ª visita: consulta mostra tipo, contato completo do cliente (D237) e item; confirmar 2× com a mesma chave = 1 efeito", async () => {
     const r = await createRestaurant();
     const c = await customer(r.restaurantId);
     const ck = (await doCheckin(getDb(), { restaurantId: r.restaurantId, customerId: c, gpsStatus: "negado", variantId: null, idempotencyKey: crypto.randomUUID(), clock: fixedClock(TER_16), randInt: rand() })) as { codes: Array<{ code: string; type: string }> };
     const code = ck.codes.find((x) => x.type === "primeira_visita")!.code;
     const now = new Date(TER_16);
     const l = await lookupCode(getDb(), { ownerId: r.ownerId, restaurantId: r.restaurantId, raw: ` ${code.slice(0, 3).toLowerCase()}-${code.slice(3)} `, now });
-    expect(l).toMatchObject({ status: "OK", type: "primeira_visita", typeLabel: "1ª visita", customer: "Ana S.", phone: "(••) •••••-4321", item: "Panna cotta" });
+    expect(l).toMatchObject({ status: "OK", type: "primeira_visita", typeLabel: "1ª visita", customer: "Ana Souza", phone: "(11) 98765-4321", email: "ana@exemplo.com", item: "Panna cotta" });
     const key = crypto.randomUUID();
     const [a, b] = await Promise.all([confirmCode(getDb(), { restaurantId: r.restaurantId, raw: code, idempotencyKey: key, now }), confirmCode(getDb(), { restaurantId: r.restaurantId, raw: code, idempotencyKey: key, now })]);
     expect(a).toMatchObject({ status: "VALIDADO" });

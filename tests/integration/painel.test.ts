@@ -77,15 +77,16 @@ describe("painel do dono (S3 §4.2) na vitrine semeada", () => {
     expect(d.metric.margin).toBeNull();
   });
 
-  it("segmentos: contagens coerentes, frequentes separados e lista sem telefone completo", async () => {
+  it("segmentos: contagens coerentes, frequentes separados e contato completo fictício no exemplo (D237)", async () => {
     const s = await getSegments(getDb(), VITRINE_ID, NOW, "sumiu");
     expect(s.counts.sumiu.count).toBeGreaterThan(0);
     expect(s.counts.frequente.count).toBeGreaterThan(0);
     expect(s.list.length).toBeLessThanOrEqual(20);
     for (const c of s.list) {
       expect(c.segments).toContain("sumiu");
-      expect(c.phoneHint).toMatch(/^•••• \d{4}$/);
-      expect(c.displayName).toMatch(/^\S+ [A-ZÁ-Ú]\.$/);
+      expect(c.phone).toMatch(/^\(00\) 9\d{4}-\d{4}$/);
+      expect(c.email).toMatch(/@exemplo\.invalid$/);
+      expect(c.displayName).toMatch(/^\S+ \S{2,}/);
     }
   });
 

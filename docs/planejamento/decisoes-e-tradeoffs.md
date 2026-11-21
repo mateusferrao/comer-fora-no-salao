@@ -1252,3 +1252,11 @@ Detalhes, revisão independente (2 subagentes, 2 rodadas) e itens [C] em [docs/f
 
 **D236 — Unidade repetida depois do fato** (21/11, IA [C], achado no print do candidato) ✅
 - "{fato:convites_x} convites" virava "160 convites convites". `renderReferences` tira a unidade repetida logo depois de um fato que já a traz. Alternativa: regra no guard que bloqueia (geraria nova tentativa da IA por um problema de forma).
+
+**D237 — Contato completo do cliente para o dono e e-mail do próprio dono sem máscara** (21/11, candidato: "Coloca telefone e e-mail sem estar encobertos. Dono precisa desses dados. Em todo o sistema, incluso o dele mesmo") ✅ (revê D106 e o "telefone só 4 dígitos" da S1/D169)
+- O dono vê nome completo, telefone e e-mail dos clientes dele: Clientes (com busca por telefone e e-mail), Últimos check-ins, Hoje no salão e Validar código. O link do garçom também mostra tudo (escolha do candidato). O dono vê o próprio e-mail inteiro (rodapé, Avisos, resumo, login).
+- Telefone passa a ser guardado cifrado (`customer_contacts.phone_enc`, AES-256-GCM com chave própria por HKDF), além do HMAC e dos 4 últimos. Cliente real antigo sem o número inteiro mostra "•••• 1234 (número antigo)".
+- Restaurante de exemplo: contatos fictícios óbvios (DDD 00 e e-mails em exemplo.invalid, sem `email_hmac`), gerados na simulação e preenchidos por backfill idempotente no boot para o seed existente (escolha do candidato).
+- Consentimento do cliente passa a dizer "veja meu nome, e-mail e telefone"; landing e "Como funciona" atualizados.
+- Continua valendo: contato nunca vai para log, prompt, MCP nem rastro (D161). [C] Só a tela de Clientes decifra o contato; insights do plano e reativação recebem as linhas sem contato.
+- Alternativas: manter máscara (decisão anterior); mostrar só ao dono e esconder do garçom (recomendada, não escolhida); "—" no exemplo. Trade-off: utilidade para o dono × exposição de PII (risco LGPD aceito pelo candidato, com aceite explícito do cliente e "Apagar meus dados").

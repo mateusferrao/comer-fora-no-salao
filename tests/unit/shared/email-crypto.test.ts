@@ -26,3 +26,15 @@ describe("e-mail do cliente e do dono (S4, D169)", () => {
     expect(hmacCustomerEmail("ana@exemplo.com")).toBe(hmacCustomerEmail("ana@exemplo.com"));
   });
 });
+
+describe("telefone do cliente cifrado (D237)", () => {
+  it("ida e volta, IV novo a cada vez, chave separada da do e-mail", async () => {
+    const { encryptPhone, decryptPhone } = await import("@/src/shared/crypto");
+    const a = encryptPhone("(11) 98765-4321");
+    expect(a).not.toBe(encryptPhone("(11) 98765-4321"));
+    expect(a).not.toContain("98765");
+    expect(decryptPhone(a)).toBe("(11) 98765-4321");
+    expect(decryptEmail(a)).toBeNull();
+    expect(decryptPhone(encryptEmail("ana@exemplo.com"))).toBeNull();
+  });
+});

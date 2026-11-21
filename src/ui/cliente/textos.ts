@@ -11,7 +11,8 @@ export const TXT = {
   /** D171 (texto exato aprovado). */
   privacidade: "Protótipo de case, não é o iFood. Você pode apagar seus dados quando quiser.",
   /** Aceite obrigatório: só o uso dos dados (revisão S4 I5); os interruptores são as escolhas de marketing [C]. */
-  consentimento: (restaurante: string) => `Aceito que ${restaurante} veja meu primeiro nome e a inicial e registre minhas visitas.`,
+  // D237: o restaurante vê o contato completo; o consentimento diz isso.
+  consentimento: (restaurante: string) => `Aceito que ${restaurante} veja meu nome, e-mail e telefone e registre minhas visitas.`,
   primeiraVisitaUsada: "O benefício de 1ª visita vale só no primeiro check-in.",
   comoUsarConvite: "Quando voltar, faça check-in nesse horário para receber o código.",
 } as const;

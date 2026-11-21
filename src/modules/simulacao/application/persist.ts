@@ -16,7 +16,8 @@ import {
   simulationRuns,
 } from "@/src/db/schema";
 import { createHash } from "node:crypto";
-import { hashDevice, hmacPhone } from "@/src/shared/crypto";
+import { encryptEmail, encryptPhone, hashDevice, hmacPhone } from "@/src/shared/crypto";
+import { fakeEmail, fakePhone } from "@/src/modules/salao/domain/phone";
 import { daySP } from "@/src/shared/tz";
 import type { SimOutput } from "@/src/modules/simulacao/domain/generator";
 
@@ -47,7 +48,18 @@ export async function persistSimulation(
   await insertBatched(out.customers, (chunk) => tx.insert(customers).values(chunk.map((c) => ({ id: c.id, simulationRunId: runId, createdAt: c.firstCheckinAt ?? now }))));
   await insertBatched(out.customers, (chunk) =>
     // HMAC com o prefixo da rodada: telefone simulado nunca colide com o de uma pessoa (nem entre rodadas).
-    tx.insert(customerContacts).values(chunk.map((c) => ({ customerId: c.id, phoneHmac: hmacPhone(`sim:${runId}:${c.phoneDigits}`), phoneLast4: c.phoneDigits.slice(-4), name: c.name }))),
+    // D237: contato fictício óbvio para a tela do dono — DDD 00 e e-mail em exemplo.invalid (sem `email_hmac`: não
+    // vira identidade de login).
+    tx.insert(customerContacts).values(
+      chunk.map((c) => ({
+        customerId: c.id,
+        phoneHmac: hmacPhone(`sim:${runId}:${c.phoneDigits}`),
+        phoneLast4: c.phoneDigits.slice(-4),
+        phoneEnc: encryptPhone(fakePhone(c.id, c.phoneDigits.slice(-4))),
+        emailEnc: encryptEmail(fakeEmail(c.name, c.id)),
+        name: c.name,
+      })),
+    ),
   );
   const firstDraw = new Map<string, Date>();
   for (const inv of out.invites) if (!firstDraw.has(inv.customerId)) firstDraw.set(inv.customerId, inv.issuedAt);

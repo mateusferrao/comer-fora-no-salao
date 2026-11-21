@@ -41,7 +41,9 @@ test("link do garçom: criar → validar sem login → revogar corta na hora", a
   await w.getByLabel("Código do cliente").fill(code);
   await w.getByRole("button", { name: "Consultar" }).click();
   const found = w.getByRole("region", { name: "Código encontrado" });
-  await expect(found).toContainText("Gabi G.");
+  // D237: o garçom vê o contato completo (nome e e-mail; o login de teste não informa telefone).
+  await expect(found).toContainText("Gabi Garçom");
+  await expect(found).toContainText(/e2e-cliente\+\d+@exemplo\.invalid/);
   await expect(found).not.toContainText("••");
   await axe(w);
   await found.getByRole("button", { name: "Confirmar" }).click();

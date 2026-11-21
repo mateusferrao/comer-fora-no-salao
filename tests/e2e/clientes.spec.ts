@@ -32,12 +32,20 @@ test("clientes: 20 por página, página 2, ordenar por Selos (aria-sort), buscar
   // Setas em SVG (nunca emoji).
   await expect(page.getByRole("columnheader", { name: /Selos/ }).locator("svg")).toHaveCount(1);
   await expect(page.locator("thead")).not.toContainText(/[↕▲▼]/);
-  const stamps = await rows.locator("td:nth-child(5)").allTextContents();
+  const stamps = await rows.locator("td:nth-child(6)").allTextContents();
   const n = stamps.map((t) => Number(t.split("/")[0]));
   expect(n).toEqual([...n].sort((a, b) => b - a));
   await page.getByRole("link", { name: /^Selos/ }).click();
   await expect(page.getByRole("columnheader", { name: /Selos/ })).toHaveAttribute("aria-sort", "ascending");
 
+  // D237: contato completo (fictício no exemplo).
+  await expect(rows.first().locator("td").nth(1)).toHaveText(/^\(00\) 9\d{4}-\d{4}$/);
+  await expect(rows.first().locator("td").nth(2)).toHaveText(/@exemplo\.invalid$/);
+  const email = (await rows.first().locator("td").nth(2).textContent())!.trim();
+  await page.getByLabel("Buscar por nome").fill(email);
+  await page.getByRole("button", { name: "Buscar" }).click();
+  await expect(page.getByTestId("clientes-total")).toContainText("1 cliente encontrado");
+  await page.getByRole("link", { name: "Limpar busca" }).click();
   const first = (await rows.first().locator("td").first().textContent())!.trim();
   const term = first.split(" ")[0]!;
   await page.getByLabel("Buscar por nome").fill(term.toUpperCase());
@@ -47,7 +55,7 @@ test("clientes: 20 por página, página 2, ordenar por Selos (aria-sort), buscar
   await axe(page);
   await page.getByLabel("Buscar por nome").fill("zzzzqqq");
   await page.getByRole("button", { name: "Buscar" }).click();
-  await expect(page.getByText("Nenhum cliente com esse nome neste grupo.")).toBeVisible();
+  await expect(page.getByText("Nenhum cliente encontrado neste grupo.")).toBeVisible();
 });
 
 test("celular: o cabeçalho do Portal fica visível depois de rolar", async ({ page }) => {

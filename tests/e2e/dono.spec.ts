@@ -23,7 +23,7 @@ for (const width of [390, 1280]) {
     // Simulador do SES: aceita e não entrega (prova o envio em produção).
     await page.getByLabel("E-mail").fill("success@simulator.amazonses.com");
     await page.getByRole("button", { name: "Avançar" }).click();
-    await expect(page.getByText("Digite o código de 6 dígitos que enviamos para s•••@s•••.amazonses.com.")).toBeVisible();
+    await expect(page.getByText("Digite o código de 6 dígitos que enviamos para success@simulator.amazonses.com.")).toBeVisible();
     await page.getByLabel("Código").fill("000000");
     await page.getByRole("button", { name: "Entrar" }).click();
     await expect(page.getByText(/Código incorreto\. Restam \d tentativas?\.|Código incorreto\. Peça outro código\./)).toBeVisible();
@@ -52,7 +52,7 @@ test("conta nova ganha a própria vitrine (60 dias): check-in de cliente nela e 
   await page.goto("/parceiro/salao/validar");
   await page.getByLabel("Código do cliente").fill(code);
   await page.getByRole("button", { name: "Consultar" }).click();
-  await expect(page.getByRole("region", { name: "Código encontrado" })).toContainText("Dani T.");
+  await expect(page.getByRole("region", { name: "Código encontrado" })).toContainText("Dani Teste");
   await page.getByRole("button", { name: "Confirmar" }).click();
   await expect(page.getByText(/Código validado ✓/)).toBeVisible();
 });
@@ -188,7 +188,7 @@ test("assistente completo com exemplo: salão pré-preenchido → revisão → p
   await page.getByRole("button", { name: "Consultar" }).click();
   const found = page.getByRole("region", { name: "Código encontrado" });
   await expect(found).toContainText("1ª visita");
-  await expect(found).toContainText("Bia T.");
+  await expect(found).toContainText("Bia Teste");
   await axe(page);
   await found.getByRole("button", { name: "Confirmar" }).click();
   await expect(page.getByText(/Código validado ✓ às \d{2}:\d{2}/)).toBeVisible();

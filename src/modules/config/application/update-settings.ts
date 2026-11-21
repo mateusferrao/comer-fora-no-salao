@@ -3,6 +3,7 @@
  * uma versão nova (a anterior ganha `superseded_at`); convites já emitidos guardam a versão e a faixa da
  * emissão (D218). Tudo vai para `owner_edits`.
  */
+import { decryptEmail } from "@/src/shared/crypto";
 import { parseNotifySettings, type NotifySettings } from "../domain/notify-settings";
 import { mentionsIfood } from "@/src/shared/brand";
 import { findAvoided, ownerDataOf, parseAiFeatures, validateAbout, validateAvoid, type AiFeatures } from "../domain/ai-profile";
@@ -383,7 +384,8 @@ export async function getNotifyView(db: Db, restaurantId: string): Promise<Notif
     .where(eq(restaurants.id, restaurantId));
   if (!r) return null;
   const settings = parseNotifySettings(r.s);
-  return { settings, to: r.enc ? r.hint : null, ownerVia: r.via, clientEmailsOffSince: await clientEmailsOffSince(db, restaurantId, settings) };
+  // D237: o dono vê o próprio e-mail inteiro.
+  return { settings, to: r.enc ? (decryptEmail(r.enc) ?? r.hint) : null, ownerVia: r.via, clientEmailsOffSince: await clientEmailsOffSince(db, restaurantId, settings) };
 }
 
 /** Grava o objeto inteiro validado, sob lock da linha (o link "parar resumo" e a tela não se atropelam — revisão I7). */

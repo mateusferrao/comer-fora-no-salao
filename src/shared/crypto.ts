@@ -59,27 +59,34 @@ export function hmacCustomerEmail(normalizedEmail: string): string {
 }
 
 /** Chave AES-256 derivada do SESSION_SECRET por HKDF (finalidade própria; sem variável nova no ambiente) [C]. */
-function emailKey(): Buffer {
-  return Buffer.from(hkdfSync("sha256", getSecret("SESSION_SECRET"), "comer-fora-no-salao", "email-enc:v1", 32));
+function piiKey(purpose: "email-enc:v1" | "telefone-enc:v1"): Buffer {
+  return Buffer.from(hkdfSync("sha256", getSecret("SESSION_SECRET"), "comer-fora-no-salao", purpose, 32));
 }
 
-/** `v1.iv.tag.cifra` (base64url). Só para enviar e-mails (resumo do dono, convites do cliente). */
-export function encryptEmail(email: string): string {
+function encrypt(purpose: "email-enc:v1" | "telefone-enc:v1", text: string): string {
   const iv = randomBytes(12);
-  const c = createCipheriv("aes-256-gcm", emailKey(), iv);
-  const ct = Buffer.concat([c.update(email, "utf8"), c.final()]);
+  const c = createCipheriv("aes-256-gcm", piiKey(purpose), iv);
+  const ct = Buffer.concat([c.update(text, "utf8"), c.final()]);
   return ["v1", iv.toString("base64url"), c.getAuthTag().toString("base64url"), ct.toString("base64url")].join(".");
 }
 
-export function decryptEmail(enc: string | null | undefined): string | null {
+function decrypt(purpose: "email-enc:v1" | "telefone-enc:v1", enc: string | null | undefined): string | null {
   if (!enc) return null;
   const [v, iv, tag, ct] = enc.split(".");
   if (v !== "v1" || !iv || !tag || !ct) return null;
   try {
-    const d = createDecipheriv("aes-256-gcm", emailKey(), Buffer.from(iv, "base64url"));
+    const d = createDecipheriv("aes-256-gcm", piiKey(purpose), Buffer.from(iv, "base64url"));
     d.setAuthTag(Buffer.from(tag, "base64url"));
     return Buffer.concat([d.update(Buffer.from(ct, "base64url")), d.final()]).toString("utf8");
   } catch {
     return null;
   }
 }
+
+/** `v1.iv.tag.cifra` (base64url). Envio de e-mails e, desde D237, a tela do dono (contato completo do cliente). */
+export const encryptEmail = (email: string) => encrypt("email-enc:v1", email);
+export const decryptEmail = (enc: string | null | undefined) => decrypt("email-enc:v1", enc);
+
+/** Telefone do cliente cifrado (D237): só o dono do restaurante vê, decifrado na hora; chave separada da do e-mail. */
+export const encryptPhone = (phone: string) => encrypt("telefone-enc:v1", phone);
+export const decryptPhone = (enc: string | null | undefined) => decrypt("telefone-enc:v1", enc);

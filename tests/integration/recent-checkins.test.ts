@@ -50,7 +50,7 @@ describe("Últimos check-ins de hoje (D172)", () => {
     await getDb().update(codes).set({ status: "validado", validatedAt: SEG_13 }).where(eq(codes.code, va.codes[0]!.code));
 
     const list = await getRecentCheckins(getDb(), r.restaurantId, new Date(SEG_13.getTime() + 5 * 60_000));
-    expect(list.map((x) => x.name)).toEqual(["Hugo L.", "Ana S."]);
+    expect(list.map((x) => x.name)).toEqual(["Hugo Lima", "Ana Souza"]);
     expect(list[0]).toMatchObject({ controle: true, firstVisit: true, validated: false });
     expect(list[1]).toMatchObject({ controle: false, firstVisit: true, validated: true });
     expect(list[1]!.at).toBe(SEG_13.toISOString());

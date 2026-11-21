@@ -113,9 +113,19 @@ export function ValidateCode({ endpoint = "/api/parceiro/codigos", waiter = fals
             <p className="text-xl font-bold text-ink">{res.title}</p>
             <dl className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 text-sm">
               <dt className="text-ink-muted">Cliente</dt>
-              <dd className="text-ink">
-                {res.customer} {res.phone && <span className="text-ink-muted">· {res.phone}</span>}
-              </dd>
+              <dd className="text-ink">{res.customer}</dd>
+              {res.phone && (
+                <>
+                  <dt className="text-ink-muted">Telefone</dt>
+                  <dd className="text-ink">{res.phone}</dd>
+                </>
+              )}
+              {res.email && (
+                <>
+                  <dt className="text-ink-muted">E-mail</dt>
+                  <dd className="break-all text-ink">{res.email}</dd>
+                </>
+              )}
               <dt className="text-ink-muted">Condições</dt>
               <dd className="text-ink">{res.conditions}</dd>
             </dl>

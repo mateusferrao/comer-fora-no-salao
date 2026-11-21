@@ -10,7 +10,7 @@ import { loginCodes } from "@/src/db/schema";
 import { hmacEmail, hmacLoginCode, safeEqual, secureRandInt } from "@/src/shared/crypto";
 import { consumeAll } from "@/src/shared/rate-limit";
 import { safeErr } from "@/src/shared/safe-err";
-import { E2E_EMAIL_RE, generateLoginCode, LOGIN_CODE_TTL_MIN, maskEmail, parseEmail } from "../domain/login-code";
+import { E2E_EMAIL_RE, generateLoginCode, LOGIN_CODE_TTL_MIN, parseEmail } from "../domain/login-code";
 import type { MailSender } from "../adapters/mail-sender";
 import { log } from "@/src/shared/log";
 
@@ -88,7 +88,8 @@ export async function requestLoginCode(
       createdAt: p.now,
     });
   });
-  if (e2e) return { ok: true, hint: maskEmail(email), e2eCode: code };
+  // D237: a tela mostra o e-mail inteiro (é o que a pessoa acabou de digitar).
+  if (e2e) return { ok: true, hint: email, e2eCode: code };
 
   try {
     await p.sender!.send({ to: email, ...loginEmail(code) });
@@ -98,5 +99,5 @@ export async function requestLoginCode(
     noteSendResult(false);
     return { ok: false, erro: "envio" };
   }
-  return { ok: true, hint: maskEmail(email) };
+  return { ok: true, hint: email };
 }

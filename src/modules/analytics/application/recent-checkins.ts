@@ -4,7 +4,7 @@
  */
 import { sql } from "drizzle-orm";
 import type { Executor } from "@/src/db/executor";
-import { shortName } from "@/src/shared/name";
+import { fullName } from "@/src/shared/contact";
 import { daySP } from "@/src/shared/tz";
 
 export type RecentCheckin = { at: string; name: string; firstVisit: boolean; controle: boolean; validated: boolean };
@@ -24,7 +24,7 @@ export async function getRecentCheckins(ex: Executor, restaurantId: string, now:
     limit ${limit}`)) as unknown as { rows: Array<Record<string, unknown>> };
   return res.rows.map((r) => ({
     at: new Date(String(r.at)).toISOString(),
-    name: shortName(r.name == null ? null : String(r.name)),
+    name: fullName(r.name == null ? null : String(r.name)),
     firstVisit: r.outcome === "primeira_visita",
     controle: r.arm === "holdout",
     validated: r.validated === true,

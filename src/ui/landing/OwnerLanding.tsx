@@ -16,7 +16,7 @@ const FAQ: Array<[string, string]> = [
   ["Quanto custa?", "Você paga só os benefícios que aprovar, até o teto semanal que você define. Cada convite mostra o custo antes de você aprovar."],
   ["E se o cliente voltaria de qualquer jeito?", "Por isso 1 em cada 10 clientes não recebe convite. O painel conta só a volta a mais."],
   ["Preciso de equipe?", "O garçom digita o código no celular ou no computador do caixa."],
-  ["Os dados ficam com quem?", "Você vê o primeiro nome e a inicial de quem fez check-in. O e-mail fica guardado criptografado, e o cliente pode apagar os dados quando quiser."],
+  ["Os dados ficam com quem?", "Você vê o nome, o e-mail e o telefone de quem fez check-in no seu salão, com o aceite do cliente. O contato fica guardado criptografado, e o cliente pode apagar os dados quando quiser."],
   ["Por que a foto do cardápio do salão?", "O cardápio do salão costuma ter itens e preços diferentes do delivery."],
 ];
 

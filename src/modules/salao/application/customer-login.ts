@@ -11,7 +11,7 @@ import { customerContacts, customerLoginCodes, customers, restaurantCustomers } 
 import type { MailSender } from "@/src/modules/contas/adapters/mail-sender";
 import { noteSendResult } from "@/src/modules/contas/adapters/mail-factory";
 import { generateLoginCode, isLoginCodeFormat, LOGIN_CODE_MAX_ATTEMPTS, LOGIN_CODE_TTL_MIN, loginCodeState } from "@/src/modules/contas/domain/login-code";
-import { encryptEmail, hmacCustomerEmail, hmacLoginCode, hmacPhone, safeEqual, secureRandInt } from "@/src/shared/crypto";
+import { encryptEmail, encryptPhone, hmacCustomerEmail, hmacLoginCode, hmacPhone, safeEqual, secureRandInt } from "@/src/shared/crypto";
 import { log } from "@/src/shared/log";
 import { consume, consumeAll } from "@/src/shared/rate-limit";
 import { safeErr } from "@/src/shared/safe-err";
@@ -198,7 +198,7 @@ export async function saveCustomerProfile(db: Db, p: { restaurantId: string; cus
   return db.transaction(async (tx) => {
     const updated = await tx
       .update(customerContacts)
-      .set({ name, phoneHmac: phone ? hmacPhone(phoneDigits(phone)) : null, phoneLast4: phone ? last4(phone) : null, lastSeenAt: p.now })
+      .set({ name, phoneHmac: phone ? hmacPhone(phoneDigits(phone)) : null, phoneLast4: phone ? last4(phone) : null, phoneEnc: phone ? encryptPhone(phone) : null, lastSeenAt: p.now })
       .where(eq(customerContacts.customerId, p.customerId))
       .returning({ id: customerContacts.customerId });
     if (updated.length === 0) return { ok: false as const, erro: "sem_cliente" as const };

@@ -14,7 +14,7 @@ import { daySP, TZ_SP } from "@/src/shared/tz";
 import { loadVersion } from "./context";
 import { describeOffer } from "@/src/modules/beneficios/domain/offers";
 
-export type CodeDetails = { code: string; type: CodeType; typeLabel: string; customer: string; phone: string; item: string; title: string; conditions: string };
+export type CodeDetails = { code: string; type: CodeType; typeLabel: string; customer: string; phone: string; email: string; item: string; title: string; conditions: string };
 export type CodeLookup =
   | ({ status: "OK" } & CodeDetails)
   | ({ status: "JA_USADO"; validatedAt: string } & CodeDetails)
@@ -26,12 +26,18 @@ const hhmm = (d: Date) => new Intl.DateTimeFormat("pt-BR", { timeZone: TZ_SP, ho
 const ddmm = (day: string) => `${day.slice(8, 10)}/${day.slice(5, 7)}`;
 
 import { shortName } from "@/src/shared/name";
+import { contactOf } from "@/src/shared/contact";
 export { shortName };
 
 type CodeRow = typeof codes.$inferSelect;
 
 async function details(ex: Executor, row: CodeRow): Promise<CodeDetails> {
-  const [contact] = await ex.select({ name: customerContacts.name, last4: customerContacts.phoneLast4 }).from(customerContacts).where(eq(customerContacts.customerId, row.customerId));
+  const [contactRow] = await ex
+    .select({ name: customerContacts.name, phoneLast4: customerContacts.phoneLast4, phoneEnc: customerContacts.phoneEnc, emailEnc: customerContacts.emailEnc })
+    .from(customerContacts)
+    .where(eq(customerContacts.customerId, row.customerId));
+  // D237: contato completo para o dono e o garçom.
+  const contact = contactOf(contactRow ?? {});
   const [item] = row.itemId ? await ex.select({ name: menuItems.name, category: menuItems.category, id: menuItems.id, priceCents: menuItems.priceCents }).from(menuItems).where(eq(menuItems.id, row.itemId)) : [];
   const version = await loadVersion(ex, row.benefitVersionId);
   const menu = item ? [{ id: item.id, name: item.name, category: item.category as never, priceCents: item.priceCents }] : [];
@@ -46,8 +52,9 @@ async function details(ex: Executor, row: CodeRow): Promise<CodeDetails> {
     code: row.code,
     type: row.type as CodeType,
     typeLabel: TYPE_LABEL[row.type as CodeType],
-    customer: shortName(contact?.name),
-    phone: contact?.last4 ? `(••) •••••-${contact.last4}` : "",
+    customer: contact.name,
+    phone: contact.phone === "—" ? "" : contact.phone,
+    email: contact.email === "—" ? "" : contact.email,
     item: item?.name ?? "",
     title,
     conditions,
