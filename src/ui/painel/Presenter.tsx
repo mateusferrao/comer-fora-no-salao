@@ -1,5 +1,6 @@
 "use client";
 
+import { Checkbox } from "../components/Checkbox";
 import { Select } from "../components/Select";
 import { useEffect, useRef, useState } from "react";
 
@@ -70,8 +71,8 @@ export function Presenter({ stores, currentId }: { stores: Store[]; currentId: s
           options={stores.map((s) => ({ value: s.id, label: `${s.name} (${s.label})` }))}
           onChange={(v) => void choose(v)}
         />
-        <label className="flex items-center gap-2 text-sm text-ink">
-          <input type="checkbox" checked={zoom} onChange={(e) => setZoom(e.target.checked)} /> Zoom 125%
+        <label className="flex min-h-11 cursor-pointer items-center gap-2 text-sm text-ink">
+          <Checkbox checked={zoom} onChange={(e) => setZoom(e.target.checked)} /> Zoom 125%
         </label>
         <a className="ml-auto text-sm text-red-text underline" href="/bastidores/config" target="_blank" rel="noreferrer">
           Bastidores

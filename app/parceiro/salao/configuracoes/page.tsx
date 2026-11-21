@@ -45,8 +45,8 @@ export default async function ConfigPage({ searchParams }: { searchParams: Promi
         notify={notify}
         flags={{ agendador: flags.agendador, resumo_email: flags.resumo_email, plano_agente: flags.plano_agente, aprende: flags.aprende }}
         initialTab={typeof aba === "string" && /^[a-z]{2,20}$/.test(aba) ? aba : "agora"}
+        integrations={mcp ? <AgentSection initial={tokens} endpoint={`${publicBaseUrl()}/api/mcp`} /> : undefined}
       />
-      {mcp && <AgentSection initial={tokens} endpoint={`${publicBaseUrl()}/api/mcp`} />}
     </main>
   );
 }

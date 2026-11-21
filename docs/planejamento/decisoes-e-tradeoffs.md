@@ -1295,6 +1295,16 @@ Detalhes, revisão independente (2 subagentes, 2 rodadas) e itens [C] em [docs/f
 - [C] Exemplo pronto só para o Claude Code (comando `claude mcp add --transport http … --header …`, com o token já preenchido), porque é a configuração que conhecemos com certeza; para os demais, a instrução genérica e "procure MCP na ajuda dele". Alternativa: exemplos para vários assistentes (risco de instrução errada ou desatualizada).
 - E2E nova segue o passo a passo: o token gerado abre as ferramentas no endereço e, revogado, recebe 401.
 
+**D247 — Aba "Integrações", caixa de seleção do design system e ações do cardápio lado a lado** (21/11, candidato; forma [C]) ✅
+- O card do assistente de IA (MCP) sai do fim de todas as abas e vira a aba "Integrações" de Configurações (só com a flag `mcp`). A barra de abas rola até a aba ativa (abrir direto na última).
+- `Checkbox` do design system no lugar do nativo azul, em todo o sistema (cardápio, aceite do cliente, Bastidores, apresentação): 20 px, contorno cinza, marcado na cor principal (vermelho no Portal, preto no app) com tique branco; continua um `<input type="checkbox">`.
+- Cardápio: "Salvar" e "Excluir" lado a lado; excluir vira ícone de lixeira com nome acessível; item em uso numa oferta guarda o espaço para alinhar.
+
+**D248 — MCP aceita qualquer `Origin` e o token com ou sem "Bearer"** (21/11, IA [C], o candidato não conseguiu conectar pelo Claude) ✅ (revê a trava de origem da S3.9)
+- O servidor recusava pedidos com `Origin` de outro site (proteção contra DNS rebinding). O conector do Claude chama de outra origem e falhava com "Problema de conexão". Como todo pedido exige o token do dono (sem cookie), a trava não protegia nada além do token: removida. O valor do cabeçalho vale com ou sem "Bearer ".
+- O card ganhou o exemplo pronto do Claude (site ou app): "Adicionar conector personalizado" → URL → "Sem login" (não "Cliente OAuth", que reserva o cabeçalho Authorization) → cabeçalho `Authorization` com "Bearer " + token, com botão de copiar.
+- Alternativa: liberar só `claude.ai`/`claude.com` (quebraria outros assistentes). Trade-off: nenhum, além de desviar da recomendação genérica do protocolo para servidores locais.
+
 ## N. Fatia S8 — Copiloto do salão (21/11, `planejar-fatia` em worktree separado)
 Detalhes, perguntas, revisão independente (2 subagentes) e itens [C] em [docs/fatias/S8/planejamento.md](../fatias/S8/planejamento.md). Numeração D260+ para não colidir com a sessão paralela (que seguiu em D238–D246).
 

@@ -124,11 +124,33 @@ export function AgentSection({ initial, endpoint }: { initial: Tok[]; endpoint: 
               <strong>Endereço (URL):</strong> o do passo 2. Se perguntar o tipo de conexão, escolha <strong>HTTP</strong>.
             </li>
             <li>
-              <strong>Autenticação:</strong> escolha &quot;Bearer token&quot; e cole o token do passo 1. Se pedir um cabeçalho, o nome é{" "}
+              <strong>Autenticação:</strong> não use login/OAuth (escolha &quot;Sem login&quot; ou &quot;Bearer token&quot;) e cole o token do passo 1. Se pedir um cabeçalho, o nome é{" "}
               <code className="rounded-xs bg-surface-muted px-1">Authorization</code> e o valor é <code className="rounded-xs bg-surface-muted px-1">Bearer</code>, um
               espaço e o token.
             </li>
           </ul>
+          <details className="rounded-sm border border-border px-3">
+            <summary className="min-h-11 cursor-pointer py-3 font-semibold text-red-text">Exemplo pronto: Claude (site ou app)</summary>
+            <ol className="mb-3 list-decimal pl-5 leading-6">
+              <li>
+                Na tela de conectores do Claude, toque em <strong>Adicionar conector personalizado</strong>.
+              </li>
+              <li>Dê um nome (ex.: Comer Fora no Salão) e cole o endereço do passo 2 na URL.</li>
+              <li>
+                Na autenticação, marque <strong>Sem login</strong>. Não use &quot;Cliente OAuth&quot;: com ele, o Claude não deixa usar o cabeçalho
+                Authorization.
+              </li>
+              <li>
+                Em <strong>Cabeçalhos de requisição</strong>, toque em <strong>Adicionar cabeçalho</strong>, escolha cabeçalho personalizado e preencha: nome{" "}
+                <code className="rounded-xs bg-surface-muted px-1">Authorization</code>; valor: o texto abaixo{shown ? "" : " (gere o token no passo 1 para ele aparecer completo)"}.
+              </li>
+            </ol>
+            <div className="mb-3 flex flex-wrap items-start gap-2">
+              <code className="min-w-0 flex-1 break-all rounded-xs bg-surface-muted px-2 py-1">{`Bearer ${shown ?? "SEU_TOKEN"}`}</code>
+              <CopyButton text={`Bearer ${shown ?? "SEU_TOKEN"}`} label="Copiar o valor do cabeçalho" />
+            </div>
+            <p className="mb-3">Salve e ative o conector na conversa. O token só aparece uma vez: se você já fechou a tela sem copiar, gere um novo.</p>
+          </details>
           <details className="rounded-sm border border-border px-3">
             <summary className="min-h-11 cursor-pointer py-3 font-semibold text-red-text">Exemplo pronto: Claude Code (no terminal)</summary>
             <p className="mt-1">Abra o terminal, cole este comando e aperte Enter{shown ? "" : " (troque SEU_TOKEN pelo token do passo 1)"}:</p>
