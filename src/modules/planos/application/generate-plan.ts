@@ -7,7 +7,7 @@ import { ownerDataOf } from "@/src/modules/config/domain/ai-profile";
 import { parseAiFeatures } from "@/src/modules/config/domain/ai-profile";
 import { AGENT_PROMPT_VERSION, AGENT_RULES, buildPlanAgentTask, buildPlanAgentTools, storedSteps } from "@/src/modules/ia/tasks/plan-agent";
 import type { PackageOut } from "@/src/modules/ia/tasks/package";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import type { Db } from "@/src/db/client";
 import { menuItems, owners, weeklyPlans } from "@/src/db/schema";
 import { buildCandidates, fallbackChoices, toPlanCandidate } from "@/src/modules/onboarding/domain/candidates";
@@ -149,7 +149,7 @@ export async function generateWeeklyPlan(
   // Revisor (flag; D148): marca "revisando" no MESMO update que publica a proposta (portal e MCP; sem janela),
   // e revisa depois da resposta. Contas E2E ficam fora.
   const review = !semIa && owner?.via !== "e2e" && (await getFlags(db)).revisor;
-  await db
+  const published = await db
     .update(weeklyPlans)
     .set({
       status: "proposto",
@@ -161,7 +161,14 @@ export async function generateWeeklyPlan(
       decision: review ? { ...decision, reviewer: { status: "revisando", reasons: [], at: p.now.toISOString() } } : decision,
       agentSteps: semIa ? null : agentSteps,
     })
-    .where(eq(weeklyPlans.id, started.planId));
+    // Só publica se a linha ainda é a mesma geração (revisão S4–S6, técnica A2): uma geração vencida pode ter sido
+    // substituída por outra; aí o resultado desta é descartado, com registro.
+    .where(and(eq(weeklyPlans.id, started.planId), eq(weeklyPlans.status, "gerando")))
+    .returning({ id: weeklyPlans.id });
+  if (!published.length) {
+    log.warn("geração do plano descartada: substituída por outra", { area: "plano" });
+    return { ok: false, erro: "gerando" };
+  }
   if (review) {
     const planId = started.planId;
     (p.schedule ?? inline)(() =>

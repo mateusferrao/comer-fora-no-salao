@@ -10,6 +10,7 @@ import type { Slot } from "@/src/modules/beneficios/domain/slots";
 import { reminderDue } from "@/src/modules/agendador/domain/schedule";
 import { parseNotifySettings } from "@/src/modules/config/domain/notify-settings";
 import { daySP } from "@/src/shared/tz";
+import { addDaysSP } from "@/src/shared/week";
 import { nextValidWindow } from "../domain/invite-window";
 import { queueInviteMessages } from "./queue-messages";
 
@@ -25,9 +26,10 @@ export async function queueDueReminders(db: Db, p: { now: Date; restaurantId?: s
     join restaurants r on r.id = i.restaurant_id and r.status = 'ativo'
     join owners o on o.id = r.owner_id and o.via <> 'e2e'
     where i.status = 'ativo' and i.arm = 'convidavel' and i.simulation_run_id is null
-      and i.issued_day < ${today} and i.expires_at > ${p.now.toISOString()}
+      and i.issued_day < ${today} and i.issued_day >= ${addDaysSP(today, -9)} and i.expires_at > ${p.now.toISOString()}
       and not exists (select 1 from customer_messages m where m.invite_id = i.id and m.kind = 'lembrete')
       ${scope}
+    order by i.issued_day desc
     limit 500`)) as unknown as { rows: Row[] };
   const due: Record<string, string[]> = {};
   for (const r of rows.rows) {

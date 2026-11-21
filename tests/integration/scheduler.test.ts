@@ -78,6 +78,30 @@ describe("agendador: plano e resumo no dia e hora do dono (S6.1, D187, D196)", (
     expect((await runSchedulerTick(getDb(), at("2026-11-23", "08:20"), deps())).planos).toBe(0);
   });
 
+  it("aprovação no meio da semana anterior não pula a semana seguinte (âncora em T — revisão S4–S6, técnica A1)", async () => {
+    await getDb().delete(weeklyPlans).where(and(eq(weeklyPlans.restaurantId, VITRINE_ID), eq(weeklyPlans.status, "proposto")));
+    // Aprovado na quarta 18/11 (4 dias e 20 h antes da geração): a semana de 23/11 ganha plano novo.
+    await getDb().insert(weeklyPlans).values({ restaurantId: VITRINE_ID, weekKey: "2026-W47", status: "aprovado", approvedAt: at("2026-11-18", "12:00"), facts: {}, candidates: [], choices: [], texts: {}, learned: [], createdAt: at("2026-11-18", "11:00") });
+    expect((await runSchedulerTick(getDb(), at("2026-11-23", "08:00"), deps())).planos).toBe(1);
+    // Aprovado na terça 24/11, depois do T da semana: a segunda 30/11 também ganha plano novo.
+    await getDb().delete(weeklyPlans).where(and(eq(weeklyPlans.restaurantId, VITRINE_ID), eq(weeklyPlans.status, "proposto")));
+    await getDb().insert(weeklyPlans).values({ restaurantId: VITRINE_ID, weekKey: "2026-W48", status: "aprovado", approvedAt: at("2026-11-24", "09:00"), facts: {}, candidates: [], choices: [], texts: {}, learned: [], createdAt: at("2026-11-24", "08:50") });
+    expect((await runSchedulerTick(getDb(), at("2026-11-30", "08:00"), deps())).planos).toBe(1);
+  });
+
+  it("no máximo 2 gerações por tique; o resto sai nos tiques seguintes; SIGTERM para entre restaurantes", async () => {
+    await getDb().delete(weeklyPlans).where(and(eq(weeklyPlans.restaurantId, VITRINE_ID), eq(weeklyPlans.status, "proposto")));
+    const extra = [await createRestaurant(), await createRestaurant()];
+    for (const r of extra) {
+      const [rr] = await getDb().select({ ownerId: restaurants.ownerId }).from(restaurants).where(eq(restaurants.id, r.restaurantId));
+      await getDb().update(owners).set({ emailEnc: encryptEmail("outro@exemplo.com"), via: "email" }).where(eq(owners.id, rr!.ownerId));
+    }
+    expect(await runSchedulerTick(getDb(), at("2026-11-23", "08:00"), { ...deps(), stopped: () => true })).toEqual({ planos: 0, resumos: { enviados: 0, falhas: 0 }, lembretes: 0 });
+    expect((await runSchedulerTick(getDb(), at("2026-11-23", "08:00"), deps())).planos).toBe(2);
+    expect((await runSchedulerTick(getDb(), at("2026-11-23", "08:01"), deps())).planos).toBe(1);
+    expect(new Set(generated).size).toBe(3);
+  });
+
   it("resumo desligado: o plano automático continua (D196) e nenhum e-mail sai; plano automático desligado: resumo sem link", async () => {
     await getDb().delete(weeklyPlans).where(and(eq(weeklyPlans.restaurantId, VITRINE_ID), eq(weeklyPlans.status, "proposto")));
     await setSettings(VITRINE_ID, { resumo: { on: false, weekday: 1, minute: 510 } });

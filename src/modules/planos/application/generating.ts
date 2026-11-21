@@ -8,7 +8,7 @@ import { restaurants, weeklyPlans } from "@/src/db/schema";
 import { consume } from "@/src/shared/rate-limit";
 import { weekKeySP } from "@/src/shared/week";
 
-export const GENERATING_STALE_MS = 90_000;
+export const GENERATING_STALE_MS = 150_000;
 
 export type StartResult = { ok: true; planId: string } | { ok: false; erro: "gerando" | "limite"; retryAfterSec?: number };
 

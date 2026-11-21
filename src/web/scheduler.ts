@@ -41,7 +41,7 @@ export function startScheduler(): void {
       try {
         const deps = await tickDeps();
         if (!deps.flags.agendador) return;
-        const r = await runSchedulerTick(getDb(), new Date(), deps);
+        const r = await runSchedulerTick(getDb(), new Date(), { ...deps, stopped: () => st.stopped });
         if (r.planos || r.resumos.enviados || r.resumos.falhas || r.lembretes) log.info("tique do agendador", { area: "agendador", ...r });
       } catch (err) {
         log.error("tique do agendador falhou", { area: "agendador", err: safeErr(err) });
@@ -54,11 +54,14 @@ export function startScheduler(): void {
   st.timer = setTimeout(loop, 10_000);
 }
 
-/** SIGTERM: para de agendar e espera o tique em andamento terminar. */
+/**
+ * SIGTERM: para de agendar e espera o tique em andamento por até 2 s (revisão S4–S6, técnica M3): o tique para entre
+ * restaurantes, e uma geração de IA em curso não segura o flush do rastro nem o fechamento do pool.
+ */
 export async function stopScheduler(): Promise<void> {
   const st = g.__salaoScheduler;
   if (!st) return;
   st.stopped = true;
   if (st.timer) clearTimeout(st.timer);
-  await st.running;
+  await Promise.race([st.running, new Promise((r) => setTimeout(r, 2_000))]);
 }
