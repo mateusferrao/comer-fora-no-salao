@@ -231,7 +231,7 @@ Decisões marcadas [C] neste plano (abertas a correção): limiar de 300 m para 
 ## Replanejamento de 21/11 — S4, S5, S6 e S7
 Decisões D151–D169. As fatias passam a ser:
 - **S4 — Produto real e identidade** ([planejamento](../fatias/S4/planejamento.md), detalhado): limpeza de "teste/simulação", login do cliente por e-mail + código, reativação entregue (app + e-mail), Ferramentas do avaliador nos Bastidores. Sub-fatias S4.1–S4.4 (S4.1 feita no branch antes da suspensão).
-- **S5 — Valor e conversão** ([escopo](../fatias/S5/planejamento.md)): painel em R$ + meta + feed; landing, página do QR e convite com agenda (copywriting); "Por que esta oferta?".
+- **S5 — Valor e conversão** ([planejamento aprovado](../fatias/S5/planejamento.md), D179–D185): painel em R$ (2 camadas) + metas + "Hoje no salão"; landing, página do QR de conversão e convite com agenda (`.ics`); "Por que esta oferta?" em 2 camadas. E2E em 2 projetos de flags.
 - **S6 — IA que opera** ([escopo](../fatias/S6/planejamento.md)): resumo semanal por e-mail + agendador; modo garçom; plano como agente; porta-conta.
 - **S7 — Entregáveis** (era a "Fatia S4 — Entregáveis" acima): slide, vídeo de telas reais (D157), repositório público, preparação; segunda 23/11, 10h–15h.
 

@@ -1078,3 +1078,49 @@ Detalhes, revisão independente (2 subagentes) e itens [C] em [docs/fatias/S4/pl
 
 **D178 — Itens [C] da implementação da S4** (21/11, IA [C]) ✅
 - Lista em docs/fatias/S4/planejamento.md §16: nome/telefone anuláveis e perfil no 2º passo; WhatsApp/Push fora da tela; assistente sem campo de endereço (fica em Configurações); slug provisório até o passo 2; "Seus convites" como seção da Jornada; sem `List-Unsubscribe` (limite do adaptador SES; link no corpo); barra mantida nos sheets; título da aba sem "protótipo"; veredito "vale trocar a oferta"; rótulos únicos das regiões de código; exclusão de restaurante só com UUID.
+
+### Rodada própria da S5 (`planejar-fatia`, 21/11)
+Detalhes, revisão independente (2 subagentes) e itens [C] em [docs/fatias/S5/planejamento.md](../fatias/S5/planejamento.md).
+
+**D179 — Topo em R$ com 2 camadas** (21/11, U) ✅ (complementa D162)
+- **Causal:** "R$ X a mais em margem entre N convidados até agora" + intervalo.
+- **Antecipada (sem resultado):** "N convites usados (código validado pelo garçom) · ≈ R$ Y em consumo (R$ Z de margem) · custo dos convites R$ W" + "Estimativa, não causal: parte dessas pessoas voltaria sem convite." + o que falta para medir.
+- Na revisão de produto, a recomendação foi tirar a margem da camada antecipada (lida como ganho) e trocar "voltaram" (que conflita com o funil). O candidato manteve consumo + margem; só o rótulo mudou.
+- Alternativas: só os 4 estados; estimativa pontual sempre; consumo sem margem; só custo e contagem.
+
+**D180 — "Por que esta oferta?" em 2 camadas** (21/11, U) ✅
+- Camada do dono: opções do código com a nota, fatos usados, escolha da IA, regras e revisor.
+- Recolhido, "Como a IA decidiu": modelo, tentativas, bloqueios, custo, tempo e prompt.
+- Alternativas: só a linguagem do dono; técnico aberto.
+
+**D181 — Página do QR de conversão: topo novo + resto do app** (21/11, U) ✅ (diverge do print 04)
+- Faixa acima da foto com o benefício de agora, os 3 passos e a prova "N check-ins nos últimos 7 dias" (N ≥ 5, só reais).
+- Botão fixo "Fazer check-in e ativar o benefício".
+- As abas do app continuam abaixo; o holdout é mantido.
+- Alternativas: clone com o ganho no topo (recomendado); só textos; página inteira nova.
+
+**D182 — Prova da landing: só o número público real** (21/11, U) ✅
+- Texto: "Segundo o iFood, 63% de quem usou o Comer Fora no Rio voltou a um restaurante do programa em menos de 1 mês."
+- Fonte: Diário do Rio, 12/11/2026; número declarado pela empresa, sobre recorrência no programa.
+- Os números do briefing são marcados "DADOS FICTÍCIOS" no PDF e ficam no slide e na entrevista.
+- Alternativas: briefing com fonte; demonstração pelo painel; cortar a prova.
+
+**D183 — Marca na landing: só a barra de protótipo** (21/11, U) ✅
+- Sem linha extra sob o CTA; o logo fica.
+- Risco de confusão com o iFood aceito pelo candidato.
+- Alternativas: linha "Protótipo de case, não é o iFood." sob o CTA (recomendado); landing sem logo.
+
+**D184 — FAQ "Quanto custa?" fala só do benefício** (21/11, U) ✅
+- Texto: "Você paga só os benefícios que aprovar, até o teto semanal que você define. Cada convite mostra o custo antes de você aprovar."
+- O modelo de cobrança fica para a entrevista.
+- Alternativas: tirar a pergunta; declarar uma hipótese de cobrança.
+
+**D185 — Itens [C] da rodada da S5** (21/11, IA [C]) ✅
+- Lista em docs/fatias/S5/planejamento.md §12, entre eles:
+  - `early` conta códigos validados;
+  - topo e metas incluem o histórico gerado, feed e prova do QR só linhas reais;
+  - `nextValidWindow` (emissão + 1, dentro da validade) para o `.ics` e a faixa "vale hoje";
+  - link da agenda assinado, com 404 único;
+  - `explainOffer` filtrado pelo restaurante, com textos montados a partir dos dados;
+  - E2E em 2 projetos de flags + `E2E_FLAGS`;
+  - o funil do login vira dívida.

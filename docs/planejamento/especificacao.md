@@ -12,6 +12,13 @@ Legenda: **[B]** briefing · **[P]** pesquisa pública · **[O]** observado nos 
 > - **Cliente (3.5, 4.2, 4.6 — D154, D161, D165, D171, D173):** entra pelo e-mail real + código de 6 dígitos; quem é novo informa nome, telefone (opcional) e os interruptores "E-mail" e "Notificação no app" (ligados); linha "Protótipo de case, não é o iFood. Você pode apagar seus dados quando quiser."; "Sair" e "Apagar meus dados"; sem apagamento automático; e-mail como identidade (HMAC `cliente-email:`) e criptografado (AES-256-GCM, chave por HKDF do `SESSION_SECRET`); telefone deixa de ser único. O pré-preenchimento fictício sai. O dono vê o grupo de controle em "Últimos check-ins de hoje" (D172). A Cantina pública é um restaurante normal; o dono logado vai à própria cópia (D176). E-mails aos clientes: só com consentimento, descadastro em todos, texto do dono com link ou contato não vai por e-mail (D174), remetente `msg.automato.pro` (D175).
 > - **Reativação e e-mails (3.7, D155, D163, D168):** a reativação é entregue no app (Jornada › Seus convites) e por e-mail a quem consentiu; convite por e-mail ao nascer; resumo semanal do dono com "Revisar e aprovar" (POST, `via: email`) toda segunda 08:30 e lembrete no dia do convite.
 > - **Valor e conversão (S5):** topo da Visão geral em R$ ("R$ X a mais em margem entre N convidados até agora", 4 estados), meta por faixa, feed "Hoje no salão"; landing e página do QR reescritas com a skill de copywriting; convite com "Adicionar à agenda" (.ics); "Por que esta oferta?" no plano e no pacote.
+> - **S5 detalhada (21/11, D179–D185 — [../fatias/S5/planejamento.md](../fatias/S5/planejamento.md)):**
+>   - **Topo em R$ (3.6):** 2 camadas, causal + antecipada "convites usados · consumo · margem · custo", rotulada não causal.
+>   - **Metas e feed:** "Metas desta semana" por faixa e "Hoje no salão".
+>   - **Página do QR (3.5):** topo de conversão + abas do app.
+>   - **Landing:** prova só com o 63% real (Diário do Rio, 12/11/2026) e FAQ.
+>   - **Convite:** `.ics` no 1º dia em que o código pode nascer.
+>   - **IA:** "Por que esta oferta?" em 2 camadas.
 > - **IA que opera (S6):** plano como agente com ferramentas só de leitura (decidido por número — D159, D166), modo garçom por link, porta-conta no kit.
 > - **Fatias e cronograma (seção 7):** S4 (produto real e identidade), S5 (valor e conversão), S6 (IA que opera), 1 merge no fim (D167) com meta antes de 23/11 08:30; corte por flag domingo 22h; S7 = entregáveis (slide, vídeo de telas reais — D157, repositório público, preparação), segunda 10h–15h.
 
