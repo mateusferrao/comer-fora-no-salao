@@ -11,7 +11,7 @@ import { z } from "zod";
 import type { Db } from "@/src/db/client";
 import type { Executor, Tx } from "@/src/db/executor";
 import { ownerEdits, planSendMembers, planSends, restaurantCustomers, restaurants, weeklyPlans } from "@/src/db/schema";
-import { describeOffer, MAX_DISCOUNT_PCT, OFFER_KINDS, validateOffer, type Offer, offerFromInput, type OfferKind } from "@/src/modules/beneficios/domain/offers";
+import { checkOffer, describeOffer, OFFER_KINDS, type Offer, offerFromInput, type OfferKind } from "@/src/modules/beneficios/domain/offers";
 import { guardText } from "@/src/modules/ia/guardrails";
 import { slotPhrase } from "@/src/modules/beneficios/domain/slot-text";
 import { loadContext, remainingBySlot, inviteSlots } from "@/src/modules/salao/application/context";
@@ -93,10 +93,8 @@ export async function approvePlanInTx(tx: Tx, p: ApproveInput): Promise<ApproveR
     const finalChoices: typeof proposed = [];
     for (const s of p.final.slots) {
       const offer = toOffer(s.offer);
-      const errs = validateOffer(offer, activeMenu);
-      // S6.3a (D197): item "fora das ofertas" não entra por nenhum caminho (Portal, e-mail, MCP).
-      if (ctx.noOfferItemIds.includes(offer.params.itemId)) errs.push("item_fora_das_ofertas");
-      if (offer.kind === "desconto" && (offer.params.pct ?? 0) > MAX_DISCOUNT_PCT && !errs.includes("desconto_acima_do_teto")) errs.push("desconto_acima_do_teto");
+      // S6.3a (D197) + S8: regra única (`checkOffer`) — item "fora das ofertas" não entra por nenhum caminho.
+      const errs = checkOffer(offer, activeMenu, ctx.noOfferItemIds);
       if (errs.length) return { ok: false as const, erro: "oferta" as const, detalhe: { slotId: s.slotId, erros: errs } };
       const slot = ctx.slots.find((x) => x.id === s.slotId)!;
       const g = guardText(s.inviteText, { items, slots: { [slot.id]: slotPhrase(slot) }, oferta: describeOffer(offer, ctx.menu, "convite").gain }, { allowed: ["prato", "horario", "oferta"], maxLen: 160, field: "textoConvite", mode: "dono" });
