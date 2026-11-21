@@ -76,7 +76,7 @@ export default async function PassoPage({ params, searchParams }: { params: Prom
               ticketCents: null,
               marginPct: null,
             };
-    body = <Step2Salao initial={initial} extractionId={manual ? null : (ext?.id ?? null)} extraction={manual ? null : extState} manual={manual} />;
+    body = <Step2Salao initial={initial} extractionId={manual ? null : (ext?.id ?? null)} extraction={manual ? null : extState} manual={manual} assistente={(await getFlags(db)).copiloto} />;
   } else if (step === 3) {
     const items = await db.select().from(menuItems).where(and(eq(menuItems.restaurantId, cur.id), eq(menuItems.active, true))).orderBy(asc(menuItems.position));
     body = (

@@ -91,12 +91,15 @@ describe("turno do copiloto (S8)", () => {
     expect(out.atalhos[0]).toEqual({ label: "Horários vazios e convites", href: "/parceiro/salao/configuracoes?aba=convites" });
   });
 
-  it("restaurante em rascunho → não chama a IA", async () => {
+  it("restaurante em rascunho → só dúvidas: prompt sem dados do restaurante e nenhuma proposta", async () => {
     const r = await createRestaurant();
     await getDb().update(restaurants).set({ status: "rascunho" }).where(eq(restaurants.id, r.restaurantId));
-    const gw = scripted({ "*": () => ({ resposta: "x", propostas: [], sugestoes: [] }) });
-    const out = await runCopilotTurn(getDb(), { restaurantId: r.restaurantId, ownerId: r.ownerId, turns: [{ role: "user", text: "oi" }], page: "ativar", now: NOW, gateway: gw });
-    expect(out.motivoSemIa).toBe("inativo");
-    expect(gw.calls).toHaveLength(0);
+    const gw = scripted({ "*": () => ({ resposta: "O teto limita quantos convites saem por semana.", propostas: [], sugestoes: ["Preciso informar a margem?"] }) });
+    const out = await runCopilotTurn(getDb(), { restaurantId: r.restaurantId, ownerId: r.ownerId, turns: [{ role: "user", text: "o que é o teto?" }], page: "ativar", now: NOW, gateway: gw });
+    expect(out.generatedBy).toBe("ia");
+    expect(out.propostas).toEqual([]);
+    expect(gw.calls[0]!.system).not.toContain("CARDÁPIO");
+    expect(gw.calls[0]!.system).not.toContain("Cantina de Teste");
+    expect(out.resposta).toBe("O teto limita quantos convites saem por semana.");
   });
 });

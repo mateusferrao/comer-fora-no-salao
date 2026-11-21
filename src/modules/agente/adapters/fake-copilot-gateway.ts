@@ -18,6 +18,11 @@ const norm = (s: string) => s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,
 export function fakeCopilotGateway(): AiGateway {
   return {
     async generate(req: AiGenerateRequest) {
+      // "Seu salão" por frase (E2E): saída fixa; o código descarta o que não estiver no texto.
+      if (req.system.startsWith("Você lê a descrição")) {
+        const output = { nome: null, mesas: 12, clientes_semana: 300, funcionamento: [{ dias: [2, 3, 4, 5, 6, 0], inicio: "11:00", fim: "23:00" }], faixas: [{ dias: [2, 3], inicio: "15:00", fim: "18:00", intensidade: "muito", mesas_a_mais: 4 }], ticket_reais: 85, margem_pct: null };
+        return { output, usage: { inTokens: 0, outTokens: 0, costUsd: 0 }, model: req.model.id, steps: [] };
+      }
       const last = "messages" in req.input ? (req.input.messages.at(-1)?.text ?? "") : "";
       const q = norm(last);
       const menu = [...req.system.matchAll(/^- (P\d+): (.+?) \((\w+), [^;)]*(?:; ([^)]*))?\)$/gm)].map((m) => ({ alias: m[1]!, name: m[2]!, cat: m[3]!, flags: m[4] ?? "" }));

@@ -74,6 +74,17 @@ Ferramentas: ver_numeros para mais números; buscar_clientes para clientes (nome
 
 const BRL = (c: number) => new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(c / 100).replace(/\s/g, " ");
 
+const ONBOARDING = `Você é o "Assistente do salão" e ajuda o dono durante a ATIVAÇÃO do Comer Fora no salão (5 passos: cardápio, seu salão, revisão do cardápio, pacote proposto, resumo e ativar). Fala em português do Brasil, curto e claro.
+Só responde dúvidas: "propostas" fica SEMPRE vazio. Para preencher o passo "Seu salão", diga que existe o campo "Descrever em uma frase" nesse passo.
+Na "resposta": nunca escreva números (nem por extenso), preços, e-mail, telefone ou link. Até três frases.
+"sugestoes": até 3 próximas dúvidas curtas, sem números.`;
+
+/** Ativação (D265): só dúvidas, com o guia do produto; nada de dados do restaurante nem propostas. */
+export function buildOnboardingPrompt(step: string): CopilotPrompt {
+  const system = [ONBOARDING, GUIDE.replace("Desconto tem teto ({fato:desconto_maximo_pct})", "Desconto tem teto de metade do preço"), `Tela atual do dono: ${step}.`].join("\n\n");
+  return { system, ctx: {}, itemByAlias: new Map(), slotByAlias: new Map(), itemAliases: [], slotAliasList: [] };
+}
+
 export function buildCopilotPrompt(input: CopilotInput): CopilotPrompt {
   const active = input.snap.menu.filter((m) => m.active || m.inUse);
   const itemByAlias = new Map<string, string>();

@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { axe, loginE2E, PROD } from "./helpers";
+import { axe, loginE2E, PROD, storeIds } from "./helpers";
 
 /**
  * S8 — Assistente do salão (D260–D264). Local: IA roteirizada (só com chaves vazias + token local — `fakeAi` no
@@ -68,4 +68,31 @@ test.describe("copiloto (local, IA roteirizada)", () => {
     await dlg.getByRole("button", { name: "Fechar o assistente" }).click();
     await expect(dlg).toBeHidden();
   });
+
+  test("ativação, passo 2: a frase preenche o formulário sem gravar; número não dito fica em branco", async ({ page }) => {
+    test.setTimeout(150_000);
+    await page.setViewportSize({ width: 1280, height: 900 });
+    await loginE2E(page.request, 44);
+    await page.goto("/parceiro/salao");
+    for (;;) {
+      const ids = await storeIds(page);
+      if (!ids.length) break;
+      for (const id of ids) await page.request.delete("/api/parceiro/restaurantes", { data: { restaurantId: id } });
+      await page.reload();
+    }
+    await page.getByRole("button", { name: /Cadastrar (meu|outro) restaurante/ }).click();
+    await page.getByRole("listitem").filter({ hasText: "Boteco do Seu Zé" }).getByRole("button", { name: "Usar este exemplo" }).click();
+    await expect(page.getByRole("heading", { name: "Seu salão" })).toBeVisible();
+    await page.getByLabel("Descrição do salão").fill("12 mesas, abro de terça a domingo das 11h às 23h; terça e quarta à tarde, das 15h às 18h, fica muito vazio e quero 4 mesas a mais. Ticket de 85 reais.");
+    await page.getByRole("button", { name: "Ler a frase" }).click();
+    await expect(page.getByText("Vou preencher:")).toBeVisible({ timeout: 30_000 });
+    // 300 clientes por semana não estava no texto: o código descarta.
+    await expect(page.getByText(/Não informado .*clientes por semana/)).toBeVisible();
+    await axe(page);
+    await page.getByRole("button", { name: "Preencher o formulário" }).click();
+    await expect(page.getByLabel("Número de mesas")).toHaveValue("12");
+    await expect(page.getByLabel("Quantas mesas a mais você quer por semana nesse horário?")).toHaveValue("4");
+    await expect(page).toHaveURL(/\/ativar\/2/);
+  });
 });
+

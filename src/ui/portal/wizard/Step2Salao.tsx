@@ -17,6 +17,8 @@ import { Field } from "../../components/Field";
 import { TimeRange } from "../../components/TimeRange";
 import { api, markStep } from "./api";
 import { ExtractionStatus, useExtraction, type ExtractionState } from "./ExtractionStatus";
+import { SalonSentence } from "./SalonSentence";
+import type { SalonFill } from "@/src/modules/ia/tasks/salon";
 
 export type SalonForm = {
   name: string;
@@ -48,7 +50,7 @@ const fromReais = (s: string) => {
 };
 
 /** Passo 2 (espec. 3.2): salão, funcionamento e horários vazios (obrigatório), enquanto a IA lê. */
-export function Step2Salao({ initial, extractionId, extraction, manual = false }: { initial: SalonForm; extractionId: string | null; extraction: ExtractionState | null; manual?: boolean }) {
+export function Step2Salao({ initial, extractionId, extraction, manual = false, assistente = false }: { initial: SalonForm; extractionId: string | null; extraction: ExtractionState | null; manual?: boolean; assistente?: boolean }) {
   const router = useRouter();
   const [f, setF] = useState<SalonForm>(initial);
   const [ticket, setTicket] = useState(toReais(initial.ticketCents));
@@ -58,6 +60,21 @@ export function Step2Salao({ initial, extractionId, extraction, manual = false }
   useEffect(() => markStep(2), []);
 
   const set = <K extends keyof SalonForm>(k: K, v: SalonForm[K]) => setF((x) => ({ ...x, [k]: v }));
+  // S8 (D265): a frase preenche só o que foi dito; mesas a mais não ditas ficam em branco (a validação pede).
+  const applyFill = (fill: SalonFill) => {
+    setF((x) => ({
+      ...x,
+      ...(fill.name ? { name: fill.name } : {}),
+      ...(fill.tables ? { tables: fill.tables } : {}),
+      ...(fill.weeklyCustomers !== null ? { weeklyCustomers: fill.weeklyCustomers } : {}),
+      ...(fill.opening ? { opening: fill.opening } : {}),
+      ...(fill.slots ? { slots: fill.slots.map((s) => ({ days: s.days, startMin: s.startMin, endMin: s.endMin, intensity: s.intensity ?? "muito", extraTables: s.extraTables ?? 0 })) } : {}),
+      ...(fill.ticketCents !== null ? { ticketCents: fill.ticketCents } : {}),
+      ...(fill.marginPct !== null ? { marginPct: fill.marginPct } : {}),
+    }));
+    if (fill.ticketCents !== null) setTicket(toReais(fill.ticketCents));
+    setErrors({});
+  };
   const setSlot = (i: number, patch: Partial<SalonForm["slots"][number]>) => set("slots", f.slots.map((s, k) => (k === i ? { ...s, ...patch } : s)));
 
   async function submit() {
@@ -118,6 +135,7 @@ export function Step2Salao({ initial, extractionId, extraction, manual = false }
         <p className="mt-1 text-sm text-ink-muted">Enquanto a IA lê o cardápio, conte como é o seu salão e quais horários ficam vazios.</p>
       </div>
       <ExtractionStatus state={ext} />
+      {assistente && <SalonSentence onFill={applyFill} />}
 
       <div className="grid gap-4 sm:grid-cols-3">
         <Field label="Nome do restaurante" value={f.name} onChange={(e) => set("name", e.target.value)} error={errors.name} maxLength={60} />

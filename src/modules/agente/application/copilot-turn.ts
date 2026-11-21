@@ -17,7 +17,7 @@ import { runTask } from "@/src/modules/ia/run-task";
 import { langfuseTracer } from "@/src/modules/ia/tracing";
 import { systemClock } from "@/src/shared/clock";
 import { parseAiFeatures } from "@/src/modules/config/domain/ai-profile";
-import { buildCopilotPrompt, buildCopilotTask, buildCopilotTools, COPILOT_PROMPT_VERSION, normalizeHistory, renderAnswer, toPayload, type CopilotCustomer } from "@/src/modules/ia/tasks/copilot";
+import { buildCopilotPrompt, buildCopilotTask, buildOnboardingPrompt, buildCopilotTools, COPILOT_PROMPT_VERSION, normalizeHistory, renderAnswer, toPayload, type CopilotCustomer } from "@/src/modules/ia/tasks/copilot";
 import type { ProposalPayload } from "../domain/proposals";
 import { createProposals, loadSnapshot, type ProposalCard } from "./proposals";
 import { shortcutsFor, type Shortcut } from "../domain/shortcuts";
@@ -43,7 +43,8 @@ export async function runCopilotTurn(
   const noAi = (motivo: NonNullable<TurnResult["motivoSemIa"]>, resposta = NO_AI): TurnResult => ({ resposta, propostas: [], sugestoes: [], generatedBy: "sem_ia", motivoSemIa: motivo, atalhos });
 
   const [r] = await db.select({ status: restaurants.status, name: restaurants.name, aiTone: restaurants.aiTone, aiFeatures: restaurants.aiFeatures }).from(restaurants).where(eq(restaurants.id, p.restaurantId));
-  if (!r || r.status !== "ativo") return noAi("inativo", "O assistente fica disponível depois de ativar o Comer Fora no salão.");
+  if (!r) return noAi("inativo");
+  const onboarding = r.status !== "ativo";
   // D197: o dono pode desligar o agente da IA do restaurante; o copiloto respeita (é um agente).
   if (!parseAiFeatures(r.aiFeatures).agente) return noAi("falha", "O assistente está desligado na aba “IA do restaurante”. Você pode fazer a mudança direto nas Configurações:");
 
@@ -57,6 +58,15 @@ export async function runCopilotTurn(
   }
   if (!gateway) return noAi("sem_chave");
   if (keyKind === "publica" && (await spentToday(db, "publica", p.now, "copiloto")) >= COPILOT_PUBLIC_DAILY_CAP_USD) return noAi("teto_diario");
+
+  // Ativação (D265): só dúvidas, com o guia do produto (sem dados nem propostas).
+  if (onboarding) {
+    const cp = buildOnboardingPrompt(p.page);
+    const res = await runTask({ ...buildCopilotTask(cp, MODELS.copiloto, [], p.sessionId) }, cp.system, { messages: turns }, { gateway, clock: systemClock, trace: langfuseTracer });
+    await recordAiCall(db, { task: "copiloto", promptVersion: `${COPILOT_PROMPT_VERSION}-ativacao`, restaurantId: p.restaurantId, result: res, keyKind });
+    if (res.status !== "ok") return noAi("falha", "Não consegui responder agora. Siga os passos da ativação; cada campo explica o que pede.");
+    return { resposta: renderAnswer(res.data.resposta, cp.ctx), propostas: [], sugestoes: res.data.sugestoes.map((x) => renderAnswer(x, cp.ctx)), generatedBy: "ia", atalhos: [] };
+  }
 
   const [snap, ins] = await Promise.all([loadSnapshot(db, p.restaurantId), getPlanInsights(db, p.restaurantId, p.now)]);
   if (!snap || !ins) return noAi("inativo");

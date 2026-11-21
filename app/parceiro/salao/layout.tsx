@@ -31,7 +31,8 @@ export const dynamic = "force-dynamic";
 export default async function SalaoLayout({ children }: { children: ReactNode }) {
   const s = await requireOwner();
   const cur = s.current;
-  const assistant = cur?.status === "ativo" && (await getFlags(getDb())).copiloto ? <Copilot chips={await copilotChips(cur.id)} /> : undefined;
+  // S8: restaurante ativo → copiloto completo; em ativação (D265) → só dúvidas.
+  const assistant = cur && (await getFlags(getDb())).copiloto ? <Copilot chips={cur.status === "ativo" ? await copilotChips(cur.id) : { ativar: ["O que é o horário vazio?", "Preciso informar a margem?", "O que é o teto de convites?"] }} /> : undefined;
   return (
     <PortalShell
       mobileTitle={cur?.name}
