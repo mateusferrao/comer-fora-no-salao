@@ -1,6 +1,6 @@
 # Revisão das fatias S4–S6 — produto real, valor ao dono, IA que opera e sistema configurável
 
-Data: 21/11/2026 · Base: `c867a5e` (main depois da S3) · Revisado: `30fad83` (antes do registro) · Produção: ver §4
+Data: 21/11/2026 · Base: `c867a5e` (main depois da S3) · Revisado: `30fad83` · Merge: `959f679` · Produção: `959f679` (/api/health ok)
 
 ## 1. Resumo e veredito
 Revisão única de S4, S5 e S6 (merge único — D167): 4 revisores independentes (aderência, técnica, produto/UX, segurança/IA) e E2E profunda feita por mim no navegador (390/768/1280 px, 4 personas, axe, console e rede).
@@ -61,8 +61,15 @@ Não procede: nenhum. Os achados de demo e apresentação (aderência 4–7) vã
 
 Logs: `e2e-profunda-1.log` (antes das correções) e `e2e-profunda-2.log` (depois: 34 telas com axe sem violação, nenhuma rolagem horizontal, nenhum erro de console nem 4xx/5xx inesperado).
 
-## 4. Matriz E2E (produção)
-Preenchida depois do merge e do deploy (§8).
+## 4. Matriz E2E (produção, `959f679`, flags no estado de produção: S5/S6 ainda desligadas, `plano_agente` ligada — D225)
+| Cenário | Esperado | Observado | Evidência | Veredito |
+|---|---|---|---|---|
+| Deploy pelo webhook | commit no `/api/health` | no ar 3 min 45 s depois do webhook; `db: up`, `seed: ok`, migrações 0006–0007 no boot | CI #75, job `deploy` | ✓ |
+| Fumaça do CI (fumaça, cliente, dono, painel, volta, entrada, apresentação) | verde | 45 ✓, 6 pulados (dependem das flags da S5/S6) em 2,7 min | CI #75 | ✓ |
+| Telas públicas a 390 e 1280 px (raiz, entrar, apresentação, Como funciona, `/r/cantina-nonna-lucia`) | 200, sem rolagem lateral, axe limpo | ok | `capturas/prod-*` | ✓ |
+| Rotas atrás de flag desligada (`/garcom`, `/parceiro/aprovar/<inválido>`) | 404 | 404 | `capturas/prod-*` | ✓ |
+| `/api/health` durante a fumaça | sempre ok | ok em 27 leituras (5 min) | — | ✓ |
+| Passada com as flags da S5/S6 ligadas (`E2E_FLAGS=on`) | `*.on.spec.ts` verdes | **pendente**: ligar as flags exige a senha dos Bastidores, que só o candidato lê (D139) | — | pendente |
 
 ## 5. Console, rede, tempos e acessibilidade
 - Antes: rolagem horizontal de 203 px em Configurações › Cardápio a 390 px; `heading-order` em Cardápio e Restaurante. Depois: nenhum.
@@ -82,4 +89,8 @@ Preenchida depois do merge e do deploy (§8).
 D227–D231 em `decisoes-e-tradeoffs.md` (seção "Revisão S4–S6 — decisões").
 
 ## 8. Produção
-(merge, deploy e E2E em produção — anexado depois)
+- VPS antes do merge: 2,2 GB livres de 7,9 GB (72% em uso), carga 0,46; o build roda no CI.
+- Merge único na `main` (`959f679`, D167). Conflito só nos documentos (a `main` tinha as cópias dos planejamentos); ficou a versão do branch, que contém as da `main`. Árvore do merge idêntica à revisada.
+- CI #75: `check`, `integracao`, `e2e` (88 ✓) e `deploy` + fumaça em produção (45 ✓) verdes.
+- Nenhuma variável de ambiente nova: a chave do e-mail deriva do `SESSION_SECRET` (S4).
+- **Pendente**: ligar `painel_valor`, `copy_v2`, `explica_ia`, `resumo_email`, `modo_garcom`, `porta_conta` e `agendador` nos Bastidores e rodar a E2E com `E2E_FLAGS=on`.
