@@ -74,7 +74,7 @@ describe("plano como agente (S6.3b, D159, D194)", () => {
     const [plan] = await getDb().select().from(weeklyPlans).where(eq(weeklyPlans.id, (r as { planId: string }).planId));
     const steps = plan!.agentSteps as Array<{ tool: string; label: string }>;
     expect(steps.map((s) => s.tool)).toEqual(["ver_candidatas", "ver_fatos", "custo_semana", "checar_texto"]);
-    expect(steps[0]!.label).toBe("Viu as ofertas possíveis da faixa A");
+    expect(steps[0]!.label).toBe("Viu as ofertas possíveis de Ter, Qua, Qui · 15h–18h");
     const [call] = await getDb().select().from(aiCalls).where(and(eq(aiCalls.planId, plan!.id))).orderBy(desc(aiCalls.at));
     expect(call!.task).toBe("plano_agente");
     const v = (await getPlanView(getDb(), VITRINE_ID, NOW))!;
