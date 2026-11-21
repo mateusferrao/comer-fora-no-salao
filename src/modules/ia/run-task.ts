@@ -18,6 +18,9 @@ export interface TaskDef<T> {
   tools?: readonly AiTool[];
   maxSteps?: number;
   stepMs?: number;
+  /** S8 (D262): rastro sem entrada nem saída; `sessionId` agrupa os turnos da mesma conversa. */
+  privateTrace?: boolean;
+  sessionId?: string;
 }
 
 export type AttemptError = "invalid" | "guard" | "timeout" | "provider" | "credit" | "auth";
@@ -163,8 +166,9 @@ export async function runTask<T>(task: TaskDef<T>, system: string, input: AiInpu
           schema: task.schema,
           signal: controller.signal,
           maxOutputTokens: task.maxOutputTokens,
-          telemetry: { functionId: task.name, metadata: { promptVersion: task.promptVersion } },
+          telemetry: { functionId: task.name, metadata: { promptVersion: task.promptVersion, ...(task.sessionId ? { sessionId: task.sessionId } : {}) } },
           ...(task.tools?.length ? { tools: task.tools, maxSteps: task.maxSteps, stepMs: task.stepMs } : {}),
+          ...(task.privateTrace ? { privateTrace: true } : {}),
         }),
         stop,
       ]);

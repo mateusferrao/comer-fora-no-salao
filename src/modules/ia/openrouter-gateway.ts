@@ -13,7 +13,8 @@ import {
 } from "ai";
 import { AiGatewayError, type AgentStep, type AiGateway, type AiGenerateRequest, type AiGenerateResult, type AiInput } from "./gateway";
 
-function toMessages(input: AiInput): ModelMessage[] {
+export function toMessages(input: AiInput): ModelMessage[] {
+  if ("messages" in input) return input.messages.map((m) => ({ role: m.role, content: m.text }));
   if (!("files" in input)) return [{ role: "user", content: input.text }];
   return [
     {
@@ -132,7 +133,8 @@ export function createOpenRouterGateway(apiKey: string): AiGateway {
           telemetry: {
             functionId: req.telemetry?.functionId,
             // Arquivos (foto/PDF do cardápio) nunca vão para o rastro: "imagem nunca guardada" (espec. 4.4, D46).
-            recordInputs: !("files" in req.input),
+            recordInputs: !("files" in req.input) && !req.privateTrace,
+            ...(req.privateTrace ? { recordOutputs: false } : {}),
             includeRuntimeContext: Object.fromEntries(Object.keys(req.telemetry?.metadata ?? {}).map((k) => [k, true])),
           },
         });
