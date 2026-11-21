@@ -21,6 +21,9 @@ export function Roteiro({ className = "" }: { className?: string }) {
           </Link>{" "}
           e faça check-in de novo.
         </li>
+        <li>Em &quot;Plano da semana&quot;, abra &quot;Ver o e-mail desta semana&quot; e use o link &quot;Revisar e aprovar&quot; para aprovar o plano como o dono faria pelo e-mail.</li>
+        <li>Em &quot;Validar código&quot;, crie o &quot;Link do garçom&quot; e abra no celular: ele valida códigos sem entrar no Portal.</li>
+        <li>Em &quot;Configurações&quot;, veja &quot;Avisos e automação&quot; e &quot;IA do restaurante&quot; (fatos, o que evitar e &quot;Ver como fica&quot;).</li>
       </ol>
       <p className="mt-2 text-ink-muted">
         1 em cada 10 clientes cai no grupo de controle e não recebe convite (é assim que o efeito é medido). Para testar outro cliente, saia em &quot;Sua
