@@ -523,3 +523,19 @@ Os dois leram o plano antes de a D171/D172 estar gravada. B3 (técnico) e B1/B2 
 ### Ordem de implementação
 S4.1 (✅ no branch) → S4.2 login do cliente → S4.3 limpeza + Primeiros passos + "Últimos check-ins" + Ferramentas do avaliador → S4.4 reativação entregue. Cada sub-fatia fecha verde antes da próxima. A revisão e o merge acontecem depois da S6 (D167).
 
+
+## 16. Mudanças durante a implementação (S4.2–S4.4, 21/11) — IA [C] (D178)
+- **Nome e telefone opcionais no banco** (`customer_contacts.name/phone_*` anuláveis): o cliente é criado ao confirmar o código e completa o perfil no 2º passo (D173). A 0006 foi regenerada (ainda fora da `main`), também com `customer_messages.email_status` e `opt_email = opt_app`.
+- **Sem pré-preenchimento de telefone**: o interruptor "WhatsApp/Push" sai da tela; "E-mail" e "Notificação no app" ficam (como `14-notificacoes.png`).
+- **Retenção**: nenhum apagamento automático (D171); `cleanup` não mexe em clientes.
+- **Assistente sem campo "Endereço"**: o endereço continua editável em Configurações (onde já existia); restaurante novo nasce sem endereço ("Endereço não informado").
+- **Slug provisório** `restaurante-xxxxxxxx` até o passo 2; depois, nome + sufixo, congelado quando há kit.
+- **"Seus convites" simplificado**: seção na Jornada com o selo "N novos" (não atrás do ícone de balão); "Sair" e "Apagar meus dados" atrás da engrenagem (como o print).
+- **Sem cabeçalho `List-Unsubscribe`**: o adaptador do SES envia só assunto/texto/HTML; o link de descadastro vai no corpo de todo e-mail, com confirmação por POST.
+- **A barra continua dentro dos bottom sheets** (é a barra de protótipo, mantida pela D164), com o texto novo.
+- **Título da aba**: "Comer Fora no Salão" (sem "protótipo de case"); a meta description mantém "Protótipo de case. Não é produto oficial do iFood.".
+- **Veredito "trocar"**: "vale trocar a oferta" (antes "vale testar outra oferta"); planos já gravados corrigidos na 0006.
+- **Rótulos das regiões de código** únicos ("Benefício de 1ª visita · …", "Convite de hoje · …"): achado de acessibilidade na E2E da volta (dois códigos com o mesmo título).
+- **`/api/parceiro/restaurantes` (excluir)** só aceita UUID (antes, um id inválido dava erro 500).
+- **Ferramentas do avaliador** em `/api/avaliador/[acao]`, com sessão do dono; a conta do E2E pode avançar o restaurante E2E fixo.
+- Verificado: unidade + integração 377/377; E2E local 70/70 (banco limpo); `tsc`, lint (só avisos antigos de `package.ts`) e fronteiras limpos.

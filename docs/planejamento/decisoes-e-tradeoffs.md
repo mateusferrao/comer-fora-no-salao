@@ -1075,3 +1075,6 @@ Detalhes, revisão independente (2 subagentes) e itens [C] em [docs/fatias/S4/pl
 
 **D177 — Itens [C] da rodada da S4** (21/11, IA [C]) ✅
 - Lista em docs/fatias/S4/planejamento.md §15 ("Revisão independente"): correção do ON CONFLICT em `phone_hmac` quebrado pela 0006 (o branch estava vermelho na identificação); `opt_email` no simulador e `hasOptIn` único; consentimento por restaurante; sem vínculo com telefone antigo; envio depois do commit com `email_status` e `SKIP LOCKED`; "Avançar 1 dia" também nas cópias; descadastro em todo e-mail; Primeiros passos terminando em "1º cliente voltou com convite"; textos "Convite entregue a N clientes em Sua jornada"; fidelidade da Jornada aos prints.
+
+**D178 — Itens [C] da implementação da S4** (21/11, IA [C]) ✅
+- Lista em docs/fatias/S4/planejamento.md §16: nome/telefone anuláveis e perfil no 2º passo; WhatsApp/Push fora da tela; assistente sem campo de endereço (fica em Configurações); slug provisório até o passo 2; "Seus convites" como seção da Jornada; sem `List-Unsubscribe` (limite do adaptador SES; link no corpo); barra mantida nos sheets; título da aba sem "protótipo"; veredito "vale trocar a oferta"; rótulos únicos das regiões de código; exclusão de restaurante só com UUID.
