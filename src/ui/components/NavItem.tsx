@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { cn } from "../cn";
+import { NavPending } from "./NavPending";
 
 type Props = { href: string; active?: boolean; children: ReactNode; badge?: ReactNode; icon?: ReactNode };
 
@@ -11,7 +12,7 @@ export function NavItem({ href, active = false, children, badge, icon }: Props) 
       href={href}
       aria-current={active ? "page" : undefined}
       className={cn(
-        "relative flex min-h-11 items-center gap-2 rounded-sm px-3 text-sm font-medium focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-ink",
+        "relative isolate flex min-h-11 items-center gap-2 rounded-sm px-3 text-sm font-medium focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-ink",
         active ? "bg-nav-active font-semibold text-red-text before:absolute before:inset-y-1 before:left-0 before:w-1 before:rounded-r-sm before:bg-red-brand" : "text-ink hover:bg-surface-muted",
       )}
     >
@@ -22,6 +23,7 @@ export function NavItem({ href, active = false, children, badge, icon }: Props) 
       )}
       <span className="flex-1">{children}</span>
       {badge}
+      {!active && <NavPending />}
     </Link>
   );
 }

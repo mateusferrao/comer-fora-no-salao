@@ -15,10 +15,17 @@ export const S5_ON = PROD && process.env.E2E_FLAGS === "on";
 export const S6_FLAGS = ["resumo_email", "modo_garcom", "porta_conta"] as const;
 
 export async function axe(page: Page) {
-  // Durante router.refresh() o Next 16 reinsere os metadados por streaming: espera o <title> voltar.
-  await expect.poll(() => page.title(), { timeout: 5_000 }).not.toBe("");
-  const r = await new AxeBuilder({ page }).analyze();
-  expect(r.violations.map((v) => `${v.id}: ${v.nodes.map((n) => n.target.join(" ")).join(", ")}`)).toEqual([]);
+  // Durante router.refresh() o Next 16 reinsere os metadados por streaming: espera o <title> voltar. Se o título sumir
+  // de novo no meio da análise (só `document-title`, transitório), repete — no máximo 3 vezes.
+  let ids: string[] = [];
+  for (let i = 0; i < 3; i++) {
+    await expect.poll(() => page.title(), { timeout: 5_000 }).not.toBe("");
+    const r = await new AxeBuilder({ page }).analyze();
+    ids = r.violations.map((v) => `${v.id}: ${v.nodes.map((n) => n.target.join(" ")).join(", ")}`);
+    if (!(r.violations.length === 1 && r.violations[0]!.id === "document-title")) break;
+    await page.waitForTimeout(300);
+  }
+  expect(ids).toEqual([]);
 }
 
 /** Login de teste (D123): pede o código com o token e confere — o cookie fica no contexto da página. */

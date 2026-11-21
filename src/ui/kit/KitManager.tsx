@@ -127,7 +127,7 @@ export function KitManager({ initial, restaurantName, qrs, billHolder = false }:
               {p.variants.map((v) => (
                 <li key={v.id} className="flex flex-col gap-2">
                   <p className="text-sm font-semibold text-ink">Versão {v.label}</p>
-                  <div aria-hidden="true" className="overflow-hidden rounded-sm border border-border bg-white" style={{ width: `${DIM[kind].w * SCALE[kind]}mm`, height: `${DIM[kind].h * SCALE[kind]}mm` }}>
+                  <div aria-hidden="true" className="self-center overflow-hidden rounded-sm border border-border bg-white" style={{ width: `${DIM[kind].w * SCALE[kind]}mm`, height: `${DIM[kind].h * SCALE[kind]}mm` }}>
                     <div style={{ transform: `scale(${SCALE[kind]})`, transformOrigin: "top left" }}>
                       <KitPiece kind={kind} restaurantName={restaurantName} versionLabel={v.label} texts={{ titulo: v.rendered.titulo ?? "", subtitulo: v.rendered.subtitulo ?? "", acao: v.rendered.acao ?? "" }} qrSrc={qrs[v.id] ?? ""} />
                     </div>
@@ -196,7 +196,7 @@ export function KitManager({ initial, restaurantName, qrs, billHolder = false }:
             <Badge tone="neutral">{waiter.status === "rascunho" ? "Rascunho" : "Aprovado"}</Badge>
           </div>
           <p className="text-sm text-ink-muted">Roteiro fixo, só sobre o benefício de 1ª visita (não fala do convite, para não contaminar o grupo de controle).</p>
-          <div aria-hidden="true" className="overflow-hidden rounded-sm border border-border" style={{ width: `${105 * 0.5}mm`, height: `${148.5 * 0.5}mm` }}>
+          <div aria-hidden="true" className="self-center overflow-hidden rounded-sm border border-border" style={{ width: `${105 * 0.5}mm`, height: `${148.5 * 0.5}mm` }}>
             <div style={{ transform: "scale(0.5)", transformOrigin: "top left" }}>
               <WaiterCard restaurantName={restaurantName} frase={waiter.variants[0]?.rendered.frase ?? ""} />
             </div>
@@ -226,7 +226,7 @@ export function KitManager({ initial, restaurantName, qrs, billHolder = false }:
           </div>
           <p className="text-sm text-ink-muted">Vai junto da conta: lembra o check-in na hora de pagar. Texto fixo, sem IA; fala do convite só como possibilidade, porque quem não recebe convite também vê esta peça.</p>
           {bill.variants[0] && qrs[bill.variants[0].id] && (
-            <div aria-hidden="true" className="overflow-hidden rounded-sm border border-border" style={{ width: `${210 * 0.4}mm`, height: `${99 * 0.4}mm` }}>
+            <div aria-hidden="true" className="self-center overflow-hidden rounded-sm border border-border" style={{ width: `${210 * 0.4}mm`, height: `${99 * 0.4}mm` }}>
               <div style={{ transform: "scale(0.4)", transformOrigin: "top left" }}>
                 <BillHolder
                   restaurantName={restaurantName}

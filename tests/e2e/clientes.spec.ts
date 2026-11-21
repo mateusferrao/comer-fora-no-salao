@@ -64,6 +64,8 @@ test("celular: o cabeçalho do Portal fica visível depois de rolar", async ({ p
   await page.goto("/parceiro/salao");
   await expect(page.getByText(/Preparando o restaurante de exemplo/)).toBeHidden({ timeout: 60_000 });
   await page.goto("/parceiro/salao/clientes?segmento=sumiu");
+  // A lista chega depois do esqueleto (loading.tsx): rola só com a tela real.
+  await expect(page.getByRole("region", { name: "Lista de clientes (rolável)" })).toBeVisible();
   const menu = page.getByRole("button", { name: "Abrir menu" });
   await page.mouse.wheel(0, 2000);
   await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThan(500);

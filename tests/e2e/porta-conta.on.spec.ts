@@ -14,6 +14,8 @@ test("porta-conta: adicionar → texto da 1ª visita → imprimir 3 por folha �
   await page.goto("/parceiro/salao");
   await expect(page.getByText(/Preparando o restaurante de exemplo/)).toBeHidden({ timeout: 60_000 });
   await page.goto("/parceiro/salao/kit");
+  // Espera a tela real (depois do esqueleto do loading.tsx) antes de decidir se precisa adicionar.
+  await expect(page.getByRole("heading", { name: "Kit de divulgação", level: 1 })).toBeVisible();
   const add = page.getByRole("button", { name: "Adicionar porta-conta" });
   if (await add.isVisible()) await add.click();
   const section = page.getByRole("region", { name: "Porta-conta (⅓ de A4)" });

@@ -2,7 +2,6 @@
 
 import { useCallback, useEffect, useId, useLayoutEffect, useRef, useState, type KeyboardEvent } from "react";
 import { cn } from "../cn";
-import { BottomSheet } from "./BottomSheet";
 
 export type SelectOption = { value: string; label: string; hint?: string; disabled?: boolean };
 
@@ -22,14 +21,14 @@ type Props = {
   placeholder?: string;
 };
 
-const MOBILE = "(max-width: 639px)";
 const SIZE = { sm: "min-h-9 text-sm", md: "min-h-11 text-sm", lg: "min-h-12 text-base" };
 
 /**
  * Seletor do design system (ajuste de 21/11, no lugar do `<select>` nativo): gatilho com a cara dos campos e lista com
- * ✓ e descrição em 2ª linha. No computador abre como lista suspensa (posição fixa: não é cortada por tabelas
- * roláveis); no celular, no `BottomSheet` do app. Padrão ARIA listbox: setas, Home/End, Enter/Espaço, Esc, Tab e busca
- * por letra; o nome acessível do gatilho é "rótulo + valor".
+ * ✓ e descrição em 2ª linha. Abre como lista suspensa a partir do próprio botão, no computador e no celular (pedido do
+ * candidato: nada de painel inferior), em posição fixa (não é cortada por tabelas roláveis) e virando para cima quando
+ * falta espaço. Padrão ARIA listbox: setas, Home/End, Enter/Espaço, Esc, Tab e busca por letra; o nome acessível do
+ * gatilho é "rótulo + valor".
  */
 export function Select({ label, hideLabel, value, options, onChange, disabled, size = "md", className, labelClassName, triggerClassName, placeholder = "Escolha" }: Props) {
   const id = useId();
@@ -40,7 +39,6 @@ export function Select({ label, hideLabel, value, options, onChange, disabled, s
   const trigger = useRef<HTMLButtonElement>(null);
   const list = useRef<HTMLUListElement>(null);
   const [open, setOpen] = useState(false);
-  const [sheet, setSheet] = useState(false);
   const [active, setActive] = useState(-1);
   const [pos, setPos] = useState<{ left: number; width: number; top?: number; bottom?: number; maxH: number } | null>(null);
   const typed = useRef({ text: "", at: 0 });
@@ -66,10 +64,8 @@ export function Select({ label, hideLabel, value, options, onChange, disabled, s
   }, []);
   const openList = () => {
     if (disabled) return;
-    const mobile = window.matchMedia(MOBILE).matches;
-    setSheet(mobile);
     setActive(selectedIndex >= 0 ? selectedIndex : enabledFrom(0, 1));
-    if (!mobile) place();
+    place();
     setOpen(true);
   };
   const close = (focusTrigger = true) => {
@@ -85,10 +81,10 @@ export function Select({ label, hideLabel, value, options, onChange, disabled, s
 
   // Lista aberta: foco nela; clique fora fecha; rolagem e redimensionamento reposicionam.
   useLayoutEffect(() => {
-    if (open && !sheet) list.current?.focus();
-  }, [open, sheet]);
+    if (open) list.current?.focus();
+  }, [open]);
   useEffect(() => {
-    if (!open || sheet) return;
+    if (!open) return;
     const onDown = (e: PointerEvent) => {
       const t = e.target as Node;
       if (!list.current?.contains(t) && !trigger.current?.contains(t)) setOpen(false);
@@ -105,7 +101,7 @@ export function Select({ label, hideLabel, value, options, onChange, disabled, s
       window.removeEventListener("scroll", onScroll, true);
       window.removeEventListener("resize", onResize);
     };
-  }, [open, sheet, place]);
+  }, [open, place]);
   useEffect(() => {
     if (open && active >= 0) document.getElementById(optId(active))?.scrollIntoView({ block: "nearest" });
     // eslint-disable-next-line react-hooks/exhaustive-deps -- optId depende só do id estável
@@ -158,11 +154,11 @@ export function Select({ label, hideLabel, value, options, onChange, disabled, s
       id={listId}
       role="listbox"
       aria-labelledby={labelId}
-      tabIndex={sheet ? 0 : -1}
+      tabIndex={-1}
       aria-activedescendant={active >= 0 ? optId(active) : undefined}
       onKeyDown={onListKey}
-      className={cn("flex flex-col overflow-y-auto outline-none", sheet ? "gap-1" : "py-1")}
-      style={!sheet && pos ? { maxHeight: pos.maxH } : undefined}
+      className="flex flex-col overflow-y-auto overscroll-contain py-1 outline-none"
+      style={pos ? { maxHeight: pos.maxH } : undefined}
     >
       {options.map((o, i) => {
         const isSel = o.value === value;
@@ -178,7 +174,8 @@ export function Select({ label, hideLabel, value, options, onChange, disabled, s
             onClick={() => choose(i)}
             className={cn(
               "flex cursor-pointer items-start gap-2 px-3 text-left text-ink",
-              sheet ? "min-h-12 rounded-md py-3 text-base" : "min-h-10 py-2 text-sm",
+              // Alvo de toque ≥ 44 px no celular; mais compacto no computador.
+              "min-h-11 py-2.5 text-base sm:min-h-10 sm:py-2 sm:text-sm",
               i === active && "bg-surface-muted",
               o.disabled && "cursor-not-allowed text-ink-muted",
             )}
@@ -224,18 +221,13 @@ export function Select({ label, hideLabel, value, options, onChange, disabled, s
           <path d="m6 9 6 6 6-6" />
         </svg>
       </button>
-      {open && !sheet && pos && (
+      {open && pos && (
         <div
           className="fixed z-[70] overflow-hidden rounded-sm border border-border bg-white shadow-high"
           style={{ left: pos.left, minWidth: pos.width, maxWidth: `min(28rem, calc(100vw - ${pos.left}px - 8px))`, top: pos.top, bottom: pos.bottom }}
         >
           {listbox}
         </div>
-      )}
-      {sheet && (
-        <BottomSheet open={open} onClose={() => close()} title={label}>
-          {listbox}
-        </BottomSheet>
       )}
     </div>
   );

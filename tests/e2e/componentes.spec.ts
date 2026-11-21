@@ -207,15 +207,21 @@ test.describe("Select", () => {
     await expect(sec.getByTestId("select-valor")).toHaveText("Escolhido: panna");
   });
 
-  test("celular: abre no BottomSheet com o rótulo de título; escolher fecha", async ({ page }) => {
+  test("celular: abre como lista presa ao botão (sem painel inferior); escolher fecha", async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto(URL);
     const sec = page.getByTestId("demo-select");
-    await sec.getByRole("button", { name: /^Oferta / }).click();
-    const sheet = page.getByRole("dialog", { name: "Oferta" });
-    await expect(sheet).toBeVisible();
-    await sheet.getByRole("option", { name: /Tiramisù/ }).click();
-    await expect(sheet).toBeHidden();
+    const trigger = sec.getByRole("button", { name: /^Oferta / });
+    await trigger.click();
+    await expect(page.getByRole("dialog")).toHaveCount(0);
+    const box = sec.getByRole("listbox", { name: "Oferta" });
+    await expect(box).toBeVisible();
+    // A lista nasce colada ao botão (logo abaixo ou logo acima dele).
+    const t = (await trigger.boundingBox())!;
+    const b = (await box.boundingBox())!;
+    expect(Math.min(Math.abs(b.y - (t.y + t.height)), Math.abs(t.y - (b.y + b.height)))).toBeLessThan(16);
+    await sec.getByRole("option", { name: /Tiramisù/ }).click();
+    await expect(box).toBeHidden();
     await expect(sec.getByTestId("select-valor")).toHaveText("Escolhido: tiramisu");
   });
 });

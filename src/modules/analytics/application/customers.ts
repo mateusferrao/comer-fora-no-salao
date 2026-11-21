@@ -101,7 +101,10 @@ export function toReactivationCustomers(rows: readonly CustomerRow[]): Reactivat
 }
 
 export async function getSegments(ex: Executor, restaurantId: string, now: Date, segment: Segment = "sumiu", query: ListQuery = DEFAULT_QUERY): Promise<SegmentsView> {
-  const all = await loadCustomerRows(ex, restaurantId, now, { contact: true });
+  // Com busca, o contato de todos é decifrado para filtrar por telefone/e-mail; sem busca, só os 20 da página (ajuste
+  // de 21/11: menos trabalho por visita).
+  const searching = query.q.trim().length > 0;
+  const all = await loadCustomerRows(ex, restaurantId, now, { contact: searching });
   const counts = Object.fromEntries(SEGMENTS.map((s) => [s, { count: 0, optIn: 0 }])) as SegmentsView["counts"];
   for (const c of all) for (const s of c.segments) {
     counts[s].count++;
@@ -111,5 +114,21 @@ export async function getSegments(ex: Executor, restaurantId: string, now: Date,
     all.filter((c) => c.segments.includes(segment)),
     query,
   );
-  return { counts, list: r.items, segment, query: { ...query, page: r.page }, total: r.total, pages: r.pages };
+  const list = searching ? r.items : await withContact(ex, r.items);
+  return { counts, list, segment, query: { ...query, page: r.page }, total: r.total, pages: r.pages };
+}
+
+/** Decifra o contato só das linhas pedidas (a página da lista). */
+async function withContact(ex: Executor, rows: CustomerRow[]): Promise<CustomerRow[]> {
+  if (!rows.length) return rows;
+  const res = (await ex.execute(sql`
+    select customer_id, name, phone_last4, phone_enc, email_enc from customer_contacts
+    where customer_id in (${sql.join(rows.map((r) => sql`${r.id}::uuid`), sql`, `)})`)) as unknown as { rows: Row[] };
+  const byId = new Map(res.rows.map((r) => [String(r.customer_id), r]));
+  return rows.map((c) => {
+    const r = byId.get(c.id);
+    if (!r) return c;
+    const k = contactOf({ name: r.name == null ? null : String(r.name), phoneEnc: r.phone_enc as string | null, phoneLast4: r.phone_last4 as string | null, emailEnc: r.email_enc as string | null });
+    return { ...c, displayName: k.name, phone: k.phone, email: k.email };
+  });
 }
