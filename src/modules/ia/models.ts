@@ -16,4 +16,6 @@ export const MODELS = {
   pacote: [GEMINI_38_FLASH, GPT_6_LUNA],
   kit: [GEMINI_38_FLASH, GPT_6_LUNA],
   revisor: [DEEPSEEK_V41_FLASH],
+  /** S8: provisório até a T4 (D266) — mesmo par da T3. */
+  copiloto: [GEMINI_38_FLASH, GPT_6_LUNA],
 } satisfies Record<string, ModelRef[]>;
