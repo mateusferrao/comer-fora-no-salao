@@ -1,7 +1,7 @@
 "use client";
 
 import { usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 export const PROTOTYPE_BAR_TEXT = "Protótipo de case · não é produto oficial do iFood";
 
@@ -18,12 +18,27 @@ export function PrototypeBar() {
     // eslint-disable-next-line react-hooks/set-state-in-effect -- só no navegador dá para saber se está num iframe
     setEmbedded(window.self !== window.top);
   }, []);
+  // Altura real da barra (1 ou 2 linhas) em `--proto-h`: o cabeçalho do Portal gruda logo abaixo dela (ajuste de 21/11).
+  const bar = useRef<HTMLElement>(null);
+  useEffect(() => {
+    const el = bar.current;
+    const root = document.documentElement;
+    if (!el) {
+      root.style.setProperty("--proto-h", "0px");
+      return;
+    }
+    const set = () => root.style.setProperty("--proto-h", `${el.offsetHeight}px`);
+    set();
+    const ro = new ResizeObserver(set);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [embedded]);
   if (embedded) return null;
   const showHow = !path.startsWith("/bastidores/como-funciona");
   // "Pular para o conteúdo" vem antes dos links da barra (1º foco), nas telas com o PortalShell (#conteudo).
   const skip = path.startsWith("/parceiro/salao") || path.startsWith("/bastidores/componentes");
   return (
-    <aside aria-label="Aviso de protótipo" className="sticky top-0 z-50 bg-proto-bg px-3 py-0.5 text-center text-xs leading-4 text-proto-fg">
+    <aside ref={bar} aria-label="Aviso de protótipo" className="sticky top-0 z-50 bg-proto-bg px-3 py-0.5 text-center text-xs leading-4 text-proto-fg">
       {skip && (
         <a
           href="#conteudo"

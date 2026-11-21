@@ -53,3 +53,17 @@ describe("fatos declarados com unidade (revisão da S2)", () => {
     expect(formatFact("ticket_x", 7)).toBe("7");
   });
 });
+
+describe("unidade repetida depois do fato (ajuste de 21/11: '160 convites convites')", () => {
+  const ctx = { facts: { convites_faixa_B: 160, checkins_faixa_A: 305, uso_faixa_A_pct: 18 } };
+  it("tira a unidade repetida, no singular ou no plural, sem mexer no resto", () => {
+    expect(renderReferences("teve 9% de uso em {fato:convites_faixa_B} convites: vale testar", ctx)).toBe("teve 9% de uso em 160 convites: vale testar");
+    expect(renderReferences("{fato:checkins_faixa_A} check-ins em 30 dias", ctx)).toBe("305 check-ins em 30 dias");
+    expect(renderReferences("{fato:convites_faixa_B} convite", ctx)).toBe("160 convites");
+  });
+  it("palavra diferente depois do fato fica; porcentagem não muda", () => {
+    expect(renderReferences("{fato:convites_faixa_B} enviados", ctx)).toBe("160 convites enviados");
+    expect(renderReferences("{fato:uso_faixa_A_pct} de uso", ctx)).toBe("18% de uso");
+    expect(renderReferences("{fato:uso_faixa_A_pct}%", ctx)).toBe("18%");
+  });
+});

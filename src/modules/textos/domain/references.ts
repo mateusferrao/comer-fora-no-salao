@@ -74,13 +74,26 @@ function resolve(r: Ref, ctx: RefContext): string | undefined {
   }
 }
 
-/** Troca as referências pelos textos do código; `{fato:x_pct}%` (convenção antiga) não duplica o "%". */
+const MARK = "\u0000";
+const sameUnit = (a: string, b: string) => {
+  const n = (w: string) => w.toLocaleLowerCase("pt-BR").replace(/s$/, "");
+  return /\p{L}/u.test(a) && n(a) === n(b);
+};
+
+/**
+ * Troca as referências pelos textos do código; `{fato:x_pct}%` (convenção antiga) não duplica o "%". O fato já traz a
+ * unidade ("160 convites"): se o texto repete a unidade logo depois ("{fato:x} convites"), a repetição sai (ajuste de
+ * 21/11: "160 convites convites" no plano).
+ */
 export function renderReferences(text: string, ctx: RefContext): string {
   return text
     .replace(REF_RE, (whole, k1: string | undefined, key: string | undefined, k2: string | undefined) => {
       const r: Ref = k2 ? { kind: k2 as RefKind, key: "" } : { kind: k1 as RefKind, key: key! };
-      return resolve(r, ctx) ?? "";
+      const v = resolve(r, ctx) ?? "";
+      return r.kind === "fato" && v ? `${v}${MARK}` : v;
     })
+    .replace(/([\p{L}-]+)\u0000(\s+)([\p{L}-]+)/gu, (all, unit: string, sp: string, next: string) => (sameUnit(unit, next) ? unit : `${unit}${sp}${next}`))
+    .replace(/\u0000/g, "")
     .replace(/%%/g, "%");
 }
 

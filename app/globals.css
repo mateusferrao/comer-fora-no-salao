@@ -3,6 +3,13 @@
 
 html {
   -webkit-text-size-adjust: 100%;
+  /* Foco e âncoras não ficam sob a barra de protótipo nem sob o cabeçalho fixo do Portal (WCAG 2.4.11 — ajuste de 21/11). */
+  scroll-padding-top: calc(var(--proto-h, 24px) + 8px);
+}
+@media (max-width: 1023px) {
+  html {
+    scroll-padding-top: calc(var(--proto-h, 24px) + 68px);
+  }
 }
 
 body {
@@ -35,5 +42,18 @@ html:has(dialog[open]) {
 @media print {
   [data-testid="prototype-bar"] {
     display: none !important;
+  }
+}
+
+/* Folha de impressão encaixada na tela (FitSheet): no papel, tamanho real. */
+@media print {
+  [data-fit-sheet] {
+    width: auto !important;
+    height: auto !important;
+    max-width: none !important;
+    overflow: visible !important;
+  }
+  [data-fit-sheet] > div {
+    transform: none !important;
   }
 }

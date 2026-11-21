@@ -23,7 +23,7 @@ export function PortalShell({ nav, children, top, footer, mobileTitle }: Props) 
   return (
     <div className="min-h-dvh bg-surface lg:grid lg:grid-cols-[256px_1fr]">
       {/* "Pular para o conteúdo" fica na barra de protótipo, antes dos links dela (1º foco da página). */}
-      <aside className="hidden border-r border-divider lg:sticky lg:top-6 lg:flex lg:h-[calc(100dvh-1.5rem)] lg:flex-col">
+      <aside className="hidden border-r border-divider lg:sticky lg:top-[var(--proto-h,24px)] lg:flex lg:h-[calc(100dvh-var(--proto-h,24px))] lg:flex-col">
         <div className="px-6 py-5">
           <Logo height={28} />
         </div>
@@ -34,7 +34,8 @@ export function PortalShell({ nav, children, top, footer, mobileTitle }: Props) 
         {footer && <div className="border-t border-divider px-4 py-3">{footer}</div>}
       </aside>
 
-      <header className="flex items-center gap-3 border-b border-divider px-2 py-2 lg:hidden">
+      {/* Ajuste de 21/11: o cabeçalho acompanha a rolagem no celular, logo abaixo da barra de protótipo. */}
+      <header className="sticky top-[var(--proto-h,24px)] z-40 flex items-center gap-3 border-b border-divider bg-surface px-2 py-2 lg:hidden">
         <button
           type="button"
           aria-label="Abrir menu"
