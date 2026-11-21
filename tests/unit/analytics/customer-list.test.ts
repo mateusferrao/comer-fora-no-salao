@@ -21,6 +21,8 @@ describe("lista de clientes: busca, ordenação e páginas (ajuste de 21/11)", (
     expect(listPage(withContact, { ...DEFAULT_QUERY, q: "98765" }).items.map((r) => r.displayName)).toEqual(["Ana Souza"]);
     expect(listPage(withContact, { ...DEFAULT_QUERY, q: "(21) 9111" }).items.map((r) => r.displayName)).toEqual(["Bruno Costa"]);
     expect(listPage(withContact, { ...DEFAULT_QUERY, q: "@outro" }).items.map((r) => r.displayName)).toEqual(["Bruno Costa"]);
+    // E-mail com dígitos não casa pelo telefone (bug do CI: "…7fl13w@…" achava quem tinha "713" no número).
+    expect(listPage(withContact, { ...DEFAULT_QUERY, q: "x.987fl65@exemplo.invalid" }).total).toBe(0);
   });
   it("busca sem acento nem caixa, pelo nome mostrado", () => {
     expect(listPage(rows, { ...DEFAULT_QUERY, q: "julia" }).items.map((r) => r.displayName)).toEqual(["Júlia M."]);

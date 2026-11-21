@@ -42,7 +42,8 @@ function compare(a: Listable, b: Listable, key: SortKey): number {
 /** Filtra, ordena (desempate pelo nome) e corta a página pedida (fora do intervalo → a mais próxima). */
 export function listPage<T extends Listable>(rows: readonly T[], query: ListQuery, size = PAGE_SIZE): { items: T[]; total: number; page: number; pages: number } {
   const q = normalize(query.q);
-  const qDigits = q.replace(/\D/g, "");
+  // Telefone só quando a busca parece telefone (sem letras): "ana.7fl13w@…" não pode casar pelos dígitos "713".
+  const qDigits = /\p{L}/u.test(q) ? "" : q.replace(/\D/g, "");
   const found = q
     ? rows.filter((r) => normalize(`${r.displayName} ${r.email ?? ""}`).includes(q) || (qDigits.length >= 3 && (r.phone ?? "").replace(/\D/g, "").includes(qDigits)))
     : [...rows];
