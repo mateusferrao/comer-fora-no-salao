@@ -1260,3 +1260,32 @@ Detalhes, revisão independente (2 subagentes, 2 rodadas) e itens [C] em [docs/f
 - Consentimento do cliente passa a dizer "veja meu nome, e-mail e telefone"; landing e "Como funciona" atualizados.
 - Continua valendo: contato nunca vai para log, prompt, MCP nem rastro (D161). [C] Só a tela de Clientes decifra o contato; insights do plano e reativação recebem as linhas sem contato.
 - Alternativas: manter máscara (decisão anterior); mostrar só ao dono e esconder do garçom (recomendada, não escolhida); "—" no exemplo. Trade-off: utilidade para o dono × exposição de PII (risco LGPD aceito pelo candidato, com aceite explícito do cliente e "Apagar meus dados").
+
+**D238 — App do cliente dentro de uma moldura de iPhone** (21/11, candidato: "colocar dentro de uma moldura de celular, pra simular um iphone mesmo e tornar mais imersivo"; escolheu "App do cliente + prévias") ✅
+- A partir de 768 px, o app do cliente aparece numa moldura de iPhone centralizada (corpo escuro, ilha dinâmica, barra de status, tela de 390 px que rola por dentro). No celular de verdade, o app continua em tela cheia. As prévias do passo 5 da ativação usam a mesma moldura.
+- [C] A tela da moldura vira o bloco de contenção dos elementos fixos (o botão do rodapé fica dentro do "celular").
+- Alternativas: só o app; só as prévias; manter a coluna. Trade-off: mais imersivo para quem avalia no computador × um pouco menos de área útil.
+
+**D239 — Barras de rolagem horizontais invisíveis** (21/11, candidato) ✅
+- Utilitário `no-scrollbar` em todas as rolagens horizontais (abas, tabelas, carrossel, gráficos): rola com o dedo, trackpad ou teclado, sem barra aparente.
+
+**D240 — "Quanto fica vazio?" com 3 níveis e meta de mesas explicada** (21/11, candidato: "não faz sentido ter uma opção 'mais ou menos'?" e "não entendi 'mesas a mais por semana'"; escolheu "3 níveis" e "Meta com exemplo") ✅
+- Muito / Mais ou menos / Pouco (`medio` no banco, migração 0009). Prioridade entre horários segue a ordem.
+- O campo vira "Quantas mesas a mais você quer por semana nesse horário?", com a dica "Com isso calculamos quantos convites mandar: 4 mesas ≈ 16 convites por semana, depois ajustado pelo uso real."
+
+**D241 — "Confira" vira ícone de atenção dentro do campo** (21/11, candidato; forma [C]) ✅
+- Na revisão do cardápio, o item a conferir ganha contorno e um ícone de atenção dentro do campo do nome (com explicação para leitor de tela e ao passar o mouse). A linha não muda de altura.
+
+**D242 — Confirmações no design system** (21/11, candidato: "alterar todas confirmações nativas por um modal centralizado personalizado") ✅
+- `confirmDialog()` abre um modal centralizado (título, uma frase do que acontece, "Cancelar" e o verbo da ação), no lugar dos 13 `window.confirm`. Esc, clique fora e "Cancelar" não fazem nada.
+
+**D243 — Copy de como usar o convite** (21/11, candidato: "não entendi 'Quando voltar, faça check-in nesse horário'") ✅
+- App: "Vale só nos dias e horários acima. Chegando ao restaurante, faça check-in aqui no app e o código do benefício aparece para mostrar ao garçom." E-mail e agenda seguem a mesma ideia.
+
+**D244 — Validação do texto na hora, com mensagem que diz o que fazer** (21/11, candidato: "validação deve ocorrer na hora com mensagem amigável… e revisar todas as mensagens de erro") ✅
+- Uma função traduz cada motivo do guardrail em instrução ("Está com 171 caracteres; o limite é 160. Tire 11.", "Escreva o texto do convite ou volte ao texto sugerido.", "Tire e-mail, telefone ou CPF…"). Usada no campo, enquanto digita, no pacote da ativação, nas Configurações e no Plano da semana, com contador de caracteres. Texto apagado agora é pego na hora (antes passava e falhava só ao ativar).
+- [C] "Revisar e ativar" leva o foco ao campo com problema; o passo 5 mostra o problema antes do clique; erros do servidor dizem o horário e o motivo; sem rede, "Sem conexão com o servidor".
+
+**D245 — QR identifica a peça e a versão, não a mesa** (21/11, pergunta do candidato; escolheu "Não por agora") ✅
+- Cada QR leva a `/r/<restaurante>?p=<token>` da peça e versão (display A/B, cartaz A/B, garçom, porta-conta). Leituras e check-ins são contados por peça e versão, para o teste A/B. O mesmo display serve a todas as mesas. Explicação adicionada no Kit.
+- Alternativa: QR por mesa (saber de qual mesa veio). Trade-off: dado de mesa × imprimir e controlar um QR por mesa. Fica como evolução.

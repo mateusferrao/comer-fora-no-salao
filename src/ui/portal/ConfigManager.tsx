@@ -1,5 +1,18 @@
 "use client";
 
+import { confirmDialog } from "../components/ConfirmDialog";
+import {
+  inviteIssues,
+  reasonMessage,
+} from "@/src/modules/ia/guardrails/messages";
+import {
+  INTENSITIES,
+  INTENSITY_LABEL,
+  type Intensity,
+} from "@/src/modules/beneficios/domain/slots";
+
+const TABLES_HINT =
+  "Com isso calculamos quantos convites mandar: 4 mesas ≈ 16 convites por semana, depois ajustado pelo uso real.";
 import { Select } from "../components/Select";
 import { useNumberField } from "../components/use-number-field";
 import { useState } from "react";
@@ -30,8 +43,10 @@ const cents = (s: string) => {
 };
 const ERR: Record<string, string> = {
   oferta: "Oferta inválida: confira o item (categoria) e o desconto (até 50%).",
-  texto: "Texto não permitido (dados pessoais, HTML, referência desconhecida ou longo demais).",
-  em_uso: "Este item está numa oferta em vigor. Troque a oferta antes de excluir.",
+  texto: "Escreva o texto (sem e-mail, telefone, HTML) com até 160 caracteres.",
+  rede: "Sem conexão com o servidor. Verifique a internet e tente de novo.",
+  em_uso:
+    "Este item está numa oferta em vigor. Troque a oferta antes de excluir.",
   nome_marca: "O nome do restaurante não pode citar a marca iFood.",
   ultima_faixa: "O restaurante precisa de pelo menos um horário vazio.",
   faixa: "Horário inválido: precisa caber no funcionamento, com fim depois do início.",
@@ -51,9 +66,36 @@ function okWithWarnings(okText: string, w: string[]): string {
 }
 
 async function post(body: unknown) {
-  const r = await fetch("/api/parceiro/configuracoes", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(body) });
-  const j = (await r.json().catch(() => ({}))) as { erro?: string; warnings?: string[] };
-  return { ok: r.ok, erro: j.erro, warnings: j.warnings ?? [] };
+  const r = await fetch("/api/parceiro/configuracoes", {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify(body),
+  }).catch(() => null);
+  if (!r)
+    return { ok: false, erro: "rede", warnings: [], motivos: [] as string[] };
+  const j = (await r.json().catch(() => ({}))) as {
+    erro?: string;
+    warnings?: string[];
+    motivos?: string[];
+  };
+  return {
+    ok: r.ok,
+    erro: j.erro,
+    warnings: j.warnings ?? [],
+    motivos: j.motivos ?? [],
+  };
+}
+
+/** Erro do servidor → o que fazer. Texto: o motivo exato (ajuste de 21/11), não a lista genérica. */
+function errorText(r: { erro?: string; motivos: string[] }): string {
+  if (r.erro === "texto" && r.motivos[0])
+    return r.motivos[0] === "nome"
+      ? "O nome precisa ter pelo menos 2 letras."
+      : reasonMessage(r.motivos[0], { maxLen: 160, label: "o texto" });
+  return (
+    ERR[r.erro ?? "formato"] ??
+    "Não conseguimos salvar agora. Tente de novo em instantes."
+  );
 }
 
 function useSaver() {
@@ -64,7 +106,12 @@ function useSaver() {
     setBusy(key);
     const r = await post(body);
     setBusy(null);
-    setMsg((m) => ({ ...m, [key]: r.ok ? { ok: true, text: okWithWarnings(okText, r.warnings) } : { ok: false, text: ERR[r.erro ?? "formato"] ?? "Não conseguimos salvar." } }));
+    setMsg((m) => ({
+      ...m,
+      [key]: r.ok
+        ? { ok: true, text: okWithWarnings(okText, r.warnings) }
+        : { ok: false, text: errorText(r) },
+    }));
     if (r.ok) router.refresh();
     return r.ok;
   };
@@ -139,8 +186,16 @@ function OfferTab({ title, note, role, value, menu }: { title: string; note: str
 
 function SlotsTab({ v, menu }: { v: SettingsView; menu: Array<{ id: string; name: string; category: MenuCategory; priceCents: number }> }) {
   const { save, busy, Msg } = useSaver();
-  const [nova, setNova] = useState({ days: [] as number[], startMin: 900, endMin: 1080, intensity: "um_pouco" as "muito" | "um_pouco", extraTables: 3 });
-  const novaTables = useNumberField(nova.extraTables, 1, 99, (n) => setNova((x) => ({ ...x, extraTables: n })));
+  const [nova, setNova] = useState({
+    days: [] as number[],
+    startMin: 900,
+    endMin: 1080,
+    intensity: "um_pouco" as Intensity,
+    extraTables: 3,
+  });
+  const novaTables = useNumberField(nova.extraTables, 1, 99, (n) =>
+    setNova((x) => ({ ...x, extraTables: n })),
+  );
   return (
     <div className="flex flex-col gap-6 py-4">
       {v.slots.map((s) => (
@@ -152,9 +207,34 @@ function SlotsTab({ v, menu }: { v: SettingsView; menu: Array<{ id: string; name
         <DaySelector label="Dias do novo horário vazio" value={nova.days} onChange={(days) => setNova({ ...nova, days })} />
         <TimeRange label="Horário do novo horário vazio" start={nova.startMin} end={nova.endMin} onChange={(startMin, endMin) => setNova({ ...nova, startMin, endMin })} />
         <div className="flex flex-wrap items-end gap-3">
-          <Select label="Quanto fica vazio?" className="w-40" value={nova.intensity} options={[{ value: "muito", label: "Muito" }, { value: "um_pouco", label: "Um pouco" }]} onChange={(v) => setNova({ ...nova, intensity: v as "muito" | "um_pouco" })} />
-          <Field className="w-48" label="Mesas a mais por semana" inputMode="numeric" {...novaTables} />
-          <Button variant="outline-portal" loading={busy === "nova"} onClick={() => save("nova", { acao: "faixa_nova", ...nova }, "Horário vazio criado com convite")}>
+          <Select
+            label="Quanto fica vazio?"
+            className="w-40"
+            value={nova.intensity}
+            options={INTENSITIES.map((v) => ({
+              value: v,
+              label: INTENSITY_LABEL[v],
+            }))}
+            onChange={(v) => setNova({ ...nova, intensity: v as Intensity })}
+          />
+          <Field
+            className="w-full max-w-sm"
+            label="Quantas mesas a mais você quer por semana nesse horário?"
+            hint={TABLES_HINT}
+            inputMode="numeric"
+            {...novaTables}
+          />
+          <Button
+            variant="outline-portal"
+            loading={busy === "nova"}
+            onClick={() =>
+              save(
+                "nova",
+                { acao: "faixa_nova", ...nova },
+                "Horário vazio criado com convite",
+              )
+            }
+          >
             Adicionar
           </Button>
         </div>
@@ -173,6 +253,14 @@ function SlotCard({ s, menu, canRemove }: { s: SettingsView["slots"][number]; me
   const slotTables = useNumberField(f.extraTables, 1, 99, (n) => setF((x) => ({ ...x, extraTables: n })));
   const [text, setText] = useState(s.inviteRendered);
   const textChanged = text !== s.inviteRendered;
+  // Ajuste de 21/11: mesma regra do servidor, na hora (o texto aqui já vem sem marcações).
+  const textIssue = textChanged
+    ? inviteIssues(text, {
+        items: Object.fromEntries(menu.map((m) => [m.id, m.name])),
+        slots: {},
+        oferta: "",
+      })
+    : { errors: [] as string[], warnings: [] as string[] };
   return (
     <section aria-label={`Horário vazio ${s.label}`} className="flex flex-col gap-4 rounded-sm border border-border p-4">
       <h2 className="font-semibold text-ink">{s.label}</h2>
@@ -180,13 +268,53 @@ function SlotCard({ s, menu, canRemove }: { s: SettingsView["slots"][number]; me
         <DaySelector label={`Dias de ${s.label}`} value={f.days} onChange={(days) => setF({ ...f, days })} />
         <TimeRange label={`Horário de ${s.label}`} start={f.startMin} end={f.endMin} onChange={(startMin, endMin) => setF({ ...f, startMin, endMin })} />
         <div className="flex flex-wrap items-end gap-3">
-          <Select label="Quanto fica vazio?" className="w-40" value={f.intensity} options={[{ value: "muito", label: "Muito" }, { value: "um_pouco", label: "Um pouco" }]} onChange={(v) => setF({ ...f, intensity: v as "muito" | "um_pouco" })} />
-          <Field className="w-48" label="Mesas a mais por semana" inputMode="numeric" {...slotTables} />
-          <Button variant="outline-portal" loading={busy === "faixa"} onClick={() => save("faixa", { acao: "faixa_editar", slotId: s.id, ...f }, "Horário salvo (convites já emitidos não mudam)")}>
+          <Select
+            label="Quanto fica vazio?"
+            className="w-40"
+            value={f.intensity}
+            options={INTENSITIES.map((v) => ({
+              value: v,
+              label: INTENSITY_LABEL[v],
+            }))}
+            onChange={(v) => setF({ ...f, intensity: v as Intensity })}
+          />
+          <Field
+            className="w-full max-w-sm"
+            label="Quantas mesas a mais você quer por semana nesse horário?"
+            hint={TABLES_HINT}
+            inputMode="numeric"
+            {...slotTables}
+          />
+          <Button
+            variant="outline-portal"
+            loading={busy === "faixa"}
+            onClick={() =>
+              save(
+                "faixa",
+                { acao: "faixa_editar", slotId: s.id, ...f },
+                "Horário salvo (convites já emitidos não mudam)",
+              )
+            }
+          >
             Salvar horário
           </Button>
           {canRemove && (
-            <button type="button" className="min-h-11 text-sm font-semibold text-red-text underline" onClick={() => window.confirm("Desativar este horário vazio? Ele para de receber convites (os já emitidos continuam valendo).") && save("faixa", { acao: "faixa_desativar", slotId: s.id }, "Horário desativado")}>
+            <button
+              type="button"
+              className="min-h-11 text-sm font-semibold text-red-text underline"
+              onClick={async () =>
+                (await confirmDialog({
+                  title: "Desativar este horário vazio?",
+                  body: "Ele para de receber convites. Os já emitidos continuam valendo.",
+                  confirmLabel: "Desativar",
+                })) &&
+                save(
+                  "faixa",
+                  { acao: "faixa_desativar", slotId: s.id },
+                  "Horário desativado",
+                )
+              }
+            >
               Desativar
             </button>
           )}
@@ -199,13 +327,46 @@ function SlotCard({ s, menu, canRemove }: { s: SettingsView["slots"][number]; me
         <Field className="w-48" label="Teto de convites por semana" inputMode="numeric" {...capField} />
         <label className="flex flex-col gap-1.5 text-sm font-medium text-ink">
           Texto do convite (2º card)
-          <textarea className="min-h-16 rounded-md border border-border p-3 text-base" maxLength={160} value={text} onChange={(e) => setText(e.target.value)} />
+          <textarea
+            className={`min-h-16 rounded-md border p-3 text-base ${textIssue.errors.length ? "border-red-text" : "border-border"}`}
+            maxLength={160}
+            value={text}
+            onChange={(e) => setText(e.target.value)}
+            aria-invalid={textIssue.errors.length > 0 || undefined}
+            aria-describedby={`aviso-convite-${s.id}`}
+          />
         </label>
+        <div
+          id={`aviso-convite-${s.id}`}
+          className="flex flex-col gap-1 text-xs text-ink-muted"
+        >
+          <p>{text.length}/160 caracteres</p>
+          {textIssue.errors.map((m) => (
+            <p key={m} className="font-medium text-red-text">
+              {m}
+            </p>
+          ))}
+          {textIssue.warnings.map((m) => (
+            <p key={m} className="text-ink">
+              Atenção: {m}
+            </p>
+          ))}
+        </div>
         <div className="flex items-center gap-3">
           <Button
             variant="primary-portal"
             loading={busy === "convite"}
-            onClick={() => save("convite", { acao: "oferta", role: "convite", slotId: s.id, offer: o, weeklyCap: cap, inviteText: textChanged ? text : s.inviteText })}
+            disabled={textIssue.errors.length > 0}
+            onClick={() =>
+              save("convite", {
+                acao: "oferta",
+                role: "convite",
+                slotId: s.id,
+                offer: o,
+                weeklyCap: cap,
+                inviteText: textChanged ? text : s.inviteText,
+              })
+            }
           >
             Salvar convite
           </Button>
@@ -222,7 +383,7 @@ function MenuTab({ v }: { v: SettingsView }) {
   const [novo, setNovo] = useState({ name: "", preco: "", category: "prato" as MenuCategory });
   return (
     <div className="flex flex-col gap-4 py-4">
-      <div className="relative overflow-x-auto rounded-sm border border-border">
+      <div className="relative overflow-x-auto no-scrollbar rounded-sm border border-border">
         <table className="w-full min-w-[640px] text-sm">
           <caption className="sr-only">Itens do cardápio</caption>
           <thead className="bg-surface-muted text-left">
@@ -284,9 +445,20 @@ function MenuTab({ v }: { v: SettingsView }) {
                         type="button"
                         className="min-h-11 px-2 text-sm font-semibold text-red-text underline"
                         aria-label={`Excluir ${r.name}`}
-                        onClick={() =>
-                          window.confirm(`Excluir "${r.name}" do cardápio? Códigos e textos antigos continuam valendo.`) &&
-                          void save(`item-${r.id}`, { acao: "item_excluir", itemId: r.id }, "Item excluído").then((ok) => ok && setRows(rows.filter((x) => x.id !== r.id)))
+                        onClick={async () =>
+                          (await confirmDialog({
+                            title: `Excluir "${r.name}" do cardápio?`,
+                            body: "Códigos e textos antigos continuam valendo.",
+                            confirmLabel: "Excluir",
+                          })) &&
+                          void save(
+                            `item-${r.id}`,
+                            { acao: "item_excluir", itemId: r.id },
+                            "Item excluído",
+                          ).then(
+                            (ok) =>
+                              ok && setRows(rows.filter((x) => x.id !== r.id)),
+                          )
                         }
                       >
                         Excluir

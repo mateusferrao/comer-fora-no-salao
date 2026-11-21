@@ -1,0 +1,2 @@
+ALTER TABLE "idle_slots" DROP CONSTRAINT "idle_slots_intensity_check";--> statement-breakpoint
+ALTER TABLE "idle_slots" ADD CONSTRAINT "idle_slots_intensity_check" CHECK ("idle_slots"."intensity" in ('muito', 'medio', 'um_pouco'));

@@ -142,9 +142,21 @@ test("assistente completo com exemplo: salão pré-preenchido → revisão → p
   await expect(panel).toBeHidden();
   await page.getByLabel("Teto de convites por semana").first().fill("10");
   await expect(page.getByText(/até 10 convites\/semana ≈ 3 mesas/)).toBeVisible();
+  // D244: texto apagado → mensagem no campo, na hora; "Revisar e ativar" não sai do passo e leva o foco ao campo.
+  const texto = page.getByRole("textbox", { name: /Texto do convite/ }).first();
+  await texto.fill("");
+  await expect(page.getByText("Escreva o texto do convite ou volte ao texto sugerido.")).toBeVisible();
+  await expect(texto).toHaveAttribute("aria-invalid", "true");
+  await page.getByRole("button", { name: "Revisar e ativar" }).click();
+  await expect(texto).toBeFocused();
+  await axe(page);
+  await page.getByRole("button", { name: "Voltar ao texto sugerido" }).first().click();
+  await expect(page.getByText("Escreva o texto do convite ou volte ao texto sugerido.")).toHaveCount(0);
   await page.getByRole("button", { name: "Revisar e ativar" }).click();
 
   await expect(page.getByRole("heading", { name: "Resumo e ativar" })).toBeVisible();
+  // D238: prévia dentro da moldura de iPhone.
+  await expect(page.locator('[data-moldura="sempre"]')).toBeVisible();
   await expect(page.getByRole("region", { name: /Prévia do convite · / }).first().getByTestId("invite-message")).toBeVisible();
   await axe(page);
   await page.getByRole("button", { name: "Ativar Comer Fora no salão" }).click();

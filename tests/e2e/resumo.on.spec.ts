@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { axe, loginE2E, PROD, S5_ON } from "./helpers";
+import { axe, confirmIfAsked, loginE2E, PROD, S5_ON } from "./helpers";
 
 /**
  * S6.1 com a flag `resumo_email` (passada `flags-on`): Plano › "Ver o e-mail desta semana" → o link "Revisar e
@@ -14,10 +14,17 @@ test("resumo semanal: prévia com link → página de confirmação → aprovar 
   await page.goto("/parceiro/salao");
   await expect(page.getByText(/Preparando o restaurante de exemplo/)).toBeHidden({ timeout: 60_000 });
   await page.goto("/parceiro/salao/plano");
-  if ((await page.getByTestId("plan-status").getAttribute("data-status")) !== "proposto") {
-    page.once("dialog", (d) => void d.accept());
+  if (
+    (await page.getByTestId("plan-status").getAttribute("data-status")) !==
+    "proposto"
+  ) {
     await page.getByRole("button", { name: "Gerar plano da semana" }).click();
-    await expect(page.getByTestId("plan-status")).toHaveAttribute("data-status", "proposto", { timeout: 60_000 });
+    await confirmIfAsked(page);
+    await expect(page.getByTestId("plan-status")).toHaveAttribute(
+      "data-status",
+      "proposto",
+      { timeout: 60_000 },
+    );
   }
   const card = page.getByTestId("resumo-email");
   await expect(card).toContainText("Esta conta não tem e-mail guardado");

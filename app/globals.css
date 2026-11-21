@@ -57,3 +57,12 @@ html:has(dialog[open]) {
     transform: none !important;
   }
 }
+
+/* Rolagem sem barra aparente (ajuste de 21/11): continua rolando com toque, roda do mouse e teclado. */
+@utility no-scrollbar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}

@@ -1,12 +1,17 @@
 "use client";
 
+import { confirmDialog } from "../../components/ConfirmDialog";
+import {
+  INTENSITY_PHRASE,
+  type Intensity,
+} from "@/src/modules/beneficios/domain/slots";
 import { ExplainOfferLink } from "@/src/ui/ia/ExplainOffer";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNumberField } from "../../components/use-number-field";
 import { useRouter } from "next/navigation";
 import { describeOffer, unitCost, type Offer } from "@/src/modules/beneficios/domain/offers";
 import type { PackageView } from "@/src/modules/onboarding/application/package";
-import { guardText } from "@/src/modules/ia/guardrails";
+import { inviteIssues } from "@/src/modules/ia/guardrails/messages";
 import { renderReferences } from "@/src/modules/textos/domain/references";
 import { Badge } from "../../components/Badge";
 import { Button } from "../../components/Button";
@@ -119,9 +124,21 @@ export function Step4Pacote({ explicaIa = false }: { explicaIa?: boolean } = {})
     return () => clearTimeout(t);
   }, [f, state]);
 
-  function regenerate() {
-    const changed = f && v && JSON.stringify(finalPayload(f)) !== JSON.stringify(finalPayload(initialFinal({ ...v, draftFinal: null })));
-    if (changed && !window.confirm("Gerar de novo substitui a proposta e os seus ajustes. Continuar?")) return;
+  async function regenerate() {
+    const changed =
+      f &&
+      v &&
+      JSON.stringify(finalPayload(f)) !==
+        JSON.stringify(finalPayload(initialFinal({ ...v, draftFinal: null })));
+    if (
+      changed &&
+      !(await confirmDialog({
+        title: "Gerar a proposta de novo?",
+        body: "A proposta atual e os seus ajustes são substituídos por uma nova.",
+        confirmLabel: "Gerar de novo",
+      }))
+    )
+      return;
     saved.current = null;
     void generate();
   }
@@ -220,16 +237,32 @@ function PackageEditor(p: {
         const offer = toOffer(st.offer);
         const gain = describeOffer(offer, v.menu, "convite").gain;
         const cost = unitCost(offer, v.menu, margin);
-        const rendered = st.edited ?? renderReferences(st.template.replace(/\{horario\}/g, `{horario:${s.slotId}}`), { ...ctx, oferta: gain });
-        const chosenOption = s.options.find((o) => o.offer.kind === st.offer.kind && o.offer.params.itemId === st.offer.itemId);
-        const warn = st.edited ? guardText(st.edited, { ...ctx, oferta: gain }, { allowed: ["prato", "horario", "oferta"], maxLen: 160, field: "textoConvite", mode: "dono" }) : null;
+        const rendered =
+          st.edited ??
+          renderReferences(
+            st.template.replace(/\{horario\}/g, `{horario:${s.slotId}}`),
+            { ...ctx, oferta: gain },
+          );
+        const chosenOption = s.options.find(
+          (o) =>
+            o.offer.kind === st.offer.kind &&
+            o.offer.params.itemId === st.offer.itemId,
+        );
+        // Ajuste de 21/11: validação na hora, no campo, inclusive o texto apagado (antes só falhava ao ativar).
+        const issues =
+          st.edited !== null
+            ? inviteIssues(st.edited, { ...ctx, oferta: gain })
+            : null;
+        const invalid = !!issues?.errors.length;
         return (
           <section key={s.slotId} aria-labelledby={`faixa-${s.slotId}`} className="flex flex-col gap-3 rounded-sm border border-border p-4">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <h3 id={`faixa-${s.slotId}`} className="font-semibold text-ink">
                 Convite de volta · {s.label}
               </h3>
-              <Badge tone="neutral">{s.intensity === "muito" ? "muito vazio" : "um pouco vazio"}</Badge>
+              <Badge tone="neutral">
+                {INTENSITY_PHRASE[s.intensity as Intensity] ?? s.intensity}
+              </Badge>
             </div>
             <p className="text-base text-ink">
               Oferta: <strong>{gain}</strong>
@@ -251,18 +284,38 @@ function PackageEditor(p: {
             <label className="flex flex-col gap-1.5 text-sm font-medium text-ink">
               Texto do convite (o cliente vê no 2º card)
               <textarea
-                className="min-h-20 rounded-md border border-border p-3 text-base"
+                id={`texto-${s.slotId}`}
+                className={`min-h-20 rounded-md border p-3 text-base ${invalid ? "border-red-text" : "border-border"}`}
                 maxLength={160}
                 value={rendered}
                 onChange={(e) => setSlot(s.slotId, { edited: e.target.value })}
+                aria-invalid={invalid || undefined}
                 aria-describedby={`aviso-${s.slotId}`}
               />
             </label>
-            <div id={`aviso-${s.slotId}`} className="text-xs text-ink-muted">
-              {warn && warn.warnings.length > 0 && <p className="font-medium text-red-text">Atenção: o texto cita número, preço ou promessa. Quem decide a oferta é a regra acima; o garçom valida só ela.</p>}
-              {warn && !warn.ok && <p className="font-medium text-red-text">Este texto não pode ser usado (dados pessoais, HTML ou muito longo).</p>}
+            <div
+              id={`aviso-${s.slotId}`}
+              className="flex flex-col gap-1 text-xs text-ink-muted"
+            >
+              <p
+                className={
+                  rendered.length > 150 ? "font-medium text-ink" : undefined
+                }
+              >
+                {rendered.length}/160 caracteres
+              </p>
+              {issues?.errors.map((m) => (
+                <p key={m} className="font-medium text-red-text">
+                  {m}
+                </p>
+              ))}
+              {issues?.warnings.map((m) => (
+                <p key={m} className="text-ink">
+                  Atenção: {m}
+                </p>
+              ))}
               {st.edited !== null && (
-                <button type="button" className="min-h-11 font-semibold text-red-text underline" onClick={() => setSlot(s.slotId, { edited: null })}>
+                <button type="button" className="min-h-11 self-start font-semibold text-red-text underline" onClick={() => setSlot(s.slotId, { edited: null })}>
                   Voltar ao texto sugerido
                 </button>
               )}
@@ -327,7 +380,27 @@ function PackageEditor(p: {
         <Button variant="outline-portal" onClick={p.onRegenerate}>
           Gerar de novo
         </Button>
-        <Button variant="primary-portal" loading={p.busy} onClick={p.onNext}>
+        <Button
+          variant="primary-portal"
+          loading={p.busy}
+          onClick={() => {
+            // Texto inválido não segue para o passo 5: foco no campo, com o motivo já escrito embaixo dele.
+            const bad = f.slots.find(
+              (st) =>
+                st.edited !== null &&
+                inviteIssues(st.edited, {
+                  ...ctx,
+                  oferta: describeOffer(toOffer(st.offer), v.menu, "convite")
+                    .gain,
+                }).errors.length,
+            );
+            if (bad) {
+              document.getElementById(`texto-${bad.slotId}`)?.focus();
+              return;
+            }
+            p.onNext();
+          }}
+        >
           Revisar e ativar
         </Button>
       </div>

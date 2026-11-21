@@ -82,7 +82,7 @@ export function Step3Revisao({ extractionId, extraction, initial, manual = false
       )}
       {rows && (
         <>
-          <div className="relative overflow-x-auto rounded-sm border border-border">
+          <div className="relative overflow-x-auto no-scrollbar rounded-sm border border-border">
             <table className="w-full min-w-[560px] text-sm">
               <caption className="sr-only">Itens do cardápio</caption>
               <thead className="bg-surface-muted text-left">
@@ -108,8 +108,47 @@ export function Step3Revisao({ extractionId, extraction, initial, manual = false
                       />
                     </td>
                     <td className="px-2 py-1">
-                      <input aria-label={`Nome do item ${i + 1}`} className="min-h-11 w-full rounded-sm border border-border px-2" value={r.nome} maxLength={80} onChange={(e) => upd(i, { nome: e.target.value })} />
-                      {r.confira && <span className="text-xs font-medium text-red-text">confira</span>}
+                      {/* Ajuste de 21/11: "confira" vira um ícone dentro do campo (não empurra a linha). */}
+                      <div className="relative">
+                        <input
+                          aria-label={`Nome do item ${i + 1}`}
+                          aria-describedby={
+                            r.confira ? `confira-${i}` : undefined
+                          }
+                          className={
+                            r.confira
+                              ? "min-h-11 w-full rounded-sm border border-red-text px-2 pr-9"
+                              : "min-h-11 w-full rounded-sm border border-border px-2"
+                          }
+                          value={r.nome}
+                          maxLength={80}
+                          onChange={(e) => upd(i, { nome: e.target.value })}
+                        />
+                        {r.confira && (
+                          <span
+                            className="pointer-events-none absolute inset-y-0 right-2 flex items-center"
+                            title="Confira este item: a leitura pode ter errado o nome ou o preço."
+                          >
+                            <svg
+                              aria-hidden="true"
+                              viewBox="0 0 24 24"
+                              className="size-5 text-red-text"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="2"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                            >
+                              <path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z" />
+                              <path d="M12 9v4M12 17h.01" />
+                            </svg>
+                            <span id={`confira-${i}`} className="sr-only">
+                              Confira este item: a leitura pode ter errado o
+                              nome ou o preço.
+                            </span>
+                          </span>
+                        )}
+                      </div>
                     </td>
                     <td className="px-2 py-1">
                       <input aria-label={`Preço de ${r.nome || `item ${i + 1}`}`} inputMode="decimal" className="min-h-11 w-28 rounded-sm border border-border px-2" value={r.preco} onChange={(e) => upd(i, { preco: e.target.value })} />

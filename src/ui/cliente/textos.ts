@@ -14,7 +14,8 @@ export const TXT = {
   // D237: o restaurante vê o contato completo; o consentimento diz isso.
   consentimento: (restaurante: string) => `Aceito que ${restaurante} veja meu nome, e-mail e telefone e registre minhas visitas.`,
   primeiraVisitaUsada: "O benefício de 1ª visita vale só no primeiro check-in.",
-  comoUsarConvite: "Quando voltar, faça check-in nesse horário para receber o código.",
+  comoUsarConvite:
+    "Vale só nos dias e horários acima. Chegando ao restaurante, faça check-in aqui no app e o código do benefício aparece para mostrar ao garçom.",
 } as const;
 
 /** "dd/mm" de um dia `YYYY-MM-DD`. */

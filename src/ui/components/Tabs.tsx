@@ -48,7 +48,7 @@ export function Tabs({ items, value, onValueChange, label }: Props) {
         <div
           role="tablist"
           aria-label={label}
-          className="flex gap-6 overflow-x-auto overflow-y-hidden border-b border-divider pr-8 [scrollbar-width:none]"
+          className="flex gap-6 overflow-x-auto overflow-y-hidden border-b border-divider pr-8 no-scrollbar"
         >
           {items.map((item, i) => {
             const selected = item.id === value;

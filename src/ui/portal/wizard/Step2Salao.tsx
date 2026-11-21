@@ -1,5 +1,14 @@
 "use client";
 
+import {
+  INTENSITIES,
+  INTENSITY_LABEL,
+  type Intensity,
+} from "@/src/modules/beneficios/domain/slots";
+
+/** Ajuste de 21/11: a meta explicada com exemplo (o teto de convites sai dela). */
+const TABLES_HINT =
+  "Com isso calculamos quantos convites mandar: 4 mesas ≈ 16 convites por semana, depois ajustado pelo uso real.";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "../../components/Button";
@@ -14,7 +23,14 @@ export type SalonForm = {
   tables: number;
   weeklyCustomers: number | null;
   opening: Array<{ days: number[]; startMin: number; endMin: number }>;
-  slots: Array<{ id?: string; days: number[]; startMin: number; endMin: number; intensity: "muito" | "um_pouco"; extraTables: number }>;
+  slots: Array<{
+    id?: string;
+    days: number[];
+    startMin: number;
+    endMin: number;
+    intensity: Intensity;
+    extraTables: number;
+  }>;
   ticketCents: number | null;
   marginPct: number | null;
 };
@@ -71,8 +87,21 @@ export function Step2Salao({ initial, extractionId, extraction, manual = false }
     }
     if (r.data.erro === "nome_marca") return setErrors({ name: "O nome do restaurante não pode citar a marca iFood." });
     const se: Record<string, string> = {};
-    r.data.slotErrors?.forEach((errs, i) => errs[0] && (se[`slot${i}`] = SLOT_ERRORS[errs[0]] ?? "Confira este horário."));
-    setErrors(Object.keys(se).length ? se : { geral: "Confira os campos e tente de novo." });
+    r.data.slotErrors?.forEach(
+      (errs, i) =>
+        errs[0] &&
+        (se[`slot${i}`] = SLOT_ERRORS[errs[0]] ?? "Confira este horário."),
+    );
+    setErrors(
+      Object.keys(se).length
+        ? se
+        : {
+            geral:
+              r.status === 0
+                ? "Sem conexão com o servidor. Verifique a internet e tente de novo."
+                : "Não conseguimos salvar agora. Confira os campos marcados e tente de novo em instantes.",
+          },
+    );
   }
 
   return (
@@ -135,19 +164,31 @@ export function Step2Salao({ initial, extractionId, extraction, manual = false }
             <TimeRange label={`Horário do horário vazio ${i + 1}`} start={s.startMin} end={s.endMin} onChange={(startMin, endMin) => setSlot(i, { startMin, endMin })} />
             <div className="flex flex-wrap items-end gap-4">
               <fieldset className="flex flex-col gap-1">
-                <legend className="text-sm font-medium text-ink">Quanto fica vazio?</legend>
-                <div className="flex gap-2">
-                  {(["muito", "um_pouco"] as const).map((v) => (
-                    <label key={v} className="flex min-h-11 cursor-pointer items-center gap-2 rounded-sm border border-border px-3 text-sm has-[:checked]:border-red-text has-[:checked]:text-red-text">
-                      <input type="radio" name={`intensidade-${i}`} checked={s.intensity === v} onChange={() => setSlot(i, { intensity: v })} className="accent-[#e71c2b]" />
-                      {v === "muito" ? "Muito" : "Um pouco"}
+                <legend className="text-sm font-medium text-ink">
+                  Quanto fica vazio?
+                </legend>
+                <div className="flex flex-wrap gap-2">
+                  {INTENSITIES.map((v) => (
+                    <label
+                      key={v}
+                      className="flex min-h-11 cursor-pointer items-center gap-2 rounded-sm border border-border px-3 text-sm has-[:checked]:border-red-text has-[:checked]:text-red-text"
+                    >
+                      <input
+                        type="radio"
+                        name={`intensidade-${i}`}
+                        checked={s.intensity === v}
+                        onChange={() => setSlot(i, { intensity: v })}
+                        className="accent-[#e71c2b]"
+                      />
+                      {INTENSITY_LABEL[v]}
                     </label>
                   ))}
                 </div>
               </fieldset>
               <Field
-                className="w-56"
-                label="Mesas a mais por semana"
+                className="w-full max-w-sm"
+                label="Quantas mesas a mais você quer por semana nesse horário?"
+                hint={TABLES_HINT}
                 type="number"
                 inputMode="numeric"
                 min={1}

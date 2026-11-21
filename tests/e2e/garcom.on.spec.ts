@@ -1,5 +1,12 @@
 import { expect, test } from "@playwright/test";
-import { axe, loginCustomer, loginE2E, PROD, S5_ON } from "./helpers";
+import {
+  axe,
+  confirmIfAsked,
+  loginCustomer,
+  loginE2E,
+  PROD,
+  S5_ON,
+} from "./helpers";
 
 /**
  * S6.2 com a flag `modo_garcom` (passada `flags-on`): Validar código › "Link do garçom" → link + QR (uma vez) →
@@ -27,7 +34,10 @@ test("link do garçom: criar → validar sem login → revogar corta na hora", a
   await page.goto("/parceiro/salao/validar");
   const card = page.getByTestId("link-garcom");
   await card.getByRole("button", { name: /^Criar link/ }).click();
-  await expect(card.getByRole("img", { name: "QR do link do garçom" })).toBeVisible();
+  await confirmIfAsked(page, 1_000);
+  await expect(
+    card.getByRole("img", { name: "QR do link do garçom" }),
+  ).toBeVisible();
   const url = (await card.getByTestId("link-garcom-url").textContent())!.trim();
   expect(url).toMatch(/\/garcom\/gc_/);
   await axe(page);
@@ -49,8 +59,15 @@ test("link do garçom: criar → validar sem login → revogar corta na hora", a
   await found.getByRole("button", { name: "Confirmar" }).click();
   await expect(w.getByText(/Código validado ✓ às \d{2}:\d{2}/)).toBeVisible();
 
-  page.on("dialog", (d) => void d.accept());
   await card.getByRole("button", { name: "Revogar" }).click();
+  const conf = page.getByRole("alertdialog", {
+    name: "Revogar o link do garçom?",
+  });
+  await expect(conf).toContainText(
+    "Quem usa o link atual perde o acesso na hora.",
+  );
+  await axe(page);
+  await conf.getByRole("button", { name: "Revogar" }).click();
   await expect(card.getByText("Link revogado.")).toBeVisible();
   await w.reload();
   await expect(w.getByText("Este link do garçom não vale mais. Peça um novo ao responsável.")).toBeVisible();

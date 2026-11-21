@@ -24,7 +24,12 @@ export default async function HistoricoPage() {
       {!view || view.history.length === 0 ? (
         <p className="text-sm text-ink">Nenhum plano aprovado ou descartado ainda.</p>
       ) : (
-        <div className="overflow-x-auto rounded-sm border border-border bg-white p-4" tabIndex={0} role="region" aria-label="Histórico de planos (rolável)">
+        <div
+          className="overflow-x-auto no-scrollbar rounded-sm border border-border bg-white p-4"
+          tabIndex={0}
+          role="region"
+          aria-label="Histórico de planos (rolável)"
+        >
           <table className="w-full min-w-[480px] text-sm">
             <thead>
               <tr className="text-left text-xs text-ink-muted">

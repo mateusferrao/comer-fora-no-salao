@@ -68,9 +68,15 @@ describe("inviteIcs (RFC 5545, 1 evento — D169)", () => {
   });
 
   it("dobra linhas em até 75 octetos sem cortar caracteres UTF-8", () => {
-    for (const line of ics.split("\r\n")) expect(Buffer.byteLength(line, "utf8")).toBeLessThanOrEqual(75);
-    const desc = ics.replace(/\r\n /g, "").split("\r\n").find((l) => l.startsWith("DESCRIPTION:"))!;
-    expect(desc).toContain("Faça check-in nesse horário para receber o código.");
+    for (const line of ics.split("\r\n"))
+      expect(Buffer.byteLength(line, "utf8")).toBeLessThanOrEqual(75);
+    const desc = ics
+      .replace(/\r\n /g, "")
+      .split("\r\n")
+      .find((l) => l.startsWith("DESCRIPTION:"))!;
+    expect(desc).toContain(
+      "Chegando ao restaurante\\, faça check-in no app e mostre ao garçom o código do benefício.",
+    );
     expect(desc).toContain("https://exemplo.invalid/app/jornada");
     expect(ics).not.toContain("�");
   });

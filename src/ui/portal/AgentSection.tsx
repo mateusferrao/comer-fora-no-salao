@@ -1,5 +1,6 @@
 "use client";
 
+import { confirmDialog } from "../components/ConfirmDialog";
 import { useState } from "react";
 import { Button } from "../components/Button";
 
@@ -43,7 +44,15 @@ export function AgentSection({ initial, endpoint }: { initial: Tok[]; endpoint: 
           variant="primary-portal"
           loading={busy === "agente_gerar"}
           onClick={async () => {
-            if (active && !window.confirm("Gerar um novo token? O atual para de funcionar.")) return;
+            if (
+              active &&
+              !(await confirmDialog({
+                title: "Gerar um novo token?",
+                body: "O token atual para de funcionar na hora.",
+                confirmLabel: "Gerar novo token",
+              }))
+            )
+              return;
             const r = await call("agente_gerar");
             if (r.ok && r.j.token) {
               setShown(r.j.token);

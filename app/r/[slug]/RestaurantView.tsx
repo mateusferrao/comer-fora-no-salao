@@ -55,7 +55,7 @@ export function RestaurantView({ page, token, copyV2 = false, recentCheckins = n
   const beneficios = (
     <div className="pb-4">
       <h2 className="text-xl font-semibold">Benefícios pra você</h2>
-      <div className="-mx-5 mt-4 flex snap-x gap-3 overflow-x-auto rounded-xl bg-surface-muted px-5 py-3">
+      <div className="-mx-5 mt-4 flex snap-x gap-3 overflow-x-auto no-scrollbar rounded-xl bg-surface-muted px-5 py-3">
         {page.agora && (
           <button type="button" onClick={() => setDetail(true)} className="w-[85%] shrink-0 snap-start text-left focus-visible:outline-2 focus-visible:outline-ink">
             <TicketCard

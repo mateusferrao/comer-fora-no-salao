@@ -24,7 +24,12 @@ export default async function Qualidade() {
       <p className="mt-2 text-sm leading-6 text-ink-muted">
         Cada chamada de IA passa por contrato (schema), regras fixas (referências, palavras proibidas, tamanho) e aprovação do dono; se falhar, entra o modelo reserva e, por fim, o texto modelo (sem IA). Números agregados, sem os testes automáticos.
       </p>
-      <div className="mt-4 overflow-x-auto rounded-sm border border-border bg-white p-4" tabIndex={0} role="region" aria-label="Qualidade por tarefa (rolável)">
+      <div
+        className="mt-4 overflow-x-auto no-scrollbar rounded-sm border border-border bg-white p-4"
+        tabIndex={0}
+        role="region"
+        aria-label="Qualidade por tarefa (rolável)"
+      >
         <table className="w-full min-w-[640px] text-sm">
           <caption className="pb-2 text-left text-sm font-semibold text-ink">Por tarefa · custo total {usd(v.totalCostUsd)}</caption>
           <thead>

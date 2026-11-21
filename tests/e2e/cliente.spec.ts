@@ -125,8 +125,13 @@ test.describe("check-in no restaurante E2E", () => {
     await expect(page.getByRole("list", { name: "Cartela: 1 de 6 selos" })).toBeVisible();
     const invite = page.getByRole("region", { name: "Seu convite" });
     await expect(invite).toContainText("Cannoli grátis");
-    await expect(invite).toContainText("Quando voltar, faça check-in nesse horário para receber o código.");
-    const code = (await page.getByLabel(/^Código /).first().textContent())!.trim();
+    await expect(invite).toContainText(
+      "Chegando ao restaurante, faça check-in aqui no app e o código do benefício aparece para mostrar ao garçom.",
+    );
+    const code = (await page
+      .getByLabel(/^Código /)
+      .first()
+      .textContent())!.trim();
     expect(code).toMatch(/^[ABCDEFGHJKMNPQRSTUVWXYZ2-9]{6}$/);
     await axe(page);
 

@@ -62,8 +62,14 @@ export const idleSlots = pgTable(
   },
   (t) => [
     index("idle_slots_restaurant_idx").on(t.restaurantId),
-    check("idle_slots_intensity_check", sql`${t.intensity} in ('muito', 'um_pouco')`),
-    check("idle_slots_range_check", sql`${t.startMin} >= 0 and ${t.endMin} <= 1440 and ${t.startMin} < ${t.endMin}`),
+    check(
+      "idle_slots_intensity_check",
+      sql`${t.intensity} in ('muito', 'medio', 'um_pouco')`,
+    ),
+    check(
+      "idle_slots_range_check",
+      sql`${t.startMin} >= 0 and ${t.endMin} <= 1440 and ${t.startMin} < ${t.endMin}`,
+    ),
   ],
 );
 

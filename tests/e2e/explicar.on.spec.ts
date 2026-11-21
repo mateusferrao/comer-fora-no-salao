@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { axe, loginE2E, PROD, S5_ON } from "./helpers";
+import { axe, confirmIfAsked, loginE2E, PROD, S5_ON } from "./helpers";
 
 /**
  * S5.3 com a flag `explica_ia` (passada `flags-on`; em produção só com E2E_FLAGS=on): "Por que esta oferta?" no plano
@@ -27,10 +27,17 @@ test("plano da semana: 'Por que esta oferta?' abre o painel com opções, fatos,
     await page.getByRole("button", { name: "Confirmar descarte" }).click();
     await expect(page.getByText("Plano descartado.")).toBeVisible();
   }
-  page.once("dialog", (d) => void d.accept());
   await page.getByRole("button", { name: "Gerar plano da semana" }).click();
-  await expect(page.getByTestId("plan-status")).toHaveAttribute("data-status", "proposto", { timeout: 60_000 });
-  await page.getByRole("button", { name: "Por que esta oferta?" }).first().click();
+  await confirmIfAsked(page);
+  await expect(page.getByTestId("plan-status")).toHaveAttribute(
+    "data-status",
+    "proposto",
+    { timeout: 60_000 },
+  );
+  await page
+    .getByRole("button", { name: "Por que esta oferta?" })
+    .first()
+    .click();
   const panel = page.getByRole("dialog", { name: "Por que esta oferta?" });
   await expect(panel.getByRole("heading", { name: /O código separou \d+ opç(ão|ões) para esta faixa/ })).toBeVisible();
   await expect(panel.getByText("Nota do código: quanto menor o custo perto do ticket médio, maior a nota.")).toBeVisible();

@@ -28,6 +28,25 @@ export async function axe(page: Page) {
   expect(ids).toEqual([]);
 }
 
+/**
+ * Confirmação do design system (`confirmDialog`, ajuste de 21/11): se o modal aparecer depois de uma ação, confirma.
+ * Algumas ações só pedem confirmação em certo estado (ex.: "Gerar plano" com proposta já aberta).
+ */
+export async function confirmIfAsked(
+  page: Page,
+  timeout = 2_000,
+): Promise<boolean> {
+  const d = page.getByRole("alertdialog");
+  try {
+    await d.waitFor({ state: "visible", timeout });
+  } catch {
+    return false;
+  }
+  await d.getByRole("button").last().click();
+  await expect(d).toBeHidden();
+  return true;
+}
+
 /** Login de teste (D123): pede o código com o token e confere — o cookie fica no contexto da página. */
 export async function loginE2E(request: APIRequestContext, n: number): Promise<void> {
   // O secret colado no GitHub pode vir com quebra de linha ou aspas em volta (revisão da S2: "Invalid character

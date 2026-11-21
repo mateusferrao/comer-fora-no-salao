@@ -49,7 +49,7 @@ export function inviteEmail(p: { restaurant: string; when: string; gain: string;
     first,
     ...(p.message ? ["", `"${p.message}"`] : []),
     "",
-    `Vale até ${ddmm(p.untilDay)}. Faça check-in nesse horário para receber o código.`,
+    `Vale até ${ddmm(p.untilDay)}, só nesses dias e horários. Chegando ao restaurante, faça check-in no app e mostre ao garçom o código do benefício.`,
     ...(agenda ? [`Adicionar à agenda: ${agenda}`] : []),
     `Ver o convite: ${journey}`,
     "",
@@ -59,7 +59,7 @@ export function inviteEmail(p: { restaurant: string; when: string; gain: string;
   const html = `<div style="font-family:Arial,sans-serif;font-size:15px;color:#151515">
 <p>${p.v2 ? `Volte ${esc(p.when)} ${verb} <strong>${esc(p.gain)}</strong>.` : `${esc(p.restaurant)} te convida para voltar ${esc(p.when)}: <strong>${esc(p.gain)}</strong>.`}</p>
 ${p.message ? `<p><em>“${esc(p.message)}”</em></p>` : ""}
-<p>Vale até ${ddmm(p.untilDay)}. Faça check-in nesse horário para receber o código.</p>
+<p>Vale até ${ddmm(p.untilDay)}, só nesses dias e horários. Chegando ao restaurante, faça check-in no app e mostre ao garçom o código do benefício.</p>
 ${agenda ? `<p><a href="${esc(agenda)}">Adicionar à agenda</a></p>` : ""}
 <p><a href="${esc(journey)}">Ver o convite</a></p>
 <p style="color:#666;font-size:12px"><a href="${esc(unsub)}">Preferências de e-mail · Descadastrar</a><br>${PROTOTYPE_FOOTER}</p>

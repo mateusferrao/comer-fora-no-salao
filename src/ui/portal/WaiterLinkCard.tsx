@@ -1,5 +1,6 @@
 "use client";
 
+import { confirmDialog } from "../components/ConfirmDialog";
 import { useState } from "react";
 import { Button } from "../components/Button";
 
@@ -16,8 +17,25 @@ export function WaiterLinkCard({ activeSince }: { activeSince: string | null }) 
   const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
   const [copied, setCopied] = useState(false);
   const act = async (acao: "criar" | "revogar") => {
-    if (acao === "criar" && since && !window.confirm("Criar um link novo desliga o link atual: todos os celulares da equipe precisam ler o QR novo. Continuar?")) return;
-    if (acao === "revogar" && !window.confirm("Revogar o link do garçom? Quem usa o link atual perde o acesso na hora.")) return;
+    if (
+      acao === "criar" &&
+      since &&
+      !(await confirmDialog({
+        title: "Criar um link novo?",
+        body: "O link atual é desligado: todos os celulares da equipe precisam ler o QR novo.",
+        confirmLabel: "Criar link novo",
+      }))
+    )
+      return;
+    if (
+      acao === "revogar" &&
+      !(await confirmDialog({
+        title: "Revogar o link do garçom?",
+        body: "Quem usa o link atual perde o acesso na hora.",
+        confirmLabel: "Revogar",
+      }))
+    )
+      return;
     setBusy(acao);
     setMsg(null);
     const r = await fetch("/api/parceiro/garcom", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ acao }) }).catch(() => null);

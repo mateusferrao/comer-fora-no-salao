@@ -1,5 +1,10 @@
 "use client";
 
+import {
+  inviteIssues,
+  reasonMessage,
+} from "@/src/modules/ia/guardrails/messages";
+import { confirmDialog } from "../components/ConfirmDialog";
 import { Select } from "../components/Select";
 import { ExplainOfferLink } from "@/src/ui/ia/ExplainOffer";
 import Link from "next/link";
@@ -71,8 +76,25 @@ export function PlanManager({ initial, explicaIa = false }: { initial: PlanView;
 
   const generate = async () => {
     if (busy) return;
-    if (v.plan?.status === "proposto" && !window.confirm("Gerar de novo substitui a proposta atual. Continuar?")) return;
-    if (v.plan?.status === "aprovado" && v.plan.currentWeek && !window.confirm("Já há um plano aprovado nesta semana; o novo, se aprovado, substitui a regra a partir de agora. Continuar?")) return;
+    if (
+      v.plan?.status === "proposto" &&
+      !(await confirmDialog({
+        title: "Gerar o plano de novo?",
+        body: "A proposta atual é substituída por uma nova.",
+        confirmLabel: "Gerar de novo",
+      }))
+    )
+      return;
+    if (
+      v.plan?.status === "aprovado" &&
+      v.plan.currentWeek &&
+      !(await confirmDialog({
+        title: "Gerar um novo plano?",
+        body: "Já há um plano aprovado nesta semana. O novo, se você aprovar, substitui a regra a partir de agora.",
+        confirmLabel: "Gerar novo plano",
+      }))
+    )
+      return;
     setBusy("gerar");
     setMsg(null);
     setV((x) => ({ ...x, generating: true }));
@@ -100,9 +122,21 @@ export function PlanManager({ initial, explicaIa = false }: { initial: PlanView;
     };
     const r = await fetch("/api/parceiro/plano/aprovar", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ planId: v.plan.id, final }) });
     const j = await r.json().catch(() => ({}));
+    const slotLabel = (id?: string) =>
+      v.slots.find((x) => x.slotId === id)?.label ?? "um horário";
     setBusy("");
     if (!r.ok) {
-      setMsg({ kind: "erro", text: j.erro === "revisor" ? "O revisor ainda está conferindo ou pediu ajustes nos convites. Veja os motivos acima; se reescrever o convite, você assume o texto." : j.erro === "texto" ? "O texto do convite tem uma referência inválida ou passa de 160 caracteres." : j.erro === "oferta" ? "Uma oferta não vale mais no cardápio. Escolha outra." : "Não deu para aprovar. Atualize a página." });
+      setMsg({
+        kind: "erro",
+        text:
+          j.erro === "revisor"
+            ? "O revisor ainda está conferindo ou pediu ajustes nos convites. Veja os motivos acima; se reescrever o convite, você assume o texto."
+            : j.erro === "texto"
+              ? `Convite de ${slotLabel(j.detalhe?.slotId)}: ${reasonMessage(j.detalhe?.motivos?.[0] ?? "", { maxLen: 160 })}`
+              : j.erro === "oferta"
+                ? `A oferta do convite de ${slotLabel(j.detalhe?.slotId)} usa um item que saiu do cardápio ou das ofertas. Escolha outra.`
+                : "Não deu para aprovar agora. Atualize a página e tente de novo.",
+      });
       return;
     }
     setMsg({ kind: "ok", text: `Plano aprovado · convite entregue a ${int(j.sent.real)} clientes em Sua jornada${j.sent.emails ? ` · ${int(j.sent.emails)} também por e-mail` : ""}${j.semEmail ? " · textos com link ou contato não vão por e-mail" : ""}` });
@@ -203,6 +237,17 @@ export function PlanManager({ initial, explicaIa = false }: { initial: PlanView;
             const use = ins?.usage != null ? Math.min(1, Math.max(0.1, ins.usage)) : 0.25;
             const tables = Math.max(1, Math.round(e.cap * use));
             const changed = e.optionId !== s.chosenId;
+            // Ajuste de 21/11: mesma regra da aprovação, na hora (só depois de o dono mexer no texto).
+            const textIssue =
+              editable && stored(e.text, s.slotId) !== s.inviteText
+                ? inviteIssues(stored(e.text, s.slotId), {
+                    items: Object.fromEntries(
+                      v.menu.map((m) => [m.id, m.name]),
+                    ),
+                    slots: { [s.slotId]: s.label },
+                    oferta: opt?.gain ?? "",
+                  })
+                : { errors: [] as string[], warnings: [] as string[] };
             return (
               <article key={s.slotId} className="flex flex-col gap-3 rounded-sm border border-border bg-white p-4" aria-label={`Convite de volta · ${s.label}`}>
                 <h3 className="font-semibold text-ink">Convite de volta · {s.label}</h3>
@@ -226,10 +271,48 @@ export function PlanManager({ initial, explicaIa = false }: { initial: PlanView;
                 </div>
                 <label className="flex flex-col gap-1 text-sm text-ink">
                   Texto do convite (aparece no 2º card do cliente)
-                  <textarea disabled={!editable} maxLength={300} rows={2} value={e.text} onChange={(ev) => setEdits((x) => ({ ...x, [s.slotId]: { ...e, text: ev.target.value } }))} className="rounded-xs border border-border p-2" />
+                  <textarea
+                    id={`texto-${s.slotId}`}
+                    disabled={!editable}
+                    maxLength={300}
+                    rows={2}
+                    value={e.text}
+                    onChange={(ev) =>
+                      setEdits((x) => ({
+                        ...x,
+                        [s.slotId]: { ...e, text: ev.target.value },
+                      }))
+                    }
+                    aria-invalid={textIssue.errors.length > 0 || undefined}
+                    aria-describedby={`aviso-${s.slotId}`}
+                    className={`rounded-xs border p-2 ${textIssue.errors.length ? "border-red-text" : "border-border"}`}
+                  />
                 </label>
-                <p className="text-xs text-ink-muted">Use {"{horario}"} e {"{oferta}"}: o sistema escreve o dia, o horário e a oferta.</p>
-                {stored(e.text, s.slotId) === s.inviteText && s.inviteRendered && <p className="text-sm text-ink-muted">Como o cliente lê: “{s.inviteRendered}”</p>}
+                <div
+                  id={`aviso-${s.slotId}`}
+                  className="flex flex-col gap-1 text-xs"
+                >
+                  {textIssue.errors.map((m) => (
+                    <p key={m} className="font-medium text-red-text">
+                      {m}
+                    </p>
+                  ))}
+                  {textIssue.warnings.map((m) => (
+                    <p key={m} className="text-ink">
+                      Atenção: {m}
+                    </p>
+                  ))}
+                </div>
+                <p className="text-xs text-ink-muted">
+                  Use {"{horario}"} e {"{oferta}"}: o sistema escreve o dia, o
+                  horário e a oferta.
+                </p>
+                {stored(e.text, s.slotId) === s.inviteText &&
+                  s.inviteRendered && (
+                    <p className="text-sm text-ink-muted">
+                      Como o cliente lê: “{s.inviteRendered}”
+                    </p>
+                  )}
                 {ins?.verdict === "trocar" && s.options.length === 1 && (
                   <p className="rounded-xs bg-surface-muted p-2 text-sm text-ink" data-testid="sem-alternativa">
                     Sem outra oferta válida no cardápio para este horário: mantida, apesar do veredito &quot;trocar&quot;. Para ter alternativas, ative ou inclua um item compatível em Configurações.
@@ -331,7 +414,12 @@ function Insights({ v }: { v: PlanView }) {
       <h2 id="dados" className="text-lg font-bold text-ink">
         O que os seus dados dizem
       </h2>
-      <div className="relative overflow-x-auto" tabIndex={0} role="region" aria-label="Mapa de check-ins por dia e turno (rolável)">
+      <div
+        className="relative overflow-x-auto no-scrollbar"
+        tabIndex={0}
+        role="region"
+        aria-label="Mapa de check-ins por dia e turno (rolável)"
+      >
         <table className="min-w-[520px] text-center text-sm">
           <caption className="pb-2 text-left text-sm text-ink-muted">Check-ins por dia e turno nos últimos 30 dias (mede quem leu o QR, não a lotação). Contorno: horário vazio que você declarou.</caption>
           <thead>
@@ -374,7 +462,12 @@ function Insights({ v }: { v: PlanView }) {
         </p>
       )}
       {v.insights.offers.length > 0 && (
-        <div className="relative overflow-x-auto" tabIndex={0} role="region" aria-label="Resposta aos convites (rolável)">
+        <div
+          className="relative overflow-x-auto no-scrollbar"
+          tabIndex={0}
+          role="region"
+          aria-label="Resposta aos convites (rolável)"
+        >
           <table className="w-full min-w-[520px] text-sm">
             <caption className="pb-2 text-left text-sm text-ink-muted">Resposta aos convites (convites reais; o efeito causal só no total do restaurante, na Visão geral)</caption>
             <thead>

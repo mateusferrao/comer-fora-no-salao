@@ -3,6 +3,7 @@
  * A IA escolhe UMA candidata por faixa (por apelido), escreve o texto do convite e a justificativa com
  * referências; nunca cria oferta, nunca escreve número. Schema montado por chamada (enums dos apelidos).
  */
+import { INTENSITY_PHRASE } from "@/src/modules/beneficios/domain/slots";
 import { z } from "zod";
 import { describeOffer } from "@/src/modules/beneficios/domain/offers";
 import type { MenuItem } from "@/src/modules/beneficios/domain/menu";
@@ -86,7 +87,9 @@ export function buildPackagePrompt(p: {
   const lines: string[] = [];
   for (const { alias, slot } of aliases) {
     const opts = p.cands.find((c) => c.slotId === slot.id)?.options ?? [];
-    lines.push(`Faixa ${alias}: ${slotLabel(slot)} (${slot.intensity === "muito" ? "muito vazio" : "um pouco vazio"}; quer ${slot.extraTables} mesas a mais por semana)`);
+    lines.push(
+      `Faixa ${alias}: ${slotLabel(slot)} (${INTENSITY_PHRASE[slot.intensity]}; quer ${slot.extraTables} mesas a mais por semana)`,
+    );
     opts.forEach((o, i) => {
       const ca = `${alias}${i + 1}`;
       const d = describeOffer(o.offer, p.menu, "convite");

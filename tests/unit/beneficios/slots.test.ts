@@ -43,6 +43,10 @@ describe("faixas e turnos", () => {
     const c: Slot = { ...faixaB, id: "C", intensity: "muito" };
     expect(sortByPriority([faixaB, faixaA, c]).map((s) => s.id)).toEqual(["A", "C", "B"]);
   });
+  it("3 níveis (ajuste de 21/11): muito, mais ou menos, pouco", () => {
+    const m: Slot = { ...faixaB, id: "M", intensity: "medio" };
+    expect(sortByPriority([faixaB, m, faixaA]).map((s) => s.id)).toEqual(["A", "M", "B"]);
+  });
   it("rótulos", () => {
     expect(formatDays([2, 3, 4])).toBe("Ter, Qua, Qui");
     expect(formatDaysLong([2, 3, 4])).toBe("terça, quarta e quinta");

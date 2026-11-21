@@ -1,5 +1,6 @@
 "use client";
 
+import { confirmDialog } from "../components/ConfirmDialog";
 import { useCallback, useEffect, useState } from "react";
 import { FLAG_LABEL, FLAGS, PROMPT_TASKS, type Flag, type PromptTask } from "@/src/modules/config/domain/flags";
 
@@ -205,10 +206,42 @@ export function BastidoresConfig({ logged }: { logged: boolean }) {
           Resetar demo
         </h2>
         <div className="flex flex-wrap gap-3">
-          <button type="button" disabled={!!busy} onClick={() => window.confirm("Apagar os restaurantes da conta logada neste navegador e refazer a demonstração?") && act("reset", () => post("reset", { alvo: "minha" }), "Demonstração recriada.")} className="min-h-11 rounded-xs border border-border bg-white px-5 text-sm font-semibold text-ink">
+          <button
+            type="button"
+            disabled={!!busy}
+            onClick={async () =>
+              (await confirmDialog({
+                title: "Recriar sua demonstração?",
+                body: "Apaga os restaurantes da conta logada neste navegador e refaz a demonstração.",
+                confirmLabel: "Recriar",
+              })) &&
+              act(
+                "reset",
+                () => post("reset", { alvo: "minha" }),
+                "Demonstração recriada.",
+              )
+            }
+            className="min-h-11 rounded-xs border border-border bg-white px-5 text-sm font-semibold text-ink"
+          >
             Recriar minha demo
           </button>
-          <button type="button" disabled={!!busy} onClick={() => window.confirm("Apagar as visitas reais da vitrine pública e recriá-la?") && act("reset", () => post("reset", { alvo: "vitrine" }), "Vitrine pública recriada.")} className="min-h-11 rounded-xs border border-border bg-white px-5 text-sm font-semibold text-ink">
+          <button
+            type="button"
+            disabled={!!busy}
+            onClick={async () =>
+              (await confirmDialog({
+                title: "Recriar a vitrine pública?",
+                body: "Apaga as visitas reais da vitrine pública e a recria do zero.",
+                confirmLabel: "Recriar",
+              })) &&
+              act(
+                "reset",
+                () => post("reset", { alvo: "vitrine" }),
+                "Vitrine pública recriada.",
+              )
+            }
+            className="min-h-11 rounded-xs border border-border bg-white px-5 text-sm font-semibold text-ink"
+          >
             Recriar vitrine pública
           </button>
         </div>

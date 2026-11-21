@@ -51,7 +51,12 @@ function Explanation({ e }: { e: OfferExplanation }) {
         <h3 id="pq-opcoes" className="text-base font-semibold">
           O código separou {e.opcoes.length} {e.opcoes.length === 1 ? "opção" : "opções"} para esta faixa
         </h3>
-        <div className="relative overflow-x-auto" tabIndex={0} role="region" aria-label="Opções da faixa (rolável)">
+        <div
+          className="relative overflow-x-auto no-scrollbar"
+          tabIndex={0}
+          role="region"
+          aria-label="Opções da faixa (rolável)"
+        >
           <table className="w-full min-w-[420px]">
             <thead>
               <tr className="text-left text-ink-muted">

@@ -37,6 +37,12 @@ export default async function KitPage() {
           Display de mesa e cartaz em 2 versões (cada uma com o próprio QR, para saber qual traz mais check-ins) e o cartão do garçom. As chamadas vêm da IA (ou do
           texto modelo, quando ela não responde) e você pode editar; o benefício e os números vêm das regras.
         </p>
+        <p className="mt-2 text-sm text-ink-muted">
+          Cada QR identifica a peça e a versão (display A ou B, cartaz A ou B,
+          cartão do garçom, porta-conta), não a mesa: imprima o mesmo display
+          para todas as mesas. As leituras e os check-ins são contados por peça
+          e versão, e é isso que mostra qual chamada funciona melhor.
+        </p>
       </header>
       <KitManager initial={kit} restaurantName={cur.name} qrs={qrs} billHolder={(await getFlags(getDb())).porta_conta} />
     </main>

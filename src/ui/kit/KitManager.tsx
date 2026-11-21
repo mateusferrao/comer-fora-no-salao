@@ -1,5 +1,6 @@
 "use client";
 
+import { confirmDialog } from "../components/ConfirmDialog";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import type { KitView } from "@/src/modules/kit/application/kit";
@@ -148,7 +149,14 @@ export function KitManager({ initial, restaurantName, qrs, billHolder = false }:
                         className="min-h-11 font-semibold text-red-text underline disabled:opacity-50"
                         disabled={busy === `nova:${v.label}`}
                         onClick={async () => {
-                          if (!window.confirm(`Criar uma nova versão ${v.label}? Ela terá um QR novo (precisa reimprimir o display e o cartaz). O QR atual continua funcionando.`)) return;
+                          if (
+                            !(await confirmDialog({
+                              title: `Criar uma nova versão ${v.label}?`,
+                              body: "Ela terá um QR novo: reimprima o display e o cartaz. O QR atual continua funcionando.",
+                              confirmLabel: "Criar nova versão",
+                            }))
+                          )
+                            return;
                           setBusy(`nova:${v.label}`);
                           const r = await call("/api/parceiro/kit/campo", "PATCH", { label: v.label });
                           setBusy(null);

@@ -2,6 +2,7 @@
  * Fonte do cardápio: exemplos fictícios com extração em cache (espec. 4.4 — "processado anteriormente")
  * e predefinições do passo 2 para a demo caber em 0:45–2:30 (revisão P-I1). Tudo fictício.
  */
+import type { Intensity } from "@/src/modules/beneficios/domain/slots";
 import boteco from "./exemplos/boteco.json";
 import burger from "./exemplos/burger.json";
 import sushi from "./exemplos/sushi.json";
@@ -16,7 +17,13 @@ export type SalonPreset = {
   tables: number;
   weeklyCustomers: number;
   opening: OpeningHours;
-  slots: Array<{ days: number[]; startMin: number; endMin: number; intensity: "muito" | "um_pouco"; extraTables: number }>;
+  slots: Array<{
+    days: number[];
+    startMin: number;
+    endMin: number;
+    intensity: Intensity;
+    extraTables: number;
+  }>;
   ticketCents: number;
   marginPct: number;
 };

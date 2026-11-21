@@ -1,5 +1,6 @@
 "use client";
 
+import { confirmDialog } from "../components/ConfirmDialog";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import type { OperationsView } from "@/src/modules/analytics/application/operations";
@@ -70,7 +71,14 @@ export function Operations({ view, showAb, showAlerts }: { view: OperationsView;
                   disabled={!!busy}
                   className="min-h-11 self-start rounded-xs bg-red-button px-5 text-sm font-semibold text-white disabled:opacity-50"
                   onClick={async () => {
-                    if (!window.confirm(`Promover a versão ${r.status?.state === "vencedora" ? r.status.winner : ""}? A outra versão ganha o texto da vencedora e um QR novo (reimprima o display e o cartaz). O QR atual continua funcionando.`)) return;
+                    if (
+                      !(await confirmDialog({
+                        title: `Promover a versão ${r.status?.state === "vencedora" ? r.status.winner : ""}?`,
+                        body: "A outra versão ganha o texto da vencedora e um QR novo: reimprima o display e o cartaz. O QR atual continua funcionando.",
+                        confirmLabel: "Promover",
+                      }))
+                    )
+                      return;
                     setBusy(r.kind);
                     const res = await fetch("/api/parceiro/kit/campo", { method: "PATCH", headers: { "content-type": "application/json" }, body: JSON.stringify({ promover: r.kind }) });
                     setBusy(null);

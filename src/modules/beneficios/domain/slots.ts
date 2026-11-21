@@ -5,8 +5,19 @@
 import { z } from "zod";
 import { minutesOfDaySP, weekdaySP } from "@/src/shared/tz";
 
-export const INTENSITIES = ["muito", "um_pouco"] as const;
+/** Quanto o horário fica vazio (ajuste de 21/11: 3 níveis — "Mais ou menos" no meio). Só ordena a prioridade e informa a IA. */
+export const INTENSITIES = ["muito", "medio", "um_pouco"] as const;
 export type Intensity = (typeof INTENSITIES)[number];
+export const INTENSITY_LABEL: Record<Intensity, string> = {
+  muito: "Muito",
+  medio: "Mais ou menos",
+  um_pouco: "Pouco",
+};
+export const INTENSITY_PHRASE: Record<Intensity, string> = {
+  muito: "muito vazio",
+  medio: "mais ou menos vazio",
+  um_pouco: "pouco vazio",
+};
 
 export type Slot = { id: string; days: number[]; startMin: number; endMin: number; intensity: Intensity; extraTables: number };
 
@@ -43,10 +54,15 @@ export function isInSlot(slot: Pick<Slot, "days" | "startMin" | "endMin">, at: D
   return slot.startMin <= m && m < slot.endMin;
 }
 
-/** Prioridade: "muito" antes de "um_pouco"; empate pela ordem de entrada (estável). */
-export function sortByPriority<T extends Pick<Slot, "intensity">>(slots: readonly T[]): T[] {
-  const rank = (s: T) => (s.intensity === "muito" ? 0 : 1);
-  return slots.map((s, i) => ({ s, i })).sort((a, b) => rank(a.s) - rank(b.s) || a.i - b.i).map((x) => x.s);
+/** Prioridade: "muito", depois "medio", depois "um_pouco"; empate pela ordem de entrada (estável). */
+export function sortByPriority<T extends Pick<Slot, "intensity">>(
+  slots: readonly T[],
+): T[] {
+  const rank = (s: T) => INTENSITIES.indexOf(s.intensity);
+  return slots
+    .map((s, i) => ({ s, i }))
+    .sort((a, b) => rank(a.s) - rank(b.s) || a.i - b.i)
+    .map((x) => x.s);
 }
 
 export const TURNS = ["madrugada", "manha", "almoco", "tarde", "noite"] as const;

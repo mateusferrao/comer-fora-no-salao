@@ -3,6 +3,7 @@
  * uma versão nova (a anterior ganha `superseded_at`); convites já emitidos guardam a versão e a faixa da
  * emissão (D218). Tudo vai para `owner_edits`.
  */
+import type { Intensity } from "@/src/modules/beneficios/domain/slots";
 import { decryptEmail } from "@/src/shared/crypto";
 import { parseNotifySettings, type NotifySettings } from "../domain/notify-settings";
 import { mentionsIfood } from "@/src/shared/brand";
@@ -152,7 +153,13 @@ export async function addMenuItem(db: Db, p: { restaurantId: string; name: strin
   return { ok: true, itemId: row!.id };
 }
 
-type SlotInput = { days: number[]; startMin: number; endMin: number; intensity: "muito" | "um_pouco"; extraTables: number };
+type SlotInput = {
+  days: number[];
+  startMin: number;
+  endMin: number;
+  intensity: Intensity;
+  extraTables: number;
+};
 
 async function opening(db: Db, restaurantId: string): Promise<OpeningHours> {
   const ctx = await loadContext(db, restaurantId);
@@ -250,8 +257,28 @@ export type SettingsView = {
   restaurant: { aiTone: string | null; aiAbout: string | null; aiAvoid: string | null; aiFeatures: AiFeatures; name: string; kind: string; isCopy: boolean; ticketCents: number | null; marginPct: number | null; tables: number | null; weeklyCustomers: number | null; description: string | null; address: string | null; opening: OpeningHours };
   agora: OfferInput | null;
   recompensa: OfferInput | null;
-  slots: Array<{ id: string; label: string; days: number[]; startMin: number; endMin: number; intensity: "muito" | "um_pouco"; extraTables: number; offer: OfferInput | null; weeklyCap: number | null; inviteText: string; inviteRendered: string }>;
-  menu: Array<{ id: string; name: string; category: MenuCategory; priceCents: number; active: boolean; inUse: boolean; offerAllowed: boolean }>;
+  slots: Array<{
+    id: string;
+    label: string;
+    days: number[];
+    startMin: number;
+    endMin: number;
+    intensity: Intensity;
+    extraTables: number;
+    offer: OfferInput | null;
+    weeklyCap: number | null;
+    inviteText: string;
+    inviteRendered: string;
+  }>;
+  menu: Array<{
+    id: string;
+    name: string;
+    category: MenuCategory;
+    priceCents: number;
+    active: boolean;
+    inUse: boolean;
+    offerAllowed: boolean;
+  }>;
 };
 
 export async function getSettingsView(db: Db, restaurantId: string): Promise<SettingsView | null> {

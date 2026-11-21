@@ -1,5 +1,6 @@
 "use client";
 
+import { confirmDialog } from "../components/ConfirmDialog";
 import { Select } from "../components/Select";
 import { useState } from "react";
 import { Button } from "../components/Button";
@@ -43,7 +44,14 @@ export function EvaluatorTools({ restaurants, currentId }: { restaurants: R[]; c
   };
 
   const reactivated = async () => {
-    if (!window.confirm("Você vai sair do seu login de cliente neste aparelho e entrar como um cliente do histórico gerado. Continuar?")) return;
+    if (
+      !(await confirmDialog({
+        title: "Entrar como cliente do histórico?",
+        body: "Você sai do seu login de cliente neste aparelho e entra como um cliente do histórico gerado.",
+        confirmLabel: "Entrar",
+      }))
+    )
+      return;
     setBusy("reativado");
     setMsg("");
     try {
