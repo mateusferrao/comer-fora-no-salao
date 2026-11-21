@@ -1353,3 +1353,8 @@ Detalhes, perguntas, revisão independente (2 subagentes) e itens [C] em [docs/f
 **D249 — CI automático só na `main`** (21/11, candidato: "tem muitos runs rodando. não poderia ser só um com tudo?"; forma [C]) ✅
 - Cada push ia para o branch da sessão e para a `main`, e o CI rodava duas vezes o mesmo código. Agora o push dispara o CI só na `main` (que também faz o deploy); nos branches, execução manual ou pull request. A suíte completa continua rodando localmente antes de cada publicação.
 - Alternativa: manter nos dois (dobra minutos e fila). Trade-off: branch sem checagem automática no push × uma execução por publicação.
+
+**D250 — "Seus dados" na Jornada: o cliente corrige nome e telefone** (21/11, candidato: trocar o telefone do próprio cadastro antigo — "faz a tela seus dados") ✅
+- Em "Sua conta" (engrenagem), "Seus dados" mostra nome, telefone e o e-mail do login. Nome e telefone podem ser corrigidos; o telefone grava como no cadastro (HMAC, 4 últimos e cifrado — D237). Cadastro antigo com só os 4 últimos dígitos pede o número completo e, se o campo ficar intocado, mantém o antigo.
+- O cliente do histórico gerado (Ferramentas do avaliador) não vê a opção.
+- Alternativa: alterar direto no banco de produção (sem acesso de fora; chave de produção em comando é proibido). Trade-off: uma tela a mais × resolve para todo cadastro antigo, com o aceite e a cifra do produto.

@@ -10,6 +10,8 @@ import {
   requestCustomerCode,
   saveCustomerProfile,
   customerSession,
+  getMyContact,
+  updateMyContact,
 } from "@/src/modules/salao/application/customer-login";
 import { decryptEmail, hmacCustomerEmail } from "@/src/shared/crypto";
 import { createRestaurant, resetDb } from "./helpers/db";
@@ -178,5 +180,24 @@ describe("login do cliente por e-mail + código (S4, D154, D173)", () => {
     expect(await customerSession(getDb(), r.restaurantId, v.customerId)).toEqual({ state: "entrar" });
     const [rc] = await getDb().select().from(restaurantCustomers);
     expect(rc).toMatchObject({ optEmail: false, optApp: false });
+  });
+
+  it("Seus dados: o cliente vê e corrige nome e telefone; número antigo (só 4 dígitos) pede o completo; null mantém", async () => {
+    const r = await createRestaurant();
+    const v = await loginNew(r.restaurantId, "ana@exemplo.com");
+    await saveCustomerProfile(getDb(), { restaurantId: r.restaurantId, customerId: v.customerId, name: "Ana", phone: "", optEmail: true, optApp: true, now: NOW });
+    // Cadastro antigo: só os 4 últimos dígitos, sem o número cifrado.
+    await getDb().update(customerContacts).set({ phoneLast4: "1420", phoneEnc: null }).where(eq(customerContacts.customerId, v.customerId));
+    expect(await getMyContact(getDb(), v.customerId)).toEqual({ name: "Ana", phone: "", oldPhoneLast4: "1420", email: "ana@exemplo.com" });
+    // Telefone não informado (null) mantém o antigo.
+    expect(await updateMyContact(getDb(), { customerId: v.customerId, name: "Ana Souza", phone: null, now: NOW })).toEqual({ ok: true });
+    expect(await getMyContact(getDb(), v.customerId)).toMatchObject({ name: "Ana Souza", oldPhoneLast4: "1420" });
+    expect(await updateMyContact(getDb(), { customerId: v.customerId, name: "Ana Souza", phone: "(00) 91234-1420", now: NOW })).toEqual({ ok: true });
+    expect(await getMyContact(getDb(), v.customerId)).toEqual({ name: "Ana Souza", phone: "(00) 91234-1420", oldPhoneLast4: null, email: "ana@exemplo.com" });
+    // Apagar o telefone (""), formato inválido e nome curto.
+    expect(await updateMyContact(getDb(), { customerId: v.customerId, name: "Ana Souza", phone: "", now: NOW })).toEqual({ ok: true });
+    expect(await getMyContact(getDb(), v.customerId)).toMatchObject({ phone: "", oldPhoneLast4: null });
+    expect(await updateMyContact(getDb(), { customerId: v.customerId, name: "Ana", phone: "1234", now: NOW })).toEqual({ ok: false, erro: "dados_invalidos", campos: ["phone"] });
+    expect(await updateMyContact(getDb(), { customerId: v.customerId, name: "A", phone: null, now: NOW })).toEqual({ ok: false, erro: "dados_invalidos", campos: ["name"] });
   });
 });
