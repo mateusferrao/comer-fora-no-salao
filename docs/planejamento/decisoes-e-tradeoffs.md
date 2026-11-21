@@ -1295,6 +1295,7 @@ Detalhes, revisão independente (2 subagentes, 2 rodadas) e itens [C] em [docs/f
 - [C] Exemplo pronto só para o Claude Code (comando `claude mcp add --transport http … --header …`, com o token já preenchido), porque é a configuração que conhecemos com certeza; para os demais, a instrução genérica e "procure MCP na ajuda dele". Alternativa: exemplos para vários assistentes (risco de instrução errada ou desatualizada).
 - E2E nova segue o passo a passo: o token gerado abre as ferramentas no endereço e, revogado, recebe 401.
 
+<<<<<<< HEAD
 **D247 — Aba "Integrações", caixa de seleção do design system e ações do cardápio lado a lado** (21/11, candidato; forma [C]) ✅
 - O card do assistente de IA (MCP) sai do fim de todas as abas e vira a aba "Integrações" de Configurações (só com a flag `mcp`). A barra de abas rola até a aba ativa (abrir direto na última).
 - `Checkbox` do design system no lugar do nativo azul, em todo o sistema (cardápio, aceite do cliente, Bastidores, apresentação): 20 px, contorno cinza, marcado na cor principal (vermelho no Portal, preto no app) com tique branco; continua um `<input type="checkbox">`.
@@ -1304,3 +1305,49 @@ Detalhes, revisão independente (2 subagentes, 2 rodadas) e itens [C] em [docs/f
 - O servidor recusava pedidos com `Origin` de outro site (proteção contra DNS rebinding). O conector do Claude chama de outra origem e falhava com "Problema de conexão". Como todo pedido exige o token do dono (sem cookie), a trava não protegia nada além do token: removida. O valor do cabeçalho vale com ou sem "Bearer ".
 - O card ganhou o exemplo pronto do Claude (site ou app): "Adicionar conector personalizado" → URL → "Sem login" (não "Cliente OAuth", que reserva o cabeçalho Authorization) → cabeçalho `Authorization` com "Bearer " + token, com botão de copiar.
 - Alternativa: liberar só `claude.ai`/`claude.com` (quebraria outros assistentes). Trade-off: nenhum, além de desviar da recomendação genérica do protocolo para servidores locais.
+=======
+## N. Fatia S8 — Copiloto do salão (21/11, `planejar-fatia` em worktree separado)
+Detalhes, perguntas, revisão independente (2 subagentes) e itens [C] em [docs/fatias/S8/planejamento.md](../fatias/S8/planejamento.md). Numeração D260+ para não colidir com a sessão paralela (que seguiu em D238–D246).
+
+**D260 — Copiloto que age por proposta; reabre a D211** (21/11, U) ✅ (reabre D211 e o anti-objetivo "virar chat com IA")
+- Pedido do candidato: "agente de IA em formato de chat com foco em melhorar a experiência do usuário no onboarding e nas edições… seja bem crítico".
+- A IA apontou o conflito (D211: "Toqan já faz; conversa sozinha não é produto"; anti-objetivo; resposta preparada "por que não um chat?") e o prazo (~27 h até o corte). Novo argumento: não é conversa sozinha — o pedido vira **proposta conferida pelo código** e o dono aplica; o assistente de 5 passos continua.
+- Alternativas: onboarding inteiro por chat; só tirar dúvidas; não fazer agora (melhorar a UX das edições sem chat).
+
+**D261 — Sempre cartão + clique no Portal** (21/11, U) ✅
+- Toda mudança vira cartão "antes → depois" com impacto do código; Aplicar / Editar no formulário / Descartar. A IA nunca grava, inclusive na aprovação do plano.
+- Alternativas: aplicar direto o reversível com "Desfazer"; aplicar tudo e relatar.
+
+**D262 — Modelo vê clientes por nome, nunca contato** (21/11, U) ✅ (ajusta espec. 4.4 para o copiloto; mantém D237 "contato nunca no prompt")
+- Primeiro nome + inicial e atributos (visitas, selos, segmento) por apelido `{cliente:C3}`; e-mail e telefone só na tela, escritos pelo código. Langfuse sem entrada/saída da tarefa `copiloto`.
+- Histórico: 1ª resposta "copiloto vê clientes"; a IA propôs "clientes por referência"; o candidato manteve "modelo vê tudo"; a revisão de produto mostrou que "Como funciona" ficaria falso, que o aceite do cliente não cobre provedores de IA, que o Langfuse grava os turnos e que nenhuma ação usa contato → o candidato escolheu "nome sim, contato não".
+- Alternativas: modelo vê nome e contato; nada de clientes. Risco aceito: nomes reais vão ao provedor (OpenRouter com `data_collection: deny`), declarado no painel e em "Como funciona".
+
+**D263 — Copiloto na demo: 60 s no bloco do plano** (21/11, U, após a revisão) ✅ (ajusta espec. §5)
+- Pedido por chip (nada digitado), cartão → Aplicar → campo destacado, dentro de 3:45–5:30. O fechamento 6:45–8:00 continua com o candidato mudando tom/prompt + guardrails + Langfuse (critério 5). Modo apresentação tem 1024 px lógicos: o painel empurra o conteúdo.
+- Alternativas: fechar a demo com o copiloto (1ª escolha, revista); só se perguntarem.
+
+**D264 — "IA nunca escreve número" vale no chat** (21/11, U) ✅
+- Resposta com `{fato}`, `{prato}`, `{horario}`, `{cliente}`; números das propostas em campos tipados conferidos pelo código. Alternativa: relaxar no chat.
+
+**D265 — Onboarding: "Seu salão" por frase + dúvidas** (21/11, U) ✅
+- A frase vira cartão que **preenche o formulário no navegador** ([C] da revisão técnica: `saveSalon` substitui tudo e avança o passo); número ausente do texto fica "não informado". Alternativas: também ajustar o pacote; só dúvidas.
+
+**D266 — Modelo do copiloto pela mini-avaliação T4** (21/11, U) ✅ (aplica D51/D159)
+- 12 pedidos com gabarito contra a Cantina × gemini-3.8-flash, gpt-6-luna, claude-haiku-5.5 (conflito declarado); regra: maior acerto, empate → menor p50; p50 > 12 s → sai da demo. Alternativa: reusar o modelo da T3 sem medir.
+
+**D267 — Catálogo único de ferramentas, 2 portas (copiloto + MCP)** (21/11, U — pergunta do candidato "podemos reutilizar o MCP?") ✅ (estende D212)
+- A IA explicou que o MCP sozinho não chega ao dono (token + cliente externo, grava sem clique) e que o copiloto como cliente MCP do próprio servidor só adicionaria uma volta de rede. Alternativas: copiloto como cliente MCP; só melhorar o MCP.
+
+**D268 — MCP vê clientes como o copiloto (nome + atributos, sem contato)** (21/11, U) ✅ (ajusta espec. 4.3 "nunca PII"; ajustada junto com D262)
+- A recomendação era só agregados. Flag `mcp_clientes` desligável.
+
+**D269 — MCP edita por propor + aplicar** (21/11, U, contra a recomendação "só leituras nesta fatia") ✅ (estende D219)
+- `propor_*` não grava; `aplicar_proposta(id)` grava com as mesmas validações, `via: agente`, só propostas de origem MCP. Texto honesto: "no Portal nada muda sem o seu clique; agentes conectados por token podem aplicar". Flag `mcp_edicao`.
+
+**D270 — Escopo: tudo, cortado por flag às 22h** (21/11, U, contra a recomendação dos 2 revisores "núcleo + onboarding") ✅
+- Ordem que protege o mínimo da demo: gateway multi-turno → propostas da onda 1 → painel → T4 + E2E produção → onboarding → MCP → onda 2. O que não estiver verde fica com a flag desligada.
+
+**D271 — Itens [C] da S8** (21/11, IA [C]) ✅
+- Lista em docs/fatias/S8/planejamento.md §9 e §10, entre eles: nome "Assistente do salão"; painel não modal que empurra o conteúdo; histórico só no navegador (12 turnos); proposta expira em 30 min ou se o "antes" mudar (`base_hash`); aplicar com reserva `UPDATE … RETURNING`; `checkOffer` puro extraído de `updateOffer`/`approvePlanInTx`; migração 0010 gerada no fim; guard `chat` (sem número cru nem por extenso, sem URL, lista própria de proibidas); contexto pronto com apelidos; ≤ 3 passos; teto diário próprio de US$ 0,20 na chave pública; gateway falso só no E2E local com `fakeAi:false` no health; chip da demo = trocar a oferta do convite de Ter–Qui 15h–18h.
+>>>>>>> origin/main
