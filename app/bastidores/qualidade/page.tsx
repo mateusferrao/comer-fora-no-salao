@@ -2,15 +2,13 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { getDb } from "@/src/db/client";
 import { getQualityViewCached } from "@/src/modules/analytics/application/quality";
+import { REASON, TASK, usd } from "@/src/ui/ia/labels";
 
 export const dynamic = "force-dynamic";
 /** Nota cega do candidato na T3 (D137): atualizada quando ele responde (eval/relatorio-t3.md). */
 const T3_HUMANO = "o candidato preferiu a IA em 8 de 9; concordou com o juiz em 7 de 9 (κ 0,55; amostra pequena)";
 export const metadata: Metadata = { title: "Qualidade da IA · Comer Fora no Salão · protótipo de case" };
 
-const TASK: Record<string, string> = { cardapio: "Leitura do cardápio", pacote: "Pacote da ativação", plano: "Plano da semana", kit: "Chamadas do kit", revisor: "Revisor" };
-const REASON: Record<string, string> = { invalid: "fora do formato ou reprovado nas regras", timeout: "tempo esgotado", unavailable: "indisponível", outro: "outro" };
-const usd = (x: number, d = 4) => `US$ ${x.toLocaleString("pt-BR", { minimumFractionDigits: d, maximumFractionDigits: d })}`;
 
 /** Qualidade da IA (espec. 2, 4.8): pública, agregada, sem conteúdo nem dados pessoais. */
 export default async function Qualidade() {

@@ -11,6 +11,7 @@ import { resolveToken } from "@/src/modules/mcp/tokens";
 import { consume } from "@/src/shared/rate-limit";
 import { readJson } from "@/src/web/http";
 import { publicBaseUrl } from "@/src/web/qr";
+import { scheduleInviteEmails } from "@/src/web/invite-emails";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
@@ -32,7 +33,7 @@ export async function POST(req: Request) {
   const body = await readJson(req);
   if (Array.isArray(body)) return err(400, -32600, "Batch not supported");
   if (body === null || typeof body !== "object") return err(400, -32700, "Parse error");
-  const res = await handleRpc(db, tok.restaurantId, body, now, { schedule: (fn) => after(fn) });
+  const res = await handleRpc(db, tok.restaurantId, body, now, { schedule: (fn) => after(fn), onApproved: (rid, ids) => scheduleInviteEmails(rid, ids) });
   if (!res) return new Response(null, { status: 202 });
   return Response.json(res, { headers: { "cache-control": "no-store", "mcp-protocol-version": "2025-06-18" } });
 }

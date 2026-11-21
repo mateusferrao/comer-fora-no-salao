@@ -4,8 +4,8 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "../components/Button";
 
-/** Ação principal do Início: "Criar meu restaurante" (espec. 3.1: banner "Crie o seu restaurante"). */
-export function CreateRestaurantButton({ label = "Criar meu restaurante" }: { label?: string }) {
+/** Ação principal do Início: "Cadastrar meu restaurante" (S4: sem "teste"). */
+export function CreateRestaurantButton({ label = "Cadastrar meu restaurante" }: { label?: string }) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -22,7 +22,7 @@ export function CreateRestaurantButton({ label = "Criar meu restaurante" }: { la
       }
       setError(
         j.erro === "limite_conta"
-          ? "Sua conta já tem 3 restaurantes de teste. Exclua um em Configurações para criar outro."
+          ? "Sua conta já tem 3 restaurantes cadastrados. Exclua um em Configurações para cadastrar outro."
           : res.status === 429
             ? "Muitos restaurantes criados hoje a partir desta rede. Tente amanhã."
             : "Não conseguimos criar agora. Tente de novo.",

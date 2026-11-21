@@ -18,7 +18,7 @@ import { VITRINE_SIM } from "@/src/modules/simulacao/domain/generator";
 import { log } from "@/src/shared/log";
 
 /** Suba ao mudar o conteúdo da vitrine ou o gerador da simulação. */
-export const SEED_VERSION = 3; // S3: reativação pura no simulador, semente 20261157 (D146), vereditos calculados nos planos fixos
+export const SEED_VERSION = 4; // S4: textos e nomes sem "fictício/teste" (D152); mesma semente e mesma sequência do gerador
 const DAY_MS = 86_400_000;
 
 export type VitrineHistory = (tx: Tx, p: { restaurantId: string; runId: string; now: Date }) => Promise<void>;

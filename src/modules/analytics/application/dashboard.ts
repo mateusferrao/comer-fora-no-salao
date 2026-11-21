@@ -2,6 +2,10 @@
  * Painel do dono (espec. 2, 3.6; planejamento S3 §4.2): métrica principal contra o holdout, funil, cartões e
  * estado do plano. Tudo por restaurante (o chamador garante que é o da sessão). Sem PII.
  */
+import { getRecentCheckins, type RecentCheckin } from "./recent-checkins";
+import { getTodayFeed, type TodayFeed } from "./today-feed";
+import { getEarlyValue, getSlotGoals } from "./value";
+import { valueTopline, type SlotGoal, type Topline } from "../domain/value";
 import { and, desc, eq, sql } from "drizzle-orm";
 import type { Executor } from "@/src/db/executor";
 import { simulationRuns, weeklyPlans } from "@/src/db/schema";
@@ -43,16 +47,18 @@ export type DashboardView = {
   restaurant: { id: string; kind: string; status: string; copy: boolean; simulated: boolean };
   metric: MetricView;
   newUsers30d: number;
-  funnel: { period: Period; steps: FunnelStep[]; side: { invitesReactivation: number; firstVisitValidated: number }; variants: Array<{ id: string; label: string }> };
+  funnel: { period: Period; steps: FunnelStep[]; side: { invitesReactivation: number; firstVisitValidated: number }; variants: Array<{ id: string; label: string }>; recent: RecentCheckin[]; feed?: TodayFeed };
   cards: CardsView;
   plan: PlanBadge;
+  /** S5.1 (flag `painel_valor`): topo em R$ (D179) e metas da semana por faixa. */
+  value?: { topline: Topline; goals: SlotGoal[] };
 };
 
 type Row = Record<string, unknown>;
 const rows = async (ex: Executor, q: ReturnType<typeof sql>): Promise<Row[]> => ((await ex.execute(q)) as unknown as { rows: Row[] }).rows;
 const num = (v: unknown) => Number(v ?? 0);
 
-export async function getFunnel(ex: Executor, restaurantId: string, today: string, period: Period, variantId?: string): Promise<DashboardView["funnel"]> {
+export async function getFunnel(ex: Executor, restaurantId: string, today: string, period: Period, variantId?: string, now?: Date, opts: { feed?: boolean } = {}): Promise<DashboardView["funnel"]> {
   const { from, to } = periodRange(period, today);
   const v = variantId ?? null;
   // Filtro por peça: leituras e check-ins pela própria versão; o resto pela peça de origem do cliente (D145).
@@ -84,7 +90,11 @@ export async function getFunnel(ex: Executor, restaurantId: string, today: strin
     sql`select pv.id, kp.kind, pv.label, pv.retired_at from piece_variants pv join kit_pieces kp on kp.id = pv.piece_id where pv.restaurant_id = ${restaurantId} and kp.kind <> 'garcom' order by kp.kind, pv.label, pv.created_at`,
   );
   const PIECE: Record<string, string> = { display: "Display de mesa", cartaz: "Cartaz" };
-  return { period, ...funnelSteps(c), variants: variants.map((x) => ({ id: String(x.id), label: `${PIECE[String(x.kind)] ?? String(x.kind)} ${String(x.label)}${x.retired_at ? " (versão anterior)" : ""}` })) };
+  // D172: "Últimos check-ins de hoje" vai no mesmo payload de ~3 s (revisão técnica S4: sem polling extra).
+  // S5.1: com `painel_valor`, "Hoje no salão" substitui a lista (mesmo payload).
+  const recent = now && !opts.feed ? await getRecentCheckins(ex, restaurantId, now) : [];
+  const feed = now && opts.feed ? await getTodayFeed(ex, restaurantId, now) : undefined;
+  return { period, ...funnelSteps(c), variants: variants.map((x) => ({ id: String(x.id), label: `${PIECE[String(x.kind)] ?? String(x.kind)} ${String(x.label)}${x.retired_at ? " (versão anterior)" : ""}` })), recent, ...(feed ? { feed } : {}) };
 }
 
 async function metricOf(ex: Executor, ctx: RestaurantContext, today: string): Promise<MetricView & { cards: CardsView }> {
@@ -191,16 +201,22 @@ export async function getNewUsers30d(ex: Executor, restaurantId: string, today: 
   return num(r?.n);
 }
 
-export async function getDashboard(ex: Executor, restaurantId: string, now: Date, opts: { period?: Period; variantId?: string } = {}): Promise<DashboardView | null> {
+export async function getDashboard(ex: Executor, restaurantId: string, now: Date, opts: { period?: Period; variantId?: string; painelValor?: boolean } = {}): Promise<DashboardView | null> {
   const ctx = await loadContext(ex, restaurantId);
   if (!ctx) return null;
   const today = daySP(now);
   const metricCards = await metricOf(ex, ctx, today);
-  const funnel = await getFunnel(ex, restaurantId, today, opts.period ?? "7d", opts.variantId);
+  const funnel = await getFunnel(ex, restaurantId, today, opts.period ?? "7d", opts.variantId, now, { feed: opts.painelValor });
   const newUsers = await getNewUsers30d(ex, restaurantId, today);
   const plan = await getPlanBadge(ex, restaurantId, now);
   const sim = await ex.select({ id: simulationRuns.id }).from(simulationRuns).where(eq(simulationRuns.restaurantId, restaurantId)).limit(1);
   const { cards, ...metric } = metricCards;
+  const value = opts.painelValor
+    ? {
+        topline: valueTopline({ inc: metric.inc, margin: metric.margin, early: await getEarlyValue(ex, restaurantId, ctx), ticketCents: ctx.restaurant.ticketCents, marginPct: ctx.restaurant.marginPct }),
+        goals: await getSlotGoals(ex, restaurantId, today, ctx),
+      }
+    : undefined;
   return {
     today,
     restaurant: { id: restaurantId, kind: ctx.restaurant.kind, status: ctx.restaurant.status, copy: !!ctx.restaurant.copiedFrom, simulated: sim.length > 0 },
@@ -209,6 +225,7 @@ export async function getDashboard(ex: Executor, restaurantId: string, now: Date
     funnel,
     cards,
     plan,
+    ...(value ? { value } : {}),
   };
 }
 
@@ -226,3 +243,11 @@ export async function getLatestCheckin(ex: Executor, restaurantId: string, since
   return { at: new Date(String(r.at)).toISOString(), piece: r.kind ? `${PIECE[String(r.kind)] ?? String(r.kind)} ${String(r.label)}` : null, holdout: r.arm === "holdout" };
 }
 
+
+/** Topo em R$ (S5.1, D179) fora da Visão geral — resumo semanal por e-mail (S6.1, D188). */
+export async function getValueTopline(ex: Executor, restaurantId: string, now: Date): Promise<Topline | null> {
+  const ctx = await loadContext(ex, restaurantId);
+  if (!ctx) return null;
+  const { inc, margin } = await metricOf(ex, ctx, daySP(now));
+  return valueTopline({ inc, margin, early: await getEarlyValue(ex, restaurantId, ctx), ticketCents: ctx.restaurant.ticketCents, marginPct: ctx.restaurant.marginPct });
+}

@@ -2,8 +2,6 @@ import { describe, expect, it } from "vitest";
 import { formatDistance, gpsStatusFromDistance, haversineMeters } from "@/src/modules/salao/domain/geo";
 import { isBot, shouldCountScan } from "@/src/modules/salao/domain/scan-dedupe";
 import { formatPhone, isPhoneFormat, phoneDigits } from "@/src/modules/salao/domain/phone";
-import { fictitiousIdentity } from "@/src/modules/salao/domain/fictitious-identity";
-import { mulberry32 } from "@/src/shared/rng";
 
 describe("GPS", () => {
   it("300 m → perto; 301 m → longe", () => {
@@ -54,11 +52,6 @@ describe("telefone e identidade fictícia", () => {
     expect(isPhoneFormat("(11) 8765-4321")).toBe(false);
     expect(phoneDigits("(00) 91234-5678")).toBe("00912345678");
     expect(formatPhone("00912345678")).toBe("(00) 91234-5678");
-  });
-  it("gera nome e telefone fictícios com DDD 00", () => {
-    const id = fictitiousIdentity(mulberry32(3));
-    expect(id.name).toMatch(/^\S+ \S+/);
-    expect(id.phone).toMatch(/^\(00\) 9\d{4}-\d{4}$/);
   });
 });
 

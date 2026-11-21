@@ -19,7 +19,7 @@ import { effectiveReview, type StoredReview } from "@/src/modules/ia/tasks/revie
 export type PlanOptionView = { id: string; offer: { kind: OfferKind; itemId: string; pct?: number }; title: string; gain: string; unitCostCents: number; score: number; isTop: boolean };
 export type PlanSlotView = { slotId: string; label: string; phrase: string; extraTables: number; options: PlanOptionView[]; chosenId: string | null; inviteText: string; inviteRendered: string; justificativa: string; weeklyCap: number };
 export type PlanView = {
-  plan: { id: string; status: string; weekKey: string; generatedBy: "ia" | "sem_ia" | "fixo"; semIa?: string; approvedVia: string | null; stale: boolean; currentWeek: boolean; review: StoredReview | null } | null;
+  plan: { id: string; status: string; weekKey: string; generatedBy: "ia" | "sem_ia" | "fixo"; semIa?: string; approvedVia: string | null; stale: boolean; currentWeek: boolean; review: StoredReview | null; agentSteps: Array<{ label: string; ms: number }> } | null;
   generating: boolean;
   insights: Pick<PlanInsights, "heatmap" | "segments" | "today"> & { offers: Array<PlanInsights["offers"][number] & { slotLabel: string }>; lowTurns: string[] };
   learned: Array<{ ofertaKey: string; verdict: string; texto: string; title: string }>;
@@ -114,6 +114,8 @@ export async function getPlanView(db: Db, restaurantId: string, now: Date, planI
           generatedBy: ((shown.texts as { generatedBy?: "ia" | "sem_ia" | "fixo" }).generatedBy ?? "sem_ia"),
           semIa: (shown.decision as { semIa?: string } | null)?.semIa,
           approvedVia: shown.approvedVia,
+          // S6.3b (D194): passos do agente, quando o plano saiu dele.
+          agentSteps: ((shown.agentSteps ?? []) as Array<{ label: string; ms: number }>).map((x) => ({ label: x.label, ms: x.ms })),
           stale: shown.weekKey < weekKeySP(now),
           currentWeek: shown.weekKey === weekKeySP(now),
           review: effectiveReview((shown.decision as { reviewer?: StoredReview } | null)?.reviewer, now),
@@ -136,7 +138,7 @@ export async function getPlanView(db: Db, restaurantId: string, now: Date, planI
       fantasma: plan2.filter((x) => x.decision.kind === "fantasma").length,
       quota: inviteSlots(ctx).map((s) => ({ slotLabel: slotLabel(s), use: Math.min(usedBy[s.id] ?? 0, quota[s.id] ?? 0), free: remaining[s.id] ?? 0, left: (remaining[s.id] ?? 0) - (usedBy[s.id] ?? 0) })),
     },
-    menu: ctx.menu.filter((m) => !ctx.inactiveItemIds.includes(m.id)).map((m) => ({ id: m.id, name: m.name, category: m.category })),
+    menu: ctx.menu.filter((m) => !ctx.inactiveItemIds.includes(m.id) && !ctx.noOfferItemIds.includes(m.id)).map((m) => ({ id: m.id, name: m.name, category: m.category })),
     history: history.rows.map((h) => ({ id: String(h.id), weekKey: String(h.week_key), status: String(h.status), via: (h.approved_via as string | null) ?? null, approvedAt: h.approved_at ? new Date(String(h.approved_at)).toISOString() : null, sent: Number(h.sent ?? 0) })),
   };
 }

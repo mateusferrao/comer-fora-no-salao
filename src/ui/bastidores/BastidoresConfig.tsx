@@ -213,8 +213,8 @@ export function BastidoresConfig({ logged }: { logged: boolean }) {
           </button>
         </div>
         <p className="text-sm">
-          <a className="text-red-text underline" href="/app/jornada">
-            Novo cliente fictício: abra a Jornada e use &quot;Testar como outro cliente&quot;
+          <a className="text-red-text underline" href="/bastidores/avaliador">
+            Ferramentas do avaliador (Avançar 1 dia, ver como cliente reativado)
           </a>
         </p>
       </section>

@@ -54,7 +54,7 @@ export function Presenter({ stores, currentId }: { stores: Store[]; currentId: s
     }
   };
 
-  if (!store) return <main className="p-8 text-sm text-ink">Ative um restaurante ou espere a demonstração ficar pronta para usar o modo apresentação.</main>;
+  if (!store) return <main className="p-8 text-sm text-ink">Ative um restaurante ou espere o restaurante de exemplo ficar pronto para usar o modo apresentação.</main>;
   return (
     <main className="flex min-h-[calc(100dvh-1.75rem)] flex-col bg-page">
       <p className="p-6 text-sm text-ink lg:hidden">Use uma tela maior (pelo menos 1100 px) para o modo apresentação.</p>

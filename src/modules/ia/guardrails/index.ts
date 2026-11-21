@@ -4,6 +4,7 @@
  * desconhecida, PII, HTML e tamanho continuam bloqueando.
  */
 import { renderReferences, stripReferences, unknownRefs, referencesIn, type RefContext, type RefKind } from "@/src/modules/textos/domain/references";
+import { findAvoided } from "@/src/modules/config/domain/ai-profile";
 
 export type GuardField = "textoConvite" | "justificativa" | "aprendemos" | "kit";
 export type GuardOptions = {
@@ -14,6 +15,13 @@ export type GuardOptions = {
   /** Kit: o texto vai para todos (inclusive o holdout) → nada de dia, turno nem item do convite. */
   forbidDayTurn?: boolean;
   forbidItemIds?: readonly string[];
+  /** "O que evitar" do dono (S6.3a — D197): termo presente bloqueia o texto da IA; no texto do dono, só avisa. */
+  avoid?: readonly string[];
+  /**
+   * Convite (D226): a chave da faixa cujo `{horario:…}` o texto PRECISA citar. Liga também as regras de redação
+   * `artigo_antes_do_horario` e `oferta_repetida` (críticas do juiz na T3 do agente, agora determinísticas).
+   */
+  requireSlot?: string;
 };
 export type TextGuard = { ok: true; warnings: string[] } | { ok: false; reasons: string[]; warnings: string[] };
 
@@ -46,6 +54,10 @@ export function guardText(text: string, ctx: RefContext, o: GuardOptions): TextG
   const n = norm(bare);
   for (const w of FORBIDDEN) if (hasWord(n, w)) soft(`proibida:${w}`);
   if (o.field === "textoConvite") for (const w of CONVITE_ONLY) if (hasWord(n, w)) soft(`proibida:${w}`);
+  if (o.requireSlot !== undefined) for (const r of conviteReasons(text, o.requireSlot)) soft(r);
+  // Sem as referências: o nome de um prato citado por {prato:…} não conta como uso do termo.
+  const avoided = findAvoided(bare, o.avoid ?? []);
+  if (avoided) soft(`evitar:${avoided}`);
   if (o.forbidDayTurn) for (const w of DAY_TURN) if (hasWord(n, w)) reasons.push(`dia_turno:${w}`);
   if (o.forbidItemIds?.length) {
     for (const r of referencesIn(text)) if (r.kind === "prato" && o.forbidItemIds.includes(r.key)) reasons.push(`item_do_convite:${r.key}`);
@@ -54,4 +66,20 @@ export function guardText(text: string, ctx: RefContext, o: GuardOptions): TextG
   if (!rendered) reasons.push("vazio");
   if (rendered.length > o.maxLen) reasons.push(`tamanho:${rendered.length}>${o.maxLen}`);
   return reasons.length ? { ok: false, reasons, warnings } : { ok: true, warnings };
+}
+
+/**
+ * Regras determinísticas do convite (D226), sobre o texto com as referências:
+ * - `sem_horario`: não cita o `{horario:X}` da própria faixa (o convite perde o sentido sem dia e horário);
+ * - `artigo_antes_do_horario`: "no/na/nos/nas/em {horario:…}" ("Volte no terça…");
+ * - `oferta_repetida`: logo depois de `{oferta}` vem "grátis", "de graça", "por (nossa) conta" ou um `{prato:…}`
+ *   (a oferta renderizada já diz o benefício inteiro).
+ */
+export function conviteReasons(text: string, slotKey: string): string[] {
+  const out: string[] = [];
+  const esc = slotKey.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  if (!new RegExp(`\\{horario:${esc}\\}`).test(text)) out.push("sem_horario");
+  if (/(^|[^a-zà-ú])(no|na|nos|nas|em)\s+\{horario:/i.test(text)) out.push("artigo_antes_do_horario");
+  if (/\{oferta\}\s*(gr[aá]tis|de gra[cç]a|por (nossa |minha )?conta|\{prato:)/i.test(text)) out.push("oferta_repetida");
+  return out;
 }

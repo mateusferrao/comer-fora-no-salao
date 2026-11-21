@@ -11,7 +11,7 @@ export const DEVICE_COOKIE = "cf_aparelho";
 const MAX_AGE = 180 * 24 * 60 * 60;
 
 /** A assinatura inclui a finalidade ("cliente:"): o cookie do dono (S2) usa outra e não se confunde (revisão S1). */
-const PURPOSE = "cliente:";
+const PURPOSE = "cliente2:"; // S4: troca de finalidade invalida os cookies de antes do login por e-mail (D169).
 
 export async function readCustomerId(): Promise<string | null> {
   const jar = await cookies();

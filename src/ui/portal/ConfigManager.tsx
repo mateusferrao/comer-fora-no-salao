@@ -5,13 +5,15 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import type { MenuCategory } from "@/src/modules/beneficios/domain/menu";
 import { describeOffer } from "@/src/modules/beneficios/domain/offers";
-import type { SettingsView } from "@/src/modules/config/application/update-settings";
+import type { NotifyView, SettingsView } from "@/src/modules/config/application/update-settings";
+import { NotifySettingsTab } from "./NotifySettingsTab";
 import { Button } from "../components/Button";
 import { DaySelector } from "../components/DaySelector";
 import { Field } from "../components/Field";
 import { Tabs } from "../components/Tabs";
 import { TimeRange } from "../components/TimeRange";
 import { OfferEditor, type OfferValue } from "./OfferEditor";
+import { Switch } from "../components/Switch";
 
 const CATS: Array<[MenuCategory, string]> = [
   ["entrada", "Entrada"],
@@ -28,14 +30,24 @@ const cents = (s: string) => {
 const ERR: Record<string, string> = {
   oferta: "Oferta inválida: confira o item (categoria) e o desconto (até 50%).",
   texto: "Texto não permitido (dados pessoais, HTML, referência desconhecida ou longo demais).",
-  em_uso: "Este item está numa oferta em vigor. Troque a oferta antes.",
+  em_uso: "Este item está numa oferta em vigor. Troque a oferta antes de excluir.",
+  nome_marca: "O nome do restaurante não pode citar a marca iFood.",
   ultima_faixa: "O restaurante precisa de pelo menos um horário vazio.",
   faixa: "Horário inválido: precisa caber no funcionamento, com fim depois do início.",
   funcionamento: "O novo funcionamento não cobre algum horário vazio. Ajuste os horários vazios antes.",
   sem_candidatas: "Não há oferta válida no cardápio para este horário.",
+  sem_opcao: "Os convites ficariam sem nenhuma oferta possível. Deixe outro prato entrar em ofertas antes.",
   limite_faixas: "Já são 8 horários vazios. Desative um antes de criar outro.",
   formato: "Confira os campos.",
 };
+
+function okWithWarnings(okText: string, w: string[]): string {
+  if (w.includes("prato_fora_da_oferta")) return `${okText}. Atenção: o texto do convite cita um prato que não é mais a oferta; revise o texto.`;
+  // S6.3a (D197): avisos de "Pode entrar em ofertas".
+  const offer = [w.includes("em_uso_ate_trocar") ? "está numa oferta em vigor e continua nela até a próxima troca" : null, w.includes("uma_opcao") ? "sobrou só 1 opção de oferta para os convites" : null].filter(Boolean);
+  if (offer.length) return `${okText}. Atenção: ${offer.join("; ")}.`;
+  return w.length ? `${okText}. Atenção: o texto cita número ou promessa; vale a oferta da regra.` : okText;
+}
 
 async function post(body: unknown) {
   const r = await fetch("/api/parceiro/configuracoes", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(body) });
@@ -51,7 +63,7 @@ function useSaver() {
     setBusy(key);
     const r = await post(body);
     setBusy(null);
-    setMsg((m) => ({ ...m, [key]: r.ok ? { ok: true, text: r.warnings.includes("prato_fora_da_oferta") ? `${okText}. Atenção: o texto do convite cita um prato que não é mais a oferta; revise o texto.` : r.warnings.length ? `${okText}. Atenção: o texto cita número ou promessa; vale a oferta da regra.` : okText } : { ok: false, text: ERR[r.erro ?? "formato"] ?? "Não conseguimos salvar." } }));
+    setMsg((m) => ({ ...m, [key]: r.ok ? { ok: true, text: okWithWarnings(okText, r.warnings) } : { ok: false, text: ERR[r.erro ?? "formato"] ?? "Não conseguimos salvar." } }));
     if (r.ok) router.refresh();
     return r.ok;
   };
@@ -65,9 +77,24 @@ function useSaver() {
 }
 
 /** Configurações (D120): tudo o que a IA criou fica editável; cada mudança vira versão nova. */
-export function ConfigManager({ v, isTest, restaurantId }: { v: SettingsView; isTest: boolean; restaurantId: string }) {
-  const [tab, setTab] = useState("agora");
-  const menu = v.menu.filter((m) => m.active).map((m) => ({ id: m.id, name: m.name, category: m.category, priceCents: m.priceCents }));
+export function ConfigManager({
+  v,
+  isTest,
+  restaurantId,
+  notify,
+  flags,
+  initialTab = "agora",
+}: {
+  v: SettingsView;
+  isTest: boolean;
+  restaurantId: string;
+  notify?: NotifyView;
+  flags?: { agendador: boolean; resumo_email: boolean; plano_agente?: boolean; aprende?: boolean };
+  initialTab?: string;
+}) {
+  const [tab, setTab] = useState(initialTab);
+  // Pratos "fora das ofertas" (D197) não aparecem nos seletores de oferta.
+  const menu = v.menu.filter((m) => m.active && m.offerAllowed).map((m) => ({ id: m.id, name: m.name, category: m.category, priceCents: m.priceCents }));
   return (
     <Tabs
       label="Configurações"
@@ -79,6 +106,9 @@ export function ConfigManager({ v, isTest, restaurantId }: { v: SettingsView; is
         { id: "cartela", label: "Cartela", content: <OfferTab title="Recompensa da cartela" note="6 selos, 1 por dia, validade de 90 dias após o 1º check-in (regras iguais às do app)." role="recompensa" value={v.recompensa} menu={menu} /> },
         { id: "cardapio", label: "Cardápio", content: <MenuTab v={v} /> },
         { id: "restaurante", label: "Restaurante", content: <RestaurantTab v={v} isTest={isTest} restaurantId={restaurantId} /> },
+        // S6.3a (D197): logo depois de "Restaurante" (revisão de produto I6).
+        { id: "ia", label: "IA do restaurante", content: <div className="py-4"><ToneSection v={v} agenteGlobal={!!flags?.plano_agente} aprendeGlobal={flags?.aprende ?? true} /></div> },
+        ...(notify && flags ? [{ id: "avisos", label: "Avisos e automação", content: <NotifySettingsTab view={notify} flags={flags} /> }] : []),
       ]}
     />
   );
@@ -203,7 +233,7 @@ function MenuTab({ v }: { v: SettingsView }) {
   const [novo, setNovo] = useState({ name: "", preco: "", category: "prato" as MenuCategory });
   return (
     <div className="flex flex-col gap-4 py-4">
-      <div className="overflow-x-auto rounded-sm border border-border">
+      <div className="relative overflow-x-auto rounded-sm border border-border">
         <table className="w-full min-w-[640px] text-sm">
           <caption className="sr-only">Itens do cardápio</caption>
           <thead className="bg-surface-muted text-left">
@@ -212,6 +242,7 @@ function MenuTab({ v }: { v: SettingsView }) {
               <th scope="col" className="px-3 py-2">Categoria</th>
               <th scope="col" className="px-3 py-2">Preço (R$)</th>
               <th scope="col" className="px-3 py-2">No cardápio</th>
+              <th scope="col" className="px-3 py-2">Pode entrar em ofertas</th>
               <th scope="col" className="px-3 py-2"><span className="sr-only">Ações</span></th>
             </tr>
           </thead>
@@ -238,11 +269,41 @@ function MenuTab({ v }: { v: SettingsView }) {
                   </label>
                 </td>
                 <td className="px-2 py-1">
-                  <Button variant="outline-portal" loading={busy === `item-${r.id}`} onClick={() => save(`item-${r.id}`, { acao: "item_editar", itemId: r.id, name: r.name, priceCents: cents(r.preco) ?? 0, category: r.category }, "Item salvo")}>
-                    Salvar
-                  </Button>
+                  {/* S6.3a (D197): fora das ofertas = nunca vira convite, "agora" nem recompensa; a IA nem vê. */}
+                  <label className="flex min-h-11 items-center gap-2">
+                    <input
+                      type="checkbox"
+                      aria-label={`Pode entrar em ofertas: ${r.name}`}
+                      checked={r.offerAllowed}
+                      onChange={(e) =>
+                        save(`oferta-${r.id}`, { acao: "item_oferta", itemId: r.id, allowed: e.target.checked }, e.target.checked ? "Pode entrar em ofertas" : "Fora das ofertas").then((ok) => ok && setRows(rows.map((x, k) => (k === i ? { ...x, offerAllowed: !x.offerAllowed } : x))))
+                      }
+                    />
+                    <span className="text-xs text-ink-muted">{r.offerAllowed ? "sim" : "não"}</span>
+                  </label>
+                </td>
+                <td className="px-2 py-1">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <Button variant="outline-portal" loading={busy === `item-${r.id}`} onClick={() => save(`item-${r.id}`, { acao: "item_editar", itemId: r.id, name: r.name, priceCents: cents(r.preco) ?? 0, category: r.category }, "Item salvo")}>
+                      Salvar
+                    </Button>
+                    {!r.inUse && (
+                      <button
+                        type="button"
+                        className="min-h-11 px-2 text-sm font-semibold text-red-text underline"
+                        aria-label={`Excluir ${r.name}`}
+                        onClick={() =>
+                          window.confirm(`Excluir "${r.name}" do cardápio? Códigos e textos antigos continuam valendo.`) &&
+                          void save(`item-${r.id}`, { acao: "item_excluir", itemId: r.id }, "Item excluído").then((ok) => ok && setRows(rows.filter((x) => x.id !== r.id)))
+                        }
+                      >
+                        Excluir
+                      </button>
+                    )}
+                  </div>
                   <Msg k={`item-${r.id}`} />
                   <Msg k={`ativo-${r.id}`} />
+                  <Msg k={`oferta-${r.id}`} />
                 </td>
               </tr>
             ))}
@@ -283,7 +344,7 @@ function RestaurantTab({ v, isTest, restaurantId }: { v: SettingsView; isTest: b
         <Field label="Clientes de salão por semana" type="number" min={0} value={f.weeklyCustomers ?? ""} onChange={(e) => setF({ ...f, weeklyCustomers: e.target.value ? Number(e.target.value) : null })} />
         <Field label="Ticket médio por pessoa (R$)" inputMode="decimal" value={f.ticket} onChange={(e) => setF({ ...f, ticket: e.target.value })} hint="Estimativa sua; usada só para calcular retorno." />
         <Field label="Margem aproximada (%)" type="number" min={1} max={95} value={f.marginPct ?? ""} onChange={(e) => setF({ ...f, marginPct: e.target.value ? Number(e.target.value) : null })} hint="Estimativa sua; usada só para calcular retorno." />
-        <Field label="Endereço (fictício)" value={f.address} onChange={(e) => setF({ ...f, address: e.target.value })} />
+        <Field label="Endereço" value={f.address} onChange={(e) => setF({ ...f, address: e.target.value })} />
       </div>
       <label className="flex flex-col gap-1.5 text-sm font-medium text-ink">
         Descrição (aba Sobre do app)
@@ -314,13 +375,12 @@ function RestaurantTab({ v, isTest, restaurantId }: { v: SettingsView; isTest: b
         </Button>
         <Msg k="rest" />
       </div>
-      <ToneSection v={v} />
       {isTest && (
         <div className="mt-4 flex flex-col gap-2 border-t border-divider pt-4">
-          <p className="text-sm text-ink-muted">Excluir apaga este restaurante de teste e tudo dele (check-ins, códigos, kit).</p>
+          <p className="text-sm text-ink-muted">Excluir apaga este restaurante e tudo dele (check-ins, códigos, kit).</p>
           {!confirmDel ? (
             <button type="button" className="min-h-11 self-start text-sm font-semibold text-red-text underline" onClick={() => setConfirmDel(true)}>
-              Excluir restaurante de teste
+              Excluir restaurante
             </button>
           ) : (
             <Button
@@ -342,7 +402,16 @@ function RestaurantTab({ v, isTest, restaurantId }: { v: SettingsView; isTest: b
   );
 }
 
+const PROFILE_ERR: Record<string, string> = {
+  longo: "Texto longo demais.",
+  caracteres: "Sem chaves, sinais de < > « », crases ou marcação.",
+  contato: "Sem telefone, e-mail ou links: a IA não escreve contato.",
+  instrucao: "Escreva só fatos sobre o restaurante (ex.: história, especialidades).",
+  termos: "Até 15 termos, cada um com 2 a 30 caracteres.",
+};
 const TONE_ERR: Record<string, string> = {
+  fatos: "Fatos para a IA: escreva só fatos sobre o restaurante, sem contato nem marcação.",
+  evitar: "O que evitar: até 15 termos, sem marcação nem contato.",
   longo: "Use até 200 caracteres.",
   caracteres: "Sem chaves, sinais de < > « » ou quebras de linha.",
   dados: "Sem e-mail, telefone ou outros números longos: o tom é só o estilo.",
@@ -352,10 +421,17 @@ const TONE_ERR: Record<string, string> = {
   limite: "Limite de IA do dia atingido. Tente amanhã.",
 };
 
-/** Tom da IA do restaurante (D138): muda só o estilo; "Ver como fica" regenera o convite de 1 faixa (antes × depois). */
-function ToneSection({ v }: { v: SettingsView }) {
+/**
+ * "IA do restaurante" (D138; S6.3a — D197): tom, fatos e termos a evitar, todos opcionais (vazio = padrão com os dados
+ * que o sistema já tem). "Ver como fica" regenera o convite de 1 faixa com os 3 campos digitados (antes × depois).
+ */
+function ToneSection({ v, agenteGlobal = false, aprendeGlobal = true }: { v: SettingsView; agenteGlobal?: boolean; aprendeGlobal?: boolean }) {
   const router = useRouter();
   const [tone, setTone] = useState(v.restaurant.aiTone ?? "");
+  // Fatos sugeridos a partir da descrição (não gravados até o dono salvar — revisão de produto I3).
+  const [about, setAbout] = useState(v.restaurant.aiAbout ?? v.restaurant.description ?? "");
+  const [avoid, setAvoid] = useState(v.restaurant.aiAvoid ?? "");
+  const [feat, setFeat] = useState(v.restaurant.aiFeatures);
   const [slotId, setSlotId] = useState(v.slots[0]?.id ?? "");
   const [busy, setBusy] = useState("");
   const [msg, setMsg] = useState("");
@@ -367,10 +443,13 @@ function ToneSection({ v }: { v: SettingsView }) {
   const slot = v.slots.find((s) => s.id === slotId);
   return (
     <section aria-labelledby="tom" className="flex flex-col gap-3 rounded-sm border border-border p-4">
-      <h3 id="tom" className="font-semibold text-ink">
-        Tom da IA do seu restaurante
-      </h3>
-      <p className="text-sm text-ink-muted">Muda só o estilo dos textos da IA; as regras e os números continuam do sistema.</p>
+      <h2 id="tom" className="text-lg font-bold text-ink">
+        Como a IA escreve para o seu restaurante
+      </h2>
+      <p className="text-sm text-ink-muted">
+        Tudo aqui é opcional. Sem nada preenchido, a IA usa o padrão com o que o sistema já sabe do restaurante (nome, culinária, cardápio e horários). As regras, as
+        ofertas e os números continuam do sistema.
+      </p>
       <Field label="Tom (até 200 caracteres)" value={tone} maxLength={200} placeholder="Ex.: descontraído, com gírias de boteco" onChange={(e) => setTone(e.target.value)} />
       <div className="flex flex-wrap items-end gap-3">
         <Button
@@ -386,10 +465,57 @@ function ToneSection({ v }: { v: SettingsView }) {
         >
           Salvar tom
         </Button>
+      </div>
+      <label className="flex flex-col gap-1.5 text-sm font-medium text-ink">
+        Fatos para a IA (não aparece no app) · até 500 caracteres
+        <textarea
+          className="min-h-24 rounded-sm border border-border px-3 py-2 text-base font-normal"
+          value={about}
+          maxLength={500}
+          placeholder="Ex.: cantina de bairro desde 1998, massa fresca feita na casa"
+          onChange={(e) => setAbout(e.target.value)}
+        />
+        <span className="text-xs font-normal text-ink-muted">
+          {!v.restaurant.aiAbout && about && about === (v.restaurant.description ?? "") ? "Sugestão a partir da descrição do restaurante: só vale depois de salvar. " : ""}
+          Só fatos sobre o restaurante (história, especialidades, público). {about.length}/500
+        </span>
+      </label>
+      <Field label="O que evitar (termos separados por vírgula) · até 200 caracteres" value={avoid} maxLength={200} placeholder="Ex.: gírias, álcool" onChange={(e) => setAvoid(e.target.value)} />
+      <p className="-mt-2 text-xs text-ink-muted">{avoid.length}/200</p>
+      <div className="flex flex-col">
+        {agenteGlobal && <Switch label="Usar agente de IA no plano da semana" hint="O agente consulta os números do sistema antes de escolher." checked={feat.agente} onChange={(agente) => setFeat({ ...feat, agente })} />}
+        <Switch
+          label="Aprender com minhas edições"
+          hint={aprendeGlobal ? "Seus textos aprovados viram exemplo de estilo só para este restaurante." : "Desligado por enquanto."}
+          checked={feat.aprende}
+          disabled={!aprendeGlobal}
+          onChange={(aprende) => setFeat({ ...feat, aprende })}
+        />
+      </div>
+      <div className="flex flex-wrap items-end gap-3">
+        <Button
+          variant="primary-portal"
+          loading={busy === "perfil"}
+          onClick={async () => {
+            setBusy("perfil");
+            const r = await call({ acao: "ia_perfil", about, avoid, features: feat });
+            setBusy("");
+            const w = (r.j.warnings ?? []) as string[];
+            const inMenu = w.filter((x) => x.startsWith("no_cardapio:")).map((x) => x.slice(12));
+            setMsg(
+              r.ok
+                ? `Salvo: vale nos próximos textos da IA.${inMenu.length ? ` Atenção: ${inMenu.map((t) => `"${t}"`).join(", ")} aparece no nome de pratos; os pratos continuam, só a IA não usa a palavra.` : ""}`
+                : PROFILE_ERR[r.j.motivo] ?? "Não deu para salvar.",
+            );
+            if (r.ok) router.refresh();
+          }}
+        >
+          Salvar fatos e preferências
+        </Button>
         {v.slots.length > 0 && (
           <>
             <label className="flex flex-col gap-1 text-sm text-ink">
-              Faixa para testar
+              Prévia nesta faixa
               <select value={slotId} onChange={(e) => setSlotId(e.target.value)} className="min-h-11 rounded-xs border border-border bg-white px-2">
                 {v.slots.map((s) => (
                   <option key={s.id} value={s.id}>
@@ -404,7 +530,7 @@ function ToneSection({ v }: { v: SettingsView }) {
               onClick={async () => {
                 setBusy("ver");
                 setPrev(null);
-                const r = await call({ acao: "tom_previa", tone, slotId });
+                const r = await call({ acao: "tom_previa", tone, slotId, about, avoid });
                 setBusy("");
                 if (r.ok) setPrev(r.j);
                 else setMsg(TONE_ERR[r.j.erro] ?? "Não deu para gerar a prévia.");

@@ -16,7 +16,14 @@ export default defineConfig({
     baseURL: externalBaseUrl ?? `http://localhost:${port}`,
     trace: "off",
   },
-  projects: [{ name: "chromium", use: { ...devices["Desktop Chrome"] } }],
+  // S5 (revisão técnica B2): flags globais → 2 passadas em série. `chromium` = flags da S5 desligadas (a suíte de
+  // sempre); `flags-on` = specs `*.on.spec.ts`, com as flags ligadas, só depois da 1ª passada inteira.
+  projects: [
+    { name: "setup-off", testMatch: /flags\.setup\.ts/ },
+    { name: "chromium", use: { ...devices["Desktop Chrome"] }, testIgnore: /\.on\.spec\.ts/, dependencies: ["setup-off"] },
+    { name: "setup-on", testMatch: /flags\.setup\.ts/, dependencies: ["chromium"] },
+    { name: "flags-on", use: { ...devices["Desktop Chrome"] }, testMatch: /\.on\.spec\.ts/, dependencies: ["setup-on"] },
+  ],
   webServer: externalBaseUrl
     ? undefined
     : {
@@ -42,6 +49,8 @@ export default defineConfig({
           // Sem chaves de IA no servidor local/CI: o pacote e o kit seguem o modo sem IA (determinístico).
           OPENROUTER_KEY_PUBLIC: "",
           OPENROUTER_KEY_DEMO: "",
+          // S6.1: o agendador nunca roda no servidor da E2E (provado por integração com relógio fixo — revisão I2).
+          SCHEDULER: "off",
         },
       },
 });

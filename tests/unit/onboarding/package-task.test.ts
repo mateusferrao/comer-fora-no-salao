@@ -21,7 +21,7 @@ const task = buildPackageTask(pp, []);
 const good: PackageOut = {
   escolhas: [
     { faixa: "A", candidata: "A1", textoConvite: "Volte {horario:A} e aproveite {oferta}.", justificativa: "A tarde está {fato:faixa_A_intensidade}; algo leve combina com o turno da {fato:faixa_A_turno}." },
-    { faixa: "B", candidata: "B2", textoConvite: "À noite, {oferta} para fechar o dia.", justificativa: "Faixa {fato:faixa_B_intensidade}." },
+    { faixa: "B", candidata: "B2", textoConvite: "Volte {horario:B}: {oferta} para fechar o dia.", justificativa: "Faixa {fato:faixa_B_intensidade}." },
   ],
   ordem: ["A", "B"],
   aprendemos: [],
@@ -61,7 +61,7 @@ describe("tarefa 3 — plano da semana: 'o que aprendemos' (D220; S3)", () => {
   const ok: PackageOut = {
     ...good,
     aprendemos: [
-      { ofertaKey: "O1", texto: "Só {fato:uso7d_A_pct} dos convites de {horario:A} foram usados: vale testar outra oferta." },
+      { ofertaKey: "O1", texto: "Só {fato:uso7d_A_pct} dos convites de {horario:A} foram usados: vale trocar a oferta." },
       { ofertaKey: "O2", texto: "Ainda há poucos convites de {horario:B} para julgar {oferta}." },
     ],
   };

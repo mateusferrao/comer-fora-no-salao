@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { axe, BARRA, loginE2E, PROD } from "./helpers";
+import { axe, BARRA, loginE2E, PROD, loginCustomer } from "./helpers";
 
 /**
  * Fluxo do dono (planejamento S2 §7). Serial: as contas de teste são compartilhadas entre os testes do arquivo.
@@ -40,13 +40,12 @@ test("conta nova ganha a própria vitrine (60 dias): check-in de cliente nela e 
   test.setTimeout(90_000);
   await loginE2E(page.request, 1);
   await page.goto("/parceiro/salao");
-  await expect(page.getByText(/Preparando seu restaurante de demonstração/)).toBeHidden({ timeout: 60_000 });
-  await expect(page.getByText("Restaurante de demonstração com 60 dias de dados de exemplo. Tudo aqui é editável e só você vê.")).toBeVisible();
-  const href = (await page.getByRole("link", { name: /Abrir como cliente/ }).getAttribute("href"))!;
+  await expect(page.getByText(/Preparando o restaurante de exemplo/)).toBeHidden({ timeout: 60_000 });
+  await expect(page.getByText("Restaurante de exemplo · histórico gerado")).toBeVisible();
+  const href = (await page.getByRole("link", { name: "Ver minha página" }).getAttribute("href"))!;
   expect(href).toMatch(/^\/r\/cantina-nonna-lucia-[a-z2-9]{6}$/);
   const ctx = await page.context().browser()!.newContext();
-  const d = String(Math.floor(Math.random() * 1e8)).padStart(8, "0");
-  await ctx.request.post(`/api${href}/identificacao`, { data: { name: "Dani Teste", phone: `(00) 9${d.slice(0, 4)}-${d.slice(4)}`, optWhatsapp: true, optApp: true, optPush: true, accept: true } });
+  await loginCustomer(ctx.request, `/api${href}`, "Dani Teste");
   const ck = await ctx.request.post(`/api${href}/checkin`, { data: { gpsStatus: "negado", idempotencyKey: crypto.randomUUID() } });
   const code = ((await ck.json()) as { codes: Array<{ code: string; type: string }> }).codes.find((c) => c.type === "primeira_visita")!.code;
   await ctx.close();
@@ -73,11 +72,11 @@ test("isolamento: a conta 2 não abre nem valida nada da conta 1", async ({ page
   await ctx2.close();
 });
 
-test("conta de teste entra, vê a Visão geral com 'Crie o seu restaurante' e sai", async ({ page }) => {
+test("conta entra, vê a Visão geral com 'Cadastre o seu restaurante' e sai", async ({ page }) => {
   await loginE2E(page.request, 1);
   await page.goto("/parceiro/salao");
   await expect(page.getByRole("heading", { name: "Visão geral", level: 1 })).toBeVisible();
-  await expect(page.getByRole("heading", { name: "Crie o seu restaurante" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Cadastre o seu restaurante" })).toBeVisible();
   await expect(page.getByRole("link", { name: "Visão geral" }).first()).toHaveAttribute("aria-current", "page");
   await axe(page);
   await page.getByRole("button", { name: "Sair" }).first().click();
@@ -117,7 +116,7 @@ test("assistente completo com exemplo: salão pré-preenchido → revisão → p
     for (const id of ids) await page.request.delete("/api/parceiro/restaurantes", { data: { restaurantId: id } });
     await page.reload();
   }
-  await page.getByRole("button", { name: /Criar (meu|outro) restaurante/ }).click();
+  await page.getByRole("button", { name: /Cadastrar (meu|outro) restaurante/ }).click();
   await expect(page).toHaveURL(/\/parceiro\/salao\/ativar$|\/ativar\/1$/);
   await expect(page.getByRole("heading", { name: "Cardápio do salão" })).toBeVisible();
   await axe(page);
@@ -125,7 +124,7 @@ test("assistente completo com exemplo: salão pré-preenchido → revisão → p
 
   await expect(page.getByRole("heading", { name: "Seu salão" })).toBeVisible();
   await expect(page.getByLabel("Nome do restaurante")).toHaveValue("Boteco do Seu Zé");
-  await expect(page.getByText(/21 itens encontrados · processado anteriormente/)).toBeVisible();
+  await expect(page.getByText("21 itens encontrados")).toBeVisible();
   await axe(page);
   await page.getByRole("button", { name: "Continuar" }).click();
 
@@ -153,7 +152,7 @@ test("assistente completo com exemplo: salão pré-preenchido → revisão → p
   await axe(page);
   await page.getByRole("button", { name: "Ativar Comer Fora no salão" }).click();
   await expect(page.getByRole("heading", { name: "Comer Fora no salão ativo!" })).toBeVisible();
-  const slug = (await page.getByRole("link", { name: "Abrir como cliente" }).getAttribute("href"))!.replace("/r/", "");
+  const slug = (await page.getByRole("link", { name: "Ver minha página" }).getAttribute("href"))!.replace("/r/", "");
 
   // Kit: gerado depois da ativação (sem IA no CI/local), aprovar, "no salão", impressão com QR.
   await page.getByRole("link", { name: "Ver meu kit" }).click();
@@ -175,8 +174,7 @@ test("assistente completo com exemplo: salão pré-preenchido → revisão → p
   for (let i = 0; i < 40 && !code; i++) {
     const ctx = await page.context().browser()!.newContext();
     const req = ctx.request;
-    const d = String(Math.floor(Math.random() * 1e8)).padStart(8, "0");
-    await req.post(`/api/r/${slug}/identificacao`, { data: { name: "Bia Teste", phone: `(00) 9${d.slice(0, 4)}-${d.slice(4)}`, optWhatsapp: true, optApp: true, optPush: true, accept: true } });
+    await loginCustomer(req, `/api/r/${slug}`, "Bia Teste");
     const ck = await req.post(`/api/r/${slug}/checkin`, { data: { gpsStatus: "negado", idempotencyKey: crypto.randomUUID() } });
     const j = (await ck.json()) as { invite: { message: string | null } | null; codes: Array<{ code: string; type: string }> };
     if (j.invite) {
@@ -228,8 +226,7 @@ test("Configurações: trocar a oferta do convite → o próximo cliente convid�
   let gain = "";
   for (let i = 0; i < 40 && !gain; i++) {
     const ctx = await page.context().browser()!.newContext();
-    const d = String(Math.floor(Math.random() * 1e8)).padStart(8, "0");
-    await ctx.request.post(`/api/r/${slug}/identificacao`, { data: { name: "Caio Teste", phone: `(00) 9${d.slice(0, 4)}-${d.slice(4)}`, optWhatsapp: true, optApp: true, optPush: true, accept: true } });
+    await loginCustomer(ctx.request, `/api/r/${slug}`, "Caio Teste");
     const ck = await ctx.request.post(`/api/r/${slug}/checkin`, { data: { gpsStatus: "negado", idempotencyKey: crypto.randomUUID() } });
     const j = (await ck.json()) as { invite: { offer: { gain: string } | null; startMin: number } | null };
     if (j.invite?.offer?.gain.startsWith("Leve 2, pague 1")) gain = j.invite.offer.gain;
@@ -238,25 +235,13 @@ test("Configurações: trocar a oferta do convite → o próximo cliente convid�
   expect(gain).toBe(`Leve 2, pague 1 em ${chosen}`);
 });
 
-test("restaurante de teste: roteiro na Visão geral, Simular 30 dias (painel com dados) e Limpar", async ({ page }) => {
+test("restaurante cadastrado: Primeiros passos no lugar do roteiro de teste; nada de 'Simular'", async ({ page }) => {
   test.setTimeout(90_000);
-  await loginE2E(page.request, 3); // a mesma conta do assistente (restaurante de teste ativo)
+  await loginE2E(page.request, 3); // a mesma conta do assistente (restaurante cadastrado e ativo)
   await page.goto("/parceiro/salao");
-  await expect(page.getByRole("heading", { name: "Teste o ciclo completo" })).toBeVisible();
-  if (await page.getByText(/Inclui|Dados simulados/).count()) {
-    page.once("dialog", (d) => void d.accept());
-    await page.getByRole("button", { name: "Limpar simulação" }).click();
-    await expect(page.getByText("Simulação apagada.")).toBeVisible();
-  }
-  await page.getByRole("button", { name: "Simular 30 dias" }).click();
-  await expect(page.getByText("Pronto: 30 dias simulados. O painel já mostra os números.")).toBeVisible({ timeout: 60_000 });
-  await expect(page.getByText(/Dados simulados · efeito programado/)).toBeVisible();
-  await page.getByRole("radio", { name: "Últ. 30 dias" }).click();
-  await expect(page.getByTestId("funil-checkins")).not.toHaveText(/^0/);
-  await page.getByRole("button", { name: "Simular 30 dias" }).click();
-  await expect(page.getByText("Este restaurante já tem uma simulação. Limpe antes de simular de novo.")).toBeVisible();
-  page.once("dialog", (d) => void d.accept());
-  await page.getByRole("button", { name: "Limpar simulação" }).click();
-  await expect(page.getByText("Simulação apagada.")).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Primeiros passos" })).toBeVisible();
+  await expect(page.getByText("1º cliente voltou com convite")).toBeVisible();
+  await expect(page.getByRole("button", { name: /Simular/ })).toHaveCount(0);
+  await expect(page.locator("main")).not.toContainText(/simulad|de teste|demonstração/i);
   await axe(page);
 });

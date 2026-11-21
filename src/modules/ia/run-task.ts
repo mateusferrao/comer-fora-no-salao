@@ -1,6 +1,6 @@
 import type { ZodType } from "zod";
 import type { Clock } from "../../shared/clock";
-import { AiGatewayError, type AiGateway, type AiInput, type AiUsage, type GuardResult, type ModelRef, type Tracer } from "./gateway";
+import { AiGatewayError, type AgentStep, type AiGateway, type AiInput, type AiTool, type AiUsage, type GuardResult, type ModelRef, type Tracer } from "./gateway";
 import { safeErr } from "@/src/shared/safe-err";
 import { log } from "@/src/shared/log";
 
@@ -14,6 +14,10 @@ export interface TaskDef<T> {
   /** Teto de tokens de saída por tentativa. */
   maxOutputTokens?: number;
   guard?: (data: T) => GuardResult;
+  /** Agente (S6.3b): ferramentas, passos e tempo por passo (o tempo da tentativa vale para o agente inteiro). */
+  tools?: readonly AiTool[];
+  maxSteps?: number;
+  stepMs?: number;
 }
 
 export type AttemptError = "invalid" | "guard" | "timeout" | "provider" | "credit" | "auth";
@@ -38,7 +42,7 @@ export type AttemptLog = {
 export type FallbackReason = "invalid" | "timeout" | "unavailable";
 
 export type TaskResult<T> =
-  | { status: "ok"; data: T; model: string; attempts: AttemptLog[] }
+  | { status: "ok"; data: T; model: string; attempts: AttemptLog[]; steps?: AgentStep[] }
   | { status: "fallback"; reason: FallbackReason; attempts: AttemptLog[] };
 
 export type RunTaskContext = {
@@ -52,7 +56,7 @@ export type RunTaskContext = {
   stopwatch?: () => number;
 };
 
-type AttemptOutcome<T> = { log: AttemptLog; data?: T };
+type AttemptOutcome<T> = { log: AttemptLog; data?: T; steps?: AgentStep[] };
 
 const TIMEOUT = Symbol("timeout");
 const CANCELLED = Symbol("cancelled");
@@ -123,7 +127,7 @@ export async function runTask<T>(task: TaskDef<T>, system: string, input: AiInpu
       attempts.push(outcome.log);
 
       if (outcome.log.ok && outcome.data !== undefined) {
-        return { status: "ok", data: outcome.data, model: model.id, attempts };
+        return { status: "ok", data: outcome.data, model: model.id, attempts, ...(outcome.steps ? { steps: outcome.steps } : {}) };
       }
       if (outcome.log.error === "credit" || outcome.log.error === "auth") return { status: "fallback", reason: "unavailable", attempts };
       if (signal?.aborted) return { status: "fallback", reason: "timeout", attempts };
@@ -160,6 +164,7 @@ export async function runTask<T>(task: TaskDef<T>, system: string, input: AiInpu
           signal: controller.signal,
           maxOutputTokens: task.maxOutputTokens,
           telemetry: { functionId: task.name, metadata: { promptVersion: task.promptVersion } },
+          ...(task.tools?.length ? { tools: task.tools, maxSteps: task.maxSteps, stepMs: task.stepMs } : {}),
         }),
         stop,
       ]);
@@ -175,9 +180,10 @@ export async function runTask<T>(task: TaskDef<T>, system: string, input: AiInpu
         return { log: { ...base, ok: false, error: "guard", detail: detailOf(err), latencyMs: latency() } };
       }
       if (!verdict.ok) return { log: { ...base, ok: false, error: "guard", notes: verdict.reasons, latencyMs: latency() } };
-      return { log: { ...base, ok: true, latencyMs: latency() }, data: parsed.data };
+      return { log: { ...base, ok: true, latencyMs: latency() }, data: parsed.data, ...(res.steps ? { steps: res.steps } : {}) };
     } catch (err) {
-      const usage = err instanceof AiGatewayError ? usageFields(err.usage) : {};
+      // Erro do gateway ou tempo esgotado no meio do agente: o que já foi cobrado entra na tentativa (revisão S4–S6).
+      const usage = err instanceof AiGatewayError ? usageFields(err.usage) : usageFields((err as { aiUsage?: AiUsage } | null)?.aiUsage);
       return { log: { model: model.id, ok: false, error: classify(err), detail: detailOf(err), latencyMs: latency(), ...usage } };
     } finally {
       clearTimeout(timer);

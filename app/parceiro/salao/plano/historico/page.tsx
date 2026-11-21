@@ -31,7 +31,7 @@ export default async function HistoricoPage() {
                 <th scope="col" className="py-2 font-normal">Semana</th>
                 <th scope="col" className="font-normal">Situação</th>
                 <th scope="col" className="font-normal">Aprovado via</th>
-                <th scope="col" className="font-normal">Reativação (simulada)</th>
+                <th scope="col" className="font-normal">Reativação</th>
               </tr>
             </thead>
             <tbody>
@@ -39,7 +39,7 @@ export default async function HistoricoPage() {
                 <tr key={h.id} className="border-t border-divider">
                   <td className="py-2">{weekLabel(h.weekKey)}</td>
                   <td>{STATUS[h.status] ?? h.status}</td>
-                  <td>{h.status === "aprovado" ? (h.via === "agente" ? "agente (MCP)" : "Portal") : "—"}</td>
+                  <td>{h.status === "aprovado" ? (h.via === "agente" ? "agente (MCP)" : h.via === "email" ? "e-mail" : "Portal") : "—"}</td>
                   <td>{h.status === "aprovado" ? `${h.sent} clientes` : "—"}</td>
                 </tr>
               ))}

@@ -11,8 +11,11 @@ const REFUSE: Record<string, string> = {
   OUTRO_RESTAURANTE: "Este código é de outro restaurante seu. Troque de loja para validar.",
 };
 
-/** Tela do garçom (espec. 3.3): campo grande, reconhece o tipo, "Confirmar" uma vez só. Pensada para celular/tablet. */
-export function ValidateCode() {
+/**
+ * Tela do garçom (espec. 3.3): campo grande, reconhece o tipo, "Confirmar" uma vez só. Pensada para celular/tablet.
+ * `endpoint`/`waiter` (S6.2 — D190): o link do garçom usa as rotas próprias e não fala em "trocar de loja".
+ */
+export function ValidateCode({ endpoint = "/api/parceiro/codigos", waiter = false }: { endpoint?: string; waiter?: boolean } = {}) {
   const [code, setCode] = useState("");
   const [res, setRes] = useState<CodeLookup | null>(null);
   const [busy, setBusy] = useState<"consultar" | "confirmar" | null>(null);
@@ -22,6 +25,10 @@ export function ValidateCode() {
 
   async function call(url: string, body: unknown): Promise<CodeLookup | null> {
     const r = await fetch(url, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(body) });
+    if (r.status === 401 && waiter) {
+      setError("Este link do garçom não vale mais. Peça um novo ao responsável.");
+      return null;
+    }
     if (r.status === 429) {
       setError("Muitas consultas seguidas. Espere um minuto.");
       return null;
@@ -39,14 +46,14 @@ export function ValidateCode() {
     setBusy("consultar");
     setError(null);
     key.current = crypto.randomUUID();
-    const r = await call("/api/parceiro/codigos/consultar", { codigo: code });
+    const r = await call(`${endpoint}/consultar`, { codigo: code });
     setBusy(null);
     if (r) setRes(r);
   }
 
   async function confirm() {
     setBusy("confirmar");
-    const r = await call("/api/parceiro/codigos/confirmar", { codigo: code, chave: key.current });
+    const r = await call(`${endpoint}/confirmar`, { codigo: code, chave: key.current });
     setBusy(null);
     if (r) setRes(r);
   }

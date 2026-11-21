@@ -1,5 +1,6 @@
 "use client";
 
+import { ExplainOfferLink } from "@/src/ui/ia/ExplainOffer";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNumberField } from "../../components/use-number-field";
 import { useRouter } from "next/navigation";
@@ -19,7 +20,7 @@ export type FinalState = { agora: OfferValue; recompensa: OfferValue; slots: Slo
 const toValue = (o: Offer): OfferValue => ({ kind: o.kind, itemId: o.params.itemId, ...(o.params.pct !== undefined ? { pct: o.params.pct } : {}) });
 const toOffer = (v: OfferValue): Offer => ({ kind: v.kind, params: { itemId: v.itemId, ...(v.kind === "desconto" ? { pct: v.pct ?? 15 } : {}) } });
 const SEM_IA: Record<string, string> = {
-  teto_diario: "O limite diário de IA desta demonstração foi atingido.",
+  teto_diario: "O limite diário de IA foi atingido.",
   sem_chave: "A IA não está configurada neste ambiente.",
   timeout: "A IA demorou demais para responder.",
   invalid: "A resposta da IA não passou nas regras.",
@@ -58,7 +59,7 @@ export function useTexts(v: PackageView) {
 }
 
 /** Passo 4 (espec. 3.2): sistema propõe, dono aprova ou ajusta. Custos e tetos são do código; a IA escolhe e explica. */
-export function Step4Pacote() {
+export function Step4Pacote({ explicaIa = false }: { explicaIa?: boolean } = {}) {
   const router = useRouter();
   const [v, setV] = useState<PackageView | null>(null);
   const [f, setF] = useState<FinalState | null>(null);
@@ -153,7 +154,7 @@ export function Step4Pacote() {
       </div>
     );
   }
-  return <PackageEditor v={v} f={f} setF={setF} panel={panel} setPanel={setPanel} busy={busy} error={error} onRegenerate={regenerate} onNext={async () => {
+  return <PackageEditor explicaIa={explicaIa} v={v} f={f} setF={setF} panel={panel} setPanel={setPanel} busy={busy} error={error} onRegenerate={regenerate} onNext={async () => {
     setBusy(true);
     const r = await api("/api/parceiro/pacote", "PUT", finalPayload(f));
     setBusy(false);
@@ -165,6 +166,7 @@ export function Step4Pacote() {
 }
 
 function PackageEditor(p: {
+  explicaIa: boolean;
   v: PackageView;
   f: FinalState;
   setF: (f: FinalState) => void;
@@ -239,6 +241,8 @@ function PackageEditor(p: {
                 <p className="mt-1">{s.justificativa}</p>
               </div>
             )}
+            {/* S5.3 (flag explica_ia): opções do código, escolha da IA, fatos, regras e "Como a IA decidiu". */}
+            {p.explicaIa && <ExplainOfferLink planId={v.planId} slotId={s.slotId} />}
             <div className="flex flex-wrap gap-3">
               <Button variant="outline-portal" onClick={() => p.setPanel(s.slotId)}>
                 Ver outras opções

@@ -62,6 +62,7 @@ export async function persistSimulation(
         optWhatsapp: c.optIn,
         optApp: c.optIn,
         optPush: c.optIn,
+        optEmail: c.optIn,
         arm: c.state.arm,
         armAssignedAt: firstDraw.get(c.id) ?? null,
         originVariantId: variantId(c.variant),

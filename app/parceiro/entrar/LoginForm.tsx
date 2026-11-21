@@ -160,7 +160,7 @@ export function LoginForm() {
       )}
 
       <p className="mt-6 text-xs leading-5 text-ink-muted">
-        Protótipo de case: usamos seu e-mail só para enviar o código. Guardamos apenas um código irreversível dele (HMAC). Contas sem acesso por 7 dias são apagadas.
+        Usamos seu e-mail só para enviar o código de acesso. Guardamos apenas um código irreversível dele (HMAC). Contas sem acesso por 7 dias são apagadas.
       </p>
     </div>
   );

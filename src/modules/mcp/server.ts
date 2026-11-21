@@ -12,7 +12,7 @@ import { restaurants } from "@/src/db/schema";
 import { getPlanInsights } from "@/src/modules/planos/application/insights";
 import { getPlanView } from "@/src/modules/planos/application/plan-view";
 import { generateWeeklyPlan } from "@/src/modules/planos/application/generate-plan";
-import { approvePlan, latestPlan, type FinalPlan } from "@/src/modules/planos/application/approve-plan";
+import { approvePlan, finalFromStored, latestPlan } from "@/src/modules/planos/application/approve-plan";
 import { slotLabel } from "@/src/modules/beneficios/domain/slot-text";
 
 export const MCP_PROTOCOL_VERSION = "2025-06-18";
@@ -29,7 +29,7 @@ const TOOLS = [
   { name: "gerar_plano", description: "Gera um novo plano da semana (a IA escolhe entre ofertas que o código validou). Fica como proposta: precisa ser aprovado.", inputSchema: { type: "object", properties: {}, additionalProperties: false } },
   {
     name: "aprovar_plano",
-    description: "Aprova o plano proposto como está (ofertas, tetos e convites propostos). Passa a valer no salão e dispara a reativação simulada. Registrado como 'aprovado via agente'.",
+    description: "Aprova o plano proposto como está (ofertas, tetos e convites propostos). Passa a valer no salão e entrega a reativação (convite no app do cliente e e-mail para quem aceitou). Registrado como 'aprovado via agente'.",
     inputSchema: { type: "object", properties: { planId: { type: "string", description: "id do plano (de ver_plano)" } }, required: ["planId"], additionalProperties: false },
   },
 ] as const;
@@ -37,7 +37,7 @@ const TOOLS = [
 const text = (data: unknown, isError = false) => ({ content: [{ type: "text", text: JSON.stringify(data) }], structuredContent: data, isError });
 
 /** Injeções (testes): como agendar o revisor e gateways falsos de IA. */
-export type RpcDeps = { schedule?: (fn: () => Promise<void>) => void; gateway?: AiGateway | null; reviewerGateway?: AiGateway | null };
+export type RpcDeps = { schedule?: (fn: () => Promise<void>) => void; gateway?: AiGateway | null; reviewerGateway?: AiGateway | null; onApproved?: (restaurantId: string, inviteIds: string[]) => void };
 
 async function callTool(db: Db, restaurantId: string, name: string, args: Json, now: Date, deps: RpcDeps) {
   if (name === "ler_insights") {
@@ -72,16 +72,13 @@ async function callTool(db: Db, restaurantId: string, name: string, args: Json, 
     const planId = typeof args.planId === "string" ? args.planId : "";
     const plan = await latestPlan(db, restaurantId);
     if (!plan || plan.id !== planId) return text({ erro: "plano_nao_encontrado_ou_nao_e_o_mais_recente" }, true);
-    const cands = (plan.candidates ?? []) as Array<{ slotId: string; options: Array<{ id: string; offer: FinalPlan["slots"][number]["offer"]; weeklyCap: number }> }>;
-    const choices = (plan.choices ?? []) as Array<{ slotId: string; candidateId: string; textoConvite: string }>;
-    const caps = (plan.decision as { caps?: Record<string, number> } | null)?.caps ?? {};
-    const slots = choices.flatMap((c) => {
-      const o = cands.find((x) => x.slotId === c.slotId)?.options.find((x) => x.id === c.candidateId);
-      return o ? [{ slotId: c.slotId, offer: o.offer, weeklyCap: caps[c.slotId] ?? o.weeklyCap, inviteText: c.textoConvite }] : [];
-    });
+    const { slots } = finalFromStored(plan);
     if (!slots.length) return text({ erro: "plano_sem_escolhas" }, true);
     const r = await approvePlan(db, { restaurantId, planId, final: { slots }, via: "agente", now });
-    if (r.ok) return text({ aprovado: true, ja_estava: r.already, reativacao: { enviados: r.sent.real, simulado: true } });
+    if (r.ok) {
+      if (r.inviteIds?.length) deps.onApproved?.(restaurantId, r.inviteIds);
+      return text({ aprovado: true, ja_estava: r.already, reativacao: { entregues: r.sent.real } });
+    }
     return text({ erro: r.erro, ...(r.erro === "revisor" ? { dica: "O revisor ainda está conferindo (até 20 s) ou pediu ajustes: veja ver_plano e tente de novo; ajustes de texto só pelo Portal." } : {}) }, true);
   }
   return null;

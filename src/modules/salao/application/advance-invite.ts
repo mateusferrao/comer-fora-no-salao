@@ -1,26 +1,27 @@
 /**
- * "Para testar: antecipar 1 dia" (D140, D141; planejamento S3 §4.8) — só em restaurante de teste.
- * O código do convite nasce numa volta em OUTRO dia e DENTRO da faixa. No teste:
+ * "Avançar 1 dia" (D153; antes D140/D141, "antecipar" só no restaurante de teste) — usado pelas Ferramentas do
+ * avaliador nos Bastidores, em qualquer restaurante do dono, só com clientes reais (nunca o histórico gerado).
+ * O código do convite nasce numa volta em OUTRO dia e DENTRO da faixa. Então:
  * - recua 1 dia o convite e a visita de hoje (a regra "1 check-in por dia" barraria a volta);
  * - se agora estiver fora da faixa, libera o convite fora do horário só hoje (`test_valid_day`).
  * Mantém o `week_key` (teto e coorte não mudam de semana). Lock na mesma ordem do check-in (cliente → convite).
  */
 import { and, eq, sql } from "drizzle-orm";
 import type { Db } from "@/src/db/client";
-import { checkins, invites, restaurantCustomers, restaurants } from "@/src/db/schema";
+import { checkins, customers, invites, restaurantCustomers } from "@/src/db/schema";
 import { isInSlot, type Slot } from "@/src/modules/beneficios/domain/slots";
 import { daySP } from "@/src/shared/tz";
 import { addDaysSP } from "@/src/shared/week";
 
-export type AdvanceResult = { ok: true; testValidToday: boolean } | { ok: false; erro: "nao_encontrado" | "nao_teste" | "nao_se_aplica" };
+export type AdvanceResult = { ok: true; testValidToday: boolean } | { ok: false; erro: "nao_encontrado" | "historico" | "nao_se_aplica" };
 const DAY_MS = 86_400_000;
 
 export async function advanceInvite(db: Db, p: { customerId: string; inviteId: string; now: Date }): Promise<AdvanceResult> {
   return db.transaction(async (tx) => {
     const [head] = await tx.select({ restaurantId: invites.restaurantId, customerId: invites.customerId }).from(invites).where(eq(invites.id, p.inviteId)).limit(1);
     if (!head || head.customerId !== p.customerId) return { ok: false as const, erro: "nao_encontrado" as const };
-    const [r] = await tx.select({ kind: restaurants.kind }).from(restaurants).where(eq(restaurants.id, head.restaurantId));
-    if (r?.kind !== "teste") return { ok: false as const, erro: "nao_teste" as const };
+    const [cu] = await tx.select({ run: customers.simulationRunId }).from(customers).where(eq(customers.id, p.customerId));
+    if (!cu || cu.run) return { ok: false as const, erro: "historico" as const };
     const [rc] = await tx
       .select()
       .from(restaurantCustomers)

@@ -1,7 +1,6 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import { VITRINE_SIM } from "@/src/modules/simulacao/domain/generator";
-import { TEST_SIM_WEEKLY_NEW } from "@/src/modules/simulacao/application/simulate-test";
 
 export const metadata: Metadata = { title: "Como funciona · Comer Fora no Salão · protótipo de case" };
 
@@ -10,7 +9,7 @@ const h2 = "mt-8 text-lg font-bold text-ink";
 const p = "mt-2 text-sm leading-6 text-ink";
 const li = "text-sm leading-6 text-ink";
 
-/** "Como este protótipo funciona" (espec. 3.1; planejamento S3 §4.6): real × simulado, parâmetros e limitações. */
+/** "Como este protótipo funciona" (espec. 3.1; S3 §4.6; S4 §4.6): real × histórico gerado, parâmetros, limitações e dados pessoais. */
 export default function ComoFunciona() {
   const s = VITRINE_SIM;
   return (
@@ -22,16 +21,17 @@ export default function ComoFunciona() {
       </p>
       <h1 className="mt-3 text-2xl font-bold text-ink">Como este protótipo funciona</h1>
       <p className={p}>
-        Protótipo de case para o processo seletivo iFood GenAI 2027. Não é produto oficial do iFood. Todos os dados de pessoas e restaurantes são fictícios. A ideia: o salão cheio
+        Protótipo de case para o processo seletivo iFood GenAI 2027. Não é produto oficial do iFood. O produto funciona de verdade: login, check-in, códigos, convites,
+        e-mails e IA. O único dado gerado é o histórico do restaurante de exemplo. A ideia: o salão cheio
         divulga o horário vazio. O cliente que já está na mesa ganha algo agora e um convite para voltar no horário vazio; o dono vê o retorno medido contra um grupo de controle.
       </p>
 
-      <h2 className={h2}>O que é real e o que é simulado</h2>
+      <h2 className={h2}>O que é real e o que é gerado</h2>
       <div className="mt-2 grid gap-4 sm:grid-cols-2">
         <section className="rounded-sm border border-border bg-white p-4">
           <h3 className="font-semibold text-ink">Real (funciona de verdade)</h3>
           <ul className="mt-1 list-disc pl-5">
-            {["IA ao vivo no restaurante de teste: leitura do cardápio, pacote, kit e plano da semana", "GPS (a distância é calculada no seu aparelho; só o status vai ao servidor)", "Check-ins, códigos, convites, grupo de controle, teto e validação", "Banco de dados, regras, insights, funil e métrica com intervalo", "Login por e-mail com código (AWS SES)"].map((x) => (
+            {["IA ao vivo no restaurante que você cadastra: leitura do cardápio, pacote, kit e plano da semana", "Login do dono e do cliente por e-mail com código (AWS SES)", "GPS (a distância é calculada no seu aparelho; só o status vai ao servidor)", "Check-ins, códigos, convites, grupo de controle, teto e validação", "Reativação: o convite chega na Jornada do cliente", "Banco de dados, regras, insights, funil e métrica com intervalo"].map((x) => (
               <li key={x} className={li}>
                 {x}
               </li>
@@ -39,9 +39,9 @@ export default function ComoFunciona() {
           </ul>
         </section>
         <section className="rounded-sm border border-border bg-white p-4">
-          <h3 className="font-semibold text-ink">Simulado</h3>
+          <h3 className="font-semibold text-ink">Gerado ou de exemplo</h3>
           <ul className="mt-1 list-disc pl-5">
-            {["Pessoas e restaurantes (dados fictícios)", "Importar cardápio do delivery", "Envio de WhatsApp/push da reativação (nada é enviado)", "\"Simular 30 dias\" e os 60 dias da vitrine", "Coordenada do restaurante", "Leituras dos 3 cardápios de exemplo (processadas antes e guardadas em cache)"].map((x) => (
+            {["Os 60 dias de histórico do restaurante de exemplo (selo \"Restaurante de exemplo · histórico gerado\") e os clientes desse histórico", "Coordenada do restaurante", "Leituras dos 3 cardápios de exemplo (processadas antes e guardadas)", "\"Avançar 1 dia\" nas Ferramentas do avaliador (só para ver a volta no mesmo dia)"].map((x) => (
               <li key={x} className={li}>
                 {x}
               </li>
@@ -62,7 +62,7 @@ export default function ComoFunciona() {
 
       <h2 className={h2}>A simulação (baseada em agentes, sem IA)</h2>
       <p className={p}>
-        Os 60 dias da vitrine e o &quot;Simular 30 dias&quot; usam as mesmas regras do produto (as mesmas funções do check-in, do sorteio, do teto e da reativação), com um relógio
+        Os 60 dias do restaurante de exemplo usam as mesmas regras do produto (as mesmas funções do check-in, do sorteio, do teto e da reativação), com um relógio
         falso. Cada cliente simulado tem uma taxa de volta; quem recebe convite ganha um efeito programado. O painel &quot;mede&quot; o que foi programado: é isso que mostramos.
       </p>
       <table className="mt-3 w-full text-sm">
@@ -70,7 +70,7 @@ export default function ComoFunciona() {
           {[
             ["Efeito programado do convite", `+${s.effect.toFixed(2).replace(".", ",")} visita por cliente em 14 dias (convidados × grupo de controle)`],
             ["Parte do efeito que é migração do pico", pct(s.migrationShare)],
-            ["Clientes novos identificados por semana", `${s.weeklyNew} na vitrine; ${TEST_SIM_WEEKLY_NEW} no "Simular 30 dias"`],
+            ["Clientes novos identificados por semana", `${s.weeklyNew}`],
             ["Visitas-base de volta em 14 dias", s.baseVisits14.toFixed(1).replace(".", ",")],
             ["Códigos validados pelo garçom", `${pct(s.validationP)} (${pct(s.validationPSatNight)} no sábado à noite)`],
             ["Clientes com opt-in", pct(s.optInP)],
@@ -87,8 +87,8 @@ export default function ComoFunciona() {
       </table>
       <p className={p}>
         Robustez: com o efeito programado, o intervalo fica acima de zero em 132 de 140 combinações (20 sementes × 7 dias da semana de início). A semente da vitrine foi escolhida
-        entre as que dão resultado positivo, com o efeito programado dentro do intervalo, em qualquer dia da semana. &quot;Simular 30 dias&quot; no seu restaurante de teste pode dar
-        &quot;amostra insuficiente&quot;: é o comportamento honesto com pouco tempo de dados.
+        entre as que dão resultado positivo, com o efeito programado dentro do intervalo, em qualquer dia da semana. O restaurante que você cadastra começa vazio e mostra
+        &quot;amostra insuficiente&quot; até ter dados: é o comportamento honesto com pouco tempo de uso.
       </p>
 
       <h2 className={h2}>O que já existe no Comer Fora × o que é novo aqui</h2>
@@ -126,10 +126,29 @@ export default function ComoFunciona() {
 
       <h2 className={h2}>Dados pessoais, IA e segurança</h2>
       <ul className="mt-2 list-disc pl-5">
-        <li className={li}>O telefone do cliente aceita qualquer número no formato, de propósito, como numa aplicação real; os campos já vêm preenchidos com dados fictícios. Use só dados fictícios. O telefone é guardado como código (HMAC) + 4 últimos dígitos; quem digita um telefone já cadastrado só entra com o mesmo nome.</li>
+        <li className={li}>O cliente entra com o próprio e-mail e um código de 6 dígitos. O e-mail fica guardado como código (HMAC) e criptografado (AES-256-GCM), só para enviar convites; o nome aparece para o restaurante como primeiro nome + inicial; o telefone é opcional e fica só como código + 4 últimos dígitos.</li>
+        <li className={li}>Os dados do cliente não são apagados sozinhos: ficam enquanto houver relação com o restaurante, como num CRM real, e o cliente apaga tudo quando quiser em &quot;Sua jornada&quot; › engrenagem › &quot;Apagar meus dados&quot;. Por ser um protótipo que recebe dados reais, isso é um risco aceito e declarado.</li>
+        <li className={li}>Os interruptores de comunicação (e-mail e notificação no app) vêm ligados, como no app. Em produção, a LGPD pede consentimento ativo.</li>
         <li className={li}>O e-mail do dono é guardado só como código (HMAC) + uma dica mascarada; o AWS SES processa o endereço para entregar o código de login.</li>
         <li className={li}>IA só pelo OpenRouter, com saída validada, valores sempre por referência (o código escreve números, preços e nomes), palavras proibidas, aprovação do dono e rastro sem dados pessoais (Langfuse). Nenhum dado pessoal entra em prompt.</li>
-        <li className={li}>&quot;Antecipar 1 dia&quot; existe só nos restaurantes de teste: recua a visita e o convite para mostrar a volta com código no mesmo dia (e tira 1 check-in de &quot;Hoje&quot; no funil).</li>
+        <li className={li}>O agendador roda no próprio servidor, uma vez por minuto: no dia e na hora escolhidos pelo dono (padrão segunda 08:30), gera o plano da semana e manda o resumo por e-mail com &quot;Revisar e aprovar&quot;; no dia do convite, manda 1 lembrete ao cliente, X horas antes do horário. Os e-mails são reais (remetente compartilhado msg.automato.pro), só para quem aceitou, sempre com &quot;Preferências de e-mail · Descadastrar&quot;. Não há data para parar: o envio automático é desligado nos Bastidores.</li>
+        <li className={li}>O link &quot;Revisar e aprovar&quot; vale uma vez, só para aquele plano, por 7 dias; abrir o link não aprova nada (é preciso tocar em &quot;Aprovar plano&quot;). O dono pode desligar a aprovação pelo e-mail. A página leva o logo do iFood, com o risco de confusão aceito.</li>
+        <li className={li}>Tudo é configurável: o dono escolhe dia e hora do resumo, plano automático, aprovação pelo e-mail, quais e-mails vão aos clientes e a antecedência do lembrete; o cliente escolhe por restaurante em &quot;Gerenciar notificações&quot;. Quando o dono desliga e-mails aos clientes, o convite continua no app: a medida segue por intenção de tratar, mas a intensidade do tratamento muda (o motivo fica registrado em cada mensagem pulada).</li>
+        <li className={li}>&quot;IA do restaurante&quot; é opcional: sem nada preenchido, a IA usa o padrão com os dados que o sistema já tem. Fatos e termos a evitar passam por validação (sem contato, links, marcação nem frases de comando), entram no prompt só como dado delimitado (nunca como instrução) e a saída continua presa às ofertas do código, aos guardrails, ao revisor e à aprovação do dono. O banco só é acessado com consultas parametrizadas.</li>
+        <li className={li}>Plano como agente: a IA pode consultar ferramentas só de leitura (números, ofertas possíveis, custo da semana e conferência dos textos) antes de responder. Na medida com juiz cego (eval/relatorio-t3-agente.md), depois que o convite passou a exigir dia e horário da faixa por regra do código (D226), agente e chamada única passaram nas regras em 10 de 10, e o juiz preferiu o agente em 6 de 10 pares (1 empate, 3 para a chamada única); nas 2 rodadas anteriores o juiz tinha preferido a chamada única (2 × 3 e 3 × 4). O agente leva cerca de 14 s e custa 6× mais por plano. Está ligado (D225). Se o agente falhar, o plano cai na chamada única e depois no modo sem IA.</li>
+        <li className={li}>&quot;Avançar 1 dia&quot; fica nas Ferramentas do avaliador, fora do produto: recua a visita e o convite de hoje (só de clientes reais) para mostrar a volta com código no mesmo dia, e tira esses check-ins de &quot;Hoje&quot;.</li>
+      </ul>
+
+      <h2 id="fontes" className={h2}>Fontes</h2>
+      <ul className="mt-2 list-disc pl-5">
+        <li className={li}>
+          &quot;63% de quem usou o Comer Fora no Rio voltou a um restaurante do programa em menos de 1 mês&quot;: número declarado pelo iFood, citado pelo Diário do Rio em 12/11/2026 (
+          <a className="font-semibold text-red-text underline" href="https://diariodorio.com/rio-de-janeiro/2026/11/12/ifood-lanca-no-rio-aplicativo-de-descontos-para-quem-prefere-comer-fora.html" rel="noopener noreferrer" target="_blank">
+            reportagem
+          </a>
+          ). Mede a volta a qualquer restaurante do programa, sem método publicado; não é resultado deste protótipo.
+        </li>
+        <li className={li}>Os números do briefing do case (como &quot;só 20% divulgam&quot;) são marcados pelo próprio briefing como dados fictícios: aparecem só no contexto do case, nunca como prova ao dono.</li>
       </ul>
 
       <h2 className={h2}>Créditos das fotos</h2>
@@ -154,6 +173,10 @@ export default function ComoFunciona() {
         ·{" "}
         <Link className="text-red-text underline" href="/bastidores/plataforma">
           Visão da plataforma
+        </Link>{" "}
+        ·{" "}
+        <Link className="text-red-text underline" href="/bastidores/avaliador">
+          Ferramentas do avaliador
         </Link>
       </p>
     </main>

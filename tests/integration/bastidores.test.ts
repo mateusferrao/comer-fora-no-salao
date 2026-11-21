@@ -46,8 +46,9 @@ describe("configuração ao vivo (D58, D138)", () => {
   it("publicações simultâneas não colidem na versão; flags começam ligadas (D148) e desligam ao vivo", async () => {
     const [a, b] = await Promise.all([publishPrompt(getDb(), "kit", "Versão A do tom do kit, simples."), publishPrompt(getDb(), "kit", "Versão B do tom do kit, simples.")]);
     expect([a, b].map((x) => (x.ok ? x.version : 0)).sort()).toEqual([1, 2]);
-    // D148: os 5 recursos vêm ligados por padrão; desligar vale na hora.
-    expect(Object.values(await getFlags(getDb())).every((x) => x === true)).toBe(true);
+    // D148: os 5 recursos da S3 vêm ligados por padrão (e o login por e-mail da S4); os da S5/S6 nascem desligados até ficarem prontos (D160).
+    const f0 = await getFlags(getDb());
+    expect([f0.ab, f0.revisor, f0.aprende, f0.insight_operacao, f0.mcp, f0.login_cliente_email].every((x) => x === true)).toBe(true);
     expect((await setFlag(getDb(), "ab", false)).ab).toBe(false);
     expect((await getFlags(getDb())).ab).toBe(false);
     expect((await getFlags(getDb())).mcp).toBe(true);

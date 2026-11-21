@@ -32,7 +32,7 @@ const fromReais = (s: string) => {
 };
 
 /** Passo 2 (espec. 3.2): salão, funcionamento e horários vazios (obrigatório), enquanto a IA lê. */
-export function Step2Salao({ initial, extractionId, extraction }: { initial: SalonForm; extractionId: string | null; extraction: ExtractionState | null }) {
+export function Step2Salao({ initial, extractionId, extraction, manual = false }: { initial: SalonForm; extractionId: string | null; extraction: ExtractionState | null; manual?: boolean }) {
   const router = useRouter();
   const [f, setF] = useState<SalonForm>(initial);
   const [ticket, setTicket] = useState(toReais(initial.ticketCents));
@@ -62,13 +62,14 @@ export function Step2Salao({ initial, extractionId, extraction }: { initial: Sal
     setErrors(e);
     if (Object.keys(e).length) return;
     setBusy(true);
-    const r = await api<{ ok?: boolean; slotErrors?: string[][] }>("/api/parceiro/salao", "POST", { ...f, name: f.name.trim(), ticketCents });
+    const r = await api<{ ok?: boolean; erro?: string; slotErrors?: string[][] }>("/api/parceiro/salao", "POST", { ...f, name: f.name.trim(), ticketCents });
     setBusy(false);
     if (r.ok) {
-      router.push("/parceiro/salao/ativar/3");
+      router.push(manual ? "/parceiro/salao/ativar/3?manual=1" : "/parceiro/salao/ativar/3");
       router.refresh();
       return;
     }
+    if (r.data.erro === "nome_marca") return setErrors({ name: "O nome do restaurante não pode citar a marca iFood." });
     const se: Record<string, string> = {};
     r.data.slotErrors?.forEach((errs, i) => errs[0] && (se[`slot${i}`] = SLOT_ERRORS[errs[0]] ?? "Confira este horário."));
     setErrors(Object.keys(se).length ? se : { geral: "Confira os campos e tente de novo." });

@@ -4,8 +4,8 @@ import "./globals.css";
 import { PrototypeBar } from "@/src/ui/components/PrototypeBar";
 
 export const metadata: Metadata = {
-  title: "Comer Fora no Salão · protótipo de case",
-  description: "Protótipo de case. Não é produto oficial do iFood. Dados fictícios.",
+  title: "Comer Fora no Salão",
+  description: "Protótipo de case. Não é produto oficial do iFood.",
   robots: { index: false, follow: false, googleBot: { index: false, follow: false } },
 };
 

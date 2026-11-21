@@ -28,8 +28,8 @@ export async function getActivePrompt(ex: Executor, task: PromptTask): Promise<A
 }
 
 /** Sufixo da versão do prompt gravada em `ai_calls` e no rastro (ex.: `plano-v2@cfg3+tom`). */
-export function promptSuffix(p: ActivePrompt, opts: { tone?: boolean; examples?: boolean } = {}): string {
-  return `${p.version ? `@cfg${p.version}` : ""}${opts.tone ? "+tom" : ""}${opts.examples ? "+ex" : ""}`;
+export function promptSuffix(p: ActivePrompt, opts: { tone?: boolean; examples?: boolean; about?: boolean; avoid?: boolean } = {}): string {
+  return `${p.version ? `@cfg${p.version}` : ""}${opts.tone ? "+tom" : ""}${opts.examples ? "+ex" : ""}${opts.about ? "+sobre" : ""}${opts.avoid ? "+evitar" : ""}`;
 }
 
 export type PromptVersionRow = { version: number; text: string; note: string | null; createdAt: string; current: boolean };

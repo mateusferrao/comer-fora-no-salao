@@ -1,5 +1,5 @@
 /** HMAC do telefone, assinatura de cookies e hash de aparelho (servidor). */
-import { createHash, createHmac, randomInt, timingSafeEqual } from "node:crypto";
+import { createCipheriv, createDecipheriv, createHash, createHmac, hkdfSync, randomBytes, randomInt, timingSafeEqual } from "node:crypto";
 import { getSecret } from "./secrets";
 
 /** Telefone guardado só como HMAC-SHA256 (segredo `PHONE_HASH_SECRET`) — espec. 4.6. */
@@ -49,4 +49,37 @@ export function safeEqual(given: string, expected: string): boolean {
   const a = createHash("sha256").update(given).digest();
   const b = createHash("sha256").update(expected).digest();
   return timingSafeEqual(a, b) && given.length === expected.length;
+}
+
+/**
+ * S4 (D169): e-mail do cliente com finalidade própria (`cliente-email:`), para não casar com o HMAC do dono.
+ */
+export function hmacCustomerEmail(normalizedEmail: string): string {
+  return createHmac("sha256", getSecret("SESSION_SECRET")).update(`cliente-email:${normalizedEmail}`).digest("hex");
+}
+
+/** Chave AES-256 derivada do SESSION_SECRET por HKDF (finalidade própria; sem variável nova no ambiente) [C]. */
+function emailKey(): Buffer {
+  return Buffer.from(hkdfSync("sha256", getSecret("SESSION_SECRET"), "comer-fora-no-salao", "email-enc:v1", 32));
+}
+
+/** `v1.iv.tag.cifra` (base64url). Só para enviar e-mails (resumo do dono, convites do cliente). */
+export function encryptEmail(email: string): string {
+  const iv = randomBytes(12);
+  const c = createCipheriv("aes-256-gcm", emailKey(), iv);
+  const ct = Buffer.concat([c.update(email, "utf8"), c.final()]);
+  return ["v1", iv.toString("base64url"), c.getAuthTag().toString("base64url"), ct.toString("base64url")].join(".");
+}
+
+export function decryptEmail(enc: string | null | undefined): string | null {
+  if (!enc) return null;
+  const [v, iv, tag, ct] = enc.split(".");
+  if (v !== "v1" || !iv || !tag || !ct) return null;
+  try {
+    const d = createDecipheriv("aes-256-gcm", emailKey(), Buffer.from(iv, "base64url"));
+    d.setAuthTag(Buffer.from(tag, "base64url"));
+    return Buffer.concat([d.update(Buffer.from(ct, "base64url")), d.final()]).toString("utf8");
+  } catch {
+    return null;
+  }
 }

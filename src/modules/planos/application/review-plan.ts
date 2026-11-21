@@ -31,7 +31,7 @@ export async function reviewPlan(db: Db, p: { restaurantId: string; planId: stri
       return `${s.label} (${s.phrase}): ${o ? `${o.gain} (${o.title})` : "oferta da faixa"}`;
     })
     .join("; ");
-  const r = await runReview(db, { restaurantId: p.restaurantId, offer, texts, now: p.now, gateway: p.gateway });
+  const r = await runReview(db, { restaurantId: p.restaurantId, planId: p.planId, offer, texts, now: p.now, gateway: p.gateway });
   // Plano já aprovado ou descartado enquanto revisava: o veredito fica registrado, sem efeito.
   await store(db, p.planId, r);
   return r;

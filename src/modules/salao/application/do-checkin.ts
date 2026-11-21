@@ -2,6 +2,7 @@
  * Check-in em transação (planejamento S1 §6.4 + revisão T-B1/T-I4/T-I6):
  * idempotência conferida DEPOIS do lock do cliente; teto recontado sob lock; grupo gravado uma vez.
  */
+import { queueInviteMessages } from "./queue-messages";
 import { and, eq, inArray, sql } from "drizzle-orm";
 import type { Db } from "@/src/db/client";
 import type { Executor, Tx } from "@/src/db/executor";
@@ -20,6 +21,8 @@ import { expireInvites, insertInvite, issueCode, reserveQuota } from "./persiste
 import { renderReferences } from "@/src/modules/textos/domain/references";
 import { slotPhrase } from "@/src/modules/beneficios/domain/slot-text";
 import { offerView, sanitizeCheckinView, type CheckinView, type CodeView, type InviteView } from "./views";
+import { nextValidWindow } from "../domain/invite-window";
+import { agendaPath } from "./agenda";
 
 export type DoCheckinInput = {
   restaurantId: string;
@@ -66,12 +69,26 @@ function inviteViewOf(
   ctx: RestaurantContext,
   state: InviteView["state"],
   version: VersionedOffer | null,
-  test?: { inviteId: string; today: string } | null,
+  today: string,
+  meta: { inviteId: string | null; now: Date },
 ): InviteView {
   const offer = offerView(version?.offer, ctx.menu, "convite");
-  const testInfo =
-    test && ctx.restaurant.kind === "teste" ? { inviteId: test.inviteId, canAdvance: inv.issuedDay === test.today, liberatedToday: inv.anyTimeDay === test.today } : null;
-  return { state, days: inv.slot.days, startMin: inv.slot.startMin, endMin: inv.slot.endMin, untilDay: daySP(inv.expiresAt), offer, message: inviteMessage(version, inv.slot, ctx, offer?.gain), test: testInfo };
+  // S4 (D153): liberado fora da faixa hoje pelas Ferramentas do avaliador (qualquer restaurante; antes, só o de teste).
+  const liberatedToday = !!inv.anyTimeDay && inv.anyTimeDay === today;
+  // S5.2: agenda e "vale hoje" pela próxima janela em que o código pode nascer (nunca o dia da emissão).
+  const win = nextValidWindow({ slot: inv.slot, issuedDay: inv.issuedDay, expiresAt: inv.expiresAt, now: meta.now });
+  return {
+    state,
+    days: inv.slot.days,
+    startMin: inv.slot.startMin,
+    endMin: inv.slot.endMin,
+    untilDay: daySP(inv.expiresAt),
+    offer,
+    message: inviteMessage(version, inv.slot, ctx, offer?.gain),
+    liberatedToday,
+    agendaUrl: win && meta.inviteId ? agendaPath(meta.inviteId) : null,
+    validToday: (win?.day === today) || liberatedToday,
+  };
 }
 
 /** Texto do convite renderizado com a faixa CONGELADA do convite (D218) e a oferta da versão da emissão. */
@@ -108,7 +125,7 @@ export async function todayView(ex: Executor, ctx: RestaurantContext, customerId
   if (inv) {
     const slot = inv.slotSnapshot as Slot;
     const usingToday = rows.some((r) => r.type === "convite");
-    invite = inviteViewOf({ slot, issuedDay: inv.issuedDay, expiresAt: inv.expiresAt, anyTimeDay: inv.testValidDay }, ctx, usingToday ? "usar_hoje" : inv.issuedDay === today ? "novo" : "lembrete", await loadVersion(ex, inv.benefitVersionId), { inviteId: inv.id, today });
+    invite = inviteViewOf({ slot, issuedDay: inv.issuedDay, expiresAt: inv.expiresAt, anyTimeDay: inv.testValidDay }, ctx, usingToday ? "usar_hoje" : inv.issuedDay === today ? "novo" : "lembrete", await loadVersion(ex, inv.benefitVersionId), today, { inviteId: inv.id, now });
   }
   return { codes: codeViews, invite };
 }
@@ -200,6 +217,8 @@ export async function doCheckin(db: Db, p: DoCheckinInput): Promise<CheckinView>
         at: now,
         expiresAt: issued.expiresAt,
       });
+      // S4.4 (D155): convite REAL vira mensagem no app (e e-mail depois do commit, pela rota); o fantasma, nada.
+      if (issuedId && issued.kind === "real") await queueInviteMessages(tx, { inviteIds: [issuedId], kind: "convite_mesa", now });
     }
 
     const codeViews: CodeView[] = [];
@@ -227,19 +246,11 @@ export async function doCheckin(db: Db, p: DoCheckinInput): Promise<CheckinView>
     }
 
     let inviteView: InviteView | null = null;
-    const test = (id: string | null | undefined) => (id ? { inviteId: id, today: decision.day } : null);
-    if (issued && issued.kind === "real") inviteView = inviteViewOf({ slot: issued.slot, issuedDay: decision.day, expiresAt: issued.expiresAt }, ctx, "novo", ctx.convites[issued.slotId] ?? null, test(issuedId));
-    else if (decision.inviteForCode) inviteView = inviteViewOf(decision.inviteForCode, ctx, "usar_hoje", activeVersion, test(active?.id));
-    else if (decision.reminder) inviteView = inviteViewOf(decision.reminder, ctx, "lembrete", activeVersion, test(active?.id));
-    // D143: só no restaurante de teste, o motivo de não haver 2º card (grupo de controle ou teto).
-    const testNote: CheckinView["testNote"] =
-      ctx.restaurant.kind === "teste" && !inviteView
-        ? issued?.kind === "fantasma" || active?.arm === "holdout"
-          ? "grupo_controle"
-          : invite?.kind === "teto_esgotado"
-            ? "teto"
-            : null
-        : null;
+    if (issued && issued.kind === "real") inviteView = inviteViewOf({ slot: issued.slot, issuedDay: decision.day, expiresAt: issued.expiresAt }, ctx, "novo", ctx.convites[issued.slotId] ?? null, decision.day, { inviteId: issuedId, now });
+    else if (decision.inviteForCode) inviteView = inviteViewOf(decision.inviteForCode, ctx, "usar_hoje", activeVersion, decision.day, { inviteId: active?.id ?? null, now });
+    else if (decision.reminder) inviteView = inviteViewOf(decision.reminder, ctx, "lembrete", activeVersion, decision.day, { inviteId: active?.id ?? null, now });
+    // S4 (D152, D172): o motivo de não haver 2º card (grupo de controle ou teto) não aparece mais ao cliente;
+    // o dono vê o grupo de controle em "Últimos check-ins de hoje".
 
     const result = (): CheckinView =>
       sanitizeCheckinView({
@@ -249,7 +260,6 @@ export async function doCheckin(db: Db, p: DoCheckinInput): Promise<CheckinView>
         codes: codeViews,
         invite: inviteView,
         firstVisitAlreadyUsed: decision.firstVisitAlreadyUsed,
-        testNote,
       });
 
     const inserted = await tx

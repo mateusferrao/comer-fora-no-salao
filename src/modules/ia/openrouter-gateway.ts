@@ -6,10 +6,12 @@ import {
   NoObjectGeneratedError,
   NoOutputGeneratedError,
   Output,
+  stepCountIs,
+  tool,
   TypeValidationError,
   type ModelMessage,
 } from "ai";
-import { AiGatewayError, type AiGateway, type AiGenerateRequest, type AiGenerateResult, type AiInput } from "./gateway";
+import { AiGatewayError, type AgentStep, type AiGateway, type AiGenerateRequest, type AiGenerateResult, type AiInput } from "./gateway";
 
 function toMessages(input: AiInput): ModelMessage[] {
   if (!("files" in input)) return [{ role: "user", content: input.text }];
@@ -50,6 +52,20 @@ export function classifyGatewayError(err: unknown): unknown {
   return err;
 }
 
+/** Junta ao erro o que os passos do agente já cobraram (o `run-task` grava em `attempts`). */
+export function withPaidUsage(e: unknown, paid: { inTokens: number; outTokens: number; costUsd: number }): unknown {
+  if (!paid.costUsd && !paid.inTokens) return e;
+  if (e instanceof AiGatewayError) {
+    return new AiGatewayError(e.kind, e.message, e.status, {
+      inTokens: Math.max(e.usage?.inTokens ?? 0, paid.inTokens),
+      outTokens: Math.max(e.usage?.outTokens ?? 0, paid.outTokens),
+      costUsd: (e.usage?.costUsd ?? 0) || paid.costUsd || undefined,
+    });
+  }
+  if (e && typeof e === "object") (e as { aiUsage?: unknown }).aiUsage = { ...paid, costUsd: paid.costUsd || undefined };
+  return e;
+}
+
 /**
  * Gateway do OpenRouter (D52). Sem retentativa do SDK (o laço é nosso), sem plugin de reparo de JSON
  * (não mascara a taxa de reserva) e com `usage.include` para o custo real.
@@ -67,11 +83,47 @@ export function createOpenRouterGateway(apiKey: string): AiGateway {
         provider: { require_parameters: true, data_collection: "deny", ...(req.model.sort ? { sort: req.model.sort } : {}) },
         ...(req.model.reasoningEffort ? { reasoning: { effort: req.model.reasoningEffort, exclude: true } } : {}),
       });
+      // Agente (S6.3b — D166): ferramentas do nosso código, escolha automática (o Gemini recusa ferramenta obrigatória
+      // junto com saída JSON — spike de 21/11), último passo sem ferramentas para a resposta final sair sempre.
+      const steps: AgentStep[] = [];
+      const maxSteps = req.maxSteps ?? 6;
+      // Custo e tokens de cada passo já pago (revisão S4–S6, segurança 3): se o agente falhar depois de N passos, o
+      // erro leva o que foi cobrado, e o teto diário vê o gasto real.
+      const paid = { inTokens: 0, outTokens: 0, costUsd: 0 };
+      const costOf = (pm: unknown) => (pm as { openrouter?: { usage?: { cost?: number } } } | undefined)?.openrouter?.usage?.cost;
+      const agent = req.tools?.length
+        ? {
+            tools: Object.fromEntries(
+              req.tools.map((t) => [
+                t.name,
+                tool({
+                  description: t.description,
+                  inputSchema: t.input,
+                  execute: async (input: unknown) => {
+                    const t0 = Date.now();
+                    const output = await t.execute(input);
+                    steps.push({ tool: t.name, input, output, ms: Date.now() - t0 });
+                    return output;
+                  },
+                }),
+              ]),
+            ),
+            stopWhen: stepCountIs(maxSteps),
+            onStepEnd: (st: { usage?: { inputTokens?: number; outputTokens?: number }; providerMetadata?: unknown }) => {
+              paid.inTokens += st.usage?.inputTokens ?? 0;
+              paid.outTokens += st.usage?.outputTokens ?? 0;
+              paid.costUsd += costOf(st.providerMetadata) ?? 0;
+            },
+            prepareStep: ({ stepNumber }: { stepNumber: number }) => (stepNumber >= maxSteps - 1 ? { activeTools: [], toolChoice: "none" as const } : { toolChoice: "auto" as const }),
+            ...(req.stepMs ? { timeout: { stepMs: req.stepMs } } : {}),
+          }
+        : {};
       try {
         const result = await generateText({
           model,
           system: req.system,
           messages: toMessages(req.input),
+          ...agent,
           output: Output.object({ schema: req.schema }),
           maxRetries: 0,
           maxOutputTokens: req.maxOutputTokens,
@@ -84,18 +136,20 @@ export function createOpenRouterGateway(apiKey: string): AiGateway {
             includeRuntimeContext: Object.fromEntries(Object.keys(req.telemetry?.metadata ?? {}).map((k) => [k, true])),
           },
         });
-        const orUsage = (result.providerMetadata?.openrouter as { usage?: { cost?: number } } | undefined)?.usage;
+        // Custo: no agente, a soma de todos os passos (o `providerMetadata` de fora é só do último — revisão I4).
+        const costs = (req.tools?.length ? result.steps.map((st) => costOf(st.providerMetadata)) : [costOf(result.providerMetadata)]).filter((c): c is number => typeof c === "number");
         return {
           output: result.output,
           model: result.response.modelId ?? req.model.id,
           usage: {
             inTokens: result.usage.inputTokens ?? 0,
             outTokens: result.usage.outputTokens ?? 0,
-            costUsd: typeof orUsage?.cost === "number" ? orUsage.cost : undefined,
+            costUsd: costs.length ? costs.reduce((a, b) => a + b, 0) : undefined,
           },
+          ...(req.tools?.length ? { steps } : {}),
         };
       } catch (err) {
-        throw classifyGatewayError(err);
+        throw withPaidUsage(classifyGatewayError(err), paid);
       }
     },
   };

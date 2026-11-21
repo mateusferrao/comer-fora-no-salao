@@ -3,9 +3,12 @@
  * uma versão nova (a anterior ganha `superseded_at`); convites já emitidos guardam a versão e a faixa da
  * emissão (D218). Tudo vai para `owner_edits`.
  */
+import { parseNotifySettings, type NotifySettings } from "../domain/notify-settings";
+import { mentionsIfood } from "@/src/shared/brand";
+import { findAvoided, ownerDataOf, parseAiFeatures, validateAbout, validateAvoid, type AiFeatures } from "../domain/ai-profile";
 import { and, desc, eq, isNull, max, sql } from "drizzle-orm";
 import type { Db } from "@/src/db/client";
-import type { Tx } from "@/src/db/executor";
+import type { Executor, Tx } from "@/src/db/executor";
 import { benefits, benefitVersions, idleSlots, menuItems, menus, ownerEdits, owners, restaurants } from "@/src/db/schema";
 import type { MenuCategory } from "@/src/modules/beneficios/domain/menu";
 import { describeOffer, MAX_DISCOUNT_PCT, validateOffer, type Offer, type OfferError, type OfferKind, offerFromInput } from "@/src/modules/beneficios/domain/offers";
@@ -35,7 +38,7 @@ export const MAX_SLOTS = 8;
 export type OfferInput = { kind: OfferKind; itemId: string; pct?: number };
 const toOffer = (o: { kind: OfferKind; itemId: string; pct?: number }): Offer => offerFromInput(o);
 
-export type SettingsResult = { ok: true; warnings?: string[] } | { ok: false; erro: "oferta"; erros: OfferError[] } | { ok: false; erro: "texto"; motivos: string[] } | { ok: false; erro: "nao_encontrado" | "em_uso" | "ultima_faixa" };
+export type SettingsResult = { ok: true; warnings?: string[] } | { ok: false; erro: "oferta"; erros: OfferError[] } | { ok: false; erro: "texto"; motivos: string[] } | { ok: false; erro: "nao_encontrado" | "em_uso" | "ultima_faixa" | "sem_opcao" | "nome_marca" };
 
 /**
  * Cria a versão nova de um benefício (a vigente ganha `superseded_at`). Roda dentro da transação do chamador,
@@ -79,6 +82,8 @@ export async function updateOffer(
   const menu = activeMenu.map((m) => ({ ...m, category: m.category as MenuCategory }));
   const offer = toOffer(p.offer);
   const errs = validateOffer(offer, menu);
+  // S6.3a (D197): item "fora das ofertas" não vira oferta nova.
+  if (ctx.noOfferItemIds.includes(offer.params.itemId)) errs.push("item_fora_das_ofertas");
   if (offer.kind === "desconto" && (offer.params.pct ?? 0) > MAX_DISCOUNT_PCT && !errs.includes("desconto_acima_do_teto")) errs.push("desconto_acima_do_teto");
   if (errs.length) return { ok: false, erro: "oferta", erros: errs };
   let inviteText: string | null = null;
@@ -107,7 +112,7 @@ export async function updateOffer(
   });
 }
 
-async function itemInUse(db: Db, restaurantId: string, itemId: string): Promise<boolean> {
+async function itemInUse(db: Executor, restaurantId: string, itemId: string): Promise<boolean> {
   const [r] = await db
     .select({ n: sql<number>`count(*)::int` })
     .from(benefitVersions)
@@ -189,7 +194,7 @@ export async function addSlot(db: Db, p: { restaurantId: string; ownerId: string
   const activeMenu = ctx.menu; // inclui inativos; candidatas filtram pelos ativos abaixo
   const actives = await db.select({ id: menuItems.id }).from(menuItems).where(and(eq(menuItems.restaurantId, p.restaurantId), eq(menuItems.active, true)));
   const menu = activeMenu.filter((m) => actives.some((a) => a.id === m.id));
-  const exclude = [ctx.agora?.offer.params.itemId, ctx.recompensa?.offer.params.itemId].filter((x): x is string => !!x);
+  const exclude = [ctx.agora?.offer.params.itemId, ctx.recompensa?.offer.params.itemId, ...ctx.noOfferItemIds].filter((x): x is string => !!x);
   const agoraItem = ctx.agora ? menu.find((m) => m.id === ctx.agora!.offer.params.itemId) : undefined;
   const cands = buildCandidates([slot], menu, { ticketCents: ctx.restaurant.ticketCents, marginPct: ctx.restaurant.marginPct, exclude, minValueCents: agoraItem?.priceCents });
   if (!cands[0]?.options.length) return { ok: false, erro: "sem_candidatas" };
@@ -202,7 +207,7 @@ export async function addSlot(db: Db, p: { restaurantId: string; ownerId: string
   const aiAllowed = owner?.via === "e2e" || (await consume(db, `pacote:${p.restaurantId}`, 10, 86_400, p.now)).ok;
   if (gw.gateway && aiAllowed) {
     const prompt = await getActivePrompt(db, "pacote");
-    const pp = buildPackagePrompt({ restaurantName: ctx.restaurant.name, cuisine: ctx.restaurant.cuisine, slots: [slot], cands, menu, facts: declaredFacts(ctx.restaurant, [slot], menu), instructions: prompt.instructions, tone: ctx.restaurant.aiTone });
+    const pp = buildPackagePrompt({ restaurantName: ctx.restaurant.name, cuisine: ctx.restaurant.cuisine, slots: [slot], cands, menu, facts: declaredFacts(ctx.restaurant, [slot], menu), instructions: prompt.instructions, tone: ctx.restaurant.aiTone, owner: ownerDataOf(ctx.restaurant) });
     const res = await runTask(buildPackageTask(pp, MODELS.pacote), pp.system, { text: pp.text }, { gateway: gw.gateway, clock: systemClock, trace: langfuseTracer });
     await recordAiCall(db, { task: "pacote", promptVersion: `${PACKAGE_PROMPT_VERSION}${promptSuffix(prompt, { tone: !!ctx.restaurant.aiTone })}`, restaurantId: p.restaurantId, result: res, keyKind: gw.keyKind });
     if (res.status === "ok") {
@@ -230,6 +235,7 @@ export async function updateRestaurantInfo(
   if (ctx.slots.some((s) => validateSlot(s, p.opening).length)) return { ok: false, erro: "funcionamento" };
   const name = cleanItemName(p.name).slice(0, 60);
   if (name.length < 2) return { ok: false, erro: "texto", motivos: ["nome"] };
+  if (mentionsIfood(name)) return { ok: false, erro: "nome_marca" };
   await db
     .update(restaurants)
     .set({ name, ticketCents: p.ticketCents, marginPct: p.marginPct, tables: p.tables, weeklyCustomers: p.weeklyCustomers, description: p.description?.trim().slice(0, 400) || null, address: p.address?.trim().slice(0, 160) || null, openingHours: p.opening })
@@ -240,17 +246,18 @@ export async function updateRestaurantInfo(
 
 // ---------- Vista das Configurações ----------
 export type SettingsView = {
-  restaurant: { aiTone: string | null; name: string; kind: string; isCopy: boolean; ticketCents: number | null; marginPct: number | null; tables: number | null; weeklyCustomers: number | null; description: string | null; address: string | null; opening: OpeningHours };
+  restaurant: { aiTone: string | null; aiAbout: string | null; aiAvoid: string | null; aiFeatures: AiFeatures; name: string; kind: string; isCopy: boolean; ticketCents: number | null; marginPct: number | null; tables: number | null; weeklyCustomers: number | null; description: string | null; address: string | null; opening: OpeningHours };
   agora: OfferInput | null;
   recompensa: OfferInput | null;
   slots: Array<{ id: string; label: string; days: number[]; startMin: number; endMin: number; intensity: "muito" | "um_pouco"; extraTables: number; offer: OfferInput | null; weeklyCap: number | null; inviteText: string; inviteRendered: string }>;
-  menu: Array<{ id: string; name: string; category: MenuCategory; priceCents: number; active: boolean; inUse: boolean }>;
+  menu: Array<{ id: string; name: string; category: MenuCategory; priceCents: number; active: boolean; inUse: boolean; offerAllowed: boolean }>;
 };
 
 export async function getSettingsView(db: Db, restaurantId: string): Promise<SettingsView | null> {
   const ctx = await loadContext(db, restaurantId);
   if (!ctx) return null;
-  const items = await db.select().from(menuItems).where(eq(menuItems.restaurantId, restaurantId)).orderBy(menuItems.position);
+  // Excluídos (exclusão lógica — D197) não aparecem mais no cardápio.
+  const items = await db.select().from(menuItems).where(and(eq(menuItems.restaurantId, restaurantId), isNull(menuItems.deletedAt))).orderBy(menuItems.position);
   const inUse = new Set(
     [ctx.agora, ctx.recompensa, ...Object.values(ctx.convites)].filter((v): v is NonNullable<typeof v> => !!v).map((v) => v.offer.params.itemId),
   );
@@ -259,6 +266,9 @@ export async function getSettingsView(db: Db, restaurantId: string): Promise<Set
   return {
     restaurant: {
       aiTone: ctx.restaurant.aiTone,
+      aiAbout: ctx.restaurant.aiAbout,
+      aiAvoid: ctx.restaurant.aiAvoid,
+      aiFeatures: parseAiFeatures(ctx.restaurant.aiFeatures),
       name: ctx.restaurant.name,
       kind: ctx.restaurant.kind,
       isCopy: !!ctx.restaurant.copiedFrom,
@@ -289,7 +299,7 @@ export async function getSettingsView(db: Db, restaurantId: string): Promise<Set
         inviteRendered: v?.inviteText ? renderReferences(v.inviteText, { items: names, slots: { [s.id]: slotPhrase(s) }, oferta: gain }) : "",
       };
     }),
-    menu: items.map((i) => ({ id: i.id, name: i.name, category: i.category as MenuCategory, priceCents: i.priceCents, active: i.active, inUse: inUse.has(i.id) })),
+    menu: items.map((i) => ({ id: i.id, name: i.name, category: i.category as MenuCategory, priceCents: i.priceCents, active: i.active, inUse: inUse.has(i.id), offerAllowed: i.offerAllowed })),
   };
 }
 
@@ -309,10 +319,15 @@ export async function updateTone(db: Db, p: { restaurantId: string; tone: string
  */
 export async function previewTone(
   db: Db,
-  p: { restaurantId: string; ownerId: string; slotId: string; tone: string; now: Date; gateway?: AiGateway | null },
-): Promise<{ ok: true; before: string; after: string; afterRaw: string } | { ok: false; erro: ToneError | "nao_encontrado" | "sem_ia" | "limite" }> {
+  p: { restaurantId: string; ownerId: string; slotId: string; tone: string; about?: string; avoid?: string; now: Date; gateway?: AiGateway | null },
+): Promise<{ ok: true; before: string; after: string; afterRaw: string } | { ok: false; erro: ToneError | "nao_encontrado" | "sem_ia" | "limite" | "fatos" | "evitar" }> {
   const v = validateTone(p.tone, FORBIDDEN);
   if (!v.ok) return v;
+  // S6.3a (revisão técnica I9): a prévia é outra porta de entrada de texto — mesmas validações da gravação.
+  const ab = validateAbout(p.about ?? "");
+  if (!ab.ok) return { ok: false, erro: "fatos" };
+  const av = validateAvoid(p.avoid ?? "");
+  if (!av.ok) return { ok: false, erro: "evitar" };
   const ctx = await loadContext(db, p.restaurantId);
   const slot = ctx?.slots.find((s) => s.id === p.slotId);
   const cur = slot ? ctx!.convites[slot.id] : undefined;
@@ -326,11 +341,137 @@ export async function previewTone(
   // A única candidata é a oferta vigente: a IA só reescreve o texto com o tom novo.
   const cands = [{ slotId: slot.id, options: [{ id: "atual", offer: cur.offer, score: 1, unitCostCents: 0, isMax: false, weeklyCap: cur.weeklyCap ?? 1 }] }];
   const prompt = await getActivePrompt(db, "pacote");
-  const pp = buildPackagePrompt({ restaurantName: ctx.restaurant.name, cuisine: ctx.restaurant.cuisine, slots: [slot], cands, menu, facts: declaredFacts(ctx.restaurant, [slot], menu), instructions: prompt.instructions, tone: v.tone });
+  const pp = buildPackagePrompt({ restaurantName: ctx.restaurant.name, cuisine: ctx.restaurant.cuisine, slots: [slot], cands, menu, facts: declaredFacts(ctx.restaurant, [slot], menu), instructions: prompt.instructions, tone: v.tone, owner: { about: ab.about, avoid: av.terms } });
   const res = await runTask(buildPackageTask(pp, MODELS.pacote), pp.system, { text: pp.text }, { gateway: gw.gateway, clock: systemClock, trace: langfuseTracer });
-  await recordAiCall(db, { task: "pacote", promptVersion: `${PACKAGE_PROMPT_VERSION}${promptSuffix(prompt, { tone: true })}`, restaurantId: p.restaurantId, result: res, keyKind: gw.keyKind });
+  await recordAiCall(db, { task: "pacote", promptVersion: `${PACKAGE_PROMPT_VERSION}${promptSuffix(prompt, { tone: true, about: !!ab.about, avoid: av.terms.length > 0 })}`, restaurantId: p.restaurantId, result: res, keyKind: gw.keyKind });
   if (res.status !== "ok") return { ok: false, erro: "sem_ia" };
   const after = resolvePackage(pp, res.data)[0]!.textoConvite;
   const rctx = { items: Object.fromEntries(ctx.menu.map((m) => [m.id, m.name])), slots: { [slot.id]: slotPhrase(slot) }, oferta: describeOffer(cur.offer, ctx.menu, "convite").gain };
   return { ok: true, before: renderReferences(cur.inviteText ?? "", rctx), after: renderReferences(after, rctx), afterRaw: after };
+}
+
+// ---------- Avisos e automação (S6.1 — D196) ----------
+export type NotifyView = {
+  settings: NotifySettings;
+  to: string | null;
+  ownerVia: string | null;
+  /** Dia (ISO) em que o dono desligou os e-mails de convite aos clientes — `null` se estão ligados (revisão S4–S6). */
+  clientEmailsOffSince: string | null;
+};
+
+type EmailsJson = { emails?: { convite?: boolean; reativacao?: boolean } } | null;
+const invitesOff = (x: EmailsJson) => x?.emails?.convite === false || x?.emails?.reativacao === false;
+
+/** Última mudança que desligou um e-mail de convite (de ligado para desligado), entre as gravações de "Avisos". */
+async function clientEmailsOffSince(db: Db, restaurantId: string, settings: NotifySettings): Promise<string | null> {
+  if (settings.emails.convite && settings.emails.reativacao) return null;
+  const rows = await db
+    .select({ suggested: ownerEdits.suggested, final: ownerEdits.final, at: ownerEdits.at })
+    .from(ownerEdits)
+    .where(and(eq(ownerEdits.restaurantId, restaurantId), eq(ownerEdits.kind, "config:avisos")))
+    .orderBy(desc(ownerEdits.at))
+    .limit(50);
+  const hit = rows.find((r) => invitesOff(r.final as EmailsJson) && !invitesOff(r.suggested as EmailsJson));
+  return hit ? hit.at.toISOString() : null;
+}
+
+export async function getNotifyView(db: Db, restaurantId: string): Promise<NotifyView | null> {
+  const [r] = await db
+    .select({ s: restaurants.notifySettings, enc: owners.emailEnc, hint: owners.emailHint, via: owners.via })
+    .from(restaurants)
+    .innerJoin(owners, eq(owners.id, restaurants.ownerId))
+    .where(eq(restaurants.id, restaurantId));
+  if (!r) return null;
+  const settings = parseNotifySettings(r.s);
+  return { settings, to: r.enc ? r.hint : null, ownerVia: r.via, clientEmailsOffSince: await clientEmailsOffSince(db, restaurantId, settings) };
+}
+
+/** Grava o objeto inteiro validado, sob lock da linha (o link "parar resumo" e a tela não se atropelam — revisão I7). */
+export async function updateNotifySettings(db: Db, p: { restaurantId: string; input: NotifySettings; now: Date }): Promise<{ ok: true; settings: NotifySettings }> {
+  return db.transaction(async (tx) => {
+    const [cur] = await tx.select({ s: restaurants.notifySettings }).from(restaurants).where(eq(restaurants.id, p.restaurantId)).for("update");
+    const before = parseNotifySettings(cur?.s);
+    await tx.update(restaurants).set({ notifySettings: p.input }).where(eq(restaurants.id, p.restaurantId));
+    await tx.insert(ownerEdits).values({ restaurantId: p.restaurantId, kind: "config:avisos", ref: null, suggested: before, final: p.input, at: p.now });
+    return { ok: true as const, settings: p.input };
+  });
+}
+
+// ---------- IA do restaurante (S6.3a — D197) ----------
+
+/** Candidatas que sobram (mesma regra do plano da semana) sem os itens de `noOffer`. */
+function candidateCount(ctx: NonNullable<Awaited<ReturnType<typeof loadContext>>>, noOffer: readonly string[]): number {
+  if (!ctx.slots.length) return 1;
+  const menu = ctx.menu.filter((m) => !ctx.inactiveItemIds.includes(m.id));
+  const exclude = [ctx.agora?.offer.params.itemId, ctx.recompensa?.offer.params.itemId, ...noOffer].filter((x): x is string => !!x);
+  const agoraItem = ctx.agora ? menu.find((m) => m.id === ctx.agora!.offer.params.itemId) : undefined;
+  const cands = buildCandidates(ctx.slots, menu, { ticketCents: ctx.restaurant.ticketCents, marginPct: ctx.restaurant.marginPct, exclude, minValueCents: agoraItem?.priceCents });
+  return Math.min(...cands.map((c) => c.options.length));
+}
+
+/**
+ * "Pode entrar em ofertas" (D197): recusa só quando a mudança leva as candidatas dos convites de > 0 para 0, ou
+ * quando não sobra nenhum item ativo para o "agora" e a cartela (revisão técnica I5); serializado pelo lock do
+ * restaurante. Item numa oferta em vigor continua nela até a próxima troca (aviso).
+ */
+export async function setItemOfferAllowed(db: Db, p: { restaurantId: string; itemId: string; allowed: boolean; now: Date }): Promise<SettingsResult> {
+  return db.transaction(async (tx) => {
+    await tx.select({ id: restaurants.id }).from(restaurants).where(eq(restaurants.id, p.restaurantId)).for("update");
+    const ctx = await loadContext(tx, p.restaurantId);
+    if (!ctx || !ctx.menu.some((m) => m.id === p.itemId)) return { ok: false as const, erro: "nao_encontrado" as const };
+    const warnings: string[] = [];
+    if (!p.allowed) {
+      const next = [...new Set([...ctx.noOfferItemIds, p.itemId])];
+      const before = candidateCount(ctx, ctx.noOfferItemIds);
+      const after = candidateCount(ctx, next);
+      if (before > 0 && after === 0) return { ok: false as const, erro: "sem_opcao" as const };
+      if (!ctx.menu.some((m) => !ctx.inactiveItemIds.includes(m.id) && !next.includes(m.id))) return { ok: false as const, erro: "sem_opcao" as const };
+      if (after === 1) warnings.push("uma_opcao");
+      const inUse = [ctx.agora, ctx.recompensa, ...Object.values(ctx.convites)].some((v) => v?.offer.params.itemId === p.itemId);
+      if (inUse) warnings.push("em_uso_ate_trocar");
+    }
+    await tx.update(menuItems).set({ offerAllowed: p.allowed }).where(and(eq(menuItems.id, p.itemId), eq(menuItems.restaurantId, p.restaurantId)));
+    await tx.insert(ownerEdits).values({ restaurantId: p.restaurantId, kind: "config:item_oferta", ref: p.itemId, suggested: null, final: { offerAllowed: p.allowed }, at: p.now });
+    return { ok: true as const, warnings };
+  });
+}
+
+/** "Excluir" (D197, revisão técnica I6): exclusão LÓGICA — some do cardápio, das ofertas e do prompt; códigos e textos antigos continuam. */
+export async function deleteMenuItem(db: Db, p: { restaurantId: string; itemId: string; now: Date }): Promise<SettingsResult> {
+  return db.transaction(async (tx) => {
+    await tx.select({ id: restaurants.id }).from(restaurants).where(eq(restaurants.id, p.restaurantId)).for("update");
+    const [it] = await tx.select().from(menuItems).where(and(eq(menuItems.id, p.itemId), eq(menuItems.restaurantId, p.restaurantId), isNull(menuItems.deletedAt)));
+    if (!it) return { ok: false as const, erro: "nao_encontrado" as const };
+    if (await itemInUse(tx, p.restaurantId, p.itemId)) return { ok: false as const, erro: "em_uso" as const };
+    await tx.update(menuItems).set({ active: false, offerAllowed: false, deletedAt: p.now }).where(eq(menuItems.id, p.itemId));
+    await tx.insert(ownerEdits).values({ restaurantId: p.restaurantId, kind: "config:item_excluido", ref: p.itemId, suggested: { name: it.name }, final: null, at: p.now });
+    return { ok: true as const };
+  });
+}
+
+export type AiProfileError = "fatos" | "evitar";
+/** Fatos para a IA + O que evitar + liga/desliga por restaurante (opcionais; vazio = padrão). */
+export async function updateAiProfile(
+  db: Db,
+  p: { restaurantId: string; about: string; avoid: string; features: AiFeatures; now: Date },
+): Promise<{ ok: true; warnings: string[] } | { ok: false; erro: AiProfileError; motivo: string }> {
+  const a = validateAbout(p.about);
+  if (!a.ok) return { ok: false, erro: "fatos", motivo: a.erro };
+  const v = validateAvoid(p.avoid);
+  if (!v.ok) return { ok: false, erro: "evitar", motivo: v.erro };
+  return db.transaction(async (tx) => {
+    const [cur] = await tx.select({ about: restaurants.aiAbout, avoid: restaurants.aiAvoid, features: restaurants.aiFeatures }).from(restaurants).where(eq(restaurants.id, p.restaurantId)).for("update");
+    if (!cur) return { ok: false as const, erro: "fatos" as const, motivo: "nao_encontrado" };
+    await tx.update(restaurants).set({ aiAbout: a.about, aiAvoid: v.avoid, aiFeatures: p.features }).where(eq(restaurants.id, p.restaurantId));
+    const edits = [
+      cur.about !== a.about ? { kind: "config:sobre", suggested: cur.about, final: a.about } : null,
+      cur.avoid !== v.avoid ? { kind: "config:evitar", suggested: cur.avoid, final: v.avoid } : null,
+      JSON.stringify(parseAiFeatures(cur.features)) !== JSON.stringify(p.features) ? { kind: "config:ia_recursos", suggested: parseAiFeatures(cur.features), final: p.features } : null,
+    ].filter((e): e is NonNullable<typeof e> => !!e);
+    if (edits.length) await tx.insert(ownerEdits).values(edits.map((e) => ({ restaurantId: p.restaurantId, ref: null, at: p.now, ...e })));
+    // Aviso (não bloqueio): termo a evitar que aparece no nome de um prato do cardápio.
+    const items = await tx.select({ name: menuItems.name }).from(menuItems).where(and(eq(menuItems.restaurantId, p.restaurantId), isNull(menuItems.deletedAt)));
+    const warnings = v.terms.filter((t) => items.some((i) => findAvoided(i.name, [t]))).map((t) => `no_cardapio:${t}`);
+    return { ok: true as const, warnings };
+  });
 }

@@ -9,7 +9,7 @@ export type KeyKind = "publica" | "demo";
 /** Teto diário da chave pública [C] (US$): acima disso, as tarefas caem no modo sem IA, com aviso. */
 export const PUBLIC_DAILY_CAP_USD = 0.5;
 
-export async function recordAiCall(ex: Executor, p: { task: string; promptVersion: string; restaurantId?: string | null; result: TaskResult<unknown>; keyKind: KeyKind; at?: Date }): Promise<void> {
+export async function recordAiCall(ex: Executor, p: { task: string; promptVersion: string; restaurantId?: string | null; planId?: string | null; result: TaskResult<unknown>; keyKind: KeyKind; at?: Date }): Promise<void> {
   const a = p.result.attempts;
   const sum = (f: (x: (typeof a)[number]) => number | undefined) => a.reduce((acc, x) => acc + (f(x) ?? 0), 0);
   try {
@@ -17,6 +17,7 @@ export async function recordAiCall(ex: Executor, p: { task: string; promptVersio
       task: p.task,
       promptVersion: p.promptVersion,
       restaurantId: p.restaurantId ?? null,
+      planId: p.planId ?? null,
       status: p.result.status,
       reason: p.result.status === "fallback" ? p.result.reason : null,
       model: p.result.status === "ok" ? p.result.model : null,

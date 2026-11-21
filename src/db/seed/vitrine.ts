@@ -35,8 +35,8 @@ export function vitrineSpec(activatedAt: Date, o: VitrineOptions = {}): Restaura
     ticketCents: 8500,
     marginPct: 65,
     description:
-      "Cantina de bairro com massas frescas, pizzas de fermentação longa e sobremesas da casa. Restaurante fictício, criado para este protótipo.",
-    address: "Rua das Laranjeiras Fictícias, 120 – Vila Exemplo, São Paulo – SP",
+      "Cantina de bairro com massas frescas, pizzas de fermentação longa e sobremesas da casa.",
+    address: "Rua Nonna Lucia, 120 – São Paulo – SP",
     heroImage: "/fotos/salao.jpg",
     recado: "Massa fresca feita todo dia. Boa visita!",
     protected: !o.copy,

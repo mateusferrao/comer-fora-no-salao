@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { api } from "./api";
 
-export type ExtractionState = { status: "lendo" | "pronto" | "falhou" | "nao_cardapio"; count?: number; parcial?: boolean; cache?: boolean; simulado?: boolean };
+export type ExtractionState = { status: "lendo" | "pronto" | "falhou" | "nao_cardapio"; count?: number; parcial?: boolean; cache?: boolean };
 
 /** Estado da leitura do cardápio em segundo plano ("lendo seu cardápio… · 23 itens encontrados"). */
 export function useExtraction(id: string | null, initial: ExtractionState | null) {
@@ -12,10 +12,10 @@ export function useExtraction(id: string | null, initial: ExtractionState | null
   useEffect(() => {
     if (!id || (st && st.status !== "lendo")) return;
     const t = setTimeout(async () => {
-      const r = await api<{ status: ExtractionState["status"]; result: { itens?: unknown[]; parcial?: boolean; cache?: boolean; simulado?: boolean } | null }>(`/api/parceiro/cardapio/${id}`).catch(() => null);
+      const r = await api<{ status: ExtractionState["status"]; result: { itens?: unknown[]; parcial?: boolean; cache?: boolean } | null }>(`/api/parceiro/cardapio/${id}`).catch(() => null);
       // Erro passageiro: novo objeto de estado para a consulta continuar (revisão da S2).
       if (!r?.ok) return setSt((s) => (s ? { ...s } : { status: "lendo" }));
-      setSt({ status: r.data.status, count: r.data.result?.itens?.length, parcial: r.data.result?.parcial, cache: r.data.result?.cache, simulado: r.data.result?.simulado });
+      setSt({ status: r.data.status, count: r.data.result?.itens?.length, parcial: r.data.result?.parcial, cache: r.data.result?.cache });
     }, 1500);
     return () => clearTimeout(t);
   }, [id, st]);
@@ -28,7 +28,7 @@ export function ExtractionStatus({ state }: { state: ExtractionState | null }) {
     state.status === "lendo"
       ? "Lendo seu cardápio…"
       : state.status === "pronto"
-        ? `${state.count ?? 0} itens encontrados${state.cache ? " · processado anteriormente" : ""}${state.simulado ? " · importação simulada" : ""}${state.parcial ? " · leitura parcial: confira" : ""}`
+        ? `${state.count ?? 0} itens encontrados${state.parcial ? " · leitura parcial: confira" : ""}`
         : state.status === "nao_cardapio"
           ? "Isso não parece um cardápio."
           : "Não conseguimos ler o cardápio agora.";

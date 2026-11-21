@@ -3,6 +3,7 @@
  * candidatas; a IA escolhe por faixa e escreve; sem IA, a maior nota com texto modelo (rotulado).
  * O rascunho fica em `weekly_plans` (status `gerando` → `proposto`); ativar o aprova.
  */
+import { ownerDataOf } from "@/src/modules/config/domain/ai-profile";
 import { and, asc, desc, eq, inArray } from "drizzle-orm";
 import type { Db } from "@/src/db/client";
 import type { Executor } from "@/src/db/executor";
@@ -66,7 +67,7 @@ export async function proposePackage(db: Db, p: { restaurantId: string; ownerId:
   const cands = buildCandidates(draft.slots, draft.menu, { ticketCents: r.ticketCents, marginPct: r.marginPct, exclude: [agora.params.itemId, recompensa.params.itemId], minValueCents: agoraItem?.priceCents });
   const facts = declaredFacts(r, draft.slots, draft.menu);
   const prompt = await getActivePrompt(db, "pacote");
-  const pp = buildPackagePrompt({ restaurantName: r.name, cuisine: r.cuisine, slots: draft.slots, cands, menu: draft.menu, facts, instructions: prompt.instructions, tone: r.aiTone });
+  const pp = buildPackagePrompt({ restaurantName: r.name, cuisine: r.cuisine, slots: draft.slots, cands, menu: draft.menu, facts, instructions: prompt.instructions, tone: r.aiTone, owner: ownerDataOf(r) });
 
   let choices: StoredChoice[] | null = null;
   let semIa: string | undefined;
@@ -75,7 +76,7 @@ export async function proposePackage(db: Db, p: { restaurantId: string; ownerId:
   const hasCandidates = cands.some((c) => c.options.length > 0);
   if (choice.gateway && hasCandidates && cands.every((c) => c.options.length > 0)) {
     const res = await runTask(buildPackageTask(pp, MODELS.pacote), pp.system, { text: pp.text }, { gateway: choice.gateway, clock: systemClock, trace: langfuseTracer });
-    await recordAiCall(db, { task: "pacote", promptVersion: `${PACKAGE_PROMPT_VERSION}${promptSuffix(prompt, { tone: !!r.aiTone })}`, restaurantId: p.restaurantId, result: res, keyKind: choice.keyKind });
+    await recordAiCall(db, { task: "pacote", promptVersion: `${PACKAGE_PROMPT_VERSION}${promptSuffix(prompt, { tone: !!r.aiTone, about: !!r.aiAbout, avoid: !!r.aiAvoid })}`, restaurantId: p.restaurantId, planId: plan.id, result: res, keyKind: choice.keyKind });
     if (res.status === "ok") choices = resolvePackage(pp, res.data);
     else semIa = res.reason;
   } else semIa = !hasCandidates || !cands.every((c) => c.options.length > 0) ? "sem_candidatas" : choice.reason;

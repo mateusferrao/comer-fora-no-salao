@@ -25,7 +25,7 @@ const cents = (s: string) => {
 export type ReviewInitial = { rows: Array<{ categoria: Row["categoria"]; nome: string; precoCentavos: number; confira?: boolean }> | null; cuisine: string | null; priceBand: string | null };
 
 /** Passo 3 (espec. 3.2): tabela editável do que a IA leu; o código já marcou o que conferir. */
-export function Step3Revisao({ extractionId, extraction, initial }: { extractionId: string | null; extraction: ExtractionState | null; initial: ReviewInitial }) {
+export function Step3Revisao({ extractionId, extraction, initial, manual = false }: { extractionId: string | null; extraction: ExtractionState | null; initial: ReviewInitial; manual?: boolean }) {
   const router = useRouter();
   const ext = useExtraction(initial.rows ? null : extractionId, extraction);
   const [rows, setRows] = useState<Row[] | null>(initial.rows ? initial.rows.map((r) => ({ ...r, preco: reais(r.precoCentavos) })) : null);
@@ -65,8 +65,10 @@ export function Step3Revisao({ extractionId, extraction, initial }: { extraction
   return (
     <div className="flex flex-col gap-5">
       <div>
-        <h2 className="text-xl font-bold text-ink">Revisão do cardápio</h2>
-        <p className="mt-1 text-sm text-ink-muted">Confira o que a IA leu. Você pode corrigir, apagar ou acrescentar itens. As linhas marcadas pedem atenção.</p>
+        <h2 className="text-xl font-bold text-ink">{manual ? "Seu cardápio" : "Revisão do cardápio"}</h2>
+        <p className="mt-1 text-sm text-ink-muted">
+          {manual ? "Digite os itens: nome, categoria e preço. Você pode acrescentar, corrigir e apagar quantos quiser." : "Confira o que a IA leu. Você pode corrigir, apagar ou acrescentar itens. As linhas marcadas pedem atenção."}
+        </p>
       </div>
       {!rows && <ExtractionStatus state={ext ?? { status: "lendo" }} />}
       {rows && ext && ext.status !== "pronto" && <ExtractionStatus state={ext} />}
@@ -79,7 +81,7 @@ export function Step3Revisao({ extractionId, extraction, initial }: { extraction
       )}
       {rows && (
         <>
-          <div className="overflow-x-auto rounded-sm border border-border">
+          <div className="relative overflow-x-auto rounded-sm border border-border">
             <table className="w-full min-w-[560px] text-sm">
               <caption className="sr-only">Itens do cardápio</caption>
               <thead className="bg-surface-muted text-left">

@@ -1,7 +1,7 @@
 import { APICallError, NoObjectGeneratedError } from "ai";
 import { describe, expect, it } from "vitest";
 import { AiGatewayError } from "@/src/modules/ia/gateway";
-import { classifyGatewayError } from "@/src/modules/ia/openrouter-gateway";
+import { classifyGatewayError, withPaidUsage } from "@/src/modules/ia/openrouter-gateway";
 
 const apiError = (statusCode: number) =>
   new APICallError({ message: `status ${statusCode}`, url: "https://openrouter.ai/api/v1/chat/completions", requestBodyValues: {}, statusCode });
@@ -37,5 +37,21 @@ describe("classifyGatewayError (erros reais do AI SDK)", () => {
   it("mensagem do erro não carrega o corpo da resposta do provedor", () => {
     const out = classifyGatewayError(apiError(503)) as AiGatewayError;
     expect(out.message).toBe("OpenRouter respondeu 503");
+  });
+});
+
+describe("custo dos passos já pagos quando o agente falha (revisão S4–S6, segurança 3)", () => {
+  const paid = { inTokens: 900, outTokens: 300, costUsd: 0.004 };
+  it("erro do gateway sem uso: ganha o custo dos passos", () => {
+    const e = withPaidUsage(new AiGatewayError("invalid", "saída fora do schema"), paid) as AiGatewayError;
+    expect(e).toBeInstanceOf(AiGatewayError);
+    expect(e.kind).toBe("invalid");
+    expect(e.usage).toEqual({ inTokens: 900, outTokens: 300, costUsd: 0.004 });
+  });
+  it("tempo esgotado (AbortError): o custo vai junto em aiUsage; sem passos pagos, nada muda", () => {
+    const abort = Object.assign(new Error("aborted"), { name: "AbortError" });
+    expect((withPaidUsage(abort, paid) as { aiUsage?: unknown }).aiUsage).toEqual({ inTokens: 900, outTokens: 300, costUsd: 0.004 });
+    const clean = new AiGatewayError("provider", "x");
+    expect(withPaidUsage(clean, { inTokens: 0, outTokens: 0, costUsd: 0 })).toBe(clean);
   });
 });

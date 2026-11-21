@@ -2,7 +2,7 @@
 import { and, desc, eq } from "drizzle-orm";
 import type { Db } from "@/src/db/client";
 import { loginCodes, owners } from "@/src/db/schema";
-import { hmacEmail, hmacLoginCode, safeEqual } from "@/src/shared/crypto";
+import { encryptEmail, hmacEmail, hmacLoginCode, safeEqual } from "@/src/shared/crypto";
 import { consume, consumeAll } from "@/src/shared/rate-limit";
 import { E2E_EMAIL_RE, isLoginCodeFormat, LOGIN_CODE_MAX_ATTEMPTS, loginCodeState, maskEmail, parseEmail } from "../domain/login-code";
 
@@ -24,6 +24,8 @@ export async function verifyLoginCode(db: Db, p: { email: string; code: string; 
     if (!lim.ok) return { ok: false, erro: "limite", retryAfterSec: lim.retryAfterSec };
   }
   const emailHmac = hmacEmail(email);
+  // S6 (D187): e-mail cifrado só para o resumo semanal; contas E2E nunca guardam (o agendador as ignora).
+  const emailEnc = e2e ? null : encryptEmail(email);
 
   return db.transaction(async (tx) => {
     const [row] = await tx
@@ -45,7 +47,7 @@ export async function verifyLoginCode(db: Db, p: { email: string; code: string; 
     const [existing] = await tx.select({ id: owners.id }).from(owners).where(eq(owners.emailHmac, emailHmac));
     if (existing) {
       await tx.update(loginCodes).set({ usedAt: p.now }).where(eq(loginCodes.id, row!.id));
-      await tx.update(owners).set({ lastSeenAt: p.now }).where(eq(owners.id, existing.id));
+      await tx.update(owners).set({ lastSeenAt: p.now, ...(emailEnc ? { emailEnc } : {}) }).where(eq(owners.id, existing.id));
       return { ok: true as const, ownerId: existing.id, created: false };
     }
     // Conta nova = cópia da vitrine (~15 mil linhas): 10/dia por IP e 100/dia no total (revisão da S2, plano §6.5).
@@ -60,7 +62,7 @@ export async function verifyLoginCode(db: Db, p: { email: string; code: string; 
     await tx.update(loginCodes).set({ usedAt: p.now }).where(eq(loginCodes.id, row!.id));
     const [created] = await tx
       .insert(owners)
-      .values({ kind: "teste", emailHmac, emailHint: maskEmail(email), via: e2e ? "e2e" : "email", lastSeenAt: p.now, createdAt: p.now })
+      .values({ kind: "teste", emailHmac, emailHint: maskEmail(email), emailEnc, via: e2e ? "e2e" : "email", lastSeenAt: p.now, createdAt: p.now })
       .onConflictDoNothing()
       .returning({ id: owners.id });
     if (created) return { ok: true as const, ownerId: created.id, created: true };

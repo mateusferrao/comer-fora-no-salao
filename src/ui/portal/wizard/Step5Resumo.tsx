@@ -40,7 +40,7 @@ export function Step5Resumo({ view, slug, todayPlus30 }: { view: PackageView; sl
         <ol className="list-decimal pl-5 text-sm leading-6 text-ink">
           <li>Aprove e imprima o display e o cartaz.</li>
           <li>Coloque nas mesas e marque &quot;Está no salão&quot;.</li>
-          <li>Teste como cliente: leia o QR e faça o check-in.</li>
+          <li>Veja como o cliente vê: leia o QR e faça o check-in.</li>
           <li>Valide o código no Portal, como o garçom faria.</li>
         </ol>
         <div className="flex flex-wrap gap-3">
@@ -48,7 +48,7 @@ export function Step5Resumo({ view, slug, todayPlus30 }: { view: PackageView; sl
             Ver meu kit
           </Link>
           <a href={`/r/${slug}`} target="_blank" rel="noreferrer" className="inline-flex min-h-11 items-center rounded-xs border border-red-text px-5 text-sm font-semibold text-red-text">
-            Abrir como cliente
+            Ver minha página
           </a>
         </div>
       </div>

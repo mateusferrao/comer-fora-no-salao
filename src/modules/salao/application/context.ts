@@ -15,6 +15,8 @@ export type RestaurantContext = {
   menu: MenuItem[];
   /** Itens desativados no cardápio: ainda descrevem versões antigas, mas não entram em escolhas novas (revisão da S2). */
   inactiveItemIds: string[];
+  /** S6.3a (D197): itens marcados "fora das ofertas" (e os excluídos) — nunca entram em candidatas nem ofertas novas. */
+  noOfferItemIds: string[];
   /** Faixas ativas, na ordem de criação. */
   slots: Slot[];
   agora: VersionedOffer | null;
@@ -81,6 +83,7 @@ export async function loadContext(ex: Executor, restaurantId: string): Promise<R
     opening: parsedOpening.success ? parsedOpening.data : [],
     menu: items.map((i) => ({ id: i.id, category: i.category as MenuCategory, name: i.name, priceCents: i.priceCents })),
     inactiveItemIds: items.filter((i) => !i.active).map((i) => i.id),
+    noOfferItemIds: items.filter((i) => !i.offerAllowed || i.deletedAt).map((i) => i.id),
     slots: slotRows.map((s) => ({
       id: s.id,
       days: s.days,

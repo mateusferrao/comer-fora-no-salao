@@ -23,7 +23,7 @@ export default async function Plataforma() {
       </p>
       <h1 className="mt-3 text-2xl font-bold text-ink">Visão da plataforma</h1>
       <p className="mt-2 text-sm leading-6 text-ink-muted">
-        O que o iFood acompanharia, medido nos restaurantes de teste que pessoas criaram neste protótipo (fora: vitrine, demonstrações, testes automáticos e dados simulados). Amostra pequena: serve para mostrar a métrica, não para concluir.
+        O que o iFood acompanharia, medido nos restaurantes que pessoas cadastraram neste protótipo (fora: vitrine, demonstrações, testes automáticos e dados simulados). Amostra pequena: serve para mostrar a métrica, não para concluir.
       </p>
       <div className="mt-4 grid gap-3 sm:grid-cols-3">
         <div className={card}>

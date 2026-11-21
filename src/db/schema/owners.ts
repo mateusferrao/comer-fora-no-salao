@@ -14,6 +14,8 @@ export const owners = pgTable(
     emailHmac: text("email_hmac"),
     /** Dica mascarada para o rodapé do Portal ("m•••@d•••.com" ou "acesso por link"). */
     emailHint: text("email_hint"),
+    /** S4 (D163, D169): e-mail criptografado (AES-256-GCM) só para o resumo semanal; muda a D118. */
+    emailEnc: text("email_enc"),
     lastSeenAt: timestamp("last_seen_at", { withTimezone: true }),
     /** Como a conta nasceu: `email` | `link` | `e2e`; nulo = contas do seed (vitrine, E2E da S1). */
     via: text("via"),

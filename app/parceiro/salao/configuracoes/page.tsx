@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { getDb } from "@/src/db/client";
-import { getSettingsView } from "@/src/modules/config/application/update-settings";
+import { getNotifyView, getSettingsView } from "@/src/modules/config/application/update-settings";
 import { ConfigManager } from "@/src/ui/portal/ConfigManager";
 import { AgentSection } from "@/src/ui/portal/AgentSection";
 import { getFlags } from "@/src/modules/config/application/app-config";
@@ -12,7 +12,8 @@ import { requireOwner } from "@/src/web/portal-context";
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: "Configurações · Portal do Parceiro" };
 
-export default async function ConfigPage() {
+export default async function ConfigPage({ searchParams }: { searchParams: Promise<{ aba?: string }> }) {
+  const { aba } = await searchParams;
   const s = await requireOwner();
   const cur = s.current;
   if (!cur || cur.status !== "ativo") {
@@ -27,7 +28,9 @@ export default async function ConfigPage() {
     );
   }
   const v = (await getSettingsView(getDb(), cur.id))!;
-  const mcp = (await getFlags(getDb())).mcp;
+  const flags = await getFlags(getDb());
+  const mcp = flags.mcp;
+  const notify = (await getNotifyView(getDb(), cur.id))!;
   const tokens = mcp ? await listTokens(getDb(), cur.id) : [];
   return (
     <main className="mx-auto flex max-w-5xl flex-col gap-4 px-4 py-6 sm:px-8">
@@ -35,7 +38,14 @@ export default async function ConfigPage() {
         <h1 className="text-2xl font-bold text-ink">Configurações</h1>
         <p className="mt-1 text-sm text-ink-muted">Tudo o que a IA propôs é editável. Cada mudança vira uma nova versão; convites já emitidos continuam com a oferta e o horário de quando foram emitidos.</p>
       </header>
-      <ConfigManager v={v} isTest={cur.kind === "teste" && !cur.copiedFrom} restaurantId={cur.id} />
+      <ConfigManager
+        v={v}
+        isTest={cur.kind === "teste" && !cur.copiedFrom}
+        restaurantId={cur.id}
+        notify={notify}
+        flags={{ agendador: flags.agendador, resumo_email: flags.resumo_email, plano_agente: flags.plano_agente, aprende: flags.aprende }}
+        initialTab={typeof aba === "string" && /^[a-z]{2,20}$/.test(aba) ? aba : "agora"}
+      />
       {mcp && <AgentSection initial={tokens} endpoint={`${publicBaseUrl()}/api/mcp`} />}
     </main>
   );

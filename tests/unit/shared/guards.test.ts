@@ -2,7 +2,6 @@ import { beforeEach, describe, expect, it } from "vitest";
 import { clientIp, hitLimit, resetLimitsForTests } from "@/src/shared/rate-limit-memory";
 import { safeErr } from "@/src/shared/safe-err";
 import { rejectCrossSite } from "@/src/web/guards";
-import { sameName } from "@/src/modules/salao/application/identify-customer";
 
 describe("limite em memória", () => {
   beforeEach(resetLimitsForTests);
@@ -35,12 +34,5 @@ describe("log sem PII", () => {
     expect(safeErr(err)).toBe("Error (23505)");
     expect(safeErr(err)).not.toContain("Ana");
     expect(safeErr("x")).toBe("erro");
-  });
-});
-
-describe("nome confere", () => {
-  it("ignora maiúsculas, acentos e espaços", () => {
-    expect(sameName("  Fábio   Teste ", "fabio teste")).toBe(true);
-    expect(sameName("Ana", "Bruno")).toBe(false);
   });
 });

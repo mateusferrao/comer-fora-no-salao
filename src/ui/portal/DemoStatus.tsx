@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
-/** Estado da vitrine de demonstração da conta (D119): "Preparando…" (atualiza sozinho) ou "Tentar de novo". */
+/** Estado da cópia do restaurante de exemplo da conta (D119): "Preparando…" (atualiza sozinho) ou "Tentar de novo". */
 export function DemoStatus({ state }: { state: "criando" | "falhou" | "nenhuma" }) {
   const router = useRouter();
   const [busy, setBusy] = useState(false);
@@ -15,7 +15,7 @@ export function DemoStatus({ state }: { state: "criando" | "falhou" | "nenhuma" 
   if (state === "falhou")
     return (
       <div role="alert" className="flex flex-wrap items-center gap-3 rounded-sm border border-red-text bg-white p-4 text-sm text-ink">
-        Não conseguimos preparar seu restaurante de demonstração.
+        Não conseguimos preparar o restaurante de exemplo.
         <button
           type="button"
           disabled={busy}
@@ -33,7 +33,7 @@ export function DemoStatus({ state }: { state: "criando" | "falhou" | "nenhuma" 
   return (
     <p role="status" className="flex items-center gap-2 rounded-sm bg-surface-muted p-4 text-sm text-ink">
       <span aria-hidden="true" className="size-3 animate-spin rounded-full border-2 border-ink border-t-transparent" />
-      Preparando seu restaurante de demonstração (60 dias de dados de exemplo)…
+      Preparando o restaurante de exemplo (60 dias de histórico)…
     </p>
   );
 }

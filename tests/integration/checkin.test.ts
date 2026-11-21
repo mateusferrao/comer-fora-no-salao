@@ -6,7 +6,6 @@ import { adjustableClock, fixedClock } from "@/src/shared/clock";
 import { mulberry32 } from "@/src/shared/rng";
 import { assignArm, type Arm } from "@/src/modules/salao/domain/experiment";
 import { doCheckin } from "@/src/modules/salao/application/do-checkin";
-import { identifyCustomer, PhoneInUseError } from "@/src/modules/salao/application/identify-customer";
 import { registerScan } from "@/src/modules/salao/application/register-scan";
 import { createRestaurant, resetDb } from "./helpers/db";
 
@@ -172,30 +171,10 @@ describe("check-in (Postgres real)", () => {
   });
 });
 
-describe("identificação e leituras (Postgres real)", () => {
+describe("leituras (Postgres real)", () => {
   beforeEach(resetDb);
 
-  it("telefone vira HMAC + 4 dígitos; mesmo telefone e nome → mesmo cliente", async () => {
-    const r = await createRestaurant();
-    const input = { name: "Ana Fictícia", phone: "(00) 91234-5678", optWhatsapp: true, optApp: false, optPush: true, accept: true as const };
-    const a = await identifyCustomer(getDb(), r.restaurantId, input);
-    const b = await identifyCustomer(getDb(), r.restaurantId, { ...input, name: "ANA FICTICIA" });
-    expect(a.created).toBe(true);
-    expect(b).toEqual({ customerId: a.customerId, created: false });
-    const [contact] = await getDb().select().from(customerContacts);
-    expect(contact!.phoneLast4).toBe("5678");
-    expect(JSON.stringify(contact)).not.toContain("912345678");
-    const [rc] = await getDb().select().from(restaurantCustomers);
-    expect(rc).toMatchObject({ optWhatsapp: true, optApp: false, optPush: true });
-  });
-
-  it("telefone já cadastrado com outro nome não entra como aquele cliente (revisão S1, A1)", async () => {
-    const r = await createRestaurant();
-    const input = { name: "Ana Fictícia", phone: "(00) 91234-5678", optWhatsapp: true, optApp: true, optPush: true, accept: true as const };
-    const a = await identifyCustomer(getDb(), r.restaurantId, input);
-    await expect(identifyCustomer(getDb(), r.restaurantId, { ...input, name: "Outra Pessoa" })).rejects.toThrow(PhoneInUseError);
-    expect(await identifyCustomer(getDb(), r.restaurantId, { ...input, name: "ana ficticia" })).toEqual({ customerId: a.customerId, created: false });
-  });
+  // Identificação por telefone saiu na S4 (login por e-mail): coberta em customer-login.test.ts.
 
   it("leitura: 1 por aparelho e versão em 30 min; robô ignorado", async () => {
     const r = await createRestaurant({ pieces: [{ kind: "display", variants: [{ label: "A", token: "tok-a", texts: {} }] }] });

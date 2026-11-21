@@ -3,20 +3,18 @@
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Badge } from "../../components/Badge";
 import { Button } from "../../components/Button";
 import { api, markStep } from "./api";
 import { PREP_MESSAGES, PrepError, prepareMenuFile } from "./images";
 
 export type ExampleCard = { id: string; label: string; description: string; thumb: string };
 
-/** Passo 1 (espec. 3.2): foto/PDF, um dos 3 exemplos ou "Importar do delivery (simulado)". A IA lê em segundo plano. */
+/** Passo 1 (espec. 3.2; S4): foto/PDF ou um dos 3 exemplos. A IA lê em segundo plano. */
 export function Step1Cardapio({ examples }: { examples: ExampleCard[] }) {
   const router = useRouter();
   const input = useRef<HTMLInputElement>(null);
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [why, setWhy] = useState(false);
   useEffect(() => markStep(1), []);
 
   const next = () => {
@@ -100,7 +98,7 @@ export function Step1Cardapio({ examples }: { examples: ExampleCard[] }) {
 
       <section aria-labelledby="exemplos" className="flex flex-col gap-3">
         <h3 id="exemplos" className="font-semibold text-ink">
-          Ou use um exemplo (fictício)
+          Não tem o cardápio à mão? Use um de exemplo
         </h3>
         <ul className="grid gap-3 sm:grid-cols-3">
           {examples.map((e) => (
@@ -121,33 +119,11 @@ export function Step1Cardapio({ examples }: { examples: ExampleCard[] }) {
 
       <p className="text-sm text-ink">
         Prefere digitar?{" "}
-        <Link href="/parceiro/salao/ativar/3" className="font-semibold text-red-text underline">
+        {/* S6.3a (D197; revisão de produto I5): o modo manual passa pelo "Seu salão" e ignora leituras antigas. */}
+        <Link href="/parceiro/salao/ativar/2?manual=1" className="font-semibold text-red-text underline">
           Digitar o cardápio
         </Link>
       </p>
-
-      <section aria-labelledby="importar" className="flex flex-col gap-2 rounded-sm border border-border bg-white p-4">
-        <div className="flex flex-wrap items-center gap-2">
-          <h3 id="importar" className="font-semibold text-ink">
-            Importar do delivery
-          </h3>
-          <Badge tone="neutral">simulado</Badge>
-        </div>
-        <p className="text-sm text-ink-muted">Traz o cardápio que você já tem no delivery para começar.</p>
-        <div className="flex flex-wrap items-center gap-3">
-          <Button variant="outline-portal" loading={busy === "importado"} disabled={!!busy && busy !== "importado"} onClick={() => startCached("importado")}>
-            Importar do delivery (simulado)
-          </Button>
-          <button type="button" aria-expanded={why} onClick={() => setWhy((w) => !w)} className="min-h-11 text-sm font-semibold text-red-text underline">
-            Por quê?
-          </button>
-        </div>
-        {why && (
-          <p className="text-sm text-ink">
-            Não integramos com o iFood porque o case proíbe usar dados reais ou internos. Em produção, viria do cardápio de delivery do Portal.
-          </p>
-        )}
-      </section>
 
       {error && (
         <p role="alert" className="text-sm font-medium text-red-text">

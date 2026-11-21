@@ -1,5 +1,6 @@
 import { getSeedDb } from "@/src/db/client";
 import { ensureMigrated } from "@/src/db/migrate";
+import { clearButtonRuns } from "@/src/modules/simulacao/application/clear-button-runs";
 import { systemClock } from "@/src/shared/clock";
 import { canRetrySeed, seedAll, seedStatus, startSeed } from "./index";
 import { vitrineHistory } from "./history";
@@ -13,7 +14,9 @@ export function startSeedOnBoot(migrated: boolean): Promise<void> {
 export function ensureSeeded(): Promise<void> {
   return startSeed(async () => {
     await ensureMigrated();
-    return seedAll(getSeedDb(), systemClock, vitrineHistory);
+    const r = await seedAll(getSeedDb(), systemClock, vitrineHistory);
+    await clearButtonRuns(getSeedDb());
+    return r;
   });
 }
 

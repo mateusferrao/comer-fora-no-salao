@@ -18,7 +18,8 @@ export type CustomerRow = {
   visits: number;
   stamps: number;
   piece: string | null;
-  optIn: { whatsapp: boolean; app: boolean; push: boolean };
+  /** S4: canais reais são e-mail e app; WhatsApp/Push ficam só nas linhas antigas. */
+  optIn: { email: boolean; app: boolean; whatsapp: boolean; push: boolean };
   segments: Segment[];
   arm: "convidavel" | "holdout" | null;
   hasActiveInvite: boolean;
@@ -26,12 +27,8 @@ export type CustomerRow = {
 
 export type SegmentsView = { counts: Record<Segment, { count: number; optIn: number }>; list: CustomerRow[]; segment: Segment };
 
-/** "Ana Fictício" → "Ana F." */
-export function shortName(name: string): string {
-  const [first, ...rest] = name.trim().split(/\s+/);
-  const last = rest.at(-1);
-  return last ? `${first} ${last[0]!.toUpperCase()}.` : (first ?? "");
-}
+import { shortName } from "@/src/shared/name";
+export { shortName };
 
 type Row = Record<string, unknown>;
 
@@ -40,7 +37,7 @@ export async function loadCustomerRows(ex: Executor, restaurantId: string, now: 
   const from30 = addDaysSP(today, -29);
   const res = (await ex.execute(sql`
     select rc.customer_id, cc.name, cc.phone_last4, rc.card_stamps, rc.card_completed_day, rc.arm,
-           rc.opt_whatsapp, rc.opt_app, rc.opt_push, kp.kind as piece_kind, pv.label as piece_label,
+           rc.opt_whatsapp, rc.opt_app, rc.opt_push, rc.opt_email, kp.kind as piece_kind, pv.label as piece_label,
            (select count(*) from checkins c where c.restaurant_id = rc.restaurant_id and c.customer_id = rc.customer_id) as visits,
            (select count(*) from checkins c where c.restaurant_id = rc.restaurant_id and c.customer_id = rc.customer_id and c.day_sp >= ${from30}) as visits30,
            (select min(c.day_sp) from checkins c where c.restaurant_id = rc.restaurant_id and c.customer_id = rc.customer_id) as first_day,
@@ -61,14 +58,14 @@ export async function loadCustomerRows(ex: Executor, restaurantId: string, now: 
     const segs = segmentOf({ visits, lastDay, stamps, visits30d: Number(r.visits30 ?? 0), hasActiveInvite: !!r.active_real }, today);
     return {
       id: String(r.customer_id),
-      displayName: shortName(String(r.name ?? "Cliente")),
+      displayName: shortName(r.name == null ? null : String(r.name)),
       phoneHint: `•••• ${String(r.phone_last4 ?? "")}`,
       firstDay: (r.first_day as string | null) ?? null,
       lastDay,
       visits,
       stamps,
       piece: r.piece_kind ? `${PIECE[String(r.piece_kind)] ?? String(r.piece_kind)} ${String(r.piece_label)}` : null,
-      optIn: { whatsapp: !!r.opt_whatsapp, app: !!r.opt_app, push: !!r.opt_push },
+      optIn: { email: !!r.opt_email, app: !!r.opt_app, whatsapp: !!r.opt_whatsapp, push: !!r.opt_push },
       segments: segs,
       arm: (r.arm as CustomerRow["arm"]) ?? null,
       hasActiveInvite: !!r.active_any,
@@ -76,7 +73,8 @@ export async function loadCustomerRows(ex: Executor, restaurantId: string, now: 
   });
 }
 
-export const hasOptIn = (c: Pick<CustomerRow, "optIn">) => c.optIn.whatsapp || c.optIn.app || c.optIn.push;
+/** Uma regra só (revisão técnica S4 B2): aceitou algum canal. */
+export const hasOptIn = (c: Pick<CustomerRow, "optIn">) => c.optIn.email || c.optIn.app || c.optIn.whatsapp || c.optIn.push;
 
 export function toReactivationCustomers(rows: readonly CustomerRow[]): ReactivationCustomer[] {
   return rows.map((c) => ({ id: c.id, arm: c.arm, optIn: hasOptIn(c), segments: c.segments, hasActiveInvite: c.hasActiveInvite, lastDay: c.lastDay }));

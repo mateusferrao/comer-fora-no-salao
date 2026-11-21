@@ -13,7 +13,7 @@ for (const [w, h] of [
     // Conta própria por tamanho (a 4 é do painel.spec): logins paralelos na mesma conta invalidam o código.
     await loginE2E(page.request, w === 1536 ? 7 : w === 1280 ? 8 : 9);
     await page.goto("/parceiro/salao");
-    await expect(page.getByText(/Preparando seu restaurante de demonstração/)).toBeHidden({ timeout: 60_000 });
+    await expect(page.getByText(/Preparando o restaurante de exemplo/)).toBeHidden({ timeout: 60_000 });
     await page.goto("/apresentacao");
     await expect(page.getByTestId("prototype-bar")).toHaveText(BARRA);
     const portal = page.frameLocator('iframe[title="Portal do Parceiro"]');
@@ -22,7 +22,7 @@ for (const [w, h] of [
     // Barra lateral do Portal visível (não cai no layout de celular — revisão S3 #24).
     await expect(portal.getByRole("navigation", { name: "Menu principal" })).toBeVisible();
     const app = page.frameLocator('iframe[title="App do cliente"]');
-    await expect(app.getByRole("button", { name: "Check-in" }).or(app.getByRole("link", { name: "Check-in" })).first()).toBeVisible({ timeout: 20_000 });
+    await expect(app.getByRole("button", { name: "Check-in" }).or(app.getByRole("link", { name: /^(Check-in|Fazer check-in e ativar o benefício)$/ })).first()).toBeVisible({ timeout: 20_000 });
     await expect(page.getByRole("combobox", { name: "Restaurante" })).toBeVisible();
     await expect(page.getByRole("link", { name: "Bastidores" })).toBeVisible();
   });

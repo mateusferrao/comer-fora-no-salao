@@ -36,19 +36,19 @@ export const T3_MODELS: Array<{ label: string; provider: string; ref: ModelRef }
 ];
 const FALLBACK = "Volte {horario} e aproveite {oferta}.";
 
-type Proposal = { slots: Array<{ phrase: string; offer: string; convite: string; porque: string }>; aprendemos: string[] };
+export type Proposal = { slots: Array<{ phrase: string; offer: string; convite: string; porque: string }>; aprendemos: string[] };
 type Run = { model: string; provider: string; fixture: string; rep: number; ok: boolean; reason?: string; latencyMs: number; costUsd: number; differsFromTop: number; slots: number; proposal?: Proposal };
 type Judged = { model: string; fixture: string; ai: Rubric; base: Rubric; pref: "ia" | "base" | "empate"; motivo: string; costUsd: number };
 type Rubric = { item_turno: number; fato: number; voz: number };
 
-function prepare(f: Fixture) {
+export function prepare(f: Fixture) {
   const cands: SlotCandidates[] = buildCandidates(f.slots, f.menu, { ticketCents: f.declared.ticketCents, marginPct: f.declared.marginPct, exclude: f.exclude });
   const facts = { ...declaredFacts(f.declared, f.slots, f.menu), ...(f.extraFacts ?? {}) };
   const pp = buildPackagePrompt({ restaurantName: f.restaurantName, cuisine: f.cuisine, slots: f.slots, cands, menu: f.menu, facts, learned: f.learned });
   return { cands, facts, pp };
 }
 
-function render(f: Fixture, cands: SlotCandidates[], facts: Record<string, number | string>, choices: Array<{ slotId: string; candidateId: string; textoConvite: string; justificativa: string }>, learned: Array<{ texto: string; ofertaKey: string }>): Proposal {
+export function render(f: Fixture, cands: SlotCandidates[], facts: Record<string, number | string>, choices: Array<{ slotId: string; candidateId: string; textoConvite: string; justificativa: string }>, learned: Array<{ texto: string; ofertaKey: string }>): Proposal {
   const items = Object.fromEntries(f.menu.map((m) => [m.id, m.name]));
   const slots = Object.fromEntries(f.slots.map((s) => [s.id, slotPhrase(s)]));
   return {
@@ -72,10 +72,10 @@ function baseline(f: Fixture, cands: SlotCandidates[], facts: Record<string, num
   return render(f, cands, facts, choices, learned);
 }
 
-const show = (p: Proposal) =>
+export const show = (p: Proposal) =>
   [...p.slots.map((s, i) => `  Horário ${i + 1} (${s.phrase}) — oferta: ${s.offer}\n    Convite ao cliente: "${s.convite}"\n    Justificativa ao dono: "${s.porque}"`), ...(p.aprendemos.length ? ["  O que aprendemos (semana anterior):", ...p.aprendemos.map((a) => `    - "${a}"`)] : [])].join("\n");
 
-function median(xs: number[]): number | null {
+export function median(xs: number[]): number | null {
   if (!xs.length) return null;
   const s = [...xs].sort((a, b) => a - b);
   return s[Math.floor(s.length / 2)]!;
@@ -181,4 +181,5 @@ async function main() {
   process.stdout.write(`\nvencedor: ${winner?.model ?? "nenhum"} · reserva: ${reserve?.model ?? "nenhuma"} · custo US$ ${totalCost.toFixed(4)}\n`);
 }
 
-void main();
+// Só roda quando chamado direto (o run-t3-agente.ts reaproveita as funções acima).
+if (process.argv[1]?.endsWith("run-t3.ts")) void main();

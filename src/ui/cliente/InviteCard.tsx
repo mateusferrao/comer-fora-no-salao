@@ -1,9 +1,8 @@
 import type { InviteView } from "@/src/modules/salao/application/views";
 import { ddmm, inviteSentence, inviteWhen, TXT } from "./textos";
-import { TestAdvance } from "./TestAdvance";
 
 /** 2º card do convite (espec. 3.5.4): só para convite REAL; o holdout nunca recebe este componente. */
-export function InviteCard({ invite, animate = false, regionLabel }: { invite: InviteView; animate?: boolean; regionLabel?: string }) {
+export function InviteCard({ invite, animate = false, regionLabel, agenda = false }: { invite: InviteView; animate?: boolean; regionLabel?: string; agenda?: boolean }) {
   const heading = invite.state === "usar_hoje" ? "Seu convite vale hoje" : invite.state === "lembrete" ? "Seu convite continua valendo" : "Seu convite";
   const when = inviteWhen(invite);
   return (
@@ -21,7 +20,17 @@ export function InviteCard({ invite, animate = false, regionLabel }: { invite: I
         </div>
       )}
       {invite.state !== "usar_hoje" && <p className="mt-3 text-sm leading-5 text-ink">{TXT.comoUsarConvite}</p>}
-      {invite.test && (invite.test.canAdvance || invite.test.liberatedToday) && <TestAdvance inviteId={invite.test.inviteId} canAdvance={invite.test.canAdvance} liberatedToday={invite.test.liberatedToday} />}
+      {invite.liberatedToday && <p className="mt-3 text-sm text-ink-muted">Liberado hoje pelas ferramentas do avaliador.</p>}
+      {/* S5.2 (flag copy_v2): .ics de 1 evento no próximo dia em que o código pode nascer. */}
+      {agenda && invite.agendaUrl && invite.state !== "usar_hoje" && (
+        <a href={invite.agendaUrl} download className="mt-3 inline-flex min-h-11 items-center gap-2 rounded-full border border-border bg-white px-4 text-sm font-semibold text-ink focus-visible:outline-2 focus-visible:outline-ink">
+          <svg aria-hidden="true" viewBox="0 0 24 24" className="size-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <rect x="3" y="4" width="18" height="18" rx="2" />
+            <path d="M16 2v4M8 2v4M3 10h18M12 14v4M10 16h4" />
+          </svg>
+          Adicionar à agenda
+        </a>
+      )}
     </section>
   );
 }

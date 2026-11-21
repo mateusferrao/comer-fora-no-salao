@@ -1,6 +1,6 @@
 /**
  * Passo 1 do assistente (espec. 3.2): a extração roda em segundo plano (`menu_extractions`) enquanto o dono
- * preenche o salão. Exemplos e importação simulada ficam prontos na hora. A imagem nunca é gravada (D50).
+ * preenche o salão. Os exemplos ficam prontos na hora (leitura feita antes e guardada). A imagem nunca é gravada (D50).
  */
 import { and, eq } from "drizzle-orm";
 import type { Db } from "@/src/db/client";
@@ -18,25 +18,23 @@ import { buildMenuTask, menuInput, menuSystem, MENU_PROMPT_VERSION } from "@/src
 import type { AiGateway } from "@/src/modules/ia/gateway";
 import { cleanExtraction, type CleanExtraction } from "../domain/menu-extraction";
 import { EXAMPLES, type ExampleId } from "../adapters/example-source";
-import { DELIVERY_IMPORT } from "../adapters/delivery-import-simulated";
 import { log } from "@/src/shared/log";
 
 export const EXTRACTION_STALE_MS = 90_000;
 export type ExtractionSource = "foto" | "pdf" | "exemplo" | "importado";
-export type ExtractionView = { id: string; source: ExtractionSource; status: "lendo" | "pronto" | "falhou" | "nao_cardapio"; result: (CleanExtraction & { cache?: boolean; simulado?: boolean; semIa?: string }) | null; startedAt: Date };
+export type ExtractionView = { id: string; source: ExtractionSource; status: "lendo" | "pronto" | "falhou" | "nao_cardapio"; result: (CleanExtraction & { cache?: boolean; semIa?: string }) | null; startedAt: Date };
 
-export async function startCachedExtraction(db: Db, p: { restaurantId: string; source: "exemplo" | "importado"; exampleId?: ExampleId; now: Date }): Promise<string> {
-  const result =
-    p.source === "exemplo" ? { ...EXAMPLES[p.exampleId!].cached.extraction, cache: true } : { ...DELIVERY_IMPORT, simulado: true };
+export async function startCachedExtraction(db: Db, p: { restaurantId: string; source: "exemplo"; exampleId: ExampleId; now: Date }): Promise<string> {
+  const result = { ...EXAMPLES[p.exampleId].cached.extraction, cache: true };
   const [row] = await db
     .insert(menuExtractions)
     .values({
       restaurantId: p.restaurantId,
       source: p.source,
-      inputHash: p.source === "exemplo" ? EXAMPLES[p.exampleId!].cached.inputHash : null,
+      inputHash: EXAMPLES[p.exampleId].cached.inputHash,
       status: "pronto",
       result,
-      model: p.source === "exemplo" ? EXAMPLES[p.exampleId!].cached.model : null,
+      model: EXAMPLES[p.exampleId].cached.model,
       startedAt: p.now,
       finishedAt: p.now,
     })

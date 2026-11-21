@@ -1,7 +1,7 @@
 import { afterAll, beforeEach, describe, expect, it } from "vitest";
 import { and, eq, sql } from "drizzle-orm";
 import { closeDb, getDb } from "@/src/db/client";
-import { benefitVersions, invites, ownerEdits, planSends, weeklyPlans } from "@/src/db/schema";
+import { benefitVersions, invites, ownerEdits, planSends, weeklyPlans, customerMessages } from "@/src/db/schema";
 import { seedAll } from "@/src/db/seed";
 import { vitrineHistory } from "@/src/db/seed/history";
 import { VITRINE_ID, VITRINE_OWNER_ID } from "@/src/db/seed/vitrine";
@@ -57,6 +57,8 @@ describe("plano da semana (S3 §4.3–4.4)", () => {
     await seedAll(getDb(), fixedClock(NOW.toISOString()), vitrineHistory);
     // Revisor (ligado por padrão — D148) só nos testes dele, com gateway falso.
     await setFlag(getDb(), "revisor", false);
+    // Estes testes medem a chamada única (o agente — D225 — tem o próprio teste em plan-agent.test.ts).
+    await setFlag(getDb(), "plano_agente", false);
     calls = 0;
   }, 120_000);
   afterAll(closeDb);
@@ -108,8 +110,14 @@ describe("plano da semana (S3 §4.3–4.4)", () => {
     const reat = await getDb().select().from(invites).where(and(eq(invites.restaurantId, VITRINE_ID), eq(invites.origin, "reativacao"), sql`${invites.issuedAt} = ${NOW.toISOString()}`));
     expect(reat.filter((i) => i.arm === "convidavel").length).toBe(r1.sent.real);
     expect(reat.filter((i) => i.arm === "holdout").every((i) => i.status === "suprimido")).toBe(true);
+    // S4.4 (D155): cada convite real vira mensagem no app; o holdout não recebe nada.
+    const msgs = await getDb().select().from(customerMessages).where(eq(customerMessages.restaurantId, VITRINE_ID));
+    expect(msgs.filter((m) => m.kind === "reativacao")).toHaveLength(r1.sent.real);
+    const holdoutIds = new Set(reat.filter((i) => i.arm === "holdout").map((i) => i.id));
+    expect(msgs.some((m) => m.inviteId && holdoutIds.has(m.inviteId))).toBe(false);
+    if (r1.ok && !r1.already) expect(r1.inviteIds).toHaveLength(r1.sent.real);
     const r2 = await approvePlan(getDb(), { restaurantId: VITRINE_ID, planId: p.id, final, via: "portal", now: NOW });
-    expect(r2).toEqual({ ok: true, already: true, sent: r1.sent });
+    expect(r2).toMatchObject({ ok: true, already: true, sent: { real: r1.sent.real, fantasma: r1.sent.fantasma } });
     expect(await getDb().select().from(planSends).where(eq(planSends.planId, p.id))).toHaveLength(1);
     expect((await getDb().select().from(weeklyPlans).where(eq(weeklyPlans.id, p.id)))[0]!.approvedVia).toBe("portal");
     expect((await getDb().select().from(ownerEdits).where(eq(ownerEdits.restaurantId, VITRINE_ID))).some((e) => e.kind.startsWith("plano:"))).toBe(true);
@@ -150,6 +158,59 @@ describe("plano da semana (S3 §4.3–4.4)", () => {
     expect(lastText).not.toContain("50%");
     const calls2 = (await getDb().execute(sql`select prompt_version from ai_calls where task = 'plano' order by at desc limit 1`)) as unknown as { rows: Array<{ prompt_version: string }> };
     expect(calls2.rows[0]!.prompt_version).toMatch(/\+ex$/);
+  });
+
+  it("S5: as chamadas de IA do plano e do revisor ficam ligadas ao plano (ai_calls.plan_id)", async () => {
+    const g = await generateWeeklyPlan(getDb(), { restaurantId: VITRINE_ID, ownerId: VITRINE_OWNER_ID, now: NOW, gateway: fakeGateway });
+    if (!g.ok) throw new Error("não gerou");
+    const ok: AiGateway = { generate: async () => ({ output: { veredito: "ok", motivos: [] }, usage: { inTokens: 5, outTokens: 5 }, model: "fake-revisor" }) };
+    await reviewPlan(getDb(), { restaurantId: VITRINE_ID, planId: g.planId, now: NOW, gateway: ok });
+    const rows = (await getDb().execute(sql`select task, plan_id from ai_calls where restaurant_id = ${VITRINE_ID} order by at`)) as unknown as { rows: Array<{ task: string; plan_id: string | null }> };
+    expect(rows.rows.filter((r) => r.task === "plano").map((r) => r.plan_id)).toEqual([g.planId]);
+    expect(rows.rows.filter((r) => r.task === "revisor").map((r) => r.plan_id)).toEqual([g.planId]);
+  });
+
+  it("S5.3 'Por que esta oferta?': opções com nota, escolha da IA, fatos usados e a tentativa bloqueada antes do modelo reserva", async () => {
+    let n = 0;
+    const blocksFirst: AiGateway = {
+      async generate(req) {
+        n++;
+        const r = await fakeGateway.generate(req);
+        if (n === 1) {
+          const out = r.output as { escolhas: Array<{ textoConvite: string }> };
+          out.escolhas[0]!.textoConvite = "Volte e ganhe grátis {oferta}.";
+        }
+        return { ...r, model: n === 1 ? "fake/principal" : "fake/reserva" };
+      },
+    };
+    const g = await generateWeeklyPlan(getDb(), { restaurantId: VITRINE_ID, ownerId: VITRINE_OWNER_ID, now: NOW, gateway: blocksFirst });
+    if (!g.ok) throw new Error("não gerou");
+    const { explainOffer } = await import("@/src/modules/planos/application/explain-offer");
+    const plan = (await latestPlan(getDb(), VITRINE_ID))!;
+    const slotId = (plan.choices as Array<{ slotId: string }>)[0]!.slotId;
+    const e = (await explainOffer(getDb(), VITRINE_ID, g.planId, slotId))!;
+    expect(e.kind).toBe("plano");
+    expect(e.modo).toBe("ia");
+    expect(e.opcoes.length).toBeGreaterThan(0);
+    expect(e.opcoes.filter((o) => o.escolhaIa)).toHaveLength(1);
+    expect(e.opcoes.filter((o) => o.maiorNota)).toHaveLength(1);
+    expect(e.fatos.length).toBeGreaterThan(0);
+    expect(e.fatos[0]!.label).toMatch(/^Faixa [A-H]: quanto fica vazia$/);
+    expect(e.justificativa).not.toMatch(/\{fato:/);
+    expect(e.tecnico).toMatchObject({ task: "plano", reserva: true, promptVersion: expect.stringMatching(/^plano-v/) });
+    expect(e.tecnico!.attempts[0]).toMatchObject({ ok: false, error: "guard" });
+    expect(e.tecnico!.attempts[0]!.notes.some((x) => x.includes("proibida"))).toBe(true);
+    // Outro restaurante (ou plano de outro restaurante): nada.
+    expect(await explainOffer(getDb(), "00000000-0000-4000-8000-000000000000", g.planId, slotId)).toBeNull();
+  });
+
+  it("S5.3: o plano pronto do restaurante de exemplo é declarado 'fixo', sem chamada de IA", async () => {
+    const { explainOffer } = await import("@/src/modules/planos/application/explain-offer");
+    const [fixed] = await getDb().select().from(weeklyPlans).where(eq(weeklyPlans.restaurantId, VITRINE_ID)).limit(1);
+    const slotId = (fixed!.choices as Array<{ slotId: string }>)[0]!.slotId;
+    const e = (await explainOffer(getDb(), VITRINE_ID, fixed!.id, slotId))!;
+    expect(e.modo).toBe("fixo");
+    expect(e.tecnico).toBeNull();
   });
 
   it("revisor (flag) no plano: revisando/bloquear seguram a aprovação; convite reescrito pelo dono libera", async () => {

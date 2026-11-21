@@ -49,6 +49,27 @@ export async function getRestaurantPage(ex: Executor, slug: string, now: Date): 
   };
 }
 
+/** Rótulo do restaurante E2E fixo (D109): nunca vira prova social. */
+const E2E_RESTAURANT_SLUG = "e2e-salao-teste";
+/** Prova social da página do QR (S5.2, D181): só aparece com N ≥ 5. */
+export const SOCIAL_PROOF_MIN = 5;
+
+/**
+ * Check-ins dos últimos 7 dias para a prova social (D181, D185): só clientes reais — sem o histórico gerado (a
+ * página pública não tem o selo dele, D176), sem e-mails de teste (E2E e simulador do SES) e nunca no restaurante E2E.
+ */
+export async function recentCheckinCount(ex: Executor, restaurant: { id: string; slug: string }, now: Date): Promise<number> {
+  if (restaurant.slug === E2E_RESTAURANT_SLUG) return 0;
+  const since = new Date(now.getTime() - 7 * 86_400_000).toISOString();
+  const res = (await ex.execute(sql`
+    select count(*)::int as n from checkins c
+    join customers cu on cu.id = c.customer_id and cu.simulation_run_id is null
+    left join customer_contacts cc on cc.customer_id = c.customer_id
+    where c.restaurant_id = ${restaurant.id} and c.at >= ${since} and c.simulation_run_id is null
+      and coalesce(cc.email_hint, '') not like '%.invalid' and coalesce(cc.email_hint, '') not like '%.amazonses.com'`)) as unknown as { rows: Array<{ n: number }> };
+  return Number(res.rows[0]?.n ?? 0);
+}
+
 export type CustomerHere = { firstName: string; stamps: number; required: number };
 
 /** Selos correntes do cliente neste restaurante (cartela vencida conta como 0). */
@@ -67,7 +88,7 @@ export async function getCustomerHere(ex: Executor, restaurantId: string, custom
     const finished = card.completedDay !== null && card.completedDay !== today;
     stamps = finished || isCardExpired(card, today, STAMP_CARD_DEFAULTS) ? 0 : card.stamps;
   }
-  return { firstName: contact.name.split(" ")[0] ?? contact.name, stamps, required: STAMP_CARD_DEFAULTS.required };
+  return { firstName: contact.name?.split(" ")[0] ?? "", stamps, required: STAMP_CARD_DEFAULTS.required };
 }
 
 export type JourneyView = {
@@ -95,7 +116,7 @@ export async function getJourney(ex: Executor, customerId: string | null, now: D
     const t = await todayView(ex, ctx, customerId, now);
     list.push({ slug: row.slug, name: row.name, visits: Number(row.visits), stamps: here?.stamps ?? 0, required: STAMP_CARD_DEFAULTS.required, invite: t.invite, todayCodes: t.codes });
   }
-  return { firstName: contact.name.split(" ")[0] ?? contact.name, visits: list.reduce((s, r) => s + r.visits, 0), restaurants: list };
+  return { firstName: contact.name?.split(" ")[0] ?? null, visits: list.reduce((s, r) => s + r.visits, 0), restaurants: list };
 }
 
 /** Se o cliente já fez check-in hoje aqui, o resultado do dia (códigos não validados + convite) — recarregar não exige GPS. */

@@ -22,9 +22,9 @@ export function AgentSection({ initial, endpoint }: { initial: Tok[]; endpoint: 
   };
   return (
     <section aria-labelledby="agente" className="flex flex-col gap-3 rounded-sm border border-border p-4">
-      <h3 id="agente" className="font-semibold text-ink">
+      <h2 id="agente" className="font-semibold text-ink">
         Agente (MCP)
-      </h3>
+      </h2>
       <p className="text-sm text-ink-muted">
         Um agente de IA (ex.: o seu assistente) pode ler os números, gerar e aprovar o plano da semana deste restaurante com este token. Tudo o que ele aprovar fica registrado como &quot;via agente&quot;. Guarde o token como uma senha.
       </p>

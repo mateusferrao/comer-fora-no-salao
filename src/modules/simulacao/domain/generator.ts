@@ -118,7 +118,7 @@ export type SimOutput = {
 };
 
 const NAMES = ["Ana", "Bruno", "Carla", "Diego", "Elisa", "Fábio", "Gabriela", "Heitor", "Isabela", "João", "Larissa", "Marcos", "Natália", "Otávio", "Paula", "Rafael", "Sofia", "Tiago", "Vitória", "Yuri"];
-const SURNAMES = ["Fictício", "Exemplo", "Teste", "Demonstração", "Protótipo", "Simulado"];
+const SURNAMES = ["Souza", "Lima", "Costa", "Rocha", "Alves", "Martins"];
 const WEEKDAY_FACTOR = [1.15, 0.75, 0.85, 0.9, 1.0, 1.25, 1.3];
 const FACTOR_SUM = WEEKDAY_FACTOR.reduce((a, b) => a + b, 0);
 /** Turnos dentro do funcionamento da vitrine (11h–23h30) [C]: almoço 45%, tarde 8%, noite 47%. */

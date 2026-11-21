@@ -17,7 +17,12 @@ import {
   updateSlot,
   updateTone,
   previewTone,
+  updateNotifySettings,
+  setItemOfferAllowed,
+  deleteMenuItem,
+  updateAiProfile,
 } from "@/src/modules/config/application/update-settings";
+import { notifySettingsInput } from "@/src/modules/config/domain/notify-settings";
 import { consume } from "@/src/shared/rate-limit";
 import { rejectCrossSite } from "@/src/web/guards";
 import { readJson, tooMany } from "@/src/web/http";
@@ -38,8 +43,14 @@ const body = z.discriminatedUnion("acao", [
   z.object({ acao: z.literal("faixa_desativar"), slotId: z.string().uuid() }),
   z.object({ acao: z.literal("tom"), tone: z.string().max(400) }),
   z.object({ acao: z.literal("agente_gerar") }),
+  // S6.1 (D196): "Avisos e automação" — objeto inteiro validado.
+  z.object({ acao: z.literal("avisos"), settings: notifySettingsInput }),
   z.object({ acao: z.literal("agente_revogar") }),
-  z.object({ acao: z.literal("tom_previa"), tone: z.string().max(400), slotId: z.string().uuid() }),
+  z.object({ acao: z.literal("tom_previa"), tone: z.string().max(400), slotId: z.string().uuid(), about: z.string().max(800).optional(), avoid: z.string().max(400).optional() }),
+  // S6.3a (D197): IA do restaurante e cardápio.
+  z.object({ acao: z.literal("ia_perfil"), about: z.string().max(800), avoid: z.string().max(400), features: z.object({ agente: z.boolean(), aprende: z.boolean() }).strict() }),
+  z.object({ acao: z.literal("item_oferta"), itemId: z.string().uuid(), allowed: z.boolean() }),
+  z.object({ acao: z.literal("item_excluir"), itemId: z.string().uuid() }),
   z.object({
     acao: z.literal("restaurante"),
     name: z.string().max(80),
@@ -74,6 +85,18 @@ export async function POST(req: Request) {
   if (!lim.ok) return tooMany(lim.retryAfterSec);
   const d = parsed.data;
   const rid = auth.r.id;
+  if (d.acao === "avisos") return Response.json(await updateNotifySettings(db, { restaurantId: rid, input: d.settings, now }));
+  if (d.acao === "ia_perfil") {
+    // Limite próprio das instruções do dono (30/h): além do limite geral das Configurações.
+    const l = await consume(db, `config:ia:${rid}`, 30, 3600, now);
+    if (!l.ok) return tooMany(l.retryAfterSec);
+    const r = await updateAiProfile(db, { restaurantId: rid, about: d.about, avoid: d.avoid, features: d.features, now });
+    return r.ok ? Response.json(r) : Response.json(r, { status: 422 });
+  }
+  if (d.acao === "item_oferta" || d.acao === "item_excluir") {
+    const r = d.acao === "item_oferta" ? await setItemOfferAllowed(db, { restaurantId: rid, itemId: d.itemId, allowed: d.allowed, now }) : await deleteMenuItem(db, { restaurantId: rid, itemId: d.itemId, now });
+    return r.ok ? Response.json(r) : Response.json(r, { status: 422 });
+  }
   // Agente (MCP; flag): token mostrado uma vez; guardado só o hash.
   if (d.acao === "agente_gerar" || d.acao === "agente_revogar") {
     if (!(await getFlags(db)).mcp) return Response.json({ erro: "desligado" }, { status: 404 });
@@ -102,7 +125,7 @@ export async function POST(req: Request) {
                   : d.acao === "tom"
                     ? await updateTone(db, { restaurantId: rid, tone: d.tone, now })
                     : d.acao === "tom_previa"
-                      ? await previewTone(db, { restaurantId: rid, ownerId: auth.s.owner.id, slotId: d.slotId, tone: d.tone, now })
+                      ? await previewTone(db, { restaurantId: rid, ownerId: auth.s.owner.id, slotId: d.slotId, tone: d.tone, about: d.about, avoid: d.avoid, now })
                       : d.acao === "restaurante"
                         ? await updateRestaurantInfo(db, { restaurantId: rid, name: d.name, ticketCents: d.ticketCents, marginPct: d.marginPct, tables: d.tables, weeklyCustomers: d.weeklyCustomers, description: d.description, address: d.address, opening: d.opening, now })
                         : ({ ok: false, erro: "formato" } as const);

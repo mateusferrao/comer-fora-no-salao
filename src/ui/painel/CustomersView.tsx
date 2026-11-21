@@ -40,11 +40,11 @@ export function CustomersView({ data }: { data: SegmentsView }) {
         {data.list.length === 0 ? (
           <p className="text-sm text-ink">Nenhum cliente neste grupo ainda.</p>
         ) : (
-          <div className="overflow-x-auto" tabIndex={0} role="region" aria-label="Lista de clientes (rolável)">
+          <div className="relative overflow-x-auto" tabIndex={0} role="region" aria-label="Lista de clientes (rolável)">
             <table className="w-full min-w-[640px] text-sm">
               <thead>
                 <tr className="border-b border-divider text-left text-xs text-ink-muted">
-                  <th scope="col" className="py-2 font-normal">Cliente (fictício)</th>
+                  <th scope="col" className="py-2 font-normal">Cliente</th>
                   <th scope="col" className="font-normal">Telefone</th>
                   <th scope="col" className="font-normal">1ª visita</th>
                   <th scope="col" className="font-normal">Última</th>
@@ -62,7 +62,7 @@ export function CustomersView({ data }: { data: SegmentsView }) {
                     <td>{fmtDay(c.lastDay)}</td>
                     <td>{c.stamps}/6</td>
                     <td>{c.piece ?? "—"}</td>
-                    <td className="text-xs">{[c.optIn.whatsapp && "WhatsApp", c.optIn.app && "App", c.optIn.push && "Push"].filter(Boolean).join(" · ") || "nenhum"}</td>
+                    <td className="text-xs">{[c.optIn.email && "E-mail", c.optIn.app && "App"].filter(Boolean).join(" · ") || "nenhum"}</td>
                   </tr>
                 ))}
               </tbody>

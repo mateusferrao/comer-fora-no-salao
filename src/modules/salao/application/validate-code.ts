@@ -25,12 +25,8 @@ const TYPE_LABEL: Record<CodeType, string> = { primeira_visita: "1ª visita", co
 const hhmm = (d: Date) => new Intl.DateTimeFormat("pt-BR", { timeZone: TZ_SP, hour: "2-digit", minute: "2-digit" }).format(d);
 const ddmm = (day: string) => `${day.slice(8, 10)}/${day.slice(5, 7)}`;
 
-/** "Ana Souza" → "Ana S." (só primeiro nome + inicial — nada de PII inteira na tela do salão). */
-export function shortName(name: string | null | undefined): string {
-  const parts = (name ?? "").trim().split(/\s+/).filter(Boolean);
-  if (!parts.length) return "Cliente";
-  return parts.length > 1 ? `${parts[0]} ${parts.at(-1)![0]!.toUpperCase()}.` : parts[0]!;
-}
+import { shortName } from "@/src/shared/name";
+export { shortName };
 
 type CodeRow = typeof codes.$inferSelect;
 
@@ -43,7 +39,7 @@ async function details(ex: Executor, row: CodeRow): Promise<CodeDetails> {
   let conditions = `${TYPE_LABEL[row.type as CodeType]} · vale hoje`;
   if (row.type === "convite" && row.inviteId) {
     const [inv] = await ex.select({ slot: invites.slotSnapshot, expiresAt: invites.expiresAt, testValidDay: invites.testValidDay }).from(invites).where(eq(invites.id, row.inviteId));
-    if (inv) conditions = `Convite · válido ${slotLabel(inv.slot as Slot)} · até ${ddmm(daySP(inv.expiresAt))}${inv.testValidDay === row.validDay ? " · Só no teste: liberado hoje, fora do horário" : ""}`;
+    if (inv) conditions = `Convite · válido ${slotLabel(inv.slot as Slot)} · até ${ddmm(daySP(inv.expiresAt))}${inv.testValidDay === row.validDay ? " · liberado hoje pelas ferramentas do avaliador" : ""}`;
   }
   if (row.type === "recompensa") conditions = "Recompensa da cartela (6 selos) · vale hoje";
   return {

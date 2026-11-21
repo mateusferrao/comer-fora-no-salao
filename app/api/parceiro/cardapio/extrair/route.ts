@@ -16,10 +16,10 @@ const MAX_BYTES = 8 * 1024 * 1024;
 const MAX_PAGES = 5;
 /** Teto do corpo antes de ler o multipart (revisão da S2): o navegador manda JPEGs de 1600 px (~0,3–2 MB cada). */
 const MAX_BODY = 24 * 1024 * 1024;
-const cached = z.object({ source: z.enum(["exemplo", "importado"]), exampleId: z.string().max(20).optional() });
+const cached = z.object({ source: z.literal("exemplo"), exampleId: z.string().max(20) });
 
 /**
- * Passo 1: exemplo/importado (prontos na hora) ou foto/PDF (multipart, já convertidos em JPEG no navegador —
+ * Passo 1: exemplo (pronto na hora) ou foto/PDF (multipart, já convertidos em JPEG no navegador —
  * D127). A IA roda depois da resposta (`after`); a imagem fica só em memória e é descartada (D50).
  */
 export async function POST(req: Request) {

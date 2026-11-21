@@ -2,11 +2,14 @@
  * Passos 2 e 3 do assistente (espec. 3.2): salão + horários vazios e revisão do cardápio. Retomável
  * (`restaurants.onboarding_step`) e com entrada/conclusão de cada passo registrada (abandono — H5).
  */
+import { slugify } from "@/src/shared/slug";
+import { mentionsIfood } from "@/src/shared/brand";
+import { randomSuffix } from "@/src/shared/random";
 import { and, eq, inArray, notInArray } from "drizzle-orm";
 import { z } from "zod";
 import type { Db } from "@/src/db/client";
 import type { Executor } from "@/src/db/executor";
-import { idleSlots, menuExtractions, menuItems, menus, onboardingEvents, ownerEdits, restaurants } from "@/src/db/schema";
+import { idleSlots, kitPieces, menuExtractions, menuItems, menus, onboardingEvents, ownerEdits, restaurants } from "@/src/db/schema";
 import { MENU_CATEGORIES } from "@/src/modules/beneficios/domain/menu";
 import { INTENSITIES, openingBlockSchema, validateSlot, type SlotError } from "@/src/modules/beneficios/domain/slots";
 import { cleanItemName, PRICE_BANDS } from "../domain/menu-extraction";
@@ -42,9 +45,10 @@ export const salonInputSchema = z.object({
 });
 export type SalonInput = z.infer<typeof salonInputSchema>;
 
-export type SaveSalonResult = { ok: true; slotIds: string[] } | { ok: false; erro: "faixas"; slotErrors: SlotError[][] };
+export type SaveSalonResult = { ok: true; slotIds: string[] } | { ok: false; erro: "faixas"; slotErrors: SlotError[][] } | { ok: false; erro: "nome_marca" };
 
 export async function saveSalon(db: Db, restaurantId: string, input: SalonInput, now: Date): Promise<SaveSalonResult> {
+  if (mentionsIfood(input.name)) return { ok: false, erro: "nome_marca" };
   const slotErrors = input.slots.map((s) => validateSlot({ id: s.id ?? "nova", ...s }, input.opening));
   if (slotErrors.some((e) => e.length)) return { ok: false, erro: "faixas", slotErrors };
   return db.transaction(async (tx) => {
@@ -52,6 +56,14 @@ export async function saveSalon(db: Db, restaurantId: string, input: SalonInput,
       .update(restaurants)
       .set({ name: input.name, tables: input.tables, weeklyCustomers: input.weeklyCustomers, openingHours: input.opening, ticketCents: input.ticketCents, marginPct: input.marginPct })
       .where(eq(restaurants.id, restaurantId));
+    // S4 §4.4 (revisão técnica): slug pelo nome enquanto não há kit (o QR impresso leva o slug; depois, congela).
+    const hasKit = await tx.select({ id: kitPieces.id }).from(kitPieces).where(eq(kitPieces.restaurantId, restaurantId)).limit(1);
+    if (!hasKit.length) {
+      await tx
+        .update(restaurants)
+        .set({ slug: `${slugify(input.name)}-${randomSuffix(4)}` })
+        .where(and(eq(restaurants.id, restaurantId), eq(restaurants.kind, "teste"), eq(restaurants.protected, false)));
+    }
     const keep: string[] = [];
     for (const [i, s] of input.slots.entries()) {
       const values = { days: s.days, startMin: s.startMin, endMin: s.endMin, intensity: s.intensity, extraTables: s.extraTables, position: i, active: true };

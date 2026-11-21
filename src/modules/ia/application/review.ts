@@ -14,7 +14,7 @@ import { langfuseTracer } from "../tracing";
 import { systemClock } from "@/src/shared/clock";
 import { buildReviewerTask, buildReviewerText, REVIEWER_PROMPT_VERSION, REVIEWER_SYSTEM, type StoredReview } from "../tasks/reviewer";
 
-export async function runReview(db: Db, p: { restaurantId: string; offer: string; texts: Array<{ label: string; text: string }>; now: Date; gateway?: AiGateway | null }): Promise<StoredReview> {
+export async function runReview(db: Db, p: { restaurantId: string; planId?: string | null; offer: string; texts: Array<{ label: string; text: string }>; now: Date; gateway?: AiGateway | null }): Promise<StoredReview> {
   const at = p.now.toISOString();
   const [r] = await db.select({ name: restaurants.name, emailHmac: owners.emailHmac, via: owners.via }).from(restaurants).innerJoin(owners, eq(owners.id, restaurants.ownerId)).where(eq(restaurants.id, p.restaurantId));
   if (!r) return { status: "nao_revisado", reasons: [], at };
@@ -23,7 +23,7 @@ export async function runReview(db: Db, p: { restaurantId: string; offer: string
   if (!gw.gateway) return { status: "nao_revisado", reasons: [], at };
   const text = buildReviewerText({ restaurantName: r.name, offer: p.offer, texts: p.texts });
   const res = await runTask(buildReviewerTask(MODELS.revisor), REVIEWER_SYSTEM, { text }, { gateway: gw.gateway, clock: systemClock, trace: langfuseTracer });
-  await recordAiCall(db, { task: "revisor", promptVersion: REVIEWER_PROMPT_VERSION, restaurantId: p.restaurantId, result: res, keyKind: gw.keyKind });
+  await recordAiCall(db, { task: "revisor", promptVersion: REVIEWER_PROMPT_VERSION, restaurantId: p.restaurantId, planId: p.planId ?? null, result: res, keyKind: gw.keyKind });
   if (res.status !== "ok") return { status: "nao_revisado", reasons: [], at };
   return { status: res.data.veredito, reasons: res.data.veredito === "ok" ? [] : res.data.motivos.map((m) => m.replace(/\s+/g, " ").trim().slice(0, 160)), at };
 }

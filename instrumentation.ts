@@ -14,8 +14,11 @@ export async function register() {
   if (process.env.NEXT_MANUAL_SIG_HANDLE === "true") {
     const { installShutdown } = await import("./src/shared/shutdown");
     const { closeDb } = await import("./src/db/client");
+    const { stopScheduler } = await import("./src/web/scheduler");
     installShutdown(
       [
+        // S6.1: o agendador para antes de fechar o pool (espera o tique em andamento).
+        { name: "agendador", run: () => stopScheduler() },
         { name: "rastro", run: () => tracing.shutdown() },
         // Folga para as requisições em andamento (e os `after()`) terminarem antes de fechar o pool (revisão S3).
         { name: "folga", run: () => new Promise((r) => setTimeout(r, 1_500)) },
@@ -30,4 +33,10 @@ export async function register() {
 
   const { startSeedOnBoot } = await import("./src/db/seed/boot");
   void startSeedOnBoot(migrated);
+
+  // S6.1 (D187): agendador do resumo semanal, do plano automático e do lembrete (flag `agendador`; SCHEDULER=off na E2E).
+  if (migrated) {
+    const { startScheduler } = await import("./src/web/scheduler");
+    startScheduler();
+  }
 }

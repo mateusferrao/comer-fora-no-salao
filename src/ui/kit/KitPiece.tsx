@@ -38,7 +38,9 @@ export function KitPiece({ kind, restaurantName, texts, qrSrc, versionLabel }: {
       <div className="mt-[2%] flex w-full items-center justify-between" style={{ fontSize: mm(s.name * 0.42) }}>
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src="/logo-ifood.svg" alt="iFood" style={{ height: mm(s.name * 0.9) }} />
-        <span className="text-ink-muted">Comer Fora · versão {versionLabel} · protótipo de case, não oficial</span>
+        <span className="text-ink-muted">
+          Comer Fora · versão {versionLabel} · <span data-testid="rodape-prototipo">Protótipo de case · não é produto oficial do iFood</span>
+        </span>
       </div>
     </div>
   );
@@ -60,6 +62,45 @@ export function WaiterCard({ restaurantName, frase }: { restaurantName: string; 
       <p className="mt-auto text-ink-muted" style={{ fontSize: "3mm" }}>
         Validar: Portal do Parceiro › Comer Fora no salão › Validar código
       </p>
+    </div>
+  );
+}
+
+/**
+ * Porta-conta (S6.4 — D192): faixa horizontal de 21 × 9,9 cm (formato DL, ⅓ de A4) com o QR próprio (≥ 3 cm), o
+ * texto modelo e a linha genérica do convite (holdout). 3 por A4 para recortar.
+ */
+export function BillHolder({ restaurantName, texts, qrSrc }: { restaurantName: string; texts: Texts; qrSrc: string }) {
+  return (
+    <div
+      className="flex items-center gap-[6mm] bg-white text-left text-ink"
+      style={{ width: "210mm", height: "99mm", padding: "7mm 10mm", boxSizing: "border-box", border: "0.3mm dashed #999", fontFamily: "var(--font-sans)" }}
+      data-peca="porta_conta"
+    >
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img src={qrSrc} alt="QR do porta-conta" style={{ width: "52mm", height: "52mm" }} />
+      <div className="flex h-full flex-1 flex-col">
+        <p className="font-extrabold leading-tight" style={{ fontSize: "6mm" }}>
+          {restaurantName}
+        </p>
+        <p className="mt-[3mm] font-bold leading-tight text-red-text" style={{ fontSize: "7mm" }}>
+          {texts.titulo}
+        </p>
+        <p className="mt-[2mm] leading-snug" style={{ fontSize: "4.2mm" }}>
+          {texts.subtitulo}
+        </p>
+        <p className="mt-[2mm] font-semibold" style={{ fontSize: "4mm" }}>
+          {texts.acao}
+        </p>
+        <p className="mt-auto leading-snug text-ink-muted" style={{ fontSize: "3.4mm" }}>
+          {INVITE_LINE}
+        </p>
+        <div className="mt-[1.5mm] flex items-center justify-between" style={{ fontSize: "2.8mm" }}>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/logo-ifood.svg" alt="iFood" style={{ height: "5mm" }} />
+          <span className="text-ink-muted">Comer Fora · Protótipo de case · não é produto oficial do iFood</span>
+        </div>
+      </div>
     </div>
   );
 }

@@ -11,8 +11,8 @@ export async function requireOwner(): Promise<OwnerSession> {
 }
 
 export function storeLabel(r: { kind: string; copiedFrom: string | null; status: string }): string {
-  if (r.copiedFrom) return "demonstração";
-  return r.status === "ativo" ? "teste · ativo" : "teste · em ativação";
+  if (r.copiedFrom) return "exemplo";
+  return r.status === "ativo" ? "ativo" : "em ativação";
 }
 
 export function openNow(openingHours: unknown, now: Date): boolean | null {

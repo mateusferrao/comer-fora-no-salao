@@ -4,6 +4,7 @@ import { getDb } from "@/src/db/client";
 import { getKit } from "@/src/modules/kit/application/kit";
 import { qrUrl } from "@/src/modules/kit/domain/qr";
 import { KitManager } from "@/src/ui/kit/KitManager";
+import { getFlags } from "@/src/modules/config/application/app-config";
 import { requireOwner } from "@/src/web/portal-context";
 import { publicBaseUrl, qrDataUri } from "@/src/web/qr";
 
@@ -37,7 +38,7 @@ export default async function KitPage() {
           texto modelo, quando ela não responde) e você pode editar; o benefício e os números vêm das regras.
         </p>
       </header>
-      <KitManager initial={kit} restaurantName={cur.name} qrs={qrs} />
+      <KitManager initial={kit} restaurantName={cur.name} qrs={qrs} billHolder={(await getFlags(getDb())).porta_conta} />
     </main>
   );
 }

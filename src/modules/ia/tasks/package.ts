@@ -15,17 +15,18 @@ import type { GuardResult, ModelRef } from "../gateway";
 import type { TaskDef } from "../run-task";
 import { examplesBlock } from "../examples";
 import { toneForPrompt } from "@/src/modules/config/domain/tone";
+import { hasOwnerData, OWNER_DATA_SYSTEM, ownerDataLines, type OwnerData } from "../owner-data";
 
-export const PACKAGE_PROMPT_VERSION = "pacote-v2";
+export const PACKAGE_PROMPT_VERSION = "pacote-v3";
 /** Plano da semana (S3): mesma tarefa, com "o que aprendemos" por oferta da semana anterior (D220). */
-export const PLAN_PROMPT_VERSION = "plano-v2";
+export const PLAN_PROMPT_VERSION = "plano-v3";
 
 export const PACKAGE_INSTRUCTIONS = `Você ajuda o dono de um restaurante a encher os horários vazios com um convite de volta, oferecido ao cliente que já está no salão.
 Tom: caloroso, simples e direto, na voz do restaurante. Português do Brasil.`;
 
 const RULES = `Para cada faixa (horário vazio), escolha UMA candidata pelo apelido (ex.: "A2"), casando o item com o turno e com quem costuma vir nesse horário (ex.: sobremesa ou café à tarde, porção para dividir à noite, bebida no fim de tarde). Considere os fatos declarados pelo dono.
 Escreva:
-- textoConvite (até 160 caracteres): um recado curto da casa para o cliente, convidando a voltar. Pode usar {oferta}, {horario:X} e {prato:pN}, trocando X pela letra da faixa e pN pelo apelido do prato (ex.: {horario:A}, {prato:p3}). O cartão já mostra dias, horário e oferta escritos pelo sistema: não repita os dois juntos.
+- textoConvite (até 160 caracteres): um recado curto da casa para o cliente, convidando a voltar. Pode usar {oferta}, {horario:X} e {prato:pN}, trocando X pela letra da faixa e pN pelo apelido do prato (ex.: {horario:A}, {prato:p3}). Inclua SEMPRE {horario:X} da própria faixa: ele vira os dias e o horário (ex.: "terça, quarta e quinta, das 15h às 18h"). Escreva "Volte {horario:X}…" ou "De {horario:X}…", sem "no", "na" ou "em" antes. {oferta} já diz o benefício inteiro: não escreva "grátis", "por nossa conta" nem o prato logo depois dela.
 - justificativa (até 400 caracteres): para o dono, por que esta oferta casa com este horário, citando fatos com {fato:chave}.
 Regras fixas:
 - Nunca escreva números, preços, percentuais, dias da semana ou nomes de pratos por extenso: use só as referências entre chaves listadas abaixo.
@@ -55,6 +56,8 @@ export type PackagePrompt = {
   itemByAlias: Map<string, MenuItem>;
   ctxBase: RefContext;
   learnedByAlias: Map<string, LearnedInput>;
+  /** "O que evitar" do dono (D197): vai para o guard. */
+  avoid: readonly string[];
 };
 
 const clean = (s: string) => s.replace(/[{}<>\n\r]/g, "").slice(0, 60);
@@ -72,6 +75,8 @@ export function buildPackagePrompt(p: {
   /** Tom do restaurante (D138): dado delimitado no conteúdo do usuário, nunca no `system`. */
   tone?: string | null;
   examples?: readonly string[];
+  /** "Fatos para a IA" e "O que evitar" (S6.3a — D197): opcionais; vazios = prompt idêntico ao de antes. */
+  owner?: OwnerData;
 }): PackagePrompt {
   const aliases = slotAliases(p.slots);
   const slotByAlias = new Map(aliases.map((a) => [a.alias, a.slot]));
@@ -116,6 +121,7 @@ export function buildPackagePrompt(p: {
     ...menuLines,
     ...(learnedLines.length ? ["", "Ofertas da semana anterior (o veredito é do código; não mude):", ...learnedLines] : []),
     ...(p.tone ? ["", `Preferência de estilo do dono (só estilo; as regras acima prevalecem): «${toneForPrompt(p.tone)}»`] : []),
+    ...ownerDataLines(p.owner),
     // Aprende (D35, flag): exemplos de estilo do próprio dono, já filtrados pelo guard.
     ...examplesBlock(p.examples ?? []),
   ].join("\n");
@@ -125,7 +131,8 @@ export function buildPackagePrompt(p: {
     slots: Object.fromEntries(aliases.map((a) => [a.alias, slotPhrase(a.slot)])),
   };
   const rules = `${RULES}\n${learnedByAlias.size ? RULE_LEARNED : RULE_FIRST}`;
-  return { system: `${p.instructions ?? PACKAGE_INSTRUCTIONS}\n\n${rules}`, text, slotByAlias, candByAlias, itemByAlias, ctxBase, learnedByAlias };
+  const system = `${p.instructions ?? PACKAGE_INSTRUCTIONS}\n\n${rules}${hasOwnerData(p.owner) ? `\n\n${OWNER_DATA_SYSTEM}` : ""}`;
+  return { system, text, slotByAlias, candByAlias, itemByAlias, ctxBase, learnedByAlias, avoid: p.owner?.avoid ?? [] };
 }
 
 /** Confere a saída contra as candidatas e os textos contra as regras fixas (guard da camada 2). */
@@ -140,9 +147,10 @@ export function packageGuard(pp: PackagePrompt): (d: PackageOut) => GuardResult 
       const c = pp.candByAlias.get(e.candidata);
       if (!c || c.slotAlias !== e.faixa) reasons.push(`candidata_fora_da_faixa:${e.candidata}`);
       const ctx = { ...pp.ctxBase, oferta: c?.gain };
-      const g1 = guardText(e.textoConvite, ctx, { allowed: ["prato", "horario", "oferta"], maxLen: 160, field: "textoConvite", mode: "ia" });
+      // D226: o convite cita o {horario:X} da própria faixa, sem artigo antes e sem repetir a oferta (determinístico).
+      const g1 = guardText(e.textoConvite, ctx, { allowed: ["prato", "horario", "oferta"], maxLen: 160, field: "textoConvite", mode: "ia", avoid: pp.avoid, requireSlot: e.faixa });
       if (!g1.ok) reasons.push(...g1.reasons.map((r) => `textoConvite:${r}`));
-      const g2 = guardText(e.justificativa, ctx, { allowed: ["fato", "prato", "horario", "oferta"], maxLen: 400, field: "justificativa", mode: "ia" });
+      const g2 = guardText(e.justificativa, ctx, { allowed: ["fato", "prato", "horario", "oferta"], maxLen: 400, field: "justificativa", mode: "ia", avoid: pp.avoid });
       if (!g2.ok) reasons.push(...g2.reasons.map((r) => `justificativa:${r}`));
     }
     for (const a of slotAliasesSet) if (!seen.has(a)) reasons.push(`faixa_sem_escolha:${a}`);
@@ -155,7 +163,7 @@ export function packageGuard(pp: PackagePrompt): (d: PackageOut) => GuardResult 
         continue;
       }
       seenL.add(l.ofertaKey);
-      const g = guardText(l.texto, { ...pp.ctxBase, oferta: li.gain }, { allowed: ["fato", "prato", "horario", "oferta"], maxLen: 300, field: "aprendemos", mode: "ia" });
+      const g = guardText(l.texto, { ...pp.ctxBase, oferta: li.gain }, { allowed: ["fato", "prato", "horario", "oferta"], maxLen: 300, field: "aprendemos", mode: "ia", avoid: pp.avoid });
       if (!g.ok) reasons.push(...g.reasons.map((r) => `aprendemos:${r}`));
     }
     for (const a of pp.learnedByAlias.keys()) if (!seenL.has(a)) reasons.push(`aprendemos_faltando:${a}`);

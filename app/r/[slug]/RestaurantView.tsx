@@ -35,7 +35,7 @@ function StampIllustration() {
   );
 }
 
-export function RestaurantView({ page, token }: { page: RestaurantPageView; token?: string }) {
+export function RestaurantView({ page, token, copyV2 = false, recentCheckins = null }: { page: RestaurantPageView; token?: string; copyV2?: boolean; recentCheckins?: number | null }) {
   const [tab, setTab] = useState("beneficios");
   const [detail, setDetail] = useState(false);
   const [rules, setRules] = useState(false);
@@ -104,7 +104,6 @@ export function RestaurantView({ page, token }: { page: RestaurantPageView; toke
     <div className="pb-4">
       <h2 className="text-xl font-semibold">Localização</h2>
       <p className="mt-3 text-base leading-6 text-ink">{page.address ?? "Endereço não informado"}</p>
-      <p className="mt-2 text-xs text-ink-muted">Endereço fictício.</p>
       <p className="mt-6 text-xs text-ink-muted">
         Fotos ilustrativas de banco livre (Wikimedia Commons, CC0 e CC BY).{" "}
         <a href="/bastidores/como-funciona" className="underline">
@@ -116,6 +115,7 @@ export function RestaurantView({ page, token }: { page: RestaurantPageView; toke
 
   return (
     <AppShell>
+      {copyV2 && <ConversionBand page={page} recentCheckins={recentCheckins} />}
       <header className="relative">
         <Hero src={page.heroImage} />
         <Link
@@ -146,7 +146,7 @@ export function RestaurantView({ page, token }: { page: RestaurantPageView; toke
       </main>
       <footer className="fixed inset-x-0 bottom-0 z-10 mx-auto w-full max-w-[420px] rounded-t-xl bg-surface px-5 pb-[calc(1rem+env(safe-area-inset-bottom))] pt-3 shadow-[0_-4px_16px_rgba(0,0,0,0.06)]">
         <Link href={checkinHref} className="flex min-h-12 w-full items-center justify-center rounded-md bg-ink text-base font-medium text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink">
-          Check-in
+          {copyV2 && page.agora ? "Fazer check-in e ativar o benefício" : "Check-in"}
         </Link>
       </footer>
 
@@ -197,5 +197,39 @@ export function RestaurantView({ page, token }: { page: RestaurantPageView; toke
       )}
       <RulesSheet open={rules} onClose={() => setRules(false)} restaurantName={page.name} />
     </AppShell>
+  );
+}
+
+/**
+ * Topo de conversão da página do QR (S5.2, D181): o benefício de agora (que todos recebem), os 3 passos e a prova
+ * social real (N ≥ 5). Nada do convite aparece antes do check-in (holdout — espec. 3.5).
+ */
+function ConversionBand({ page, recentCheckins }: { page: RestaurantPageView; recentCheckins: number | null }) {
+  return (
+    <section aria-label="Benefício da sua visita" data-testid="faixa-conversao" className="bg-red-button px-5 pb-4 pt-4 text-white">
+      {page.agora && (
+        <p className="flex items-start gap-2 text-lg font-semibold leading-6">
+          <svg aria-hidden="true" viewBox="0 0 24 24" className="mt-0.5 size-5 shrink-0" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <rect x="3" y="8" width="18" height="4" rx="1" />
+            <path d="M12 8v13M19 12v7a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-7M7.5 8a2.5 2.5 0 0 1 0-5C10 3 12 8 12 8s2-5 4.5-5a2.5 2.5 0 0 1 0 5" />
+          </svg>
+          <span>
+            {page.agora.title}: {page.agora.itemName}
+            <span className="block text-sm font-normal">na sua 1ª visita</span>
+          </span>
+        </p>
+      )}
+      <ol className="mt-3 flex flex-wrap gap-x-2 gap-y-1 text-sm" aria-label="Como funciona">
+        {["Faça check-in", "Receba o código", "Diga o código ao garçom"].map((t, i) => (
+          <li key={t} className="flex items-center gap-1.5">
+            <span aria-hidden="true" className="flex size-5 items-center justify-center rounded-full bg-white text-xs font-bold text-red-text">
+              {i + 1}
+            </span>
+            {t}
+          </li>
+        ))}
+      </ol>
+      {recentCheckins !== null && <p className="mt-2 text-sm font-semibold">{recentCheckins.toLocaleString("pt-BR")} check-ins nos últimos 7 dias</p>}
+    </section>
   );
 }

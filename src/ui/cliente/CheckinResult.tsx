@@ -17,7 +17,7 @@ const TITLES: Record<CheckinView["outcome"], { title: string; sub: string }> = {
 };
 
 /** Resultado do check-in: "agora" + código + selo; depois, o 2º card do convite (só convite real). */
-export function CheckinResult({ view, slug, token, onSwitchCustomer }: { view: CheckinView; slug: string; token?: string; onSwitchCustomer: () => void }) {
+export function CheckinResult({ view, slug, token, copyV2 = false }: { view: CheckinView; slug: string; token?: string; copyV2?: boolean }) {
   const heading = useRef<HTMLHeadingElement>(null);
   const [showInvite, setShowInvite] = useState(false);
   useEffect(() => {
@@ -43,7 +43,7 @@ export function CheckinResult({ view, slug, token, onSwitchCustomer }: { view: C
 
       {view.codes.length > 0 && view.outcome === "ja_fez_checkin_hoje" && <p className="text-sm font-medium text-white">Seus códigos de hoje</p>}
       {view.codes.map((c) => (
-        <section key={c.code} aria-label={c.title} className="rounded-xl bg-white p-5 text-ink">
+        <section key={c.code} aria-label={`${c.type === "primeira_visita" ? "Benefício de 1ª visita" : c.type === "convite" ? "Convite de hoje" : "Recompensa da cartela"} · ${c.title}`} className="rounded-xl bg-white p-5 text-ink">
           <p className="text-xs font-semibold uppercase tracking-wide text-ink-muted">
             {c.type === "primeira_visita" ? "Benefício de 1ª visita" : c.type === "convite" ? "Seu convite" : "Recompensa da cartela"}
           </p>
@@ -57,21 +57,7 @@ export function CheckinResult({ view, slug, token, onSwitchCustomer }: { view: C
         </section>
       ))}
 
-      {view.invite && showInvite && <InviteCard invite={view.invite} animate />}
-      {!view.invite && view.testNote && (
-        <section aria-label="Por que não há convite" data-testid="teste-motivo" className="rounded-xl border border-dashed border-white/70 bg-white p-4 text-ink">
-          <p className="text-xs font-semibold text-ink-muted">
-            <span className="mr-1 rounded-xs bg-surface-muted px-1.5 py-0.5 text-ink">teste</span>
-            Só no restaurante de teste
-          </p>
-          <p className="mt-2 text-sm">
-            {view.testNote === "grupo_controle" ? "Este cliente caiu no grupo de controle (1 em 10): é assim que medimos o efeito." : "O teto de convites desta semana acabou."}
-          </p>
-          <button type="button" onClick={onSwitchCustomer} className="mt-2 min-h-11 text-sm font-semibold text-red-text underline">
-            Testar como outro cliente
-          </button>
-        </section>
-      )}
+      {view.invite && showInvite && <InviteCard invite={view.invite} animate agenda={copyV2} />}
 
       <div className="mt-2 flex flex-col gap-3">
         <Link href="/app/jornada" className="flex min-h-12 items-center justify-center rounded-full bg-white text-base font-medium text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white">
@@ -80,11 +66,6 @@ export function CheckinResult({ view, slug, token, onSwitchCustomer }: { view: C
         <Link href={back} className="flex min-h-11 items-center justify-center text-base font-medium text-white underline">
           Voltar ao restaurante
         </Link>
-        {!view.testNote && (
-          <button type="button" onClick={onSwitchCustomer} className="min-h-11 text-sm text-white/85 underline">
-            Testar como outro cliente (fictício)
-          </button>
-        )}
       </div>
     </div>
   );

@@ -1,20 +1,22 @@
 import { expect, test } from "@playwright/test";
 import path from "node:path";
-import { axe, BARRA, loginE2E, PROD } from "./helpers";
+import { axe, BARRA, loginE2E, PROD, S5_ON } from "./helpers";
 
 /** Entrada, páginas públicas, barra, Bastidores e CSP (planejamento S3 §4.6–4.7). */
 
 for (const width of [390, 1280]) {
-  test(`"/" em ${width} px: 1 + 1 botões, roteiro curto e barra com links (≤ 44 px a 390)`, async ({ page }) => {
+  test(`"/" em ${width} px: 1 + 1 botões, sem roteiro de teste, barra só com "Como funciona" (≤ 44 px a 390)`, async ({ page }) => {
     await page.setViewportSize({ width, height: 900 });
     const res = await page.goto("/");
     expect(res!.headers()["x-robots-tag"]).toContain("noindex");
     await expect(page.getByTestId("prototype-bar")).toHaveText(BARRA);
     await expect(page.getByRole("heading", { name: "Seu salão cheio divulga seu horário vazio" })).toBeVisible();
-    await expect(page.getByRole("link", { name: "Sou dono: abrir Portal (demo)" })).toBeVisible();
-    await expect(page.getByRole("link", { name: "Sou cliente: ver restaurante" })).toBeVisible();
-    await expect(page.getByText(/caiu no grupo de controle \(1 em 10\)/)).toBeVisible();
-    await expect(page.getByRole("link", { name: "Como este protótipo funciona" }).first()).toBeVisible();
+    // Com `copy_v2` (S5.2, E2E_FLAGS=on em produção), o CTA da landing é "Ativar meu salão".
+    await expect(page.getByRole("link", { name: S5_ON ? "Ativar meu salão" : "Entrar no Portal do Parceiro" }).first()).toBeVisible();
+    await expect(page.getByRole("link", { name: "Veja o que seu cliente vê" })).toHaveAttribute("href", "/r/cantina-nonna-lucia");
+    await expect(page.getByRole("heading", { name: "Como testar sozinho" })).toHaveCount(0);
+    await expect(page.getByRole("link", { name: "Trocar de lado" })).toHaveCount(0);
+    await expect(page.getByRole("link", { name: "Como funciona" })).toBeVisible();
     const bar = page.getByRole("complementary", { name: "Aviso de protótipo" });
     const box = (await bar.boundingBox())!;
     expect(box.height).toBeLessThanOrEqual(width >= 640 ? 28 : 44);
@@ -37,6 +39,7 @@ test("Como funciona, Visão da plataforma e Qualidade da IA são públicas, com 
   }
   await page.goto("/bastidores/como-funciona");
   await expect(page.getByText(/simulação \(baseada em agentes, sem IA\)/i)).toBeVisible();
+  await expect(page.getByRole("link", { name: "Ferramentas do avaliador" })).toBeVisible();
   await expect(page.getByText(/132 de 140 combinações/)).toBeVisible();
 });
 
@@ -78,14 +81,17 @@ test("CSP de produção: o PDF passa pelo pdf.js no navegador sem erro de polít
   await loginE2E(page.request, 6);
   const res = await page.goto("/parceiro/salao");
   expect(res!.headers()["content-security-policy"]).toContain("worker-src 'self' blob:");
-  // Começa limpo: apaga os restaurantes de teste antigos desta conta (limite de 3).
+  // Começa limpo: apaga os restaurantes cadastrados antigos desta conta (limite de 3); a cópia do exemplo fica.
   for (;;) {
-    const ids = await page.evaluate(() => (Array.from(document.querySelectorAll("select option")) as HTMLOptionElement[]).filter((o) => o.textContent?.includes("teste")).map((o) => o.value));
+    const picker = page.getByLabel("Trocar loja").first();
+    const ids = (await picker.count())
+      ? await picker.evaluate((sel) => Array.from((sel as HTMLSelectElement).options).filter((o) => !o.textContent?.includes("exemplo")).map((o) => o.value))
+      : [];
     if (!ids.length) break;
-    for (const id of ids) await page.request.delete("/api/parceiro/restaurantes", { data: { restaurantId: id } });
+    for (const id of ids) expect((await page.request.delete("/api/parceiro/restaurantes", { data: { restaurantId: id } })).ok()).toBe(true);
     await page.reload();
   }
-  await page.getByRole("button", { name: /Criar (meu|outro) restaurante/ }).click();
+  await page.getByRole("button", { name: /Cadastrar (meu|outro) restaurante/ }).click();
   await expect(page.getByRole("heading", { name: "Cardápio do salão" })).toBeVisible();
   await page.locator("#arquivo-cardapio").setInputFiles(path.join(process.cwd(), "public/exemplos/sushi.pdf"));
   await expect(page.getByRole("heading", { name: "Seu salão" })).toBeVisible({ timeout: 30_000 });
@@ -116,9 +122,7 @@ test("Bastidores com senha (local): publicar o tom do kit, ver a versão em uso,
   await axe(page);
 });
 
-test("'Trocar de lado' sem sessão de dono leva ao login com o aviso de como entrar (revisão S3 #37)", async ({ page }) => {
-  await page.goto("/trocar-lado?de=app");
-  await expect(page).toHaveURL(/\/parceiro\/entrar\?de=app$/);
-  await expect(page.getByTestId("aviso-trocar-lado")).toHaveText("Para ver o lado do dono, entre no Portal (demo): use seu e-mail ou o link de avaliação.");
-  await axe(page);
+test("'/trocar-lado' não existe mais (D156)", async ({ page }) => {
+  const res = await page.goto("/trocar-lado?de=app");
+  expect(res!.status()).toBe(404);
 });

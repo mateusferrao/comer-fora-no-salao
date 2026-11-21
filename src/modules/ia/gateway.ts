@@ -19,6 +19,14 @@ export type GuardResult = { ok: true } | { ok: false; reasons: string[] };
 
 export type AiUsage = { inTokens: number; outTokens: number; costUsd?: number };
 
+/**
+ * Ferramenta do agente (S6.3b — D166): tipo neutro na porta (o `tool()` do SDK só existe dentro do gateway).
+ * Só leitura sobre dados já montados em memória; nunca recebe texto livre do dono como comando.
+ */
+export type AiTool = { name: string; description: string; input: ZodType<unknown>; execute: (input: unknown) => Promise<unknown> };
+/** Um passo do agente, como ficou registrado (entrada e saída resumidas por quem chamou). */
+export type AgentStep = { tool: string; input: unknown; output: unknown; ms: number };
+
 export type AiGenerateRequest = {
   model: ModelRef;
   system: string;
@@ -29,9 +37,13 @@ export type AiGenerateRequest = {
   maxOutputTokens?: number;
   /** Metadados para o rastro (nome da tarefa, versão do prompt). */
   telemetry?: { functionId: string; metadata?: Record<string, string> };
+  /** Agente (S6.3b): ferramentas, limite de passos e tempo por passo; o último passo é sempre a resposta final. */
+  tools?: readonly AiTool[];
+  maxSteps?: number;
+  stepMs?: number;
 };
 
-export type AiGenerateResult = { output: unknown; usage: AiUsage; model: string };
+export type AiGenerateResult = { output: unknown; usage: AiUsage; model: string; steps?: AgentStep[] };
 
 /** Porta da IA (D52): só o OpenRouter implementa em produção. */
 export interface AiGateway {

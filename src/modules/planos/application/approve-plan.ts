@@ -5,10 +5,11 @@
  *   sorteio do grupo); real para convidáveis, fantasma para o holdout; pula quem já tem convite ativo;
  * - idempotente (lock do restaurante + plano já aprovado → devolve o envio existente; índice único em `plan_sends`).
  */
+import { queueInviteMessages } from "@/src/modules/salao/application/queue-messages";
 import { and, desc, eq, isNull, sql } from "drizzle-orm";
 import { z } from "zod";
 import type { Db } from "@/src/db/client";
-import type { Executor } from "@/src/db/executor";
+import type { Executor, Tx } from "@/src/db/executor";
 import { ownerEdits, planSendMembers, planSends, restaurantCustomers, restaurants, weeklyPlans } from "@/src/db/schema";
 import { describeOffer, MAX_DISCOUNT_PCT, OFFER_KINDS, validateOffer, type Offer, offerFromInput, type OfferKind } from "@/src/modules/beneficios/domain/offers";
 import { guardText } from "@/src/modules/ia/guardrails";
@@ -28,7 +29,7 @@ export const finalPlanSchema = z.object({
 export type FinalPlan = z.infer<typeof finalPlanSchema>;
 
 export type ApproveResult =
-  | { ok: true; already: boolean; sent: { real: number; fantasma: number } }
+  | { ok: true; already: boolean; sent: { real: number; fantasma: number; emails?: number }; inviteIds?: string[] }
   | { ok: false; erro: "nao_encontrado" | "nao_proposto" | "inativo" | "faixas" | "oferta" | "texto" | "revisor"; detalhe?: unknown };
 
 const toOffer = (o: { kind: OfferKind; itemId: string; pct?: number }): Offer => offerFromInput(o);
@@ -41,8 +42,28 @@ async function sentFor(db: Executor, planId: string): Promise<{ real: number; fa
   return { real: rows.rows.find((r) => r.arm === "convidavel")?.n ?? 0, fantasma: rows.rows.find((r) => r.arm === "holdout")?.n ?? 0 };
 }
 
-export async function approvePlan(db: Db, p: { restaurantId: string; planId: string; final: FinalPlan; via: "portal" | "agente"; now: Date }): Promise<ApproveResult> {
-  return db.transaction(async (tx) => {
+export type ApproveVia = "portal" | "agente" | "email";
+
+/** Plano "como está" (MCP e link do e-mail): as escolhas guardadas, com o teto sugerido. */
+export function finalFromStored(plan: { candidates: unknown; choices: unknown; decision: unknown }): FinalPlan {
+  const cands = (plan.candidates ?? []) as Array<{ slotId: string; options: Array<{ id: string; offer: FinalPlan["slots"][number]["offer"]; weeklyCap: number }> }>;
+  const choices = (plan.choices ?? []) as Array<{ slotId: string; candidateId: string; textoConvite: string }>;
+  const caps = (plan.decision as { caps?: Record<string, number> } | null)?.caps ?? {};
+  const slots = choices.flatMap((c) => {
+    const o = cands.find((x) => x.slotId === c.slotId)?.options.find((x) => x.id === c.candidateId);
+    return o ? [{ slotId: c.slotId, offer: o.offer, weeklyCap: caps[c.slotId] ?? o.weeklyCap, inviteText: c.textoConvite }] : [];
+  });
+  return { slots };
+}
+type ApproveInput = { restaurantId: string; planId: string; final: FinalPlan; via: ApproveVia; now: Date };
+
+export async function approvePlan(db: Db, p: ApproveInput): Promise<ApproveResult> {
+  return db.transaction((tx) => approvePlanInTx(tx, p));
+}
+
+/** O mesmo caso de uso dentro de uma transação aberta (S6, D187: o token do e-mail é queimado na mesma transação). */
+export async function approvePlanInTx(tx: Tx, p: ApproveInput): Promise<ApproveResult> {
+  {
     const [r] = await tx.select().from(restaurants).where(eq(restaurants.id, p.restaurantId)).for("update");
     if (!r) return { ok: false as const, erro: "nao_encontrado" as const };
     if (r.status !== "ativo" && !r.copiedFrom) return { ok: false as const, erro: "inativo" as const };
@@ -73,6 +94,8 @@ export async function approvePlan(db: Db, p: { restaurantId: string; planId: str
     for (const s of p.final.slots) {
       const offer = toOffer(s.offer);
       const errs = validateOffer(offer, activeMenu);
+      // S6.3a (D197): item "fora das ofertas" não entra por nenhum caminho (Portal, e-mail, MCP).
+      if (ctx.noOfferItemIds.includes(offer.params.itemId)) errs.push("item_fora_das_ofertas");
       if (offer.kind === "desconto" && (offer.params.pct ?? 0) > MAX_DISCOUNT_PCT && !errs.includes("desconto_acima_do_teto")) errs.push("desconto_acima_do_teto");
       if (errs.length) return { ok: false as const, erro: "oferta" as const, detalhe: { slotId: s.slotId, erros: errs } };
       const slot = ctx.slots.find((x) => x.id === s.slotId)!;
@@ -101,16 +124,18 @@ export async function approvePlan(db: Db, p: { restaurantId: string; planId: str
       .where(eq(weeklyPlans.id, plan.id));
     await tx.insert(ownerEdits).values((edits.length ? edits : [{ kind: "plano:sem_edicao", ref: null, suggested: null, final: null }]).map((e) => ({ restaurantId: p.restaurantId, ...e, at: p.now })));
 
-    // Reativação simulada (CRM do Comer Fora — espec. 3.7.5): mesma regra do simulador.
+    // Reativação (espec. 3.7.5; S4.4 — D155): mesma regra do simulador; o convite real chega no app do cliente
+    // (Jornada) e por e-mail a quem aceitou — o e-mail sai depois do commit, pela rota.
     const ctx2 = (await loadContext(tx, p.restaurantId))!;
     const weekKey = weekKeySP(p.now);
     const remaining = await remainingBySlot(tx, ctx2, weekKey);
     const rows = await loadCustomerRows(tx, p.restaurantId, p.now);
     const decisions = reactivationPlan(toReactivationCustomers(rows), inviteSlots(ctx2), remaining, { sharePct: REACTIVATION_SHARE_PCT, restaurantId: p.restaurantId }, p.now);
-    const [send] = await tx.insert(planSends).values({ restaurantId: p.restaurantId, planId: plan.id, channel: "crm_simulado", sentAt: p.now, recipients: 0 }).onConflictDoNothing().returning({ id: planSends.id });
+    const [send] = await tx.insert(planSends).values({ restaurantId: p.restaurantId, planId: plan.id, channel: "app_email", sentAt: p.now, recipients: 0 }).onConflictDoNothing().returning({ id: planSends.id });
     if (!send) return { ok: true as const, already: true, sent: await sentFor(tx, plan.id) };
     let real = 0;
     let fantasma = 0;
+    const realInviteIds: string[] = [];
     for (const { customerId, decision: d } of decisions) {
       if (d.kind === "real") {
         const cap = ctx2.convites[d.slotId]?.weeklyCap ?? 0;
@@ -129,11 +154,15 @@ export async function approvePlan(db: Db, p: { restaurantId: string; planId: str
       if (d.armIsNew) await tx.update(restaurantCustomers).set({ arm: d.arm, armAssignedAt: p.now }).where(and(eq(restaurantCustomers.restaurantId, p.restaurantId), eq(restaurantCustomers.customerId, customerId), isNull(restaurantCustomers.arm)));
       await tx.insert(planSendMembers).values({ sendId: send.id, customerId, inviteId: ok, arm: d.arm });
       if (d.arm === "holdout") fantasma++;
-      else real++;
+      else {
+        real++;
+        realInviteIds.push(ok);
+      }
     }
     await tx.update(planSends).set({ recipients: real }).where(eq(planSends.id, send.id));
-    return { ok: true as const, already: false, sent: { real, fantasma } };
-  });
+    const emails = await queueInviteMessages(tx, { inviteIds: realInviteIds, kind: "reativacao", now: p.now });
+    return { ok: true as const, already: false, sent: { real, fantasma, emails }, inviteIds: realInviteIds };
+  }
 }
 
 export type DiscardReason = "ofertas" | "teto" | "manter" | "outro";

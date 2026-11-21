@@ -12,6 +12,7 @@ import type { GuardResult, ModelRef } from "../gateway";
 import type { TaskDef } from "../run-task";
 import { examplesBlock } from "../examples";
 import { toneForPrompt } from "@/src/modules/config/domain/tone";
+import { hasOwnerData, OWNER_DATA_SYSTEM, ownerDataLines, type OwnerData } from "../owner-data";
 
 export const KIT_PROMPT_VERSION = "kit-v1";
 
@@ -33,11 +34,11 @@ export type KitOut = { A: { titulo: string; subtitulo: string; acao: string }; B
 const version = z.object({ titulo: z.string(), subtitulo: z.string(), acao: z.string() });
 export const kitSchema = z.object({ A: version, B: version, recado: z.string() });
 
-export type KitPrompt = { system: string; text: string; ctx: RefContext; itemByAlias: Map<string, MenuItem>; forbidAliases: string[] };
+export type KitPrompt = { system: string; text: string; ctx: RefContext; itemByAlias: Map<string, MenuItem>; forbidAliases: string[]; avoid?: readonly string[] };
 
 const clean = (s: string) => s.replace(/[{}<>\n\r]/g, "").slice(0, 60);
 
-export function buildKitPrompt(p: { restaurantName: string; cuisine?: string | null; beneficio: string; recompensa: string; menu: readonly MenuItem[]; inviteItemIds: readonly string[]; instructions?: string; tone?: string | null; examples?: readonly string[] }): KitPrompt {
+export function buildKitPrompt(p: { restaurantName: string; cuisine?: string | null; beneficio: string; recompensa: string; menu: readonly MenuItem[]; inviteItemIds: readonly string[]; instructions?: string; tone?: string | null; examples?: readonly string[]; owner?: OwnerData }): KitPrompt {
   // Itens de convite ficam fora do contexto (não podem ser citados nas peças).
   const visible = p.menu.filter((m) => !p.inviteItemIds.includes(m.id)).slice(0, 40);
   const itemByAlias = new Map(visible.map((m, i) => [`p${i + 1}`, m]));
@@ -49,17 +50,20 @@ export function buildKitPrompt(p: { restaurantName: string; cuisine?: string | n
     ...[...itemByAlias].map(([a, m]) => `  {prato:${a}} = ${clean(m.name)} (${m.name.length} caracteres)`),
     // Tom do dono (D138): dado delimitado no conteúdo do usuário, nunca no `system`.
     ...(p.tone ? ["", `Preferência de estilo do dono (só estilo; as regras acima prevalecem): «${toneForPrompt(p.tone)}»`] : []),
+    // S6.3a (D197): fatos e termos a evitar, delimitados; vazios = nada muda.
+    ...ownerDataLines(p.owner),
     // Aprende (D35, flag): exemplos de estilo do próprio dono, já filtrados pelo guard.
     ...examplesBlock(p.examples ?? []),
   ].join("\n");
   const ctx: RefContext = { beneficio: p.beneficio, recompensa: p.recompensa, items: Object.fromEntries([...itemByAlias].map(([a, m]) => [a, m.name])) };
-  return { system: `${p.instructions ?? KIT_INSTRUCTIONS}\n\n${RULES}`, text, ctx, itemByAlias, forbidAliases: [] };
+  const system = `${p.instructions ?? KIT_INSTRUCTIONS}\n\n${RULES}${hasOwnerData(p.owner) ? `\n\n${OWNER_DATA_SYSTEM}` : ""}`;
+  return { system, text, ctx, itemByAlias, forbidAliases: [], avoid: p.owner?.avoid ?? [] };
 }
 
 export function kitGuard(kp: KitPrompt): (d: KitOut) => GuardResult {
   return (d) => {
     const reasons: string[] = [];
-    const opts = (maxLen: number) => ({ allowed: ["beneficio", "recompensa", "prato"] as const, maxLen, field: "kit" as const, mode: "ia" as const, forbidDayTurn: true });
+    const opts = (maxLen: number) => ({ allowed: ["beneficio", "recompensa", "prato"] as const, maxLen, field: "kit" as const, mode: "ia" as const, forbidDayTurn: true, avoid: kp.avoid ?? [] });
     for (const v of ["A", "B"] as const) {
       for (const f of VERSION_FIELDS) {
         const g = guardText(d[v][f], kp.ctx, opts(FIELD_MAX[f]));

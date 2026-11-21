@@ -14,16 +14,20 @@ import { Logo } from "@/src/ui/components/Logo";
 import { StampCard } from "@/src/ui/components/StampCard";
 import { CheckinResult } from "@/src/ui/cliente/CheckinResult";
 import { checkGps } from "@/src/ui/cliente/gps";
-import { IdentifySheet } from "@/src/ui/cliente/IdentifySheet";
+import { LoginSheet, type LoginStep } from "@/src/ui/cliente/LoginSheet";
 import { RulesSheet } from "@/src/ui/cliente/RulesSheet";
 import { TXT } from "@/src/ui/cliente/textos";
 import { useDistance } from "@/src/ui/cliente/useDistance";
 
-type Props = { page: RestaurantPageView; identified: boolean; stamps: number; initialResult?: CheckinView | null; token?: string };
+type Session = "entrar" | "perfil" | "consentir" | "pronto";
+type Props = { page: RestaurantPageView; session: Session; firstName: string | null; stamps: number; initialResult?: CheckinView | null; token?: string; copyV2?: boolean };
 
-/** Check-in (app/09–11 + espec. 3.5.2–3.5.4): cartela → GPS (não bloqueia) → identificação → resultado. */
-export function CheckinFlow({ page, identified: initiallyIdentified, stamps, initialResult = null, token }: Props) {
-  const [identified, setIdentified] = useState(initiallyIdentified);
+const stepOf = (s: Session): LoginStep => (s === "perfil" ? "perfil" : s === "consentir" ? "consentir" : "email");
+
+/** Check-in (app/09–11 + espec. 3.5.2–3.5.4; S4): cartela → GPS (não bloqueia) → login por e-mail → resultado. */
+export function CheckinFlow({ page, session, firstName, stamps, initialResult = null, token, copyV2 = false }: Props) {
+  const [identified, setIdentified] = useState(session === "pronto");
+  const [loginStep, setLoginStep] = useState<LoginStep>(stepOf(session));
   const [busy, setBusy] = useState(false);
   const [status, setStatus] = useState("");
   const [gpsSheet, setGpsSheet] = useState(false);
@@ -48,7 +52,9 @@ export function CheckinFlow({ page, identified: initiallyIdentified, stamps, ini
         body: JSON.stringify({ gpsStatus: gps.current, idempotencyKey: key.current, ...(token ? { p: token } : {}) }),
       });
       if (res.status === 401) {
+        const j = (await res.json().catch(() => ({}))) as { etapa?: Session };
         setIdentified(false);
+        setLoginStep(stepOf(j.etapa ?? "entrar"));
         setIdentifySheet(true);
         return;
       }
@@ -94,12 +100,6 @@ export function CheckinFlow({ page, identified: initiallyIdentified, stamps, ini
     setGpsSheet(true);
   };
 
-  const switchCustomer = async () => {
-    await fetch("/api/cliente/trocar", { method: "POST" }).catch(() => {});
-    // Recarga completa de propósito: a página volta sem o cliente anterior (cookie trocado no servidor).
-    // eslint-disable-next-line @next/next/no-location-assign-relative-destination
-    window.location.assign(`/r/${page.slug}${token ? `?p=${encodeURIComponent(token)}` : ""}`);
-  };
 
   return (
     <AppShell columnClassName="bg-[#2f2f2f]">
@@ -129,7 +129,7 @@ export function CheckinFlow({ page, identified: initiallyIdentified, stamps, ini
 
           {result ? (
             <div className="mt-8">
-              <CheckinResult view={result} slug={page.slug} token={token} onSwitchCustomer={switchCustomer} />
+              <CheckinResult view={result} slug={page.slug} token={token} copyV2={copyV2} />
             </div>
           ) : (
             <>
@@ -213,10 +213,13 @@ export function CheckinFlow({ page, identified: initiallyIdentified, stamps, ini
           </>
         }
       />
-      <IdentifySheet
+      <LoginSheet
         open={identifySheet}
         slug={page.slug}
+        restaurantName={page.name}
         agora={page.agora}
+        initialStep={loginStep}
+        firstName={firstName}
         onClose={() => setIdentifySheet(false)}
         onDone={() => {
           setIdentified(true);

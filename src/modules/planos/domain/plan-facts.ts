@@ -10,7 +10,7 @@ export const issuedFactKey = (alias: string) => `convites7d_${alias}`;
 
 export function learnedTemplate(v: Verdict, alias: string, slotRef: string): string {
   if (v === "manter") return `{fato:${usageFactKey(alias)}} dos convites de {horario:${slotRef}} foram usados em até uma semana: a oferta está funcionando.`;
-  if (v === "trocar") return `Só {fato:${usageFactKey(alias)}} dos convites de {horario:${slotRef}} foram usados em até uma semana: vale testar outra oferta.`;
+  if (v === "trocar") return `Só {fato:${usageFactKey(alias)}} dos convites de {horario:${slotRef}} foram usados em até uma semana: vale trocar a oferta.`;
   return `Ainda há poucos convites com uma semana em {horario:${slotRef}} para julgar esta oferta.`;
 }
 

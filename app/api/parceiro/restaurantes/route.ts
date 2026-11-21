@@ -8,7 +8,7 @@ import { getOwnerSession, setCurrentRestaurant } from "@/src/web/owner-session";
 
 export const dynamic = "force-dynamic";
 
-/** "Criar meu restaurante": restaurante de teste em rascunho; vira a loja atual. */
+/** "Cadastrar meu restaurante": restaurante em rascunho; vira a loja atual. */
 export async function POST(req: Request) {
   const blocked = rejectCrossSite(req, { requireJson: false });
   if (blocked) return blocked;
@@ -20,7 +20,7 @@ export async function POST(req: Request) {
   return Response.json({ ok: true, restaurantId: r.restaurantId });
 }
 
-const del = z.object({ restaurantId: z.string().max(64) });
+const del = z.object({ restaurantId: z.string().uuid() });
 
 /** "Excluir restaurante de teste" (Configurações; o E2E também usa para começar limpo). */
 export async function DELETE(req: Request) {

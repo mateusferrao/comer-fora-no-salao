@@ -1,7 +1,7 @@
 import { expect, test } from "@playwright/test";
 
 // Roda local, no CI e contra produção (BASE_URL). Planejamento S0 §7.3.
-const BARRA = "Protótipo de case · não é produto oficial do iFood · dados fictícios";
+const BARRA = "Protótipo de case · não é produto oficial do iFood";
 
 test("barra de protótipo com o texto exato", async ({ page }) => {
   await page.goto("/");

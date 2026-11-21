@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { getNotifyView } from "@/src/modules/config/application/update-settings";
 import type { Metadata } from "next";
 import { getDb } from "@/src/db/client";
 import { getDashboard } from "@/src/modules/analytics/application/dashboard";
@@ -9,7 +10,8 @@ import { copyState } from "@/src/modules/contas/application/copy-vitrine";
 import { CreateRestaurantButton } from "@/src/ui/portal/CreateRestaurantButton";
 import { DemoStatus } from "@/src/ui/portal/DemoStatus";
 import { Dashboard } from "@/src/ui/painel/Dashboard";
-import { TestGuide } from "@/src/ui/painel/TestGuide";
+import { firstSteps } from "@/src/modules/onboarding/application/first-steps";
+import { FirstSteps } from "@/src/ui/portal/FirstSteps";
 import { ensureVitrineCopy } from "@/src/web/account-bootstrap";
 import { requireOwner } from "@/src/web/portal-context";
 
@@ -22,13 +24,16 @@ export default async function VisaoGeralPage() {
   const cur = s.current;
   const hasTest = s.restaurants.some((r) => r.kind === "teste");
   const copy = copyState(s.restaurants.find((r) => r.copiedFrom), new Date());
-  // Conta sem vitrine de demonstração (ex.: criada antes da S2 ou cópia apagada): prepara em segundo plano.
+  // Conta sem a cópia do restaurante de exemplo (ex.: criada antes da S2 ou cópia apagada): prepara em segundo plano.
   if (copy === "nenhuma") ensureVitrineCopy(s.owner.id);
   const active = cur && (cur.status === "ativo" || cur.copiedFrom);
-  const dash = active && cur ? await getDashboard(getDb(), cur.id, new Date()) : null;
+  const flags = active && cur ? await getFlags(getDb()) : null;
+  const dash = active && cur ? await getDashboard(getDb(), cur.id, new Date(), { painelValor: !!flags?.painel_valor }) : null;
   const isTest = cur?.kind === "teste";
-  const flags = dash ? await getFlags(getDb()) : null;
   const ops = dash && cur && (flags?.ab || flags?.insight_operacao) ? await getOperations(getDb(), cur.id, new Date()) : null;
+  const steps = dash && cur && isTest ? await firstSteps(getDb(), cur.id) : null;
+  // Revisão S4–S6 (produto 6): e-mails de convite desligados pelo dono aparecem no painel, com a data.
+  const offSince = dash && cur ? (await getNotifyView(getDb(), cur.id))?.clientEmailsOffSince : null;
   return (
     <main className="mx-auto flex max-w-6xl flex-col gap-6 px-4 py-6 sm:px-8">
       <header className="flex flex-col gap-1">
@@ -36,13 +41,29 @@ export default async function VisaoGeralPage() {
         <p className="text-sm text-ink-muted">
           {cur ? `${cur.name} · ` : ""}Seu salão cheio divulga seu horário vazio.
         </p>
-        {cur?.copiedFrom && <p className="text-sm text-ink-muted">Restaurante de demonstração com 60 dias de dados de exemplo. Tudo aqui é editável e só você vê.</p>}
+        {cur?.copiedFrom && (
+          <p className="text-sm text-ink-muted">
+            <span className="mr-2 inline-block rounded-xs bg-surface-muted px-2 py-0.5 text-xs font-semibold text-ink">Restaurante de exemplo · histórico gerado</span>
+            Tudo aqui é editável e só você vê.{" "}
+            <Link className="text-red-text underline" href="/bastidores/como-funciona">
+              Como funciona
+            </Link>
+          </p>
+        )}
         {cur && (cur.status === "ativo" || cur.copiedFrom) && (
           <p className="text-sm">
             <a className="text-red-text underline" href={`/r/${cur.slug}`} target="_blank" rel="noreferrer">
-              Abrir como cliente
+              Ver minha página
             </a>{" "}
-            <span className="text-ink-muted">(abre em nova aba)</span>
+            <span className="text-ink-muted">(como o cliente vê; abre em nova aba)</span>
+          </p>
+        )}
+        {offSince && (
+          <p className="text-sm text-ink" data-testid="convites-so-app">
+            Convites só no app desde {new Intl.DateTimeFormat("pt-BR", { timeZone: "America/Sao_Paulo", day: "2-digit", month: "2-digit" }).format(new Date(offSince))}{" "}
+            <Link className="text-red-text underline" href="/parceiro/salao/configuracoes?aba=avisos">
+              (e-mails aos clientes desligados em Avisos e automação)
+            </Link>
           </p>
         )}
       </header>
@@ -59,19 +80,19 @@ export default async function VisaoGeralPage() {
         </section>
       )}
 
-      {dash && isTest && cur && <TestGuide slug={cur.slug} />}
+      {steps && cur && <FirstSteps steps={steps} slug={cur.slug} />}
       {dash && <Dashboard key={`${cur?.id}:${dash.restaurant.simulated}`} initial={dash} />}
       {ops && flags && <Operations view={ops} showAb={flags.ab} showAlerts={flags.insight_operacao} />}
 
       <section aria-labelledby="crie" className="flex flex-col gap-3 rounded-sm border border-red-text/40 bg-nav-active p-5">
         <h2 id="crie" className="text-lg font-bold text-ink">
-          {hasTest ? "Teste com outro cardápio" : "Crie o seu restaurante"}
+          {hasTest ? "Cadastre outro restaurante" : "Cadastre o seu restaurante"}
         </h2>
         <p className="text-sm text-ink">
           Envie a foto do cardápio, diga quais horários ficam vazios e receba um pacote pronto: benefício na hora, convite de volta para o horário vazio e kit para imprimir.
         </p>
         <div className="max-w-xs">
-          <CreateRestaurantButton label={hasTest ? "Criar outro restaurante" : "Criar meu restaurante"} />
+          <CreateRestaurantButton label={hasTest ? "Cadastrar outro restaurante" : "Cadastrar meu restaurante"} />
         </div>
       </section>
     </main>

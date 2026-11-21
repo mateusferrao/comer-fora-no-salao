@@ -2,7 +2,7 @@ import AxeBuilder from "@axe-core/playwright";
 import { expect, test, type Page } from "@playwright/test";
 
 const URL = "/bastidores/componentes";
-const BARRA = "Protótipo de case · não é produto oficial do iFood · dados fictícios";
+const BARRA = "Protótipo de case · não é produto oficial do iFood";
 const CABECALHO = "Base do design system · tokens medidos em prints de referência";
 
 const VIEWPORTS = [

@@ -1,6 +1,6 @@
 /**
- * Restaurantes de teste da conta (D20, D130): até 3 por conta; 10 por IP por dia. O endereço é fictício
- * e padrão (revisão P-M9), para a aba Sobre não ficar vazia.
+ * Restaurantes cadastrados pela conta (D20, D130): até 3 por conta; 10 por IP por dia. S4: sem endereço
+ * fictício padrão (o dono informa em Configurações) e slug provisório até o nome ser salvo no passo 2.
  */
 import { and, count, eq } from "drizzle-orm";
 import type { Db } from "@/src/db/client";
@@ -10,7 +10,6 @@ import { consume } from "@/src/shared/rate-limit";
 import { randomSuffix } from "@/src/shared/random";
 
 export const MAX_TEST_RESTAURANTS = 3;
-export const DEFAULT_ADDRESS = "Rua Exemplo Fictícia, 100 – São Paulo – SP";
 
 export type CreateTestResult = { ok: true; restaurantId: string } | { ok: false; erro: "limite_conta" | "limite"; retryAfterSec?: number };
 
@@ -30,11 +29,10 @@ export async function createTestRestaurant(db: Db, p: { ownerId: string; ip: str
     .insert(restaurants)
     .values({
       ownerId: p.ownerId,
-      slug: `teste-${randomSuffix(8)}`,
+      slug: `restaurante-${randomSuffix(8)}`,
       kind: "teste",
       name: "Meu restaurante",
       status: "rascunho",
-      address: DEFAULT_ADDRESS,
       onboardingStep: 1,
       createdAt: p.now,
     })

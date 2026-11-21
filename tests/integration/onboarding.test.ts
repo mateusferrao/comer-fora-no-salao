@@ -1,5 +1,5 @@
 import { afterAll, beforeEach, describe, expect, it } from "vitest";
-import { eq } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import { closeDb, getDb } from "@/src/db/client";
 import { planContentFromRow } from "@/src/modules/planos/domain/plan-content";
 import { benefitVersions, onboardingEvents, ownerEdits, owners, restaurants, weeklyPlans } from "@/src/db/schema";
@@ -65,9 +65,13 @@ describe("assistente de ativação (Postgres)", () => {
 
   it("exemplo → salão → pacote com IA → ativar 2× = 1 ativação, 1 plano aprovado e versões v1", async () => {
     const { ownerId, restaurantId } = await setup();
-    expect(await proposePackage(getDb(), { restaurantId, ownerId, now: NOW, gateway: fakeGateway })).toMatchObject({ ok: true });
+    const prop = await proposePackage(getDb(), { restaurantId, ownerId, now: NOW, gateway: fakeGateway });
+    expect(prop).toMatchObject({ ok: true });
     const v = (await getPackageView(getDb(), restaurantId, NOW)) as PackageView;
     expect(v.generatedBy).toBe("ia");
+    // S5: a chamada do pacote fica ligada ao plano (base do "Por que esta oferta?").
+    const calls = (await getDb().execute(sql`select plan_id from ai_calls where task = 'pacote' and restaurant_id = ${restaurantId}`)) as unknown as { rows: Array<{ plan_id: string | null }> };
+    expect(calls.rows.map((r) => r.plan_id)).toEqual([prop.ok ? prop.planId : "x"]);
     expect(v.slots).toHaveLength(2);
     expect(v.slots[0]!.chosenId).toBe(v.slots[0]!.options[1]!.id);
     expect(v.slots[0]!.inviteRendered).toMatch(/^Volte .+, das \d+h às \d+h e aproveite .+\.$/);

@@ -91,6 +91,10 @@ export const menuItems = pgTable(
     priceCents: integer("price_cents").notNull(),
     position: integer("position").notNull().default(0),
     active: boolean("active").notNull().default(true),
+    /** S6 (D197): "Pode entrar em ofertas" — fora das candidatas, do "agora" e da cartela quando falso. */
+    offerAllowed: boolean("offer_allowed").notNull().default(true),
+    /** S6 (D197, revisão técnica I6): exclusão lógica — a linha fica para códigos e textos antigos. */
+    deletedAt: ts("deleted_at"),
   },
   (t) => [
     index("menu_items_restaurant_idx").on(t.restaurantId),
@@ -116,6 +120,8 @@ export const weeklyPlans = pgTable(
     decision: jsonb("decision"),
     approvedAt: ts("approved_at"),
     approvedVia: text("approved_via"),
+    /** S6 (D158): passos do plano como agente (ferramenta, entrada resumida, saída resumida). */
+    agentSteps: jsonb("agent_steps"),
     createdAt: ts("created_at").notNull().defaultNow(),
     simulationRunId: runFk(),
   },
@@ -185,16 +191,48 @@ const customerFk = () =>
     .notNull()
     .references(() => customers.id, { onDelete: "cascade" });
 
-/** PII (fictícia) isolada: apagar a pessoa = 1 linha. Telefone só como HMAC + 4 dígitos. */
-export const customerContacts = pgTable("customer_contacts", {
-  customerId: uuid("customer_id")
-    .primaryKey()
-    .references(() => customers.id, { onDelete: "cascade" }),
-  phoneHmac: text("phone_hmac").notNull().unique(),
-  phoneLast4: text("phone_last4").notNull(),
-  name: text("name").notNull(),
-  createdAt: ts("created_at").notNull().defaultNow(),
-});
+/**
+ * PII isolada: apagar a pessoa = 1 linha. Telefone só como HMAC + 4 dígitos.
+ * S4 (D154, D169): o e-mail é a identidade do cliente (`email_hmac` único, finalidade `cliente-email:`) e fica
+ * criptografado (AES-256-GCM) só para enviar convites; o telefone deixou de ser único.
+ */
+export const customerContacts = pgTable(
+  "customer_contacts",
+  {
+    customerId: uuid("customer_id")
+      .primaryKey()
+      .references(() => customers.id, { onDelete: "cascade" }),
+    /** S4 (D173): telefone opcional e nome preenchido no 2º passo do login (nulos até lá). */
+    phoneHmac: text("phone_hmac"),
+    phoneLast4: text("phone_last4"),
+    name: text("name"),
+    createdAt: ts("created_at").notNull().defaultNow(),
+    emailHmac: text("email_hmac").unique(),
+    emailEnc: text("email_enc"),
+    emailHint: text("email_hint"),
+    /** Última atividade (check-in ou login): a PII some 7 dias depois (D161). */
+    lastSeenAt: ts("last_seen_at"),
+  },
+  (t) => [index("customer_contacts_phone_idx").on(t.phoneHmac)],
+);
+
+/** S4 (D154): código de 6 dígitos do cliente; os dados do formulário esperam aqui até a confirmação. */
+export const customerLoginCodes = pgTable(
+  "customer_login_codes",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    emailHmac: text("email_hmac").notNull(),
+    codeHmac: text("code_hmac").notNull(),
+    restaurantId: restaurantFk(),
+    /** { name, phoneHmac, phoneLast4, emailEnc, emailHint, optEmail, optApp } — sem PII em claro. */
+    payload: jsonb("payload").notNull(),
+    attempts: integer("attempts").notNull().default(0),
+    expiresAt: ts("expires_at").notNull(),
+    usedAt: ts("used_at"),
+    createdAt: ts("created_at").notNull().defaultNow(),
+  },
+  (t) => [index("customer_login_codes_email_idx").on(t.emailHmac, t.createdAt)],
+);
 
 export const kitPieces = pgTable(
   "kit_pieces",
@@ -206,7 +244,7 @@ export const kitPieces = pgTable(
     inSalonAt: ts("in_salon_at"),
     createdAt: ts("created_at").notNull().defaultNow(),
   },
-  (t) => [index("kit_pieces_restaurant_idx").on(t.restaurantId), check("kit_pieces_kind_check", sql`${t.kind} in ('display', 'cartaz', 'garcom')`)],
+  (t) => [index("kit_pieces_restaurant_idx").on(t.restaurantId), check("kit_pieces_kind_check", sql`${t.kind} in ('display', 'cartaz', 'garcom', 'porta_conta')`)],
 );
 
 export const pieceVariants = pgTable(
@@ -243,6 +281,10 @@ export const restaurantCustomers = pgTable(
     optWhatsapp: boolean("opt_whatsapp").notNull().default(true),
     optApp: boolean("opt_app").notNull().default(true),
     optPush: boolean("opt_push").notNull().default(true),
+    /** S4 (D155, D165): convites e lembretes por e-mail; ligado por padrão, como os outros canais. */
+    optEmail: boolean("opt_email").notNull().default(true),
+    /** S6 (D198): preferências por tipo de e-mail `{convites, lembretes}`; nulo = tudo ligado. `opt_email` é a chave-mestra. */
+    emailPrefs: jsonb("email_prefs"),
     arm: text("arm"),
     armAssignedAt: ts("arm_assigned_at"),
     originVariantId: uuid("origin_variant_id").references(() => pieceVariants.id, { onDelete: "set null" }),
@@ -428,4 +470,77 @@ export const inviteQuota = pgTable(
     used: integer("used").notNull().default(0),
   },
   (t) => [primaryKey({ columns: [t.restaurantId, t.slotId, t.weekKey] }), check("invite_quota_used_check", sql`${t.used} >= 0`)],
+);
+
+
+/** S4 (D155): convite entregue no app do cliente (Jornada › Seus convites); lido/não lido. */
+export const customerMessages = pgTable(
+  "customer_messages",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    customerId: customerFk(),
+    restaurantId: restaurantFk(),
+    inviteId: uuid("invite_id").references(() => invites.id, { onDelete: "cascade" }),
+    kind: text("kind").notNull(),
+    createdAt: ts("created_at").notNull().defaultNow(),
+    readAt: ts("read_at"),
+    emailedAt: ts("emailed_at"),
+    /** Envio do e-mail depois do commit (D163, revisão S4 I4): `pendente` → `enviado` | `pulado` | `falhou`. */
+    emailStatus: text("email_status").notNull().default("pulado"),
+    /** S6 (revisão técnica I1): por que o e-mail foi pulado — `dono_desligou` | `cliente_desligou` | `contato_no_texto` | ... */
+    emailSkipReason: text("email_skip_reason"),
+    simulationRunId: runFk(),
+  },
+  (t) => [
+    index("customer_messages_customer_idx").on(t.customerId, t.createdAt),
+    index("customer_messages_pending_idx").on(t.restaurantId).where(sql`email_status = 'pendente'`),
+    check("customer_messages_email_status_check", sql`${t.emailStatus} in ('pendente', 'enviado', 'pulado', 'falhou')`),
+    uniqueIndex("customer_messages_invite_uq").on(t.inviteId, t.kind),
+    check("customer_messages_kind_check", sql`${t.kind} in ('convite_mesa', 'reativacao', 'lembrete')`),
+  ],
+);
+
+/** S6 (D163, D168): resumo semanal do dono, 1 por restaurante e semana ISO (SP); reservado → enviado. */
+export const weeklyDigests = pgTable(
+  "weekly_digests",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    restaurantId: restaurantFk(),
+    weekKey: text("week_key").notNull(),
+    status: text("status").notNull(),
+    planId: uuid("plan_id").references(() => weeklyPlans.id, { onDelete: "set null" }),
+    reservedAt: ts("reserved_at").notNull(),
+    sentAt: ts("sent_at"),
+    via: text("via").notNull(),
+  },
+  (t) => [uniqueIndex("weekly_digests_week_uq").on(t.restaurantId, t.weekKey), check("weekly_digests_status_check", sql`${t.status} in ('reservado', 'enviado', 'falhou')`)],
+);
+
+/** S6: token de "Revisar e aprovar" do e-mail (hash; uso único; amarrado ao plano). */
+export const digestTokens = pgTable("digest_tokens", {
+  tokenHash: text("token_hash").primaryKey(),
+  restaurantId: restaurantFk(),
+  planId: uuid("plan_id")
+    .notNull()
+    .references(() => weeklyPlans.id, { onDelete: "cascade" }),
+  expiresAt: ts("expires_at").notNull(),
+  usedAt: ts("used_at"),
+  createdAt: ts("created_at").notNull().defaultNow(),
+});
+
+/** S6 (D158): link do garçom — abre só "Validar código" (hash; revogável). */
+export const waiterTokens = pgTable(
+  "waiter_tokens",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    restaurantId: restaurantFk(),
+    tokenHash: text("token_hash").notNull().unique(),
+    createdAt: ts("created_at").notNull().defaultNow(),
+    revokedAt: ts("revoked_at"),
+  },
+  (t) => [
+    index("waiter_tokens_restaurant_idx").on(t.restaurantId),
+    /** S6 (D190): 1 link ativo por restaurante. */
+    uniqueIndex("waiter_tokens_active_uq").on(t.restaurantId).where(sql`revoked_at is null`),
+  ],
 );

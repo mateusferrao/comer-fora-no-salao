@@ -1,5 +1,6 @@
 "use client";
 
+import { ExplainOfferLink } from "@/src/ui/ia/ExplainOffer";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -12,7 +13,7 @@ const VERDICT: Record<string, { label: string; tone: "green" | "red" | "neutral"
   trocar: { label: "Trocar", tone: "neutral" },
   cedo_demais: { label: "Cedo demais", tone: "neutral" },
 };
-const ORIGIN: Record<string, string> = { ia: "Gerado pela IA", sem_ia: "Texto modelo (sem IA)", fixo: "Exemplo pronto (escrito antes, sem IA ao vivo)" };
+const ORIGIN: Record<string, string> = { ia: "Gerado pela IA", sem_ia: "Texto modelo (sem IA)", fixo: "Plano pronto do restaurante de exemplo (escrito antes, sem IA ao vivo)" };
 const SEM_IA: Record<string, string> = { sem_chave: "IA desligada neste ambiente", timeout: "a IA demorou demais", unavailable: "a IA ficou indisponível", invalid: "a IA não respondeu no formato combinado", sem_candidatas: "faltam ofertas válidas no cardápio", limite: "limite diário de IA" };
 const WD = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
 const WD_LONG = ["domingo", "segunda", "terça", "quarta", "quinta", "sexta", "sábado"];
@@ -31,7 +32,7 @@ const friendly = (t: string, slotId: string) => t.replaceAll(`{horario:${slotId}
 const stored = (t: string, slotId: string) => t.replaceAll("{horario}", `{horario:${slotId}}`);
 const editsOf = (v: PlanView): Record<string, Edit> => Object.fromEntries(v.slots.map((s) => [s.slotId, { optionId: s.chosenId ?? s.options[0]?.id ?? "", cap: s.weeklyCap, text: friendly(s.inviteText, s.slotId) }]));
 
-export function PlanManager({ initial }: { initial: PlanView }) {
+export function PlanManager({ initial, explicaIa = false }: { initial: PlanView; explicaIa?: boolean }) {
   const router = useRouter();
   const [v, setV] = useState(initial);
   const [edits, setEdits] = useState<Record<string, Edit>>(() => editsOf(initial));
@@ -103,7 +104,7 @@ export function PlanManager({ initial }: { initial: PlanView }) {
       setMsg({ kind: "erro", text: j.erro === "revisor" ? "O revisor ainda está conferindo ou pediu ajustes nos convites. Veja os motivos acima; se reescrever o convite, você assume o texto." : j.erro === "texto" ? "O texto do convite tem uma referência inválida ou passa de 160 caracteres." : j.erro === "oferta" ? "Uma oferta não vale mais no cardápio. Escolha outra." : "Não deu para aprovar. Atualize a página." });
       return;
     }
-    setMsg({ kind: "ok", text: `Plano aprovado · enviado para ${int(j.sent.real)} clientes (simulado)` });
+    setMsg({ kind: "ok", text: `Plano aprovado · convite entregue a ${int(j.sent.real)} clientes em Sua jornada${j.sent.emails ? ` · ${int(j.sent.emails)} também por e-mail` : ""}${j.semEmail ? " · textos com link ou contato não vão por e-mail" : ""}` });
     await reload();
   };
 
@@ -125,7 +126,7 @@ export function PlanManager({ initial }: { initial: PlanView }) {
         <div className="flex flex-col gap-1">
           <p className="text-sm text-ink-muted">{p ? `Semana de ${weekLabel(p.weekKey)}` : "Nenhum plano ainda"}</p>
           <p className="font-semibold text-ink" data-testid="plan-status" data-status={v.generating ? "gerando" : (p?.status ?? "nenhum")}>
-            {v.generating ? "A IA está escolhendo as ofertas…" : !p ? "Gere o primeiro plano da semana" : p.status === "aprovado" ? (p.stale ? "Vencido · gere o desta semana" : `Aprovado${p.approvedVia === "agente" ? " via agente" : ""}`) : p.stale ? "Proposta da semana passada · gere uma nova" : "Proposto · revise e aprove"}
+            {v.generating ? "A IA está escolhendo as ofertas…" : !p ? "Gere o primeiro plano da semana" : p.status === "aprovado" ? (p.stale ? "Vencido · gere o desta semana" : `Aprovado${p.approvedVia === "agente" ? " via agente" : p.approvedVia === "email" ? " pelo e-mail" : ""}`) : p.stale ? "Proposta da semana passada · gere uma nova" : "Proposto · revise e aprove"}
           </p>
           {p && !v.generating && (
             <div className="flex flex-wrap items-center gap-2">
@@ -136,6 +137,21 @@ export function PlanManager({ initial }: { initial: PlanView }) {
               </Badge>
               {p.generatedBy === "sem_ia" && p.semIa && <span className="text-xs text-ink-muted">Motivo: {SEM_IA[p.semIa] ?? p.semIa}</span>}
             </div>
+          )}
+          {/* S6.3b (D194): plano montado pelo agente — 1 linha visível com os passos legíveis. */}
+          {p && p.agentSteps.length > 0 && (
+            <details className="text-sm text-ink" data-testid="plano-agente">
+              <summary className="flex min-h-11 cursor-pointer items-center font-medium">
+                Montado por agente de IA · {p.agentSteps.length} {p.agentSteps.length === 1 ? "consulta" : "consultas"} · ver passos
+              </summary>
+              <ol className="ml-5 list-decimal">
+                {p.agentSteps.map((st, i) => (
+                  <li key={i}>
+                    {st.label} · {(st.ms / 1000).toLocaleString("pt-BR", { maximumFractionDigits: 1 })} s
+                  </li>
+                ))}
+              </ol>
+            </details>
           )}
         </div>
         <button type="button" onClick={generate} aria-busy={busy === "gerar" || v.generating || undefined} className="min-h-11 rounded-xs border border-red-text bg-white px-5 text-sm font-semibold text-red-text hover:bg-red-text/5">
@@ -227,6 +243,7 @@ export function PlanManager({ initial }: { initial: PlanView }) {
                     {s.justificativa}
                   </p>
                 )}
+                {explicaIa && v.plan && <ExplainOfferLink planId={v.plan.id} slotId={s.slotId} />}
               </article>
             );
           })}
@@ -239,7 +256,6 @@ export function PlanManager({ initial }: { initial: PlanView }) {
             <h2 id="reativacao" className="text-lg font-bold text-ink">
               Reativação
             </h2>
-            <Badge tone="neutral">simulado: nada foi enviado</Badge>
           </div>
           <p className="text-sm text-ink" data-testid="reativacao-previa">
             Vai para {int(v.reactivation.audience)} clientes com opt-in (1 visita e sumiu: {int(v.reactivation.bySegment.sumiu)}; perto da recompensa: {int(v.reactivation.bySegment.perto)}).{" "}
@@ -247,7 +263,7 @@ export function PlanManager({ initial }: { initial: PlanView }) {
           </p>
           {v.slots[0] && (
             <div className="max-w-sm rounded-md bg-surface-muted p-3 text-sm text-ink">
-              <p className="text-xs text-ink-muted">Mensagem do restaurante · exemplo com cliente fictício</p>
+              <p className="text-xs text-ink-muted">Como o cliente recebe</p>
               <p>Oi, Ana! {v.slots[0].inviteRendered || "Volte e aproveite o convite."}</p>
             </div>
           )}
@@ -317,7 +333,7 @@ function Insights({ v }: { v: PlanView }) {
       <h2 id="dados" className="text-lg font-bold text-ink">
         O que os seus dados dizem
       </h2>
-      <div className="overflow-x-auto" tabIndex={0} role="region" aria-label="Mapa de check-ins por dia e turno (rolável)">
+      <div className="relative overflow-x-auto" tabIndex={0} role="region" aria-label="Mapa de check-ins por dia e turno (rolável)">
         <table className="min-w-[520px] text-center text-sm">
           <caption className="pb-2 text-left text-sm text-ink-muted">Check-ins por dia e turno nos últimos 30 dias (mede quem leu o QR, não a lotação). Contorno: horário vazio que você declarou.</caption>
           <thead>
@@ -360,7 +376,7 @@ function Insights({ v }: { v: PlanView }) {
         </p>
       )}
       {v.insights.offers.length > 0 && (
-        <div className="overflow-x-auto" tabIndex={0} role="region" aria-label="Resposta aos convites (rolável)">
+        <div className="relative overflow-x-auto" tabIndex={0} role="region" aria-label="Resposta aos convites (rolável)">
           <table className="w-full min-w-[520px] text-sm">
             <caption className="pb-2 text-left text-sm text-ink-muted">Resposta aos convites (convites reais; o efeito causal só no total do restaurante, na Visão geral)</caption>
             <thead>

@@ -17,7 +17,7 @@ const discountParams = base.extend({ pct: z.number().int().min(1).max(100) });
 
 export type OfferParams = z.infer<typeof base> & { pct?: number };
 export type Offer = { kind: OfferKind; params: OfferParams };
-export type OfferError = "parametros_invalidos" | "item_inexistente" | "categoria_incompativel" | "desconto_acima_do_teto";
+export type OfferError = "parametros_invalidos" | "item_inexistente" | "categoria_incompativel" | "desconto_acima_do_teto" | "item_fora_das_ofertas";
 export type OfferText = { title: string; subtitle: string; itemName: string; gain: string };
 
 export interface OfferStrategy {

@@ -6,7 +6,7 @@ import { clearOutbox, memorySender, outbox } from "@/src/modules/contas/adapters
 import { requestLoginCode } from "@/src/modules/contas/application/request-code";
 import { verifyLoginCode } from "@/src/modules/contas/application/verify-code";
 import { openEvaluatorLink } from "@/src/modules/contas/application/evaluator-link";
-import { hmacEmail } from "@/src/shared/crypto";
+import { decryptEmail, hmacEmail } from "@/src/shared/crypto";
 import { resetDb } from "./helpers/db";
 
 const NOW = new Date("2026-11-21T12:00:00Z");
@@ -43,6 +43,25 @@ describe("login do dono por e-mail + código (D118)", () => {
     await ask("dono@exemplo.com", "10.0.0.1", new Date(NOW.getTime() + 20 * 60_000));
     const v2 = await verifyLoginCode(getDb(), { email: "dono@exemplo.com", code: codeFromOutbox(), ip: "10.0.0.1", now: new Date(NOW.getTime() + 21 * 60_000) });
     expect(v2.ok && !v2.created && v2.ownerId).toBe(o!.id);
+  });
+
+  it("guarda o e-mail cifrado para o resumo semanal (S6, D187), também de quem volta; contas E2E sem e-mail", async () => {
+    await ask("dona@exemplo.com");
+    await verifyLoginCode(getDb(), { email: "dona@exemplo.com", code: codeFromOutbox(), ip: "10.0.0.1", now: NOW });
+    const [o] = await getDb().select().from(owners).where(eq(owners.emailHmac, hmacEmail("dona@exemplo.com")));
+    expect(decryptEmail(o!.emailEnc)).toBe("dona@exemplo.com");
+    // Conta antiga sem email_enc: grava no próximo login.
+    await getDb().update(owners).set({ emailEnc: null }).where(eq(owners.id, o!.id));
+    await ask("dona@exemplo.com", "10.0.0.1", new Date(NOW.getTime() + 20 * 60_000));
+    await verifyLoginCode(getDb(), { email: "dona@exemplo.com", code: codeFromOutbox(), ip: "10.0.0.1", now: new Date(NOW.getTime() + 21 * 60_000) });
+    const [o2] = await getDb().select().from(owners).where(eq(owners.id, o!.id));
+    expect(decryptEmail(o2!.emailEnc)).toBe("dona@exemplo.com");
+    // E2E: nunca guarda.
+    const r = await requestLoginCode(getDb(), { email: "e2e-dono+77@exemplo.invalid", ip: "10.0.0.9", now: NOW, sender: memorySender, env, e2eToken: "token-e2e-de-teste" });
+    await verifyLoginCode(getDb(), { email: "e2e-dono+77@exemplo.invalid", code: r.ok ? r.e2eCode! : "", ip: "10.0.0.9", now: NOW });
+    const [e] = await getDb().select().from(owners).where(eq(owners.emailHmac, hmacEmail("e2e-dono+77@exemplo.invalid")));
+    expect(e!.via).toBe("e2e");
+    expect(e!.emailEnc).toBeNull();
   });
 
   it("código errado 5× bloqueia; o certo depois disso não entra", async () => {

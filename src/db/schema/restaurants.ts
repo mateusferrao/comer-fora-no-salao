@@ -45,6 +45,15 @@ export const restaurants = pgTable(
     setupStartedAt: timestamp("setup_started_at", { withTimezone: true }),
     // S3 (0004): tom da IA escolhido pelo dono (D138), dado delimitado no prompt.
     aiTone: text("ai_tone"),
+    // S6 (0007): configurações do dono (D196, D197). Nulo = padrões; lidos com `.catch` por campo.
+    /** "Avisos e automação": resumo, plano automático, aprovar pelo e-mail, e-mails aos clientes, antecedência do lembrete. */
+    notifySettings: jsonb("notify_settings"),
+    /** "Fatos para a IA" (≤ 500): dado delimitado no prompt, nunca no `system`. */
+    aiAbout: text("ai_about"),
+    /** "O que evitar" (≤ 200): termos separados por vírgula; bloqueia o texto da IA no guard. */
+    aiAvoid: text("ai_avoid"),
+    /** Liga/desliga por restaurante `{agente, aprende}` (o revisor não entra — D197). */
+    aiFeatures: jsonb("ai_features"),
   },
   (t) => [
     check("restaurants_kind_check", sql`${t.kind} in ('vitrine', 'teste')`),

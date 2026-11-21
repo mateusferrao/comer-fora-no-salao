@@ -2,6 +2,7 @@
  * Insights do plano da semana (espec. 3.7.1; planejamento S3 §4.3–4.4): o código calcula os fatos (chaves
  * estáveis), o mapa dia × turno, o veredito por oferta e o teto recalibrado. Nada de PII: só agregados.
  */
+import { hasOptIn } from "@/src/modules/analytics/application/customers";
 import { and, eq, gt, inArray, isNull, lte, or, sql } from "drizzle-orm";
 import type { Executor } from "@/src/db/executor";
 import { benefits, benefitVersions, invites } from "@/src/db/schema";
@@ -104,7 +105,7 @@ export async function getPlanInsights(ex: Executor, restaurantId: string, now: D
   const segments = Object.fromEntries(SEGMENTS.map((s) => [s, { count: 0, optIn: 0 }])) as PlanInsights["segments"];
   for (const c of rows) for (const s of c.segments) {
     segments[s].count++;
-    if (c.optIn.whatsapp || c.optIn.app || c.optIn.push) segments[s].optIn++;
+    if (hasOptIn(c)) segments[s].optIn++;
   }
   facts.segmento_sumiu = segments.sumiu.count;
   facts.segmento_perto = segments.perto.count;

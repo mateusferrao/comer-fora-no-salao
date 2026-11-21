@@ -19,7 +19,7 @@ export default async function ClientesPage({ searchParams }: { searchParams: Pro
     <main className="mx-auto flex max-w-5xl flex-col gap-6 px-4 py-6 sm:px-8">
       <header className="flex flex-col gap-1">
         <h1 className="text-2xl font-bold text-ink">Clientes</h1>
-        <p className="text-sm text-ink-muted">Esta base é do seu restaurante. Neste protótipo, use só dados fictícios.</p>
+        <p className="text-sm text-ink-muted">Esta base é do seu restaurante.</p>
       </header>
       {data ? <CustomersView data={data} /> : <p className="text-sm text-ink">Escolha um restaurante.</p>}
     </main>

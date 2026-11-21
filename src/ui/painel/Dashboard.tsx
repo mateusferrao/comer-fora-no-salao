@@ -5,8 +5,11 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import type { DashboardView } from "@/src/modules/analytics/application/dashboard";
 import type { Incremental } from "@/src/modules/analytics/domain/incremental";
 import type { Period } from "@/src/modules/analytics/domain/funnel";
-import { Badge } from "../components/Badge";
 import { brl, int, pct, signed, weekLabel } from "./format";
+import { RecentCheckins } from "./RecentCheckins";
+import { SlotGoals } from "./SlotGoals";
+import { TodayFeed } from "./TodayFeed";
+import { ValueHero } from "./ValueHero";
 
 /** Visão geral (planejamento S3 §4.2). Funil a cada 3 s (aba visível); métrica e cartões a cada 60 s. */
 export function Dashboard({ initial }: { initial: DashboardView }) {
@@ -62,7 +65,7 @@ export function Dashboard({ initial }: { initial: DashboardView }) {
   return (
     <div className="flex flex-col gap-6">
       <div className="grid gap-4 lg:grid-cols-[2fr_1fr]">
-        <MetricHero d={d} />
+        {d.value ? <ValueHero topline={d.value.topline} /> : <MetricHero d={d} />}
         <div className="flex flex-col gap-3">
           <div className="rounded-sm border border-border bg-white p-4">
             <p className="text-sm text-ink-muted">Novos usuários do Comer Fora · últ. 30 dias</p>
@@ -75,6 +78,13 @@ export function Dashboard({ initial }: { initial: DashboardView }) {
           <PlanCard plan={d.plan} />
         </div>
       </div>
+
+      {d.value && (
+        <>
+          <SlotGoals goals={d.value.goals} />
+          <MetricHero d={d} />
+        </>
+      )}
 
       <section aria-labelledby="funil" className="flex flex-col gap-3 rounded-sm border border-border bg-white p-4">
         <div className="flex flex-wrap items-center justify-between gap-2">
@@ -129,9 +139,11 @@ export function Dashboard({ initial }: { initial: DashboardView }) {
         </p>
       </section>
 
+      {funnel.feed ? <TodayFeed feed={funnel.feed} /> : <RecentCheckins list={funnel.recent ?? []} />}
+
       <Cards d={d} />
-      {isTest && !d.restaurant.simulated && (
-        <p className="text-xs text-ink-muted">Os números aparecem conforme os clientes fazem check-in. Para ver o painel cheio, use &quot;Simular 30 dias&quot;.</p>
+      {isTest && (
+        <p className="text-xs text-ink-muted">Os números aparecem conforme os clientes fazem check-in.</p>
       )}
     </div>
   );
@@ -153,14 +165,7 @@ function MetricHero({ d }: { d: DashboardView }) {
         <h2 id="metrica" className="text-base font-semibold text-ink">
           Visitas registradas a mais por cliente convidado (14 dias)
         </h2>
-        {d.restaurant.simulated && (
-          <Badge tone="neutral">
-            Dados simulados · efeito programado: +0,20 visita ·{" "}
-            <Link className="underline" href="/bastidores/como-funciona">
-              Como funciona
-            </Link>
-          </Badge>
-        )}
+
       </div>
       {has ? (
         <>

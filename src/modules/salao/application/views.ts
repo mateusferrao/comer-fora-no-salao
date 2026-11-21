@@ -30,8 +30,12 @@ export type InviteView = {
   offer: OfferView | null;
   /** Recado do restaurante no convite (D122): texto aprovado pelo dono, já renderizado pelo código. */
   message: string | null;
-  /** Só em restaurante de teste (D140, D141): "antecipar 1 dia" e "liberado hoje, fora do horário". */
-  test?: { inviteId: string; canAdvance: boolean; liberatedToday: boolean } | null;
+  /** S4 (D153): liberado hoje fora da faixa pelas Ferramentas do avaliador. */
+  liberatedToday?: boolean;
+  /** S5.2: link assinado do `.ics` (só convite real com janela válida pela frente). */
+  agendaUrl?: string | null;
+  /** S5.2: a próxima janela em que o código pode nascer é hoje. */
+  validToday?: boolean;
 };
 
 export type CheckinView = {
@@ -41,11 +45,9 @@ export type CheckinView = {
   codes: CodeView[];
   invite: InviteView | null;
   firstVisitAlreadyUsed: boolean;
-  /** Só em restaurante de teste (D143): por que não há 2º card. Vitrine e cópias: sempre ausente. */
-  testNote?: "grupo_controle" | "teto" | null;
 };
 
-export const CHECKIN_VIEW_KEYS = ["outcome", "stamps", "required", "codes", "invite", "firstVisitAlreadyUsed", "testNote"] as const;
+export const CHECKIN_VIEW_KEYS = ["outcome", "stamps", "required", "codes", "invite", "firstVisitAlreadyUsed"] as const;
 
 /** Copia só os campos permitidos (defesa contra vazamento se alguém acrescentar algo ao objeto). */
 export function sanitizeCheckinView(v: CheckinView): CheckinView {
@@ -63,11 +65,12 @@ export function sanitizeCheckinView(v: CheckinView): CheckinView {
           untilDay: v.invite.untilDay,
           offer: v.invite.offer,
           message: v.invite.message ?? null,
-          test: v.invite.test ? { inviteId: v.invite.test.inviteId, canAdvance: v.invite.test.canAdvance, liberatedToday: v.invite.test.liberatedToday } : null,
+          liberatedToday: v.invite.liberatedToday ?? false,
+          agendaUrl: v.invite.agendaUrl ?? null,
+          validToday: v.invite.validToday ?? false,
         }
       : null,
     firstVisitAlreadyUsed: v.firstVisitAlreadyUsed,
-    testNote: v.testNote ?? null,
   };
 }
 
@@ -88,9 +91,10 @@ export const checkinViewSchema = z.object({
       untilDay: z.string(),
       offer: offerViewSchema.nullable(),
       message: z.string().nullable().optional(),
-      test: z.object({ inviteId: z.string(), canAdvance: z.boolean(), liberatedToday: z.boolean() }).nullable().optional(),
+      liberatedToday: z.boolean().optional(),
+      agendaUrl: z.string().nullable().optional(),
+      validToday: z.boolean().optional(),
     })
     .nullable(),
   firstVisitAlreadyUsed: z.boolean(),
-  testNote: z.enum(["grupo_controle", "teto"]).nullable().optional(),
 });
