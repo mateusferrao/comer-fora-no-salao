@@ -23,7 +23,7 @@ for (const [w, h] of [
     await expect(portal.getByRole("navigation", { name: "Menu principal" })).toBeVisible();
     const app = page.frameLocator('iframe[title="App do cliente"]');
     await expect(app.getByRole("button", { name: "Check-in" }).or(app.getByRole("link", { name: /^(Check-in|Fazer check-in e ativar o benefício)$/ })).first()).toBeVisible({ timeout: 20_000 });
-    await expect(page.getByRole("combobox", { name: "Restaurante" })).toBeVisible();
+    await expect(page.getByRole("button", { name: /^Restaurante / })).toBeVisible();
     await expect(page.getByRole("link", { name: "Bastidores" })).toBeVisible();
   });
 }

@@ -1,5 +1,5 @@
 import AxeBuilder from "@axe-core/playwright";
-import { expect, type APIRequestContext, type Page } from "@playwright/test";
+import { expect, type APIRequestContext, type Locator, type Page } from "@playwright/test";
 import { E2E_LOGIN_TOKEN_LOCAL } from "../../playwright.config";
 
 export const BARRA = "Protótipo de case · não é produto oficial do iFood";
@@ -67,4 +67,43 @@ export async function loginCustomer(request: APIRequestContext, apiBase: string,
     expect(c.status()).toBe(200);
   }
   return email;
+}
+
+/**
+ * Seletor do design system (`Select`, ajuste de 21/11): abre pelo rótulo e escolhe a opção pelo nome (ou pela
+ * posição). A lista fica dentro do componente (lista suspensa ou BottomSheet), então o escopo pode ser uma região.
+ * Devolve o texto da opção escolhida.
+ */
+export async function pickOption(scope: Page | Locator, label: string | RegExp, option: string | RegExp | { index: number }): Promise<string> {
+  const trigger = scope.getByLabel(label).and(scope.getByRole("button"));
+  await trigger.click();
+  const box = scope.getByRole("listbox");
+  await expect(box).toBeVisible();
+  const opt = typeof option === "object" && "index" in option ? box.getByRole("option").nth(option.index) : box.getByRole("option", { name: option });
+  const text = ((await opt.locator("span > span").first().textContent()) ?? "").trim();
+  await opt.click();
+  await expect(box).toBeHidden();
+  return text;
+}
+
+/** Valores das opções de um `Select` (abre e fecha com Esc). */
+export async function optionValues(scope: Page | Locator, label: string | RegExp): Promise<Array<{ value: string; text: string }>> {
+  const trigger = scope.getByLabel(label).and(scope.getByRole("button"));
+  await trigger.click();
+  const box = scope.getByRole("listbox");
+  await expect(box).toBeVisible();
+  const out = await box.getByRole("option").evaluateAll((els) => els.map((e) => ({ value: e.getAttribute("data-value") ?? "", text: e.textContent ?? "" })));
+  await box.press("Escape");
+  await expect(box).toBeHidden();
+  return out;
+}
+
+/**
+ * Restaurantes da conta cujo rótulo no seletor "Trocar loja" contém `marca` (ex.: "teste"). Sem seletor (1 loja só) →
+ * lista vazia. Usado pela limpeza das specs que cadastram restaurantes.
+ */
+export async function storeIds(page: Page, marca: string): Promise<string[]> {
+  const picker = page.getByLabel("Trocar loja").and(page.getByRole("button"));
+  if (!(await picker.count())) return [];
+  return (await optionValues(page, "Trocar loja")).filter((o) => o.text.includes(marca)).map((o) => o.value);
 }

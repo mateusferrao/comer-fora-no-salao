@@ -22,7 +22,7 @@ for (const vp of VIEWPORTS) {
       await page.goto(URL);
       await expect(page.getByRole("heading", { level: 1 })).toHaveText(CABECALHO);
       await expect(page.getByRole("img", { name: "iFood" }).first()).toBeVisible();
-      for (const id of ["tokens", "button", "tabs", "chip", "badge", "bottom-sheet", "app-shell", "portal-shell"]) {
+      for (const id of ["tokens", "button", "tabs", "chip", "select", "badge", "bottom-sheet", "app-shell", "portal-shell"]) {
         await expect(page.getByTestId(`demo-${id}`), id).toBeVisible();
       }
     });
@@ -172,5 +172,50 @@ test.describe("correções da revisão S0", () => {
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("Página não encontrada");
     await page.getByRole("link", { name: "Voltar ao início" }).click();
     await expect(page).toHaveURL(/\/$/);
+  });
+});
+
+/** Seletor do design system (ajuste de 21/11): lista suspensa com teclado no computador; BottomSheet no celular. */
+test.describe("Select", () => {
+  test("computador: teclado (setas, Home/End, Enter, Esc), opção desabilitada pulada, axe com a lista aberta", async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await page.goto(URL);
+    const sec = page.getByTestId("demo-select");
+    const trigger = sec.getByRole("button", { name: /^Oferta / });
+    await expect(trigger).toHaveAccessibleName("Oferta Cannoli grátis");
+    await expect(trigger).toHaveAttribute("aria-expanded", "false");
+    await trigger.focus();
+    await page.keyboard.press("ArrowDown");
+    const box = sec.getByRole("listbox", { name: "Oferta" });
+    await expect(box).toBeFocused();
+    await expect(sec.getByRole("option", { name: /Cannoli grátis/ })).toHaveAttribute("aria-selected", "true");
+    const r = await new AxeBuilder({ page }).include('[data-testid="demo-select"]').analyze();
+    expect(r.violations.map((v) => v.id)).toEqual([]);
+    await page.keyboard.press("End");
+    // A última opção está desabilitada: End para na penúltima.
+    await page.keyboard.press("Enter");
+    await expect(box).toBeHidden();
+    await expect(sec.getByTestId("select-valor")).toHaveText("Escolhido: tiramisu");
+    await expect(trigger).toBeFocused();
+    await page.keyboard.press("Enter");
+    await page.keyboard.press("Home");
+    await page.keyboard.press("Escape");
+    await expect(sec.getByTestId("select-valor")).toHaveText("Escolhido: tiramisu");
+    await expect(trigger).toBeFocused();
+    await trigger.click();
+    await sec.getByRole("option", { name: /Panna cotta/ }).click();
+    await expect(sec.getByTestId("select-valor")).toHaveText("Escolhido: panna");
+  });
+
+  test("celular: abre no BottomSheet com o rótulo de título; escolher fecha", async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto(URL);
+    const sec = page.getByTestId("demo-select");
+    await sec.getByRole("button", { name: /^Oferta / }).click();
+    const sheet = page.getByRole("dialog", { name: "Oferta" });
+    await expect(sheet).toBeVisible();
+    await sheet.getByRole("option", { name: /Tiramisù/ }).click();
+    await expect(sheet).toBeHidden();
+    await expect(sec.getByTestId("select-valor")).toHaveText("Escolhido: tiramisu");
   });
 });

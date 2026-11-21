@@ -7,6 +7,7 @@ import { BottomSheet } from "@/src/ui/components/BottomSheet";
 import { Button } from "@/src/ui/components/Button";
 import { Chip } from "@/src/ui/components/Chip";
 import { PortalShell } from "@/src/ui/components/PortalShell";
+import { Select } from "@/src/ui/components/Select";
 import { Tabs } from "@/src/ui/components/Tabs";
 import { COLORS } from "@/src/ui/tokens";
 
@@ -15,6 +16,7 @@ const SECOES = [
   { id: "button", titulo: "Botões" },
   { id: "tabs", titulo: "Abas" },
   { id: "chip", titulo: "Chips" },
+  { id: "select", titulo: "Seletor" },
   { id: "badge", titulo: "Selos" },
   { id: "bottom-sheet", titulo: "Painel inferior" },
   { id: "app-shell", titulo: "Casca do App" },
@@ -66,6 +68,7 @@ export function Galeria({ cabecalho }: { cabecalho: string }) {
   const [sheet, setSheet] = useState(false);
   const [confirmacao, setConfirmacao] = useState(false);
   const [carregando, setCarregando] = useState(false);
+  const [oferta, setOferta] = useState("cannoli");
   const simularCarregamento = () => {
     setCarregando(true);
     setTimeout(() => setCarregando(false), 1_500);
@@ -129,6 +132,25 @@ export function Galeria({ cabecalho }: { cabecalho: string }) {
             <Chip>Ter, Qua</Chip>
             <Chip>Noturno</Chip>
           </div>
+        </Secao>
+
+        <Secao id="select" titulo="Seletor">
+          <div className="max-w-sm">
+            <Select
+              label="Oferta"
+              value={oferta}
+              onChange={setOferta}
+              options={[
+                { value: "cannoli", label: "Cannoli grátis", hint: "Doce grátis · custo R$ 8 · melhor nota" },
+                { value: "panna", label: "Panna cotta grátis", hint: "Doce grátis · custo R$ 6" },
+                { value: "tiramisu", label: "Tiramisù grátis", hint: "Doce grátis · custo R$ 9" },
+                { value: "esgotado", label: "Gelato grátis", hint: "Fora das ofertas", disabled: true },
+              ]}
+            />
+          </div>
+          <p className="mt-2 text-sm text-ink-muted" data-testid="select-valor">
+            Escolhido: {oferta}
+          </p>
         </Secao>
 
         <Secao id="badge" titulo="Selos">

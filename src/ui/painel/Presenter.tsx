@@ -1,5 +1,6 @@
 "use client";
 
+import { Select } from "../components/Select";
 import { useEffect, useRef, useState } from "react";
 
 type Store = { id: string; name: string; slug: string; label: string };
@@ -59,16 +60,16 @@ export function Presenter({ stores, currentId }: { stores: Store[]; currentId: s
     <main className="flex min-h-[calc(100dvh-1.75rem)] flex-col bg-page">
       <p className="p-6 text-sm text-ink lg:hidden">Use uma tela maior (pelo menos 1100 px) para o modo apresentação.</p>
       <div className="hidden items-center gap-3 border-b border-border bg-white px-4 py-2 lg:flex">
-        <label className="flex items-center gap-2 text-sm text-ink">
-          Restaurante
-          <select value={store.id} onChange={(e) => void choose(e.target.value)} className="min-h-9 rounded-xs border border-border bg-white px-2 text-sm">
-            {stores.map((s) => (
-              <option key={s.id} value={s.id}>
-                {s.name} ({s.label})
-              </option>
-            ))}
-          </select>
-        </label>
+        <Select
+          label="Restaurante"
+          size="sm"
+          className="flex-row items-center gap-2"
+          labelClassName="text-sm text-ink"
+          triggerClassName="w-auto"
+          value={store.id}
+          options={stores.map((s) => ({ value: s.id, label: `${s.name} (${s.label})` }))}
+          onChange={(v) => void choose(v)}
+        />
         <label className="flex items-center gap-2 text-sm text-ink">
           <input type="checkbox" checked={zoom} onChange={(e) => setZoom(e.target.checked)} /> Zoom 125%
         </label>

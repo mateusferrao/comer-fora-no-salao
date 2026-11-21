@@ -1,5 +1,6 @@
 "use client";
 
+import { Select } from "../components/Select";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 
@@ -25,21 +26,14 @@ export function StoreBox({ name, open, stores, currentId }: Props) {
     <div className="flex flex-col gap-2">
       <p className="text-center text-base font-bold leading-5 text-ink">{name ?? "Nenhuma loja ainda"}</p>
       {stores.length > 1 && (
-        <label className="flex flex-col gap-1 text-xs font-medium text-ink-muted">
-          Trocar loja
-          <select
-            className="min-h-11 rounded-sm border border-border bg-white px-2 text-sm text-ink"
-            value={currentId ?? ""}
-            disabled={busy}
-            onChange={(e) => change(e.target.value)}
-          >
-            {stores.map((s) => (
-              <option key={s.id} value={s.id}>
-                {s.name} · {s.label}
-              </option>
-            ))}
-          </select>
-        </label>
+        <Select
+          label="Trocar loja"
+          labelClassName="text-xs font-medium text-ink-muted"
+          value={currentId ?? ""}
+          disabled={busy}
+          options={stores.map((s) => ({ value: s.id, label: s.name, hint: s.label }))}
+          onChange={(v) => change(v)}
+        />
       )}
       {open !== null && (
         <div className="flex items-center gap-2 rounded-sm bg-surface-muted px-3 py-2">

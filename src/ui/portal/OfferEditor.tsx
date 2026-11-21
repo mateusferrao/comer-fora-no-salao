@@ -1,5 +1,6 @@
 "use client";
 
+import { Select } from "../components/Select";
 import { useId } from "react";
 import { offerRegistry, OFFER_KINDS, MAX_DISCOUNT_PCT, type OfferKind } from "@/src/modules/beneficios/domain/offers";
 import type { MenuItem } from "@/src/modules/beneficios/domain/menu";
@@ -20,35 +21,24 @@ export function OfferEditor({ value, onChange, menu, label }: { value: OfferValu
   return (
     <fieldset className="flex flex-wrap items-end gap-3">
       <legend className="sr-only">{label}</legend>
-      <label htmlFor={`${id}-t`} className="flex flex-col gap-1 text-xs font-medium text-ink-muted">
-        Tipo
-        <select
-          id={`${id}-t`}
-          className={cls}
-          value={value.kind}
-          onChange={(e) => {
-            const kind = e.target.value as OfferKind;
-            const first = itemsFor(kind, menu)[0];
-            onChange({ kind, itemId: itemsFor(kind, menu).some((i) => i.id === value.itemId) ? value.itemId : (first?.id ?? ""), ...(kind === "desconto" ? { pct: value.pct ?? 15 } : {}) });
-          }}
-        >
-          {OFFER_KINDS.filter((k) => itemsFor(k, menu).length).map((k) => (
-            <option key={k} value={k}>
-              {LABEL[k]}
-            </option>
-          ))}
-        </select>
-      </label>
-      <label htmlFor={`${id}-i`} className="flex flex-col gap-1 text-xs font-medium text-ink-muted">
-        Item do cardápio
-        <select id={`${id}-i`} className={cls} value={value.itemId} onChange={(e) => onChange({ ...value, itemId: e.target.value })}>
-          {items.map((i) => (
-            <option key={i.id} value={i.id}>
-              {i.name}
-            </option>
-          ))}
-        </select>
-      </label>
+      <Select
+        label="Tipo"
+        labelClassName="text-xs font-medium text-ink-muted"
+        value={value.kind}
+        options={OFFER_KINDS.filter((k) => itemsFor(k, menu).length).map((k) => ({ value: k, label: LABEL[k] }))}
+        onChange={(v) => {
+          const kind = v as OfferKind;
+          const first = itemsFor(kind, menu)[0];
+          onChange({ kind, itemId: itemsFor(kind, menu).some((i) => i.id === value.itemId) ? value.itemId : (first?.id ?? ""), ...(kind === "desconto" ? { pct: value.pct ?? 15 } : {}) });
+        }}
+      />
+      <Select
+        label="Item do cardápio"
+        labelClassName="text-xs font-medium text-ink-muted"
+        value={value.itemId}
+        options={items.map((i) => ({ value: i.id, label: i.name }))}
+        onChange={(v) => onChange({ ...value, itemId: v })}
+      />
       {value.kind === "desconto" && (
         <label htmlFor={`${id}-p`} className="flex flex-col gap-1 text-xs font-medium text-ink-muted">
           Desconto (%)

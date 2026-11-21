@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { axe, BARRA, loginE2E, PROD, loginCustomer } from "./helpers";
+import { axe, BARRA, loginE2E, PROD, loginCustomer, pickOption, storeIds } from "./helpers";
 
 /**
  * Fluxo do dono (planejamento S2 §7). Serial: as contas de teste são compartilhadas entre os testes do arquivo.
@@ -108,10 +108,7 @@ test("assistente completo com exemplo: salão pré-preenchido → revisão → p
   // Começa limpo: apaga restaurantes de teste antigos desta conta de E2E.
   await page.goto("/parceiro/salao");
   for (;;) {
-    const ids = await page.evaluate(async () => {
-      const opts = Array.from(document.querySelectorAll("select option")) as HTMLOptionElement[];
-      return opts.filter((o) => o.textContent?.includes("teste")).map((o) => o.value);
-    });
+    const ids = await storeIds(page, "teste");
     if (!ids.length) break;
     for (const id of ids) await page.request.delete("/api/parceiro/restaurantes", { data: { restaurantId: id } });
     await page.reload();
@@ -214,10 +211,8 @@ test("Configurações: trocar a oferta do convite → o próximo cliente convid�
   await axe(page);
   await page.getByRole("tab", { name: "Horários vazios e convites" }).click();
   const first = page.getByRole("region", { name: /^Horário vazio / }).first();
-  await first.getByLabel("Tipo").selectOption("leve2pague1");
-  const item = first.getByLabel("Item do cardápio");
-  const chosen = await item.locator("option").nth(1).textContent();
-  await item.selectOption({ index: 1 });
+  await pickOption(first, "Tipo", "Leve 2, pague 1");
+  const chosen = await pickOption(first, "Item do cardápio", { index: 1 });
   await first.getByRole("button", { name: "Salvar convite" }).click();
   await expect(first.getByText("Salvo · nova versão em vigor")).toBeVisible();
   await axe(page);

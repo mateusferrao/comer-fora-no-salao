@@ -1,5 +1,6 @@
 "use client";
 
+import { Select } from "../components/Select";
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { DashboardView } from "@/src/modules/analytics/application/dashboard";
@@ -120,17 +121,15 @@ export function Dashboard({ initial }: { initial: DashboardView }) {
             ))}
           </div>
           {funnel.variants.length > 0 && (
-            <label className="ml-auto flex items-center gap-2 text-sm text-ink-muted">
-              Peça
-              <select value={variant} onChange={(e) => setVariant(e.target.value)} className="min-h-11 rounded-xs border border-border bg-white px-2 text-sm text-ink sm:min-h-8">
-                <option value="">Todas</option>
-                {funnel.variants.map((v) => (
-                  <option key={v.id} value={v.id}>
-                    {v.label}
-                  </option>
-                ))}
-              </select>
-            </label>
+            <Select
+              label="Peça"
+              className="ml-auto flex-row items-center gap-2"
+              labelClassName="text-sm text-ink-muted"
+              triggerClassName="w-auto sm:min-h-8"
+              value={variant}
+              options={[{ value: "", label: "Todas" }, ...funnel.variants.map((v) => ({ value: v.id, label: v.label }))]}
+              onChange={setVariant}
+            />
           )}
         </div>
         <FunnelBars steps={funnel.steps} />

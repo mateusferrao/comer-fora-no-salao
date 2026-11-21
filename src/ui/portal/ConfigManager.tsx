@@ -1,5 +1,6 @@
 "use client";
 
+import { Select } from "../components/Select";
 import { useNumberField } from "../components/use-number-field";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
@@ -151,13 +152,7 @@ function SlotsTab({ v, menu }: { v: SettingsView; menu: Array<{ id: string; name
         <DaySelector label="Dias do novo horário vazio" value={nova.days} onChange={(days) => setNova({ ...nova, days })} />
         <TimeRange label="Horário do novo horário vazio" start={nova.startMin} end={nova.endMin} onChange={(startMin, endMin) => setNova({ ...nova, startMin, endMin })} />
         <div className="flex flex-wrap items-end gap-3">
-          <label className="flex flex-col gap-1 text-sm font-medium text-ink">
-            Quanto fica vazio?
-            <select className="min-h-11 rounded-sm border border-border bg-white px-2" value={nova.intensity} onChange={(e) => setNova({ ...nova, intensity: e.target.value as "muito" | "um_pouco" })}>
-              <option value="muito">Muito</option>
-              <option value="um_pouco">Um pouco</option>
-            </select>
-          </label>
+          <Select label="Quanto fica vazio?" className="w-40" value={nova.intensity} options={[{ value: "muito", label: "Muito" }, { value: "um_pouco", label: "Um pouco" }]} onChange={(v) => setNova({ ...nova, intensity: v as "muito" | "um_pouco" })} />
           <Field className="w-48" label="Mesas a mais por semana" inputMode="numeric" {...novaTables} />
           <Button variant="outline-portal" loading={busy === "nova"} onClick={() => save("nova", { acao: "faixa_nova", ...nova }, "Horário vazio criado com convite")}>
             Adicionar
@@ -185,13 +180,7 @@ function SlotCard({ s, menu, canRemove }: { s: SettingsView["slots"][number]; me
         <DaySelector label={`Dias de ${s.label}`} value={f.days} onChange={(days) => setF({ ...f, days })} />
         <TimeRange label={`Horário de ${s.label}`} start={f.startMin} end={f.endMin} onChange={(startMin, endMin) => setF({ ...f, startMin, endMin })} />
         <div className="flex flex-wrap items-end gap-3">
-          <label className="flex flex-col gap-1 text-sm font-medium text-ink">
-            Quanto fica vazio?
-            <select className="min-h-11 rounded-sm border border-border bg-white px-2" value={f.intensity} onChange={(e) => setF({ ...f, intensity: e.target.value as "muito" | "um_pouco" })}>
-              <option value="muito">Muito</option>
-              <option value="um_pouco">Um pouco</option>
-            </select>
-          </label>
+          <Select label="Quanto fica vazio?" className="w-40" value={f.intensity} options={[{ value: "muito", label: "Muito" }, { value: "um_pouco", label: "Um pouco" }]} onChange={(v) => setF({ ...f, intensity: v as "muito" | "um_pouco" })} />
           <Field className="w-48" label="Mesas a mais por semana" inputMode="numeric" {...slotTables} />
           <Button variant="outline-portal" loading={busy === "faixa"} onClick={() => save("faixa", { acao: "faixa_editar", slotId: s.id, ...f }, "Horário salvo (convites já emitidos não mudam)")}>
             Salvar horário
@@ -253,11 +242,14 @@ function MenuTab({ v }: { v: SettingsView }) {
                   <input aria-label={`Nome de ${r.name}`} className="min-h-11 w-full rounded-sm border border-border px-2" value={r.name} onChange={(e) => setRows(rows.map((x, k) => (k === i ? { ...x, name: e.target.value } : x)))} />
                 </td>
                 <td className="px-2 py-1">
-                  <select aria-label={`Categoria de ${r.name}`} className="min-h-11 rounded-sm border border-border bg-white px-2" value={r.category} onChange={(e) => setRows(rows.map((x, k) => (k === i ? { ...x, category: e.target.value as MenuCategory } : x)))}>
-                    {CATS.map(([c, l]) => (
-                      <option key={c} value={c}>{l}</option>
-                    ))}
-                  </select>
+                  <Select
+                    label={`Categoria de ${r.name}`}
+                    hideLabel
+                    className="min-w-32"
+                    value={r.category}
+                    options={CATS.map(([c, l]) => ({ value: c, label: l }))}
+                    onChange={(v) => setRows(rows.map((x, k) => (k === i ? { ...x, category: v as MenuCategory } : x)))}
+                  />
                 </td>
                 <td className="px-2 py-1">
                   <input aria-label={`Preço de ${r.name}`} inputMode="decimal" className="min-h-11 w-24 rounded-sm border border-border px-2" value={r.preco} onChange={(e) => setRows(rows.map((x, k) => (k === i ? { ...x, preco: e.target.value } : x)))} />
@@ -312,14 +304,14 @@ function MenuTab({ v }: { v: SettingsView }) {
       </div>
       <div className="flex flex-wrap items-end gap-3 rounded-sm border border-dashed border-ink-muted p-4">
         <Field label="Novo item" value={novo.name} onChange={(e) => setNovo({ ...novo, name: e.target.value })} />
-        <label className="flex flex-col gap-1.5 text-sm font-medium text-ink">
-          Categoria
-          <select className="min-h-12 rounded-md border border-border bg-white px-2" value={novo.category} onChange={(e) => setNovo({ ...novo, category: e.target.value as MenuCategory })}>
-            {CATS.map(([c, l]) => (
-              <option key={c} value={c}>{l}</option>
-            ))}
-          </select>
-        </label>
+        <Select
+          label="Categoria"
+          size="lg"
+          className="gap-1.5"
+          value={novo.category}
+          options={CATS.map(([c, l]) => ({ value: c, label: l }))}
+          onChange={(v) => setNovo({ ...novo, category: v as MenuCategory })}
+        />
         <Field className="w-32" label="Preço (R$)" inputMode="decimal" value={novo.preco} onChange={(e) => setNovo({ ...novo, preco: e.target.value })} />
         <Button variant="outline-portal" loading={busy === "novo"} onClick={() => save("novo", { acao: "item_novo", name: novo.name, priceCents: cents(novo.preco) ?? 0, category: novo.category }, "Item acrescentado").then((ok) => ok && location.reload())}>
           Acrescentar
@@ -514,16 +506,13 @@ function ToneSection({ v, agenteGlobal = false, aprendeGlobal = true }: { v: Set
         </Button>
         {v.slots.length > 0 && (
           <>
-            <label className="flex flex-col gap-1 text-sm text-ink">
-              Prévia nesta faixa
-              <select value={slotId} onChange={(e) => setSlotId(e.target.value)} className="min-h-11 rounded-xs border border-border bg-white px-2">
-                {v.slots.map((s) => (
-                  <option key={s.id} value={s.id}>
-                    {s.label}
-                  </option>
-                ))}
-              </select>
-            </label>
+            <Select
+              label="Prévia nesta faixa"
+              labelClassName="text-sm text-ink"
+              value={slotId}
+              options={v.slots.map((s) => ({ value: s.id, label: s.label }))}
+              onChange={setSlotId}
+            />
             <Button
               variant="outline-portal"
               loading={busy === "ver"}

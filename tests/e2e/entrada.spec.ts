@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 import path from "node:path";
-import { axe, BARRA, loginE2E, PROD, S5_ON } from "./helpers";
+import { axe, BARRA, loginE2E, optionValues, PROD, S5_ON } from "./helpers";
 
 /** Entrada, páginas públicas, barra, Bastidores e CSP (planejamento S3 §4.6–4.7). */
 
@@ -83,10 +83,8 @@ test("CSP de produção: o PDF passa pelo pdf.js no navegador sem erro de polít
   expect(res!.headers()["content-security-policy"]).toContain("worker-src 'self' blob:");
   // Começa limpo: apaga os restaurantes cadastrados antigos desta conta (limite de 3); a cópia do exemplo fica.
   for (;;) {
-    const picker = page.getByLabel("Trocar loja").first();
-    const ids = (await picker.count())
-      ? await picker.evaluate((sel) => Array.from((sel as HTMLSelectElement).options).filter((o) => !o.textContent?.includes("exemplo")).map((o) => o.value))
-      : [];
+    const picker = page.getByLabel("Trocar loja").and(page.getByRole("button"));
+    const ids = (await picker.count()) ? (await optionValues(page, "Trocar loja")).filter((o) => !o.text.includes("exemplo")).map((o) => o.value) : [];
     if (!ids.length) break;
     for (const id of ids) expect((await page.request.delete("/api/parceiro/restaurantes", { data: { restaurantId: id } })).ok()).toBe(true);
     await page.reload();

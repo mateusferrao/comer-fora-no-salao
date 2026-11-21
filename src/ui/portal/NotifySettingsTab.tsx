@@ -1,5 +1,6 @@
 "use client";
 
+import { Select } from "../components/Select";
 import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
@@ -59,26 +60,24 @@ export function NotifySettingsTab({ view, flags }: { view: NotifyView; flags: { 
           </p>
         )}
         <div className="flex flex-wrap gap-3">
-          <label className="flex flex-col gap-1 text-sm text-ink">
-            Dia
-            <select className="min-h-11 rounded-sm border border-border bg-white px-2" value={s.resumo.weekday} disabled={!s.resumo.on || digestOff} onChange={(e) => set({ resumo: { ...s.resumo, weekday: Number(e.target.value) } })}>
-              {DAYS.map((d, i) => (
-                <option key={d} value={i}>
-                  {d}
-                </option>
-              ))}
-            </select>
-          </label>
-          <label className="flex flex-col gap-1 text-sm text-ink">
-            Hora (de Brasília)
-            <select className="min-h-11 rounded-sm border border-border bg-white px-2" value={s.resumo.minute} disabled={!s.resumo.on || digestOff} onChange={(e) => set({ resumo: { ...s.resumo, minute: Number(e.target.value) } })}>
-              {TIMES.map((m) => (
-                <option key={m} value={m}>
-                  {hhmm(m)}
-                </option>
-              ))}
-            </select>
-          </label>
+          <Select
+            label="Dia"
+            labelClassName="text-sm text-ink"
+            className="w-40"
+            value={String(s.resumo.weekday)}
+            disabled={!s.resumo.on || digestOff}
+            options={DAYS.map((d, i) => ({ value: String(i), label: d }))}
+            onChange={(v) => set({ resumo: { ...s.resumo, weekday: Number(v) } })}
+          />
+          <Select
+            label="Hora (de Brasília)"
+            labelClassName="text-sm text-ink"
+            className="w-40"
+            value={String(s.resumo.minute)}
+            disabled={!s.resumo.on || digestOff}
+            options={TIMES.map((m) => ({ value: String(m), label: hhmm(m) }))}
+            onChange={(v) => set({ resumo: { ...s.resumo, minute: Number(v) } })}
+          />
         </div>
         <Switch
           label="Permitir aprovar o plano pelo link do e-mail"
@@ -122,21 +121,15 @@ export function NotifySettingsTab({ view, flags }: { view: NotifyView; flags: { 
         <Switch label="Convite por e-mail quando o cliente ganha o convite na mesa" checked={s.emails.convite} onChange={(convite) => set({ emails: { ...s.emails, convite } })} />
         <Switch label="Convite de volta (reativação) por e-mail" checked={s.emails.reativacao} onChange={(reativacao) => set({ emails: { ...s.emails, reativacao } })} />
         <Switch label="Lembrete no dia do convite" hint={!flags.agendador ? OFF_HINT : undefined} checked={s.emails.lembrete} disabled={!flags.agendador} onChange={(lembrete) => set({ emails: { ...s.emails, lembrete } })} />
-        <label className="flex flex-col gap-1 text-sm text-ink">
-          Lembrete: horas antes do horário do convite (nunca antes das 7h)
-          <select
-            className="min-h-11 w-40 rounded-sm border border-border bg-white px-2"
-            value={s.lembreteHorasAntes}
-            disabled={!s.emails.lembrete || !flags.agendador}
-            onChange={(e) => set({ lembreteHorasAntes: Number(e.target.value) })}
-          >
-            {HOURS.map((h) => (
-              <option key={h} value={h}>
-                {h} {h === 1 ? "hora" : "horas"} antes
-              </option>
-            ))}
-          </select>
-        </label>
+        <Select
+          label="Lembrete: horas antes do horário do convite (nunca antes das 7h)"
+          labelClassName="text-sm text-ink"
+          triggerClassName="w-40"
+          value={String(s.lembreteHorasAntes)}
+          disabled={!s.emails.lembrete || !flags.agendador}
+          options={HOURS.map((h) => ({ value: String(h), label: `${h} ${h === 1 ? "hora" : "horas"} antes` }))}
+          onChange={(v) => set({ lembreteHorasAntes: Number(v) })}
+        />
       </section>
 
       <div className="flex items-center gap-3">

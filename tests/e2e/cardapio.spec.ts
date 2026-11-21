@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { axe, loginE2E } from "./helpers";
+import { axe, loginE2E, pickOption, storeIds } from "./helpers";
 
 /**
  * S6.3a (D197, sem flag): "Digitar o cardápio" no cadastro — passa pelo "Seu salão" (modo manual), abre o passo 3
@@ -11,7 +11,7 @@ test("cardápio manual: digitar → seu salão → seu cardápio vazio → inclu
   await loginE2E(page.request, 25);
   await page.goto("/parceiro/salao");
   for (;;) {
-    const ids = await page.evaluate(() => (Array.from(document.querySelectorAll("select option")) as HTMLOptionElement[]).filter((o) => o.textContent?.includes("teste")).map((o) => o.value));
+    const ids = await storeIds(page, "teste");
     if (!ids.length) break;
     for (const id of ids) await page.request.delete("/api/parceiro/restaurantes", { data: { restaurantId: id } });
     await page.reload();
@@ -38,7 +38,7 @@ test("cardápio manual: digitar → seu salão → seu cardápio vazio → inclu
   ] as const) {
     await page.getByRole("button", { name: "+ Adicionar item" }).click();
     await page.getByLabel(`Nome do item ${i}`, { exact: true }).fill(nome);
-    await page.getByLabel(`Categoria de ${nome}`).selectOption(cat);
+    await pickOption(page, `Categoria de ${nome}`, { sobremesa: "Sobremesa", prato: "Prato" }[cat]);
     await page.getByLabel(`Preço de ${nome}`).fill(preco);
   }
   await page.getByLabel("Nome do item 4", { exact: true }).fill("Lasanha da casa");

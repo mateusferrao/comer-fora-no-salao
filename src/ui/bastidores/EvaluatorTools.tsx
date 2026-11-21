@@ -1,5 +1,6 @@
 "use client";
 
+import { Select } from "../components/Select";
 import { useState } from "react";
 import { Button } from "../components/Button";
 
@@ -66,17 +67,7 @@ export function EvaluatorTools({ restaurants, currentId }: { restaurants: R[]; c
           O código do convite nasce quando o cliente volta em outro dia, dentro do horário vazio. Isto recua 1 dia os convites emitidos hoje e, se agora estiver fora do horário,
           libera o convite só hoje.
         </p>
-        <label className="flex flex-col gap-1 text-sm font-medium text-ink">
-          Restaurante
-          <select value={rid} onChange={(e) => setRid(e.target.value)} className="min-h-11 rounded-md border border-border bg-white px-3 text-base">
-            {restaurants.map((r) => (
-              <option key={r.id} value={r.id}>
-                {r.name}
-                {r.copy ? " (exemplo)" : ""}
-              </option>
-            ))}
-          </select>
-        </label>
+        <Select label="Restaurante" size="lg" value={rid} options={restaurants.map((r) => ({ value: r.id, label: r.copy ? `${r.name} (exemplo)` : r.name }))} onChange={setRid} />
         <Button variant="primary-portal" className="self-start" loading={busy === "avancar"} disabled={!rid || !!busy} onClick={() => void advance()}>
           Avançar 1 dia
         </Button>

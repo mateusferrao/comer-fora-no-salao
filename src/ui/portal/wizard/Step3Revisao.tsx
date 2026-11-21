@@ -1,5 +1,6 @@
 "use client";
 
+import { Select } from "../../components/Select";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -98,13 +99,13 @@ export function Step3Revisao({ extractionId, extraction, initial, manual = false
                 {rows.map((r, i) => (
                   <tr key={i} className={r.confira ? "bg-nav-active" : "border-t border-divider"}>
                     <td className="px-2 py-1">
-                      <select aria-label={`Categoria de ${r.nome || `item ${i + 1}`}`} className="min-h-11 w-full rounded-sm border border-border bg-white px-2" value={r.categoria} onChange={(e) => upd(i, { categoria: e.target.value as Row["categoria"] })}>
-                        {CATS.map(([v, l]) => (
-                          <option key={v} value={v}>
-                            {l}
-                          </option>
-                        ))}
-                      </select>
+                      <Select
+                        label={`Categoria de ${r.nome || `item ${i + 1}`}`}
+                        hideLabel
+                        value={r.categoria}
+                        options={CATS.map(([v, l]) => ({ value: v, label: l }))}
+                        onChange={(v) => upd(i, { categoria: v as Row["categoria"] })}
+                      />
                     </td>
                     <td className="px-2 py-1">
                       <input aria-label={`Nome do item ${i + 1}`} className="min-h-11 w-full rounded-sm border border-border px-2" value={r.nome} maxLength={80} onChange={(e) => upd(i, { nome: e.target.value })} />
@@ -128,17 +129,14 @@ export function Step3Revisao({ extractionId, extraction, initial, manual = false
           </button>
           <div className="grid gap-4 sm:grid-cols-2">
             <Field label="Culinária (sugerida)" value={cuisine} maxLength={40} onChange={(e) => setCuisine(e.target.value)} />
-            <label className="flex flex-col gap-1.5 text-sm font-medium text-ink">
-              Faixa de preço (sugerida)
-              <select className="min-h-12 rounded-md border border-border bg-white px-3 text-base" value={band} onChange={(e) => setBand(e.target.value)}>
-                <option value="">—</option>
-                {["$", "$$", "$$$", "$$$$"].map((b) => (
-                  <option key={b} value={b}>
-                    {b}
-                  </option>
-                ))}
-              </select>
-            </label>
+            <Select
+              label="Faixa de preço (sugerida)"
+              size="lg"
+              className="gap-1.5"
+              value={band}
+              options={[{ value: "", label: "—" }, ...["$", "$$", "$$$", "$$$$"].map((b) => ({ value: b, label: b }))]}
+              onChange={setBand}
+            />
           </div>
           {error && (
             <p role="alert" className="text-sm font-medium text-red-text">

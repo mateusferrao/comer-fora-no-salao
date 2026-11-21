@@ -27,6 +27,14 @@ test("porta-conta: adicionar → texto da 1ª visita → imprimir 3 por folha �
   await expect(page.locator('[data-peca="porta_conta"]')).toHaveCount(3);
   await expect(page.getByRole("img", { name: "QR do porta-conta" })).toHaveCount(3);
   await expect(page.getByText("A4 com 3 porta-contas de 21 × 9,9 cm para recortar")).toBeVisible();
+  await expect(page.getByText(/Cada folha A4 rende 3 porta-contas iguais/)).toBeVisible();
+  // Ajuste de 21/11: no celular a folha cabe na tela (sem rolagem lateral) e o QR aparece inteiro.
+  await page.setViewportSize({ width: 390, height: 844 });
+  await expect.poll(() => page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth)).toBeLessThanOrEqual(0);
+  const box = await page.getByRole("img", { name: "QR do porta-conta" }).first().boundingBox();
+  expect(box!.x).toBeGreaterThanOrEqual(0);
+  expect(box!.x + box!.width).toBeLessThanOrEqual(390);
+  await page.setViewportSize({ width: 1280, height: 900 });
   const r = await page.goto(qr!);
   expect(r?.status()).toBe(200);
 });

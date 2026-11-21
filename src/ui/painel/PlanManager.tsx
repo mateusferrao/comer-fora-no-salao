@@ -1,5 +1,6 @@
 "use client";
 
+import { Select } from "../components/Select";
 import { ExplainOfferLink } from "@/src/ui/ia/ExplainOffer";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -205,17 +206,14 @@ export function PlanManager({ initial, explicaIa = false }: { initial: PlanView;
             return (
               <article key={s.slotId} className="flex flex-col gap-3 rounded-sm border border-border bg-white p-4" aria-label={`Convite de volta · ${s.label}`}>
                 <h3 className="font-semibold text-ink">Convite de volta · {s.label}</h3>
-                <label className="flex flex-col gap-1 text-sm text-ink">
-                  Oferta
-                  <select disabled={!editable} value={e.optionId} onChange={(ev) => setEdits((x) => ({ ...x, [s.slotId]: { ...e, optionId: ev.target.value } }))} className="min-h-11 rounded-xs border border-border bg-white px-2">
-                    {s.options.map((o) => (
-                      <option key={o.id} value={o.id}>
-                        {o.gain} ({o.title}) · custo {brl(o.unitCostCents)}
-                        {o.isTop ? " · melhor nota" : ""}
-                      </option>
-                    ))}
-                  </select>
-                </label>
+                <Select
+                  label="Oferta"
+                  labelClassName="text-sm text-ink"
+                  disabled={!editable}
+                  value={e.optionId}
+                  options={s.options.map((o) => ({ value: o.id, label: o.gain, hint: `${o.title} · custo ${brl(o.unitCostCents)}${o.isTop ? " · melhor nota" : ""}` }))}
+                  onChange={(v) => setEdits((x) => ({ ...x, [s.slotId]: { ...e, optionId: v } }))}
+                />
                 <div className="flex flex-wrap items-end gap-4">
                   <label className="flex flex-col gap-1 text-sm text-ink">
                     Teto semanal de convites
