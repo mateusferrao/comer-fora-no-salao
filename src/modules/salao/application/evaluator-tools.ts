@@ -3,7 +3,7 @@
  * - "Avançar 1 dia": recua os convites emitidos hoje (clientes reais) de um restaurante do próprio dono.
  * - "Ver como cliente reativado": um cliente do histórico da cópia do dono que recebeu reativação.
  */
-import { and, desc, eq, inArray, isNull } from "drizzle-orm";
+import { and, desc, eq, inArray, isNotNull, isNull } from "drizzle-orm";
 import type { Db } from "@/src/db/client";
 import { customers, invites, restaurants } from "@/src/db/schema";
 import { daySP } from "@/src/shared/tz";
@@ -33,14 +33,29 @@ export async function advanceRestaurantOneDay(db: Db, p: { ownerId: string; rest
   return advanced ? { ok: true, advanced, liberatedToday: liberated } : { ok: false, erro: "nada_para_avancar" };
 }
 
-/** Cliente do histórico (cópia do dono) que tem convite ativo de reativação — para ver a Jornada dele. */
+/**
+ * Cliente do histórico (cópia do dono) que tem convite ativo de reativação — para ver a Jornada dele. Só cliente
+ * simulado da cópia (revisão S4–S6, segurança 1): nunca um cliente real, que pôs o e-mail dele no check-in.
+ */
 export async function pickReactivatedCustomer(db: Db, p: { ownerId: string; now: Date }): Promise<string | null> {
-  const mine = await db.select({ id: restaurants.id }).from(restaurants).where(eq(restaurants.ownerId, p.ownerId));
+  const mine = await db
+    .select({ id: restaurants.id })
+    .from(restaurants)
+    .where(and(eq(restaurants.ownerId, p.ownerId), isNotNull(restaurants.copiedFrom)));
   if (!mine.length) return null;
   const [row] = await db
     .select({ customerId: invites.customerId })
     .from(invites)
-    .where(and(inArray(invites.restaurantId, mine.map((m) => m.id)), eq(invites.origin, "reativacao"), eq(invites.arm, "convidavel"), eq(invites.status, "ativo")))
+    .innerJoin(customers, eq(customers.id, invites.customerId))
+    .where(
+      and(
+        inArray(invites.restaurantId, mine.map((m) => m.id)),
+        eq(invites.origin, "reativacao"),
+        eq(invites.arm, "convidavel"),
+        eq(invites.status, "ativo"),
+        isNotNull(customers.simulationRunId),
+      ),
+    )
     .orderBy(desc(invites.issuedAt))
     .limit(1);
   return row?.customerId ?? null;

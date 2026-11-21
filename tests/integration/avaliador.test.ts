@@ -7,7 +7,7 @@ import { mulberry32 } from "@/src/shared/rng";
 import { assignArm, type Arm } from "@/src/modules/salao/domain/experiment";
 import { doCheckin } from "@/src/modules/salao/application/do-checkin";
 import { advanceInvite } from "@/src/modules/salao/application/advance-invite";
-import { advanceRestaurantOneDay } from "@/src/modules/salao/application/evaluator-tools";
+import { advanceRestaurantOneDay, pickReactivatedCustomer } from "@/src/modules/salao/application/evaluator-tools";
 import { clearButtonRuns } from "@/src/modules/simulacao/application/clear-button-runs";
 import { createRestaurant, resetDb } from "./helpers/db";
 
@@ -117,5 +117,40 @@ describe("rodadas antigas de 'Simular 30 dias' (S4, revisão técnica B4)", () =
     const left = await getDb().select({ kind: simulationRuns.kind }).from(simulationRuns);
     expect(left.map((x) => x.kind)).toEqual(["vitrine"]);
     expect((await getDb().execute(sql`select 1`)) !== null).toBe(true);
+  });
+});
+
+describe("Ferramentas do avaliador: Ver como cliente reativado (revisão S4–S6, segurança 1)", () => {
+  beforeEach(resetDb);
+  afterAll(closeDb);
+
+  async function reactivated(restaurantId: string, simulationRunId: string | null) {
+    const c = await customerWithArm(restaurantId, "convidavel", simulationRunId);
+    await checkin(restaurantId, c, QUA_16);
+    await getDb().update(invites).set({ origin: "reativacao" }).where(eq(invites.customerId, c));
+    return c;
+  }
+
+  it("nunca escolhe um cliente real, nem fora da cópia do exemplo; escolhe o cliente simulado da cópia", async () => {
+    const r = await createRestaurant();
+    const owner = await ownerOf(r.restaurantId);
+    const real = await reactivated(r.restaurantId, null);
+    expect(real).toBeTruthy();
+    // Restaurante próprio (não é cópia): nada, mesmo com cliente simulado.
+    const [run] = await getDb().insert(simulationRuns).values({ kind: "vitrine", restaurantId: r.restaurantId, seed: 1, version: 1, params: {} }).returning({ id: simulationRuns.id });
+    await reactivated(r.restaurantId, run!.id);
+    expect(await pickReactivatedCustomer(getDb(), { ownerId: owner, now: QUA_16 })).toBeNull();
+    // Cópia do exemplo: só o simulado; o real (mais recente) fica de fora.
+    await getDb().update(restaurants).set({ copiedFrom: r.restaurantId }).where(eq(restaurants.id, r.restaurantId));
+    const sim = await customerWithArm(r.restaurantId, "convidavel", run!.id);
+    await checkin(r.restaurantId, sim, QUA_16);
+    await getDb().update(invites).set({ origin: "reativacao" }).where(eq(invites.customerId, sim));
+    const late = await reactivated(r.restaurantId, null);
+    await getDb().update(invites).set({ issuedAt: new Date("2026-11-26T12:00:00Z") }).where(eq(invites.customerId, late));
+    const picked = await pickReactivatedCustomer(getDb(), { ownerId: owner, now: QUA_16 });
+    expect(picked).not.toBeNull();
+    expect([real, late]).not.toContain(picked);
+    const [c] = await getDb().select({ run: customers.simulationRunId }).from(customers).where(eq(customers.id, picked!));
+    expect(c!.run).toBe(run!.id);
   });
 });
