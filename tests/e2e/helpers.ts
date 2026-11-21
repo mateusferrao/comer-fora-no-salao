@@ -12,7 +12,7 @@ export const S5_FLAGS = ["painel_valor", "copy_v2", "explica_ia"] as const;
  */
 export const S5_ON = PROD && process.env.E2E_FLAGS === "on";
 /** Flags da S6 ligadas na passada `flags-on` (o `agendador` nunca: provado por integração; `plano_agente` só se ganhar — D159). */
-export const S6_FLAGS = ["resumo_email", "modo_garcom", "porta_conta"] as const;
+export const S6_FLAGS = ["resumo_email", "modo_garcom", "porta_conta", "mcp"] as const;
 
 export async function axe(page: Page) {
   // Durante router.refresh() o Next 16 reinsere os metadados por streaming: espera o <title> voltar. Se o título sumir

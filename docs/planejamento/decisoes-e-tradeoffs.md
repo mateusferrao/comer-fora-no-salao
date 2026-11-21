@@ -1289,3 +1289,8 @@ Detalhes, revisão independente (2 subagentes, 2 rodadas) e itens [C] em [docs/f
 **D245 — QR identifica a peça e a versão, não a mesa** (21/11, pergunta do candidato; escolheu "Não por agora") ✅
 - Cada QR leva a `/r/<restaurante>?p=<token>` da peça e versão (display A/B, cartaz A/B, garçom, porta-conta). Leituras e check-ins são contados por peça e versão, para o teste A/B. O mesmo display serve a todas as mesas. Explicação adicionada no Kit.
 - Alternativa: QR por mesa (saber de qual mesa veio). Trade-off: dado de mesa × imprimir e controlar um QR por mesa. Fica como evolução.
+
+**D246 — Card do agente (MCP) como passo a passo para leigos** (21/11, candidato: "não instrui como fazer, onde colocar token… precisa ser mais passo a passo, pensando no público leigo"; forma [C]) ✅
+- "Conectar um assistente de IA (MCP)": diz que é opcional e o que dá para pedir em conversa, lista o que o assistente pode fazer (e que não vê contato de clientes), e segue em 5 passos numerados: gerar o token (com "Copiar"), copiar o endereço, colar os dois no assistente (URL, tipo HTTP, "Bearer token" ou cabeçalho `Authorization: Bearer …`), testar com uma pergunta pronta e revogar (agora com confirmação).
+- [C] Exemplo pronto só para o Claude Code (comando `claude mcp add --transport http … --header …`, com o token já preenchido), porque é a configuração que conhecemos com certeza; para os demais, a instrução genérica e "procure MCP na ajuda dele". Alternativa: exemplos para vários assistentes (risco de instrução errada ou desatualizada).
+- E2E nova segue o passo a passo: o token gerado abre as ferramentas no endereço e, revogado, recebe 401.
