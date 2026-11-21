@@ -1203,3 +1203,31 @@ Detalhes, revisão independente (2 subagentes, 2 rodadas) e itens [C] em [docs/f
 - Testes determinísticos: tabela de casos (`tests/unit/ia/convite-rules.test.ts`), integração com 1ª resposta sem horário, e 3 colunas novas na T3 do agente calculadas pelo código sobre o convite renderizado.
 - Alternativa: só instrução no prompt. Trade-off: o convite repete o quando que o cartão e o e-mail já mostram × o convite faz sentido sozinho (e no WhatsApp/encaminhado).
 - 3ª rodada da T3 do agente (`plano-agente-v3`, eval/relatorio-t3-agente.md): agente 10/10 e chamada única 10/10 nas regras; checagens determinísticas 100% com dia e horário, 0% artigo, 0% oferta repetida nos 2 modos; juiz 6 × 1 × 3 a favor do agente ("não pior" pela D159); p50 13,8 s × 3,6 s; US$ 0,21. Pela regra original o agente também ligaria. Rodadas 1 e 2 preservadas.
+
+### Revisão S4–S6 — decisões (D101)
+**D227 — Plano automático: aprovação "da semana" contada a partir de T** (21/11, IA [C], ajusta §4.2 da S6) ✅
+- Achado da revisão técnica (A1): com "aprovação nos últimos 6 dias" medida a partir de agora, uma aprovação na quarta pulava a semana seguinte, e o dono recebia plano automático só em semanas alternadas.
+- Decisão: não gera de novo se houver plano aprovado a partir de T − 72 h (aprovar no sábado ou no domingo vale para a semana de segunda). A proposta pendente continua valendo por até 7 dias.
+- Alternativas: manter 6 dias a partir de agora (o bug); comparar `week_key` do plano (o aprovado no sábado tem a semana anterior). Testado com aprovação na quarta e na terça depois de T.
+
+**D228 — Agendador sob carga e no desligamento** (21/11, IA [C]) ✅
+- Lembretes saem antes das gerações; no máximo 2 gerações de plano por tique (as demais nos tiques seguintes, dentro da janela até T + 24 h); o tique para entre restaurantes no SIGTERM, e a parada espera o tique por no máximo 2 s.
+- `GENERATING_STALE_MS` passa de 90 s para 150 s (a cadeia agente → chamada única pode passar de 90 s), e a geração só publica se a linha ainda está `gerando` (uma geração vencida e substituída é descartada com registro, em vez de sobrescrever a nova).
+- Busca de lembretes limitada aos convites emitidos nos últimos 9 dias, ordenada (o 1º dia possível fica no máximo 8 dias depois da emissão).
+- Aceito e declarado: um e-mail reservado como enviado e interrompido pelo desligamento se perde (entrega no máximo uma vez).
+
+**D229 — Link de preferências do e-mail só desliga** (21/11, IA [C], ajusta D198) ✅
+- O link não expira e pode ser encaminhado; ligar um e-mail ou o "Convites de volta no app" é consentir. Pelo link, os interruptores desligados ficam travados com "Para ligar de novo, entre em Sua jornada"; o servidor recusa `true` com o token.
+- Alternativas: link com prazo (quebra o descadastro de e-mails antigos); aceitar tudo (consentimento por terceiro).
+
+**D230 — Nome do restaurante não pode citar a marca iFood** (21/11, IA [C]) ✅
+- Achado de aderência: o nome vai no assunto e no corpo dos e-mails que saem do nosso domínio; "iFood Suporte" viraria phishing. Recusado no cadastro e em Configurações ("i-food", "i food", largura total e acentos inclusos; "Wi-Fi Food" passa). O e-mail do código do cliente passa a dizer "Comer Fora no Salão".
+
+**D231 — Achados da revisão S4–S6 não corrigidos agora** (21/11, IA [C])
+- `opt_email` nasce `true` no banco: mantido, coerente com os outros canais (D165); nenhum caminho grava sem passar o valor.
+- Índice em `digest_tokens(plan_id)`: tabela pequena (1 token por resumo ou prévia); sem migração nova a 2 dias do congelamento.
+- Configurações com 2 formas de salvar (cardápio grava na hora; Avisos e IA no botão): dívida de UX, sem perda de dado; fica para depois do case.
+- Cardápio manual abre vazio, com "Digite os itens": mantido (explica o próximo passo; abrir com linha em branco mudaria a numeração dos itens).
+- "Rollback por revert": as migrações 0006–0007 são só de ida; volta por flag ou por correção nova, nunca por imagem antiga (registrado no roteiro de deploy).
+- Data final do agendador (31/12): o candidato decidiu "sem data, desligo a flag" (D193); mantido.
+- Roteiro da demo de 8 minutos, fala sobre o agente ("empata nas regras; ganho de redação indicativo"), visão de negócio do iFood e escopo mostrado: entram na S7 (apresentação), como pediu a revisão de aderência.
