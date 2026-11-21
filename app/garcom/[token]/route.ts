@@ -12,7 +12,7 @@ export const dynamic = "force-dynamic";
 
 export async function GET(req: Request, ctx: { params: Promise<{ token: string }> }) {
   const base = new URL("/garcom", req.url);
-  const limited = await overLimit(req, "resumo");
+  const limited = await overLimit(req, "garcom");
   if (limited) return limited;
   if (!(await getFlags(getDb())).modo_garcom) return new Response("Não encontrado", { status: 404 });
   const { token } = await ctx.params;

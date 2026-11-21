@@ -4,11 +4,14 @@
  */
 import { getDb } from "@/src/db/client";
 import { inviteCalendar } from "@/src/modules/salao/application/agenda";
+import { overLimit } from "@/src/web/guards";
 import { publicBaseUrl } from "@/src/web/qr";
 
 export const dynamic = "force-dynamic";
 
 export async function GET(req: Request) {
+  const limited = await overLimit(req, "agenda");
+  if (limited) return limited;
   const t = new URL(req.url).searchParams.get("t");
   const cal = t && t.length <= 200 ? await inviteCalendar(getDb(), { token: t, now: new Date(), baseUrl: publicBaseUrl() }) : null;
   if (!cal) return new Response("Convite não encontrado.", { status: 404, headers: { "content-type": "text/plain; charset=utf-8", "cache-control": "no-store" } });

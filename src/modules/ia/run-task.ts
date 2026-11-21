@@ -182,7 +182,8 @@ export async function runTask<T>(task: TaskDef<T>, system: string, input: AiInpu
       if (!verdict.ok) return { log: { ...base, ok: false, error: "guard", notes: verdict.reasons, latencyMs: latency() } };
       return { log: { ...base, ok: true, latencyMs: latency() }, data: parsed.data, ...(res.steps ? { steps: res.steps } : {}) };
     } catch (err) {
-      const usage = err instanceof AiGatewayError ? usageFields(err.usage) : {};
+      // Erro do gateway ou tempo esgotado no meio do agente: o que já foi cobrado entra na tentativa (revisão S4–S6).
+      const usage = err instanceof AiGatewayError ? usageFields(err.usage) : usageFields((err as { aiUsage?: AiUsage } | null)?.aiUsage);
       return { log: { model: model.id, ok: false, error: classify(err), detail: detailOf(err), latencyMs: latency(), ...usage } };
     } finally {
       clearTimeout(timer);

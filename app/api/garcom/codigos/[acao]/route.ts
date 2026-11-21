@@ -8,7 +8,7 @@ import { confirmCode, lookupCode } from "@/src/modules/salao/application/validat
 import { consume } from "@/src/shared/rate-limit";
 import { rejectCrossSite } from "@/src/web/guards";
 import { readJson, tooMany } from "@/src/web/http";
-import { readWaiterSession } from "@/src/web/waiter-session";
+import { readWaiterSession, writeWaiterSession } from "@/src/web/waiter-session";
 
 export const dynamic = "force-dynamic";
 const consultar = z.object({ codigo: z.string().max(20) });
@@ -19,6 +19,8 @@ export async function POST(req: Request, ctx: { params: Promise<{ acao: string }
   if (blocked) return blocked;
   const s = await readWaiterSession();
   if (!s) return Response.json({ erro: "link" }, { status: 401 });
+  // 30 dias renovados a cada uso (revisão S4–S6: o cookie só era gravado ao abrir o link).
+  await writeWaiterSession(s.tokenId);
   const { acao } = await ctx.params;
   const db = getDb();
   const now = new Date();

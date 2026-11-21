@@ -33,6 +33,11 @@ export async function listCustomerPrefs(ex: Executor, customerId: string, restau
   });
 }
 
+/** Pelo link do e-mail (não expira, pode ser encaminhado), só desligar: ligar é consentir e exige a sessão (revisão S4–S6). */
+export function linkPatchAllowed(patch: PrefsPatch): boolean {
+  return !Object.values(patch).some((v) => v === true);
+}
+
 export async function setCustomerPrefs(ex: Executor, p: { customerId: string; restaurantId: string; patch: PrefsPatch }): Promise<CustomerPrefs | null> {
   const [cur] = await listCustomerPrefs(ex, p.customerId, p.restaurantId);
   if (!cur) return null;

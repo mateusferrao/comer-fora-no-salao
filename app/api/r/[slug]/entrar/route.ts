@@ -6,7 +6,7 @@ import { findRestaurantBySlug } from "@/src/modules/salao/application/context";
 import { requestCustomerCode } from "@/src/modules/salao/application/customer-login";
 import { clientIp } from "@/src/shared/rate-limit-memory";
 import { writeCustomerId } from "@/src/web/customer-session";
-import { rejectCrossSite } from "@/src/web/guards";
+import { isE2eRestaurant, overLimit, rejectCrossSite } from "@/src/web/guards";
 import { readJson, tooMany } from "@/src/web/http";
 
 export const dynamic = "force-dynamic";
@@ -24,6 +24,12 @@ export async function POST(req: Request, { params }: { params: Promise<{ slug: s
   const r = await findRestaurantBySlug(db, slug);
   if (!r || r.status !== "ativo") return Response.json({ erro: "restaurante_inexistente" }, { status: 404 });
   const flags = await getFlags(db);
+  // Com o login por e-mail desligado (flag de emergência), cada POST cria um cliente sem código: limite por IP
+  // (revisão S4–S6, segurança 4). Com ele ligado, os limites por e-mail e por IP estão em `requestCustomerCode`.
+  if (!flags.login_cliente_email && !(await isE2eRestaurant(r))) {
+    const limited = await overLimit(req, "identificacao");
+    if (limited) return limited;
+  }
   const res = await requestCustomerCode(db, {
     restaurantId: r.id,
     restaurantName: r.name,

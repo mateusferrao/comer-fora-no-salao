@@ -1,12 +1,13 @@
 /**
  * Central de preferências do cliente (S6.1 — D198). Duas portas:
  * - Jornada: sessão do cliente (cookie) — GET lista, POST grava `{ restaurantId, patch }`;
- * - link do e-mail: token assinado `descadastro:<cliente>:<restaurante>` — POST grava `{ t, patch }` (só aquele par).
+ * - link do e-mail: token assinado `descadastro:<cliente>:<restaurante>` — POST grava `{ t, patch }` (só aquele par) e
+ *   só DESLIGA (revisão S4–S6, segurança 5): o link não expira e pode ser encaminhado; ligar (consentir) exige a sessão.
  * Só POST grava (robôs de e-mail fazem GET); mesma origem + JSON; limite por IP.
  */
 import { z } from "zod";
 import { getDb } from "@/src/db/client";
-import { listCustomerPrefs, prefsTarget, setCustomerPrefs } from "@/src/modules/salao/application/preferences";
+import { linkPatchAllowed, listCustomerPrefs, prefsTarget, setCustomerPrefs } from "@/src/modules/salao/application/preferences";
 import { readCustomerId } from "@/src/web/customer-session";
 import { overLimit, rejectCrossSite } from "@/src/web/guards";
 import { readJson } from "@/src/web/http";
@@ -30,7 +31,10 @@ export async function POST(req: Request) {
   const b = body.safeParse(await readJson(req));
   if (!b.success) return Response.json({ erro: "entrada" }, { status: 400 });
   let target: { customerId: string; restaurantId: string } | null;
-  if ("t" in b.data) target = prefsTarget(b.data.t);
+  if ("t" in b.data) {
+    if (!linkPatchAllowed(b.data.patch)) return Response.json({ erro: "religar_na_jornada" }, { status: 403 });
+    target = prefsTarget(b.data.t);
+  }
   else {
     const customerId = await readCustomerId();
     target = customerId ? { customerId, restaurantId: b.data.restaurantId } : null;

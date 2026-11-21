@@ -1,15 +1,19 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Button } from "@/src/ui/components/Button";
 
 export function Unsubscribe({ token }: { token: string }) {
+  const router = useRouter();
   const [state, setState] = useState<"" | "busy" | "ok" | "erro">("");
   const go = async () => {
     setState("busy");
     const r = await fetch("/api/cliente/descadastrar", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ t: token }) }).catch(() => null);
     setState(r?.ok ? "ok" : "erro");
+    // A lista acima volta do servidor com o "E-mail" desligado (revisão S4–S6, produto 2).
+    if (r?.ok) router.refresh();
   };
   if (state === "ok")
     return (
@@ -22,7 +26,7 @@ export function Unsubscribe({ token }: { token: string }) {
     );
   return (
     <div className="flex w-full flex-col gap-3">
-      <Button variant="primary-app" loading={state === "busy"} disabled={!token} onClick={() => void go()}>
+      <Button variant="outline-app" loading={state === "busy"} disabled={!token} onClick={() => void go()}>
         Parar todos os e-mails deste restaurante
       </Button>
       {state === "erro" && (

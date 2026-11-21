@@ -2,7 +2,7 @@ import { afterAll, beforeEach, describe, expect, it } from "vitest";
 import { and, eq } from "drizzle-orm";
 import { closeDb, getDb } from "@/src/db/client";
 import { customerMessages, customers, invites, restaurantCustomers } from "@/src/db/schema";
-import { listCustomerPrefs, prefsTarget, setCustomerPrefs } from "@/src/modules/salao/application/preferences";
+import { linkPatchAllowed, listCustomerPrefs, prefsTarget, setCustomerPrefs } from "@/src/modules/salao/application/preferences";
 import { unsubscribeToken } from "@/src/modules/salao/application/deliver-messages";
 import { createRestaurant, resetDb } from "./helpers/db";
 
@@ -52,5 +52,14 @@ describe("central de preferências do cliente (S6.1, D198)", () => {
     expect(prefsTarget(`descadastro:${r.customerId}:${r.restaurantId}.forjado`)).toBeNull();
     // Restaurante onde o cliente nunca esteve → nada muda.
     expect(await setCustomerPrefs(getDb(), { customerId: r.customerId, restaurantId: crypto.randomUUID(), patch: { email: false } })).toBeNull();
+  });
+});
+
+describe("link do e-mail só desliga (revisão S4–S6, segurança 5)", () => {
+  it("desligar passa; qualquer ligar é recusado (exige a sessão na Jornada)", () => {
+    expect(linkPatchAllowed({ lembretes: false })).toBe(true);
+    expect(linkPatchAllowed({ email: false, app: false })).toBe(true);
+    expect(linkPatchAllowed({ email: true })).toBe(false);
+    expect(linkPatchAllowed({ convites: false, app: true })).toBe(false);
   });
 });

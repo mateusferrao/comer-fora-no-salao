@@ -18,6 +18,10 @@ export const LIMITS = {
   trocar: { max: 20, windowMs: 60_000 },
   // S6: links do e-mail (aprovar o plano, parar o resumo, preferências do cliente) e link do garçom.
   resumo: { max: 20, windowMs: 60_000 },
+  // Revisão S4–S6: o link do garçom tem balde próprio (não divide com o resumo no mesmo Wi-Fi); agenda e apagar dados.
+  garcom: { max: 20, windowMs: 60_000 },
+  agenda: { max: 30, windowMs: 60_000 },
+  apagar: { max: 5, windowMs: 60_000 },
 } as const;
 
 export function rejectCrossSite(req: Request, { requireJson = true } = {}): Response | null {

@@ -23,6 +23,7 @@ export function cleanOwnerText(raw: string): string {
     .trim();
 }
 
+/** Marcadores conferidos também na forma NFKC (revisão S4–S6, segurança 6: ＜ ＞ ｛ ｝ de largura total). */
 const MARKUP = /[{}<>«»`]|\[\[|\]\]|#{3}|dados_do_dono/i;
 const EMAIL = /[^\s@]+@[^\s@]+\.[a-z]{2,}/i;
 const URL = /(https?:\/\/|www\.|\.com\b|\.com\.br\b|\.br\b|\.net\b|\.org\b)/i;
@@ -49,7 +50,7 @@ export function validateAbout(raw: string): { ok: true; about: string | null } |
   const t = cleanOwnerText(raw);
   if (!t) return { ok: true, about: null };
   if (t.length > ABOUT_MAX) return { ok: false, erro: "longo" };
-  if (MARKUP.test(raw)) return { ok: false, erro: "caracteres" };
+  if (MARKUP.test(raw.normalize("NFKC"))) return { ok: false, erro: "caracteres" };
   if (hasContact(t)) return { ok: false, erro: "contato" };
   const f = fold(t);
   if (/;\s*(drop|delete|insert|update|select)\b|--\s*$/.test(f)) return { ok: false, erro: "caracteres" };
@@ -67,7 +68,7 @@ export function avoidTerms(raw: string | null | undefined): string[] {
 }
 
 export function validateAvoid(raw: string): { ok: true; avoid: string | null; terms: string[] } | { ok: false; erro: AvoidError } {
-  if (MARKUP.test(raw)) return { ok: false, erro: "caracteres" };
+  if (MARKUP.test(raw.normalize("NFKC"))) return { ok: false, erro: "caracteres" };
   const terms = avoidTerms(raw);
   if (!terms.length) return { ok: true, avoid: null, terms: [] };
   const joined = terms.join(", ");

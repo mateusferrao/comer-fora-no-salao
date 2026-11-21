@@ -12,6 +12,8 @@ const ALLOWED: Record<string, string> = {
   "src/modules/analytics/application/dashboard.ts": "sql.raw(alias)",
   // Checagem de saúde: texto fixo.
   "src/db/client.ts": 'query("select 1")',
+  // Ferramenta do agente (S6.3b), não é banco.
+  "src/modules/ia/openrouter-gateway.ts": "t.execute(input)",
 };
 
 function files(dir: string): string[] {
@@ -27,14 +29,17 @@ describe("nenhum SQL montado com texto fora da lista permitida", () => {
     const hits: string[] = [];
     for (const f of [...files("src"), ...files("app")]) {
       if (f.startsWith("src/db/migrate")) continue;
-      const lines = readFileSync(f, "utf8").split("\n");
-      lines.forEach((l, i) => {
-        const raw = /\bsql\.raw\(/.test(l);
-        const strExec = /\.(execute|query)\(\s*["'`]/.test(l) && !/\.query\(\{/.test(l);
-        if (!raw && !strExec) return;
-        const ok = ALLOWED[f] && l.includes(ALLOWED[f]!);
-        if (!ok) hits.push(`${f}:${i + 1}: ${l.trim().slice(0, 120)}`);
-      });
+      // Texto inteiro (pega chamadas quebradas em várias linhas — revisão S4–S6, segurança 7).
+      const text = readFileSync(f, "utf8");
+      const re = /\bsql\s*\.\s*(raw|identifier)\s*\(|\.unsafe\s*\(|\.(execute|query)\s*\((?!\s*(sql\s*`|\{|\)))/g;
+      for (const m of text.matchAll(re)) {
+        const line = text.slice(0, m.index).split("\n").length;
+        const l = text.split("\n")[line - 1]!;
+        // Envoltórios tipados: o parâmetro é um objeto `sql` (o TypeScript recusa string).
+        const typed = /\w+: ReturnType<typeof sql>\)/.test(l);
+        const ok = typed || (ALLOWED[f] && l.includes(ALLOWED[f]!));
+        if (!ok) hits.push(`${f}:${line}: ${l.trim().slice(0, 120)}`);
+      }
     }
     expect(hits).toEqual([]);
   });
