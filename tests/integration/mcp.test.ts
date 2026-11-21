@@ -69,8 +69,11 @@ describe("MCP (flag; D219)", () => {
     const g = await call(token, "gerar_plano");
     expect(g.isError).toBe(false);
     const planId = g.structuredContent.planId as string;
+    // Sem IA neste ambiente: o assistente fica sabendo por quê (achado do teste de ponta a ponta pelo Claude).
+    expect(g.structuredContent).toMatchObject({ origem: "sem_ia", motivo_sem_ia: expect.any(String) });
     const v = await call(token, "ver_plano");
     expect((v.structuredContent.plano as { id: string }).id).toBe(planId);
+    expect(v.structuredContent.plano).toMatchObject({ origem: "sem_ia", motivo_sem_ia: expect.any(String) });
     const a = await call(token, "aprovar_plano", { planId });
     expect(a).toMatchObject({ isError: false, structuredContent: { aprovado: true } });
     const [row] = await getDb().select().from(weeklyPlans).where(eq(weeklyPlans.id, planId));

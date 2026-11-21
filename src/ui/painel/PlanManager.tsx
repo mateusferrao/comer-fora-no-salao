@@ -1,5 +1,6 @@
 "use client";
 
+import { semIaMotivo } from "@/src/modules/planos/domain/sem-ia";
 import {
   inviteIssues,
   reasonMessage,
@@ -20,7 +21,6 @@ const VERDICT: Record<string, { label: string; tone: "green" | "red" | "neutral"
   cedo_demais: { label: "Cedo demais", tone: "neutral" },
 };
 const ORIGIN: Record<string, string> = { ia: "Gerado pela IA", sem_ia: "Texto modelo (sem IA)", fixo: "Plano pronto do restaurante de exemplo (escrito antes, sem IA ao vivo)" };
-const SEM_IA: Record<string, string> = { sem_chave: "IA desligada neste ambiente", timeout: "a IA demorou demais", unavailable: "a IA ficou indisponível", invalid: "a IA não respondeu no formato combinado", sem_candidatas: "faltam ofertas válidas no cardápio", limite: "limite diário de IA" };
 const WD = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
 const WD_LONG = ["domingo", "segunda", "terça", "quarta", "quinta", "sexta", "sábado"];
 const TURN: Record<string, string> = { almoco: "Almoço", tarde: "Tarde", noite: "Noite" };
@@ -170,7 +170,7 @@ export function PlanManager({ initial, explicaIa = false }: { initial: PlanView;
                   {ORIGIN[p.generatedBy]}
                 </span>
               </Badge>
-              {p.generatedBy === "sem_ia" && p.semIa && <span className="text-xs text-ink-muted">Motivo: {SEM_IA[p.semIa] ?? p.semIa}</span>}
+              {p.generatedBy === "sem_ia" && p.semIa && <span className="text-xs text-ink-muted">Motivo: {semIaMotivo(p.semIa)}</span>}
             </div>
           )}
           {/* S6.3b (D194): plano montado pelo agente — 1 linha visível com os passos legíveis. */}

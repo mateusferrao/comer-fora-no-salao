@@ -1358,3 +1358,9 @@ Detalhes, perguntas, revisão independente (2 subagentes) e itens [C] em [docs/f
 - Em "Sua conta" (engrenagem), "Seus dados" mostra nome, telefone e o e-mail do login. Nome e telefone podem ser corrigidos; o telefone grava como no cadastro (HMAC, 4 últimos e cifrado — D237). Cadastro antigo com só os 4 últimos dígitos pede o número completo e, se o campo ficar intocado, mantém o antigo.
 - O cliente do histórico gerado (Ferramentas do avaliador) não vê a opção.
 - Alternativa: alterar direto no banco de produção (sem acesso de fora; chave de produção em comando é proibido). Trade-off: uma tela a mais × resolve para todo cadastro antigo, com o aceite e a cifra do produto.
+
+**D251 — Achados do teste de ponta a ponta do conector pelo Claude** (21/11, IA [C]) ✅
+- Teste real pelo Claude, conectado ao restaurante do candidato: ler_insights (sem contato de cliente), ver_plano, gerar_plano, aprovar_plano (91 entregues), aprovar de novo (idempotente, "ja_estava") e plano inexistente (erro claro) — tudo certo.
+- Achado 1: o plano saiu "sem IA" e o assistente não sabia por quê. `gerar_plano` e `ver_plano` passam a dizer o motivo (`motivo_sem_ia`), com um mapa único de motivos também usado no Plano da semana (que mostrava o código cru para "teto_diario" e "erro").
+- Achado 2: os fatos da IA tratavam o nível novo "Mais ou menos" (D240) como "um pouco vazia". Agora: muito / mais ou menos / pouco vazia.
+- Observação, sem mudança: o plano pronto do restaurante de exemplo (origem "fixo") tem texto escrito antes ("18% de uso, manter"), que não acompanha os números de hoje (11%, "trocar"). É o plano de demonstração; o primeiro plano gerado já usa os números atuais.

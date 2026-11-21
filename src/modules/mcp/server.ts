@@ -4,6 +4,7 @@
  * O restaurante vem SEMPRE do token (nenhuma ferramenta recebe `restaurantId`); respostas só com agregados.
  * A aprovação fica registrada como "via agente" (D219).
  */
+import { semIaMotivo } from "@/src/modules/planos/domain/sem-ia";
 import { eq } from "drizzle-orm";
 import { z } from "zod";
 import type { Db } from "@/src/db/client";
@@ -57,7 +58,7 @@ async function callTool(db: Db, restaurantId: string, name: string, args: Json, 
     const v = await getPlanView(db, restaurantId, now);
     if (!v?.plan) return text({ plano: null, dica: "Use gerar_plano." });
     return text({
-      plano: { id: v.plan.id, estado: v.generating ? "gerando" : v.plan.status, semana: v.plan.weekKey, origem: v.plan.generatedBy, vencido: v.plan.stale, revisor: v.plan.review?.status ?? null },
+      plano: { id: v.plan.id, estado: v.generating ? "gerando" : v.plan.status, semana: v.plan.weekKey, origem: v.plan.generatedBy, ...(v.plan.generatedBy === "sem_ia" ? { motivo_sem_ia: semIaMotivo(v.plan.semIa) } : {}), vencido: v.plan.stale, revisor: v.plan.review?.status ?? null },
       horarios: v.slots.map((s) => ({ horario: `${s.label} (${s.phrase})`, oferta: s.options.find((o) => o.id === s.chosenId)?.title ?? null, teto_semanal: s.weeklyCap, convite: s.inviteRendered, justificativa: s.justificativa })),
       o_que_aprendemos: v.learned.map((l) => ({ oferta: l.title, veredito: l.verdict, texto: l.texto })),
     });
@@ -66,7 +67,9 @@ async function callTool(db: Db, restaurantId: string, name: string, args: Json, 
     const [r] = await db.select({ ownerId: restaurants.ownerId }).from(restaurants).where(eq(restaurants.id, restaurantId));
     if (!r) return text({ erro: "restaurante_nao_encontrado" }, true);
     const g = await generateWeeklyPlan(db, { restaurantId, ownerId: r.ownerId, now, schedule: deps.schedule, gateway: deps.gateway, reviewerGateway: deps.reviewerGateway });
-    return g.ok ? text({ planId: g.planId, origem: g.generatedBy, proximo_passo: "ver_plano e, se estiver bom, aprovar_plano" }) : text({ erro: g.erro }, true);
+    return g.ok
+      ? text({ planId: g.planId, origem: g.generatedBy, ...(g.semIa ? { motivo_sem_ia: semIaMotivo(g.semIa) } : {}), proximo_passo: "ver_plano e, se estiver bom, aprovar_plano" })
+      : text({ erro: g.erro }, true);
   }
   if (name === "aprovar_plano") {
     const planId = typeof args.planId === "string" ? args.planId : "";
