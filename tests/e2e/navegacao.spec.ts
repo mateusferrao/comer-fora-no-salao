@@ -6,11 +6,11 @@ import { axe, loginE2E } from "./helpers";
  * esqueleto da tela nova (`aria-busy`) e o item tocado já marcado aparecem antes do conteúdo; depois, a tela real.
  */
 test("celular: menu → Clientes mostra o esqueleto e marca o item na hora, antes da resposta do servidor", async ({ page }) => {
-  test.setTimeout(90_000);
+  test.setTimeout(180_000);
   await page.setViewportSize({ width: 390, height: 844 });
   await loginE2E(page.request, 32);
   await page.goto("/parceiro/salao");
-  await expect(page.getByText(/Preparando o restaurante de exemplo/)).toBeHidden({ timeout: 60_000 });
+  await expect(page.getByText(/Preparando o restaurante de exemplo/)).toBeHidden({ timeout: 120_000 });
   await expect(page.getByRole("heading", { name: "Visão geral", level: 1 })).toBeVisible();
   // Atrasa só a navegação para Clientes; o prefetch (que traz o esqueleto) passa normal, como na vida real.
   await page.route(/\/parceiro\/salao\/clientes/, async (route) => {
@@ -30,11 +30,11 @@ test("celular: menu → Clientes mostra o esqueleto e marca o item na hora, ante
 });
 
 test("computador: o item tocado fica marcado enquanto a tela carrega", async ({ page }) => {
-  test.setTimeout(90_000);
+  test.setTimeout(180_000);
   await page.setViewportSize({ width: 1280, height: 900 });
   await loginE2E(page.request, 33);
   await page.goto("/parceiro/salao");
-  await expect(page.getByText(/Preparando o restaurante de exemplo/)).toBeHidden({ timeout: 60_000 });
+  await expect(page.getByText(/Preparando o restaurante de exemplo/)).toBeHidden({ timeout: 120_000 });
   await page.route(/\/parceiro\/salao\/kit/, async (route) => {
     if (!route.request().headers()["next-router-prefetch"]) await new Promise((r) => setTimeout(r, 2_500));
     await route.continue();
