@@ -1368,3 +1368,6 @@ Detalhes, perguntas, revisão independente (2 subagentes) e itens [C] em [docs/f
 **D272 — Ícone da aba com o ícone do iFood** (21/11, candidato: "buscar e adicionar o .ico do ifood na barra"; enviou a imagem do ícone) ✅ (estende D42/D81)
 - O `.ico` do site do iFood não pôde ser baixado (página bloqueada para a sessão; o do Portal do Parceiro é outro desenho, uma fachada). O candidato enviou a imagem do ícone (círculo vermelho com o "sorriso"), usada como veio: `app/favicon.ico` (16/32/48 px), `app/icon.png` (256 px) e `app/apple-icon.png` (180 px), servidos pelo Next; cantos fora do círculo transparentes.
 - Risco de confusão com o iFood oficial aumenta um pouco; mantidos a barra de protótipo, o título da aba sem "iFood" e o `noindex` (D88, D164). Alternativa: ícone neutro do projeto.
+
+**D273 — Itens [C] da implementação da S8** (22/11, IA [C], D101) ✅
+- Lista em docs/fatias/S8/planejamento.md §14: schema achatado; T4 em 4 rodadas com gemini-3.8-flash + reserva gpt-6-luna (Haiku fora pelo limite de 16 uniões do Anthropic); onda 2 sem kit e sem faixa nova; botão flutuante também no celular; histórico renderizado; painel só de dúvidas na ativação; remontagem por `v` + aviso de edição não salva; flags nascem desligadas e ligam depois da E2E de produção.
