@@ -1,9 +1,13 @@
 name: CI
 
 # Planejamento S0 §6.5 (D63, D78, D89, D91): check + integração + E2E; deploy só em push na main com os 3 verdes.
+# D249: push só na main (o branch da sessão é testado localmente antes; rodar nos dois dobrava as execuções).
+# Branch: execução manual (workflow_dispatch) ou pull request.
 on:
   push:
+    branches: [main]
     paths-ignore: ["docs/**", "referencias/**", ".claude/**", "**/*.md"]
+  workflow_dispatch:
   pull_request:
     paths-ignore: ["docs/**", "referencias/**", ".claude/**", "**/*.md"]
 

@@ -1349,3 +1349,7 @@ Detalhes, perguntas, revisão independente (2 subagentes) e itens [C] em [docs/f
 
 **D271 — Itens [C] da S8** (21/11, IA [C]) ✅
 - Lista em docs/fatias/S8/planejamento.md §9 e §10, entre eles: nome "Assistente do salão"; painel não modal que empurra o conteúdo; histórico só no navegador (12 turnos); proposta expira em 30 min ou se o "antes" mudar (`base_hash`); aplicar com reserva `UPDATE … RETURNING`; `checkOffer` puro extraído de `updateOffer`/`approvePlanInTx`; migração 0010 gerada no fim; guard `chat` (sem número cru nem por extenso, sem URL, lista própria de proibidas); contexto pronto com apelidos; ≤ 3 passos; teto diário próprio de US$ 0,20 na chave pública; gateway falso só no E2E local com `fakeAi:false` no health; chip da demo = trocar a oferta do convite de Ter–Qui 15h–18h.
+
+**D249 — CI automático só na `main`** (21/11, candidato: "tem muitos runs rodando. não poderia ser só um com tudo?"; forma [C]) ✅
+- Cada push ia para o branch da sessão e para a `main`, e o CI rodava duas vezes o mesmo código. Agora o push dispara o CI só na `main` (que também faz o deploy); nos branches, execução manual ou pull request. A suíte completa continua rodando localmente antes de cada publicação.
+- Alternativa: manter nos dois (dobra minutos e fila). Trade-off: branch sem checagem automática no push × uma execução por publicação.
