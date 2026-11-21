@@ -4,9 +4,10 @@
  * código e os avisos — ou recusa com a regra. A aplicação revalida tudo na hora de gravar (as mesmas funções das
  * Configurações), então a prévia nunca é a última palavra; ela usa as MESMAS regras puras (`checkOffer`, `validateSlot`).
  */
+import { z } from "zod";
 import type { MenuCategory, MenuItem } from "@/src/modules/beneficios/domain/menu";
-import { checkOffer, describeOffer, offerFromInput, unitCost, type OfferError, type OfferKind } from "@/src/modules/beneficios/domain/offers";
-import { INTENSITY_LABEL, validateSlot, type Intensity, type OpeningHours } from "@/src/modules/beneficios/domain/slots";
+import { checkOffer, describeOffer, OFFER_KINDS, offerFromInput, unitCost, type OfferError, type OfferKind } from "@/src/modules/beneficios/domain/offers";
+import { INTENSITIES, INTENSITY_LABEL, validateSlot, type Intensity, type OpeningHours } from "@/src/modules/beneficios/domain/slots";
 import { slotLabel } from "@/src/modules/beneficios/domain/slot-text";
 
 export type OfferInput = { kind: OfferKind; itemId: string; pct?: number };
@@ -29,6 +30,15 @@ export type ProposalPayload =
   | { acao: "oferta"; papel: Role; slotId?: string; offer: OfferInput; weeklyCap?: number; inviteText?: string }
   | { acao: "item"; itemId: string; mudanca: ItemChange; priceCents?: number }
   | { acao: "faixa"; slotId: string; mudanca: "editar" | "desativar"; days?: number[]; startMin?: number; endMin?: number; intensity?: Intensity; extraTables?: number };
+
+/** Contrato da proposta para quem chama de fora (MCP — D269): ids reais, o código confere tudo na prévia. */
+const uuid = z.string().uuid();
+const minutes = z.number().int().min(0).max(1440);
+export const proposalPayloadSchema = z.discriminatedUnion("acao", [
+  z.object({ acao: z.literal("oferta"), papel: z.enum(["agora", "recompensa", "convite"]), slotId: uuid.optional(), offer: z.object({ kind: z.enum(OFFER_KINDS), itemId: uuid, pct: z.number().int().min(1).max(100).optional() }), weeklyCap: z.number().int().min(1).max(999).optional(), inviteText: z.string().max(300).optional() }),
+  z.object({ acao: z.literal("item"), itemId: uuid, mudanca: z.enum(ITEM_CHANGES), priceCents: z.number().int().min(0).max(1_000_000).optional() }),
+  z.object({ acao: z.literal("faixa"), slotId: uuid, mudanca: z.enum(["editar", "desativar"]), days: z.array(z.number().int().min(0).max(6)).min(1).max(7).optional(), startMin: minutes.optional(), endMin: minutes.optional(), intensity: z.enum(INTENSITIES).optional(), extraTables: z.number().int().min(1).max(200).optional() }),
+]);
 
 export type PreviewLine = { campo: string; antes: string; depois: string };
 export type PreviewOk = {

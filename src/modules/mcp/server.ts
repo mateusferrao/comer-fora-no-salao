@@ -14,6 +14,8 @@ import { getPlanView } from "@/src/modules/planos/application/plan-view";
 import { generateWeeklyPlan } from "@/src/modules/planos/application/generate-plan";
 import { approvePlan, finalFromStored, latestPlan } from "@/src/modules/planos/application/approve-plan";
 import { slotLabel } from "@/src/modules/beneficios/domain/slot-text";
+import { getFlags } from "@/src/modules/config/application/app-config";
+import { callCatalogTool, catalogTools } from "@/src/modules/agente/application/catalog";
 
 export const MCP_PROTOCOL_VERSION = "2025-06-18";
 
@@ -91,13 +93,17 @@ export async function handleRpc(db: Db, restaurantId: string, raw: unknown, now:
   const m = parsed.data;
   const id = m.id ?? null;
   if (m.id === undefined) return null;
-  if (m.method === "initialize") return { jsonrpc: "2.0", id, result: { protocolVersion: MCP_PROTOCOL_VERSION, capabilities: { tools: { listChanged: false } }, serverInfo: { name: "comer-fora-no-salao", version: "1.0.0" }, instructions: "Ferramentas do plano da semana de UM restaurante (o do token). Números e dinheiro são do código; aprovar vale no salão." } };
+  if (m.method === "initialize") return { jsonrpc: "2.0", id, result: { protocolVersion: MCP_PROTOCOL_VERSION, capabilities: { tools: { listChanged: false } }, serverInfo: { name: "comer-fora-no-salao", version: "1.0.0" }, instructions: "Ferramentas de UM restaurante (o do token): plano da semana, configuração, números e, se ligado, clientes (sem contato) e mudanças por proposta (propor_mudanca → aplicar_proposta). Números e dinheiro são do código; aprovar e aplicar valem no salão." } };
   if (m.method === "ping") return { jsonrpc: "2.0", id, result: {} };
-  if (m.method === "tools/list") return { jsonrpc: "2.0", id, result: { tools: TOOLS } };
+  // S8 (D267): o catálogo do agente (mesmas peças do copiloto) entra depois das 4 ferramentas do plano.
+  const flags = await getFlags(db);
+  const cat = { clientes: flags.mcp_clientes, edicao: flags.mcp_edicao };
+  if (m.method === "tools/list") return { jsonrpc: "2.0", id, result: { tools: [...TOOLS, ...catalogTools(cat)] } };
   if (m.method === "tools/call") {
     const name = typeof m.params?.name === "string" ? m.params.name : "";
     const args = (m.params?.arguments && typeof m.params.arguments === "object" ? m.params.arguments : {}) as Json;
-    const r = await callTool(db, restaurantId, name, args, now, deps);
+    const c = await callCatalogTool(db, restaurantId, name, args, now, cat);
+    const r = c ? text(c.data, c.isError) : await callTool(db, restaurantId, name, args, now, deps);
     return r ? { jsonrpc: "2.0", id, result: r } : { jsonrpc: "2.0", id, error: { code: -32602, message: `Unknown tool: ${name.slice(0, 40)}` } };
   }
   return { jsonrpc: "2.0", id, error: { code: -32601, message: "Method not found" } };

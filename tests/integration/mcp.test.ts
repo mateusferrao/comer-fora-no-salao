@@ -57,7 +57,9 @@ describe("MCP (flag; D219)", () => {
     const init = (await (await rpc(token, { jsonrpc: "2.0", id: 1, method: "initialize", params: { protocolVersion: "2025-06-18", capabilities: {}, clientInfo: { name: "t", version: "1" } } })).json()) as { result: { protocolVersion: string; capabilities: { tools: unknown } } };
     expect(init.result.protocolVersion).toBe("2025-06-18");
     const list = (await (await rpc(token, { jsonrpc: "2.0", id: 2, method: "tools/list" })).json()) as { result: { tools: Array<{ name: string; inputSchema: { properties: Record<string, unknown> } }> } };
-    expect(list.result.tools.map((t) => t.name)).toEqual(["ler_insights", "ver_plano", "gerar_plano", "aprovar_plano"]);
+    // S8 (D267): as 4 do plano + as leituras do catálogo do agente (clientes e edição dependem das flags próprias).
+    expect(list.result.tools.map((t) => t.name).slice(0, 4)).toEqual(["ler_insights", "ver_plano", "gerar_plano", "aprovar_plano"]);
+    expect(list.result.tools.map((t) => t.name)).toEqual(expect.arrayContaining(["ver_configuracao", "ver_numeros"]));
     // Nenhuma ferramenta recebe o restaurante: ele vem do token.
     expect(list.result.tools.every((t) => !("restaurantId" in t.inputSchema.properties))).toBe(true);
     const unknown = (await (await rpc(token, { jsonrpc: "2.0", id: 3, method: "tools/call", params: { name: "apagar_tudo" } })).json()) as { error: { code: number } };

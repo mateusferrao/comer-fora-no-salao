@@ -6,9 +6,6 @@
 import { eq } from "drizzle-orm";
 import type { Db } from "@/src/db/client";
 import { owners, restaurants } from "@/src/db/schema";
-import { slotAliases } from "@/src/modules/beneficios/domain/slot-text";
-import { getPlanInsights } from "@/src/modules/planos/application/insights";
-import { shortName } from "@/src/shared/name";
 import type { AiGateway, ChatTurn } from "@/src/modules/ia/gateway";
 import { gatewayFor, keyKindFor } from "@/src/modules/ia/gateway-factory";
 import { COPILOT_PUBLIC_DAILY_CAP_USD, recordAiCall, spentToday } from "@/src/modules/ia/ai-calls";
@@ -17,9 +14,10 @@ import { runTask } from "@/src/modules/ia/run-task";
 import { langfuseTracer } from "@/src/modules/ia/tracing";
 import { systemClock } from "@/src/shared/clock";
 import { parseAiFeatures } from "@/src/modules/config/domain/ai-profile";
-import { buildCopilotPrompt, buildCopilotTask, buildOnboardingPrompt, buildCopilotTools, COPILOT_PROMPT_VERSION, normalizeHistory, renderAnswer, toPayload, type CopilotCustomer } from "@/src/modules/ia/tasks/copilot";
+import { buildCopilotPrompt, buildCopilotTask, buildOnboardingPrompt, buildCopilotTools, COPILOT_PROMPT_VERSION, normalizeHistory, renderAnswer, toPayload } from "@/src/modules/ia/tasks/copilot";
 import type { ProposalPayload } from "../domain/proposals";
-import { createProposals, loadSnapshot, type ProposalCard } from "./proposals";
+import { createProposals, type ProposalCard } from "./proposals";
+import { loadAgentContext } from "./context";
 import { shortcutsFor, type Shortcut } from "../domain/shortcuts";
 
 export type TurnResult = {
@@ -68,23 +66,8 @@ export async function runCopilotTurn(
     return { resposta: renderAnswer(res.data.resposta, cp.ctx), propostas: [], sugestoes: res.data.sugestoes.map((x) => renderAnswer(x, cp.ctx)), generatedBy: "ia", atalhos: [] };
   }
 
-  const [snap, ins] = await Promise.all([loadSnapshot(db, p.restaurantId), getPlanInsights(db, p.restaurantId, p.now)]);
-  if (!snap || !ins) return noAi("inativo");
-  // Apelidos estáveis: ordem do id (C1…); nome curto (primeiro nome + inicial), nunca contato (D262).
-  const customers: CopilotCustomer[] = [...ins.customers]
-    .sort((a, b) => a.id.localeCompare(b.id))
-    .map((c, i) => ({ alias: `C${i + 1}`, name: shortName(c.displayName), visits: c.visits, stamps: c.stamps, lastDay: c.lastDay, segments: c.segments }));
-  const aliases = slotAliases(ins.ctx.slots).map(({ alias, slot }) => ({ alias, slotId: slot.id }));
-  const input = {
-    restaurantName: r.name,
-    snap,
-    facts: ins.facts,
-    slotAliases: aliases,
-    customers,
-    plan: ins.offers.length ? { status: "veja ver_plano", slots: ins.offers.map((o) => ({ alias: o.alias, gain: o.gain, weeklyCap: o.recalibratedCap })) } : null,
-    page: p.page,
-    tone: r.aiTone,
-  };
+  const input = await loadAgentContext(db, { restaurantId: p.restaurantId, restaurantName: r.name, tone: r.aiTone, page: p.page, now: p.now });
+  if (!input) return noAi("inativo");
   const cp = buildCopilotPrompt(input);
   const task = buildCopilotTask(cp, MODELS.copiloto, buildCopilotTools(input), p.sessionId);
   const res = await runTask(task, cp.system, { messages: turns }, { gateway, clock: systemClock, trace: langfuseTracer });
