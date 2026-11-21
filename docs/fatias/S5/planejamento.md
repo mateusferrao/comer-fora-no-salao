@@ -445,4 +445,38 @@ Nenhuma tarefa nova. A ligação com o plano acontece assim:
 Cada sub-fatia fecha verde e vai em commit + push no branch da sessão.
 
 ## 14. Mudanças durante a implementação
-(preencher durante a `implementar-fatia`)
+Registradas como D186 [C]. Implementação no branch da sessão (commits S5.0/S5.1, S5.2, S5.3).
+
+Verificação no fim:
+- 291 testes de unidade;
+- 113 de integração;
+- E2E 80/80 nas 2 passadas (`chromium` com as flags da S5 desligadas e `flags-on` com elas ligadas), local e com o banco recriado;
+- tipos e fronteiras limpos;
+- lint com 6 avisos, todos anteriores à S5.
+
+**Passadas de E2E por flag:** o `setup` grava as flags direto no banco de teste, no mesmo formato de `setFlag`. Pelos Bastidores, o login esbarrava no limite de 5 por 15 minutos por IP em execuções seguidas. Em produção o setup é pulado e `E2E_FLAGS=on` escolhe as asserções. As specs que mudam com as flags passaram a reconhecê-las: `entrada`, `apresentacao` e `volta`.
+
+**Painel:**
+- `valueTopline`: o caso "há resultado causal, mas sem ticket ou margem declarados" vira `sem_valores` com motivo `causal`, com o texto "Já há resultado contra o grupo de controle: declare os valores para vê-lo em reais".
+- `getSlotGoals` recebe um dia da semana, e não a chave da semana. A S6 pede a semana anterior passando um dia dela.
+- Feed: "convite emitido" mostra só os convites nascidos na mesa. A reativação aprovada geraria dezenas de linhas de uma vez, e ela já aparece no funil como "+ N convites por reativação".
+
+**Conversão:**
+- **Corte 1 aplicado:** a variante "Faltam N selos" da página do QR ficou de fora. A faixa mostra sempre o benefício da 1ª visita.
+- **Subtítulo da landing:** "Nove em cada dez também **podem ganhar** um convite…", em vez de "ganham". O convite depende do teto e da faixa; a frase revisada prometia mais do que acontece.
+- **Faixa do QR:** fundo `red-button` (o token próprio para texto branco) e números em `red-text`, por contraste. `red-brand` é só para áreas sem texto.
+- **Prova social:** o filtro de e-mails de teste usa a dica mascarada (`…@e•••.invalid`, `…@s•••.amazonses.com`), porque o e-mail em claro nunca é lido.
+- **Link da agenda:** o token é `agenda:<uuid>` assinado (o id vai assinado, nunca solto). A rota exige convite real, ativo, não vencido e com janela pela frente. O UID do `.ics` é `<inviteId>@comer-fora-no-salao`.
+
+**"Por que esta oferta?":**
+- A rota é `GET /api/parceiro/plano/explicar?plano=&faixa=`. Ela aceita a loja da sessão, ativa ou em ativação, e responde 404 com a flag desligada.
+- Os rótulos dos fatos ficam em `textos/domain/fact-labels.ts`. Os mapas de tarefa e motivo da Qualidade da IA foram para `src/ui/ia/labels.ts`, com a tradução das notas do guard.
+
+**Cobertura E2E:**
+- O topo antecipado (restaurante novo) e a faixa "vale hoje" da Jornada não têm E2E próprio: o fluxo é longo e, no restaurante E2E, a janela válida é sempre amanhã. Os dois estão cobertos por testes de unidade (`valueTopline`, `nextValidWindow`) e de integração (`getEarlyValue`, `validToday` na volta).
+- A E2E do topo usa a cópia da Cantina (camada causal).
+
+**Dívida:** o funil "pediu código → confirmou" continua fora.
+
+**Para o merge (depois da S6):** o passo de E2E de produção do CI lista as specs uma a uma. Depois de ligar as flags nos Bastidores, rodar também `*.on.spec.ts` com `E2E_FLAGS=on`.
+

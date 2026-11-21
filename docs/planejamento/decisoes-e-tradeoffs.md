@@ -1124,3 +1124,16 @@ Detalhes, revisão independente (2 subagentes) e itens [C] em [docs/fatias/S5/pl
   - `explainOffer` filtrado pelo restaurante, com textos montados a partir dos dados;
   - E2E em 2 projetos de flags + `E2E_FLAGS`;
   - o funil do login vira dívida.
+
+**D186 — Itens [C] da implementação da S5** (21/11, IA [C]) ✅
+- Lista em docs/fatias/S5/planejamento.md §14, entre eles:
+  - flags gravadas direto no banco de teste nas passadas de E2E;
+  - `sem_valores` com motivo `causal`;
+  - metas por dia da semana;
+  - feed só com os convites da mesa;
+  - corte 1 aplicado ("Faltam N selos" fora);
+  - "podem ganhar" no subtítulo da landing;
+  - contraste da faixa do QR;
+  - filtro da prova social pela dica mascarada;
+  - rota única do "Por que esta oferta?" para plano e pacote.
+
