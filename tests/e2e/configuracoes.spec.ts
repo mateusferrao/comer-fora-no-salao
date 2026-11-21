@@ -20,9 +20,10 @@ test("avisos e automação: e-mails aos clientes por tipo e antecedência do lem
   await reat.click();
   await page.getByRole("button", { name: "Salvar" }).click();
   await expect(page.getByText("Avisos salvos")).toBeVisible();
-  await axe(page);
   await page.reload();
   await expect(page.getByRole("switch", { name: "Convite de volta (reativação) por e-mail" })).toHaveAttribute("aria-checked", "false");
+  // axe com a tela parada (depois do router.refresh() o título é reinserido por streaming).
+  await axe(page);
   // Restaura.
   await page.getByRole("switch", { name: "Convite de volta (reativação) por e-mail" }).click();
   await page.getByRole("button", { name: "Salvar" }).click();

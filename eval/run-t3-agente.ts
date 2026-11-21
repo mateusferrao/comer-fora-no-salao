@@ -141,6 +141,7 @@ Exemplo de passos do agente: ${runs.find((x) => x.mode === "agente" && x.ok)?.st
 - As fixtures e os fatos são fictícios; o agente tem as mesmas regras e o mesmo schema da chamada única.
 `;
   writeFileSync("eval/relatorio-t3-agente.md", md);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars -- tira o texto das propostas do JSON
   writeFileSync("eval/resultados-t3-agente.json", JSON.stringify({ when: new Date().toISOString(), model: MODEL.id, judge: JUDGE.id, reps: REPS, agente: ag, unica: un, juiz: { wins, ties, losses, notWorse }, deterministico: { agente: dAg, unica: dUn }, turnOn, totalCostUsd: totalCost, runs: runs.map(({ proposal: _p, ...r }) => r), judged }, null, 2));
   process.stdout.write(`\nagente ${pct(ag.okPct)} p50 ${sec(ag.p50)} · única ${pct(un.okPct)} p50 ${sec(un.p50)} · juiz ${wins}/${ties}/${losses} · ligar: ${turnOn} · US$ ${totalCost.toFixed(4)}\n`);
 }
