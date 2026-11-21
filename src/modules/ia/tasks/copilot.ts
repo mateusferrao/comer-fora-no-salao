@@ -15,7 +15,7 @@ import { CHAT_FORBIDDEN, guardText } from "../guardrails";
 import type { AiTool, ChatTurn, GuardResult, ModelRef } from "../gateway";
 import type { TaskDef } from "../run-task";
 
-export const COPILOT_PROMPT_VERSION = "copiloto-v1";
+export const COPILOT_PROMPT_VERSION = "copiloto-v2";
 export const COPILOT_MAX_STEPS = 3;
 export const MAX_TURNS = 12;
 export const MAX_MESSAGE_CHARS = 1000;
@@ -51,7 +51,9 @@ const GUIDE = `Regras do produto (explique com estas palavras quando perguntarem
 - Teto semanal: quantos convites saem por semana em cada horário vazio; protege o custo.
 - Grupo de controle: uma parte dos clientes não recebe convite, para medir quanto o convite trouxe de verdade.
 - Plano da semana: o código calcula os números e as ofertas possíveis; a IA escolhe e explica; o dono aprova.
-- Não existe pausar um prato só por hoje: dá para tirar do cardápio e voltar depois.`;
+- Não existe pausar um prato só por hoje: dá para tirar do cardápio e voltar depois.
+- O teto e a oferta de um convite mudam direto, pela proposta "oferta" (não precisa de plano da semana).
+- Desconto tem teto ({fato:desconto_maximo_pct}); acima disso o sistema recusa — explique citando esse fato.`;
 
 const RULES = `Você é o "Assistente do salão" do restaurante, dentro do Portal. Fala com o dono, em português do Brasil, curto e claro.
 O que você faz:
@@ -86,7 +88,8 @@ export function buildCopilotPrompt(input: CopilotInput): CopilotPrompt {
   const aliasOfItem = (id: string | undefined) => [...itemByAlias].find(([, v]) => v === id)?.[0] ?? "?";
   const slotByAlias = new Map(input.slotAliases.map((a) => [a.alias, a.slotId]));
   const slots: Record<string, string> = {};
-  const facts: Record<string, number | string> = { ...input.facts };
+  // T4 (rodada 1): para explicar recusas, a IA precisa citar a regra por referência, não escrever o número.
+  const facts: Record<string, number | string> = { ...input.facts, desconto_maximo_pct: 50 };
   const slotLines = input.slotAliases.map(({ alias, slotId }) => {
     const s = input.snap.slots.find((x) => x.id === slotId)!;
     slots[alias] = slotPhrase(s);

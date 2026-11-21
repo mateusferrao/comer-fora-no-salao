@@ -54,7 +54,7 @@ describe("turno do copiloto (S8)", () => {
     const r = await createRestaurant();
     const gw = scripted({
       "google/gemini-3.8-flash": () => ({ resposta: "Foram 12 convites.", propostas: [], sugestoes: [] }),
-      "openai/gpt-6-luna": () => ({ resposta: "Foram {fato:checkins_30d} check-ins no último mês.", propostas: [], sugestoes: [] }),
+      "anthropic/claude-haiku-5.5": () => ({ resposta: "Foram {fato:checkins_30d} check-ins no último mês.", propostas: [], sugestoes: [] }),
     });
     const out = await runCopilotTurn(getDb(), { restaurantId: r.restaurantId, ownerId: r.ownerId, turns: [{ role: "user", text: "como foi o mês?" }], page: "painel", now: NOW, gateway: gw });
     expect(out.generatedBy).toBe("ia");
