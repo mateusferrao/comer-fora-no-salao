@@ -15,13 +15,15 @@ test("plano da semana: 'Por que esta oferta?' abre o painel com opções, fatos,
   await expect(page.getByText(/Preparando o restaurante de exemplo/)).toBeHidden({ timeout: 60_000 });
   await page.goto("/parceiro/salao/plano");
   await expect(page.getByRole("heading", { name: "Plano da semana", level: 1 })).toBeVisible();
-  if ((await page.getByTestId("plan-origin").getAttribute("data-origin")) === "fixo") {
+  // Conta sem plano ("Nenhum plano ainda", ex.: execução anterior interrompida depois do descarte): vai direto para gerar.
+  const hasPlan = (await page.getByTestId("plan-origin").count()) > 0;
+  if (hasPlan && (await page.getByTestId("plan-origin").getAttribute("data-origin")) === "fixo") {
     await page.getByRole("button", { name: "Por que esta oferta?" }).first().click();
     const panel = page.getByRole("dialog", { name: "Por que esta oferta?" });
     await expect(panel.getByTestId("por-que")).toContainText("Plano escrito antes para o restaurante de exemplo, sem IA.");
     await panel.getByRole("button", { name: "Fechar" }).click();
   }
-  if ((await page.getByTestId("plan-status").getAttribute("data-status")) === "proposto") {
+  if (hasPlan && (await page.getByTestId("plan-status").getAttribute("data-status")) === "proposto") {
     await page.getByRole("button", { name: "Descartar" }).click();
     await page.getByLabel("Teto alto demais").check();
     await page.getByRole("button", { name: "Confirmar descarte" }).click();
