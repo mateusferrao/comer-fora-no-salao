@@ -70,8 +70,8 @@ ${agenda ? `<p><a href="${esc(agenda)}">Adicionar à agenda</a></p>` : ""}
 /** Lembrete no dia do convite (S6.1 — D189): 1 por convite, X h antes da janela. */
 export function reminderEmail(p: { restaurant: string; gain: string; startMin: number; endMin: number; baseUrl: string; token: string; agendaUrl?: string | null }) {
   const hh = (m: number) => `${Math.floor(m / 60)}h${m % 60 ? String(m % 60).padStart(2, "0") : ""}`;
-  const subject = `${p.restaurant}: hoje vale seu convite`.replace(/[\r\n]+/g, " ");
-  const first = `${p.restaurant}: hoje vale seu convite: ${p.gain}, das ${hh(p.startMin)} às ${hh(p.endMin)}. Faça check-in no salão para receber o código.`;
+  const subject = `${p.restaurant} · hoje vale seu convite`.replace(/[\r\n]+/g, " ");
+  const first = `${p.restaurant} · hoje vale seu convite: ${p.gain}, das ${hh(p.startMin)} às ${hh(p.endMin)}. Faça check-in no salão para receber o código.`;
   const journey = `${p.baseUrl}/app/jornada`;
   const prefs = `${p.baseUrl}/cliente/descadastrar?t=${encodeURIComponent(p.token)}`;
   const lines = [
@@ -84,7 +84,7 @@ export function reminderEmail(p: { restaurant: string; gain: string; startMin: n
     PROTOTYPE_FOOTER,
   ];
   const html = `<div style="font-family:Arial,sans-serif;font-size:15px;color:#151515">
-<p>${esc(p.restaurant)}: hoje vale seu convite: <strong>${esc(p.gain)}</strong>, das ${hh(p.startMin)} às ${hh(p.endMin)}. Faça check-in no salão para receber o código.</p>
+<p>${esc(p.restaurant)} · hoje vale seu convite: <strong>${esc(p.gain)}</strong>, das ${hh(p.startMin)} às ${hh(p.endMin)}. Faça check-in no salão para receber o código.</p>
 ${p.agendaUrl ? `<p><a href="${esc(p.agendaUrl)}">Adicionar à agenda</a></p>` : ""}
 <p><a href="${esc(journey)}">Ver o convite</a></p>
 <p style="color:#666;font-size:12px"><a href="${esc(prefs)}">Preferências de e-mail · Descadastrar</a><br>${PROTOTYPE_FOOTER}</p>

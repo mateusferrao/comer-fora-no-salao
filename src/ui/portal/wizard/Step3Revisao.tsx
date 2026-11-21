@@ -81,7 +81,7 @@ export function Step3Revisao({ extractionId, extraction, initial, manual = false
       )}
       {rows && (
         <>
-          <div className="overflow-x-auto rounded-sm border border-border">
+          <div className="relative overflow-x-auto rounded-sm border border-border">
             <table className="w-full min-w-[560px] text-sm">
               <caption className="sr-only">Itens do cardápio</caption>
               <thead className="bg-surface-muted text-left">

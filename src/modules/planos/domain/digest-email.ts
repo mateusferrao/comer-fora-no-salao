@@ -48,7 +48,7 @@ export function digestEmail(v: DigestView): { subject: string; text: string; htm
     : [`Gere o plano da semana no Portal: ${v.links.portal}`];
   const actions = v.plan ? [...(v.links.aprovar ? [`Revisar e aprovar: ${v.links.aprovar}`] : []), `Abrir no Portal: ${v.links.portal}`] : [];
   const lines = [
-    `Semana de ${ddmm(v.week.from)} a ${ddmm(v.week.to)}`,
+    `Resultado da semana passada (${ddmm(v.week.from)} a ${ddmm(v.week.to)})`,
     stats,
     ...(top.length ? ["", ...top] : []),
     "",
@@ -60,7 +60,7 @@ export function digestEmail(v: DigestView): { subject: string; text: string; htm
   ];
   const link = (href: string, label: string) => `<a href="${esc(href)}">${esc(label)}</a>`;
   const html = `<div style="font-family:Arial,sans-serif;font-size:15px;color:#151515">
-<p><strong>${esc(r)}</strong> · Semana de ${ddmm(v.week.from)} a ${ddmm(v.week.to)}</p>
+<p><strong>${esc(r)}</strong> · Resultado da semana passada (${ddmm(v.week.from)} a ${ddmm(v.week.to)})</p>
 <p>${esc(stats)}</p>
 ${top.map((l) => `<p>${esc(l)}</p>`).join("\n")}
 ${

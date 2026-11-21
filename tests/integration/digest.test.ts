@@ -119,7 +119,7 @@ describe("resumo semanal + 'Revisar e aprovar' pelo e-mail (S6.1, D187, D188)", 
 
     const pv = await previewDigest(getDb(), { restaurantId: VITRINE_ID, now: NOW, baseUrl: BASE });
     expect(pv.ok && pv.approveUrl).toMatch(/\/parceiro\/aprovar\/rv_/);
-    expect(pv.ok && pv.text).toContain("Semana de 16/11 a 22/11");
+    expect(pv.ok && pv.text).toContain("Resultado da semana passada (16/11 a 22/11)");
     // A prévia não grava weekly_digests (só a reserva do agendador existe).
     expect(await getDb().select().from(weeklyDigests)).toHaveLength(1);
     expect(tokenOf(pv.ok ? pv.approveUrl : null).startsWith("rv_")).toBe(true);

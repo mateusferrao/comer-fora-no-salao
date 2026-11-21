@@ -30,7 +30,8 @@ const cents = (s: string) => {
 const ERR: Record<string, string> = {
   oferta: "Oferta inválida: confira o item (categoria) e o desconto (até 50%).",
   texto: "Texto não permitido (dados pessoais, HTML, referência desconhecida ou longo demais).",
-  em_uso: "Este item está numa oferta em vigor. Troque a oferta antes (usado em ofertas antigas? Deixe fora do cardápio).",
+  em_uso: "Este item está numa oferta em vigor. Troque a oferta antes de excluir.",
+  nome_marca: "O nome do restaurante não pode citar a marca iFood.",
   ultima_faixa: "O restaurante precisa de pelo menos um horário vazio.",
   faixa: "Horário inválido: precisa caber no funcionamento, com fim depois do início.",
   funcionamento: "O novo funcionamento não cobre algum horário vazio. Ajuste os horários vazios antes.",
@@ -232,7 +233,7 @@ function MenuTab({ v }: { v: SettingsView }) {
   const [novo, setNovo] = useState({ name: "", preco: "", category: "prato" as MenuCategory });
   return (
     <div className="flex flex-col gap-4 py-4">
-      <div className="overflow-x-auto rounded-sm border border-border">
+      <div className="relative overflow-x-auto rounded-sm border border-border">
         <table className="w-full min-w-[640px] text-sm">
           <caption className="sr-only">Itens do cardápio</caption>
           <thead className="bg-surface-muted text-left">
@@ -474,9 +475,13 @@ function ToneSection({ v, agenteGlobal = false, aprendeGlobal = true }: { v: Set
           placeholder="Ex.: cantina de bairro desde 1998, massa fresca feita na casa"
           onChange={(e) => setAbout(e.target.value)}
         />
-        <span className="text-xs font-normal text-ink-muted">Só fatos sobre o restaurante (história, especialidades, público). {about.length}/500</span>
+        <span className="text-xs font-normal text-ink-muted">
+          {!v.restaurant.aiAbout && about && about === (v.restaurant.description ?? "") ? "Sugestão a partir da descrição do restaurante: só vale depois de salvar. " : ""}
+          Só fatos sobre o restaurante (história, especialidades, público). {about.length}/500
+        </span>
       </label>
       <Field label="O que evitar (termos separados por vírgula) · até 200 caracteres" value={avoid} maxLength={200} placeholder="Ex.: gírias, álcool" onChange={(e) => setAvoid(e.target.value)} />
+      <p className="-mt-2 text-xs text-ink-muted">{avoid.length}/200</p>
       <div className="flex flex-col">
         {agenteGlobal && <Switch label="Usar agente de IA no plano da semana" hint="O agente consulta os números do sistema antes de escolher." checked={feat.agente} onChange={(agente) => setFeat({ ...feat, agente })} />}
         <Switch

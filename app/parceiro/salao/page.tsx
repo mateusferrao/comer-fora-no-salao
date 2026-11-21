@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { getNotifyView } from "@/src/modules/config/application/update-settings";
 import type { Metadata } from "next";
 import { getDb } from "@/src/db/client";
 import { getDashboard } from "@/src/modules/analytics/application/dashboard";
@@ -31,6 +32,8 @@ export default async function VisaoGeralPage() {
   const isTest = cur?.kind === "teste";
   const ops = dash && cur && (flags?.ab || flags?.insight_operacao) ? await getOperations(getDb(), cur.id, new Date()) : null;
   const steps = dash && cur && isTest ? await firstSteps(getDb(), cur.id) : null;
+  // Revisão S4–S6 (produto 6): e-mails de convite desligados pelo dono aparecem no painel, com a data.
+  const offSince = dash && cur ? (await getNotifyView(getDb(), cur.id))?.clientEmailsOffSince : null;
   return (
     <main className="mx-auto flex max-w-6xl flex-col gap-6 px-4 py-6 sm:px-8">
       <header className="flex flex-col gap-1">
@@ -53,6 +56,14 @@ export default async function VisaoGeralPage() {
               Ver minha página
             </a>{" "}
             <span className="text-ink-muted">(como o cliente vê; abre em nova aba)</span>
+          </p>
+        )}
+        {offSince && (
+          <p className="text-sm text-ink" data-testid="convites-so-app">
+            Convites só no app desde {new Intl.DateTimeFormat("pt-BR", { timeZone: "America/Sao_Paulo", day: "2-digit", month: "2-digit" }).format(new Date(offSince))}{" "}
+            <Link className="text-red-text underline" href="/parceiro/salao/configuracoes?aba=avisos">
+              (e-mails aos clientes desligados em Avisos e automação)
+            </Link>
           </p>
         )}
       </header>

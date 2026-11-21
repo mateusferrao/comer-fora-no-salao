@@ -15,6 +15,7 @@ const STATE_TEXT: Record<Exclude<DigestPageState, "ok">, string> = {
   usado: "Este link já foi usado. Veja o plano no Portal.",
   substituido: "Este plano foi substituído por um mais novo. Abra no Portal.",
   nao_proposto: "Este plano não está mais esperando aprovação. Veja o estado atual no Portal.",
+  revisando: "O revisor automático ainda está conferindo os textos. Abra este link de novo em alguns minutos.",
   revisor: "O revisor automático pediu ajustes nos textos. Ajuste no Portal antes de aprovar.",
   desligado: "Aprovação por e-mail desligada nas suas configurações. Aprove no Portal.",
 };
@@ -37,7 +38,9 @@ export default async function ApprovePage({ params }: { params: Promise<{ token:
       </div>
       <header className="flex flex-col gap-1">
         <h1 className="text-2xl font-bold text-ink">Plano da semana · {v.restaurant}</h1>
-        <p className="text-sm text-ink-muted">Estado: {PLAN_STATUS[v.planStatus] ?? v.planStatus}</p>
+        <p className="text-sm text-ink-muted">
+          Gerado em {v.createdDay.slice(8, 10)}/{v.createdDay.slice(5, 7)} · Estado: {PLAN_STATUS[v.planStatus] ?? v.planStatus}
+        </p>
       </header>
       <section aria-label="Plano proposto" className="flex flex-col gap-3">
         {v.slots.map((s) => (
@@ -61,7 +64,7 @@ export default async function ApprovePage({ params }: { params: Promise<{ token:
         </p>
       )}
       <Link href="/parceiro/salao/plano" className="min-h-11 self-start py-2 text-base font-semibold text-red-text underline">
-        Ajustar no Portal
+        {v.state === "ok" || v.state === "revisor" ? "Ajustar no Portal" : "Ver no Portal"}
       </Link>
     </main>
   );

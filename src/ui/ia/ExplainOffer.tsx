@@ -51,7 +51,7 @@ function Explanation({ e }: { e: OfferExplanation }) {
         <h3 id="pq-opcoes" className="text-base font-semibold">
           O código separou {e.opcoes.length} {e.opcoes.length === 1 ? "opção" : "opções"} para esta faixa
         </h3>
-        <div className="overflow-x-auto" tabIndex={0} role="region" aria-label="Opções da faixa (rolável)">
+        <div className="relative overflow-x-auto" tabIndex={0} role="region" aria-label="Opções da faixa (rolável)">
           <table className="w-full min-w-[420px]">
             <thead>
               <tr className="text-left text-ink-muted">
@@ -108,7 +108,12 @@ function Explanation({ e }: { e: OfferExplanation }) {
         <h3 id="pq-regras" className="text-base font-semibold">
           Regras
         </h3>
-        <p>Passou nas regras: sem números inventados, item e horário certos.</p>
+        {/* Só o texto da IA passa pelas regras; o texto modelo e o do dono não (revisão S4–S6, produto 9). */}
+        {e.modo === "ia" ? (
+          <p>Passou nas regras: sem números inventados, item e horário certos, convite com dia e horário.</p>
+        ) : (
+          <p>Texto modelo do código: não passou pela IA.</p>
+        )}
         <p>
           Revisor (outro modelo):{" "}
           {e.kind === "pacote" ? "não se aplica ao pacote" : e.revisor ? `${REVIEW[e.revisor.status] ?? e.revisor.status}${e.revisor.reasons.length ? ` · ${e.revisor.reasons.join("; ")}` : ""}` : "não revisado"}

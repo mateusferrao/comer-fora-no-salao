@@ -40,7 +40,7 @@ export function CustomersView({ data }: { data: SegmentsView }) {
         {data.list.length === 0 ? (
           <p className="text-sm text-ink">Nenhum cliente neste grupo ainda.</p>
         ) : (
-          <div className="overflow-x-auto" tabIndex={0} role="region" aria-label="Lista de clientes (rolável)">
+          <div className="relative overflow-x-auto" tabIndex={0} role="region" aria-label="Lista de clientes (rolável)">
             <table className="w-full min-w-[640px] text-sm">
               <thead>
                 <tr className="border-b border-divider text-left text-xs text-ink-muted">

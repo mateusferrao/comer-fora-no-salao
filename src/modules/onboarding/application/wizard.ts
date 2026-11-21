@@ -3,6 +3,7 @@
  * (`restaurants.onboarding_step`) e com entrada/conclusão de cada passo registrada (abandono — H5).
  */
 import { slugify } from "@/src/shared/slug";
+import { mentionsIfood } from "@/src/shared/brand";
 import { randomSuffix } from "@/src/shared/random";
 import { and, eq, inArray, notInArray } from "drizzle-orm";
 import { z } from "zod";
@@ -44,9 +45,10 @@ export const salonInputSchema = z.object({
 });
 export type SalonInput = z.infer<typeof salonInputSchema>;
 
-export type SaveSalonResult = { ok: true; slotIds: string[] } | { ok: false; erro: "faixas"; slotErrors: SlotError[][] };
+export type SaveSalonResult = { ok: true; slotIds: string[] } | { ok: false; erro: "faixas"; slotErrors: SlotError[][] } | { ok: false; erro: "nome_marca" };
 
 export async function saveSalon(db: Db, restaurantId: string, input: SalonInput, now: Date): Promise<SaveSalonResult> {
+  if (mentionsIfood(input.name)) return { ok: false, erro: "nome_marca" };
   const slotErrors = input.slots.map((s) => validateSlot({ id: s.id ?? "nova", ...s }, input.opening));
   if (slotErrors.some((e) => e.length)) return { ok: false, erro: "faixas", slotErrors };
   return db.transaction(async (tx) => {

@@ -2,7 +2,8 @@ import { afterAll, beforeEach, describe, expect, it } from "vitest";
 import { and, eq } from "drizzle-orm";
 import { closeDb, getDb } from "@/src/db/client";
 import { menuItems, ownerEdits, restaurants } from "@/src/db/schema";
-import { deleteMenuItem, getSettingsView, setItemOfferAllowed, updateAiProfile, updateOffer } from "@/src/modules/config/application/update-settings";
+import { deleteMenuItem, getNotifyView, getSettingsView, setItemOfferAllowed, updateAiProfile, updateNotifySettings, updateOffer, updateRestaurantInfo } from "@/src/modules/config/application/update-settings";
+import { NOTIFY_DEFAULTS } from "@/src/modules/config/domain/notify-settings";
 import { loadContext } from "@/src/modules/salao/application/context";
 import { buildCandidates } from "@/src/modules/onboarding/domain/candidates";
 import { createRestaurant, resetDb } from "./helpers/db";
@@ -74,5 +75,39 @@ describe("IA do restaurante e cardápio (S6.3a, D197)", () => {
     expect(row!.deletedAt).not.toBeNull();
     const [panna] = await getDb().select().from(menuItems).where(and(eq(menuItems.restaurantId, r.restaurantId), eq(menuItems.name, "Panna cotta")));
     expect(await deleteMenuItem(getDb(), { restaurantId: r.restaurantId, itemId: panna!.id, now: NOW })).toEqual({ ok: false, erro: "em_uso" });
+  });
+});
+
+describe("Avisos e restaurante (revisão S4–S6)", () => {
+  beforeEach(resetDb);
+  afterAll(closeDb);
+
+  it("e-mails de convite desligados: o painel recebe a data; religados: some", async () => {
+    const r = await createRestaurant();
+    expect((await getNotifyView(getDb(), r.restaurantId))!.clientEmailsOffSince).toBeNull();
+    const off = { ...NOTIFY_DEFAULTS, emails: { ...NOTIFY_DEFAULTS.emails, convite: false } };
+    await updateNotifySettings(getDb(), { restaurantId: r.restaurantId, input: off, now: new Date("2026-11-20T12:00:00Z") });
+    await updateNotifySettings(getDb(), { restaurantId: r.restaurantId, input: { ...off, lembreteHorasAntes: 4 }, now: new Date("2026-11-21T12:00:00Z") });
+    expect((await getNotifyView(getDb(), r.restaurantId))!.clientEmailsOffSince).toBe("2026-11-20T12:00:00.000Z");
+    await updateNotifySettings(getDb(), { restaurantId: r.restaurantId, input: NOTIFY_DEFAULTS, now: new Date("2026-11-22T12:00:00Z") });
+    expect((await getNotifyView(getDb(), r.restaurantId))!.clientEmailsOffSince).toBeNull();
+  });
+
+  it("nome do restaurante não pode citar a marca iFood", async () => {
+    const r = await createRestaurant();
+    const [cur] = await getDb().select().from(restaurants).where(eq(restaurants.id, r.restaurantId));
+    const res = await updateRestaurantInfo(getDb(), {
+      restaurantId: r.restaurantId,
+      name: "iFood Suporte",
+      ticketCents: null,
+      marginPct: null,
+      tables: null,
+      weeklyCustomers: null,
+      description: null,
+      address: null,
+      opening: cur!.openingHours as never,
+      now: new Date(),
+    });
+    expect(res).toEqual({ ok: false, erro: "nome_marca" });
   });
 });

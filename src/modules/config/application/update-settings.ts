@@ -4,6 +4,7 @@
  * emissão (D218). Tudo vai para `owner_edits`.
  */
 import { parseNotifySettings, type NotifySettings } from "../domain/notify-settings";
+import { mentionsIfood } from "@/src/shared/brand";
 import { findAvoided, ownerDataOf, parseAiFeatures, validateAbout, validateAvoid, type AiFeatures } from "../domain/ai-profile";
 import { and, desc, eq, isNull, max, sql } from "drizzle-orm";
 import type { Db } from "@/src/db/client";
@@ -37,7 +38,7 @@ export const MAX_SLOTS = 8;
 export type OfferInput = { kind: OfferKind; itemId: string; pct?: number };
 const toOffer = (o: { kind: OfferKind; itemId: string; pct?: number }): Offer => offerFromInput(o);
 
-export type SettingsResult = { ok: true; warnings?: string[] } | { ok: false; erro: "oferta"; erros: OfferError[] } | { ok: false; erro: "texto"; motivos: string[] } | { ok: false; erro: "nao_encontrado" | "em_uso" | "ultima_faixa" | "sem_opcao" };
+export type SettingsResult = { ok: true; warnings?: string[] } | { ok: false; erro: "oferta"; erros: OfferError[] } | { ok: false; erro: "texto"; motivos: string[] } | { ok: false; erro: "nao_encontrado" | "em_uso" | "ultima_faixa" | "sem_opcao" | "nome_marca" };
 
 /**
  * Cria a versão nova de um benefício (a vigente ganha `superseded_at`). Roda dentro da transação do chamador,
@@ -234,6 +235,7 @@ export async function updateRestaurantInfo(
   if (ctx.slots.some((s) => validateSlot(s, p.opening).length)) return { ok: false, erro: "funcionamento" };
   const name = cleanItemName(p.name).slice(0, 60);
   if (name.length < 2) return { ok: false, erro: "texto", motivos: ["nome"] };
+  if (mentionsIfood(name)) return { ok: false, erro: "nome_marca" };
   await db
     .update(restaurants)
     .set({ name, ticketCents: p.ticketCents, marginPct: p.marginPct, tables: p.tables, weeklyCustomers: p.weeklyCustomers, description: p.description?.trim().slice(0, 400) || null, address: p.address?.trim().slice(0, 160) || null, openingHours: p.opening })
@@ -349,7 +351,29 @@ export async function previewTone(
 }
 
 // ---------- Avisos e automação (S6.1 — D196) ----------
-export type NotifyView = { settings: NotifySettings; to: string | null; ownerVia: string | null };
+export type NotifyView = {
+  settings: NotifySettings;
+  to: string | null;
+  ownerVia: string | null;
+  /** Dia (ISO) em que o dono desligou os e-mails de convite aos clientes — `null` se estão ligados (revisão S4–S6). */
+  clientEmailsOffSince: string | null;
+};
+
+type EmailsJson = { emails?: { convite?: boolean; reativacao?: boolean } } | null;
+const invitesOff = (x: EmailsJson) => x?.emails?.convite === false || x?.emails?.reativacao === false;
+
+/** Última mudança que desligou um e-mail de convite (de ligado para desligado), entre as gravações de "Avisos". */
+async function clientEmailsOffSince(db: Db, restaurantId: string, settings: NotifySettings): Promise<string | null> {
+  if (settings.emails.convite && settings.emails.reativacao) return null;
+  const rows = await db
+    .select({ suggested: ownerEdits.suggested, final: ownerEdits.final, at: ownerEdits.at })
+    .from(ownerEdits)
+    .where(and(eq(ownerEdits.restaurantId, restaurantId), eq(ownerEdits.kind, "config:avisos")))
+    .orderBy(desc(ownerEdits.at))
+    .limit(50);
+  const hit = rows.find((r) => invitesOff(r.final as EmailsJson) && !invitesOff(r.suggested as EmailsJson));
+  return hit ? hit.at.toISOString() : null;
+}
 
 export async function getNotifyView(db: Db, restaurantId: string): Promise<NotifyView | null> {
   const [r] = await db
@@ -358,7 +382,8 @@ export async function getNotifyView(db: Db, restaurantId: string): Promise<Notif
     .innerJoin(owners, eq(owners.id, restaurants.ownerId))
     .where(eq(restaurants.id, restaurantId));
   if (!r) return null;
-  return { settings: parseNotifySettings(r.s), to: r.enc ? r.hint : null, ownerVia: r.via };
+  const settings = parseNotifySettings(r.s);
+  return { settings, to: r.enc ? r.hint : null, ownerVia: r.via, clientEmailsOffSince: await clientEmailsOffSince(db, restaurantId, settings) };
 }
 
 /** Grava o objeto inteiro validado, sob lock da linha (o link "parar resumo" e a tela não se atropelam — revisão I7). */

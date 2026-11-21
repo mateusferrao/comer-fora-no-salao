@@ -16,7 +16,7 @@ export function WaiterLinkCard({ activeSince }: { activeSince: string | null }) 
   const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
   const [copied, setCopied] = useState(false);
   const act = async (acao: "criar" | "revogar") => {
-    if (acao === "criar" && since && !window.confirm("Criar um link novo desliga o link atual. Continuar?")) return;
+    if (acao === "criar" && since && !window.confirm("Criar um link novo desliga o link atual: todos os celulares da equipe precisam ler o QR novo. Continuar?")) return;
     if (acao === "revogar" && !window.confirm("Revogar o link do garçom? Quem usa o link atual perde o acesso na hora.")) return;
     setBusy(acao);
     setMsg(null);
@@ -32,6 +32,23 @@ export function WaiterLinkCard({ activeSince }: { activeSince: string | null }) 
     setSince(j!.createdAt!);
     setShown({ url: j!.url!, qr: j!.qr! });
     setCopied(false);
+  };
+  // Revisão S4–S6 (produto 8): o QR aparece uma vez — dá para imprimir para a equipe ou mandar pelo WhatsApp.
+  const printQr = () => {
+    if (!shown) return;
+    const w = window.open("", "_blank", "width=480,height=640");
+    if (!w) return;
+    const doc = w.document;
+    doc.title = "Link do garçom";
+    const h = doc.createElement("h1");
+    h.textContent = "Link do garçom · aponte a câmera para validar códigos";
+    h.style.font = "600 18px system-ui, sans-serif";
+    const img = doc.createElement("img");
+    img.src = shown.qr;
+    img.alt = "QR do link do garçom";
+    img.style.width = "8cm";
+    doc.body.append(h, img);
+    img.onload = () => w.print();
   };
   return (
     <section aria-labelledby="link-garcom" data-testid="link-garcom" className="flex flex-col gap-3 rounded-sm border border-border bg-white p-4">
@@ -57,6 +74,19 @@ export function WaiterLinkCard({ activeSince }: { activeSince: string | null }) 
           >
             {copied ? "Link copiado" : "Copiar link"}
           </Button>
+          <div className="flex flex-wrap gap-3">
+            <Button variant="outline-portal" onClick={printQr}>
+              Imprimir QR para a equipe
+            </Button>
+            <a
+              className="inline-flex min-h-11 items-center rounded-xs border border-red-text bg-white px-5 text-sm font-semibold text-red-text hover:bg-red-text/5"
+              href={`https://wa.me/?text=${encodeURIComponent(`Link do garçom para validar códigos: ${shown.url}`)}`}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Enviar pelo WhatsApp
+            </a>
+          </div>
         </div>
       )}
       <div className="flex flex-wrap gap-3">

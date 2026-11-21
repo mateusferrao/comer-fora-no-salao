@@ -7,7 +7,8 @@ import { z } from "zod";
 import { getDb } from "@/src/db/client";
 import { getFlags } from "@/src/modules/config/application/app-config";
 import { approveByDigest, stopDigest } from "@/src/modules/planos/application/digest";
-import { latestPlan } from "@/src/modules/planos/application/approve-plan";
+import { eq } from "drizzle-orm";
+import { weeklyPlans } from "@/src/db/schema";
 import { hasContactInfo } from "@/src/modules/salao/domain/contact-info";
 import { overLimit, rejectCrossSite } from "@/src/web/guards";
 import { scheduleInviteEmails } from "@/src/web/invite-emails";
@@ -30,8 +31,8 @@ export async function POST(req: Request, ctx: { params: Promise<{ acao: string }
     const r = await approveByDigest(getDb(), { token: b.data.t, now });
     if (!r.ok) return Response.json(r, { status: r.erro === "invalido" ? 404 : 409 });
     if (r.inviteIds.length) scheduleInviteEmails(r.restaurantId, r.inviteIds);
-    // D174: convite com link ou contato vai só para o app.
-    const plan = await latestPlan(getDb(), r.restaurantId);
+    // D174: convite com link ou contato vai só para o app — calculado no plano do token (revisão S4–S6).
+    const [plan] = await getDb().select({ choices: weeklyPlans.choices }).from(weeklyPlans).where(eq(weeklyPlans.id, r.planId));
     const semEmail = ((plan?.choices ?? []) as Array<{ textoConvite: string }>).some((c) => hasContactInfo(c.textoConvite));
     return Response.json({ ok: true, already: r.already, sent: r.sent, semEmail });
   }

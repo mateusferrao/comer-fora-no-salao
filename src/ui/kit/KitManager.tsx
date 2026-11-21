@@ -224,7 +224,7 @@ export function KitManager({ initial, restaurantName, qrs, billHolder = false }:
             </h2>
             <Badge tone={bill.status === "no_salao" ? "green" : "neutral"}>{bill.status === "no_salao" ? "No salão" : bill.status === "aprovado" ? "Aprovada" : "Rascunho"}</Badge>
           </div>
-          <p className="text-sm text-ink-muted">Vai junto da conta: lembra o check-in na hora de pagar. Texto fixo, sem IA; fala do convite só como possibilidade (grupo de controle).</p>
+          <p className="text-sm text-ink-muted">Vai junto da conta: lembra o check-in na hora de pagar. Texto fixo, sem IA; fala do convite só como possibilidade, porque quem não recebe convite também vê esta peça.</p>
           {bill.variants[0] && qrs[bill.variants[0].id] && (
             <div aria-hidden="true" className="overflow-hidden rounded-sm border border-border" style={{ width: `${210 * 0.4}mm`, height: `${99 * 0.4}mm` }}>
               <div style={{ transform: "scale(0.4)", transformOrigin: "top left" }}>

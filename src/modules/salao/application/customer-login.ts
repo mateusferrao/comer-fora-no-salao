@@ -39,7 +39,7 @@ function isPresenter(email: string, env: CustomerLoginEnv): boolean {
 export function customerCodeEmail(code: string, restaurantName: string): { subject: string; text: string; html: string } {
   const subject = `Seu código: ${code} · ${restaurantName}`;
   const lines = [
-    `Seu código para entrar no Comer Fora e fazer check-in em ${restaurantName} é: ${code}`,
+    `Seu código para entrar no Comer Fora no Salão e fazer check-in em ${restaurantName} é: ${code}`,
     "",
     `Ele vale por ${LOGIN_CODE_TTL_MIN} minutos e só pode ser usado uma vez. Se não foi você que pediu, ignore este e-mail.`,
     "",
@@ -47,7 +47,7 @@ export function customerCodeEmail(code: string, restaurantName: string): { subje
   ];
   const esc = (s: string) => s.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]!);
   const html = `<div style="font-family:Arial,sans-serif;font-size:15px;color:#151515">
-<p>Seu código para entrar no Comer Fora e fazer check-in em ${esc(restaurantName)} é:</p>
+<p>Seu código para entrar no Comer Fora no Salão e fazer check-in em ${esc(restaurantName)} é:</p>
 <p style="font-size:28px;font-weight:bold;letter-spacing:6px">${code}</p>
 <p>Ele vale por ${LOGIN_CODE_TTL_MIN} minutos e só pode ser usado uma vez. Se não foi você que pediu, ignore este e-mail.</p>
 <p style="color:#666;font-size:12px">${PROTOTYPE_FOOTER}</p>

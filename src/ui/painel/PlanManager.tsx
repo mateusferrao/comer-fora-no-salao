@@ -333,7 +333,7 @@ function Insights({ v }: { v: PlanView }) {
       <h2 id="dados" className="text-lg font-bold text-ink">
         O que os seus dados dizem
       </h2>
-      <div className="overflow-x-auto" tabIndex={0} role="region" aria-label="Mapa de check-ins por dia e turno (rolável)">
+      <div className="relative overflow-x-auto" tabIndex={0} role="region" aria-label="Mapa de check-ins por dia e turno (rolável)">
         <table className="min-w-[520px] text-center text-sm">
           <caption className="pb-2 text-left text-sm text-ink-muted">Check-ins por dia e turno nos últimos 30 dias (mede quem leu o QR, não a lotação). Contorno: horário vazio que você declarou.</caption>
           <thead>
@@ -376,7 +376,7 @@ function Insights({ v }: { v: PlanView }) {
         </p>
       )}
       {v.insights.offers.length > 0 && (
-        <div className="overflow-x-auto" tabIndex={0} role="region" aria-label="Resposta aos convites (rolável)">
+        <div className="relative overflow-x-auto" tabIndex={0} role="region" aria-label="Resposta aos convites (rolável)">
           <table className="w-full min-w-[520px] text-sm">
             <caption className="pb-2 text-left text-sm text-ink-muted">Resposta aos convites (convites reais; o efeito causal só no total do restaurante, na Visão geral)</caption>
             <thead>

@@ -181,11 +181,13 @@ export async function sendWeeklyDigest(db: Db, p: { restaurantId: string; weekKe
 
 // ---------- Página "Revisar e aprovar" ----------
 
-export type DigestPageState = "ok" | "usado" | "substituido" | "nao_proposto" | "revisor" | "desligado";
+export type DigestPageState = "ok" | "usado" | "substituido" | "nao_proposto" | "revisando" | "revisor" | "desligado";
 export type DigestPage = {
   state: DigestPageState;
   restaurant: string;
   planStatus: string;
+  /** Dia (SP) em que o plano foi gerado: identifica a semana na página (revisão S4–S6). */
+  createdDay: string;
   reviewReasons: string[];
   slots: Array<{ phrase: string; gain: string; cap: number; maxCostCents: number; justificativa: string; invite: string }>;
   reactivation: { audience: number; real: number };
@@ -222,13 +224,16 @@ export async function digestPage(db: Db, token: string, now: Date): Promise<Dige
         ? "nao_proposto"
         : !r.settings.aprovarEmail
           ? "desligado"
-          : review?.status === "revisando" || review?.status === "bloquear"
-            ? "revisor"
-            : "ok";
+          : review?.status === "revisando"
+            ? "revisando"
+            : review?.status === "bloquear"
+              ? "revisor"
+              : "ok";
   return {
     state,
     restaurant: r.name,
     planStatus: plan.status,
+    createdDay: daySP(plan.createdAt),
     reviewReasons: review?.status === "bloquear" || review?.status === "revisando" ? (review.reasons ?? []) : [],
     slots,
     reactivation: { audience: view?.reactivation.audience ?? 0, real: view?.reactivation.real ?? 0 },
@@ -236,7 +241,7 @@ export async function digestPage(db: Db, token: string, now: Date): Promise<Dige
 }
 
 export type ApproveByDigestResult =
-  | { ok: true; restaurantId: string; already: boolean; sent: { real: number; fantasma: number; emails?: number }; inviteIds: string[] }
+  | { ok: true; restaurantId: string; planId: string; already: boolean; sent: { real: number; fantasma: number; emails?: number }; inviteIds: string[] }
   | { ok: false; erro: "invalido" | "usado" | "substituido" | "nao_proposto" | "revisor" | "desligado" | "oferta" | "texto" | "faixas" | "inativo" | "nao_encontrado" };
 
 /** POST: aprova o plano "como está" e queima o token na MESMA transação; com erro, o token continua valendo. */
@@ -254,7 +259,7 @@ export async function approveByDigest(db: Db, p: { token: string; now: Date }): 
     const res: ApproveResult = await approvePlanInTx(tx, { restaurantId: t.restaurantId, planId: plan.id, final: finalFromStored(plan), via: "email", now: p.now });
     if (!res.ok) return { ok: false as const, erro: res.erro };
     await tx.update(digestTokens).set({ usedAt: p.now }).where(and(eq(digestTokens.tokenHash, t.tokenHash), isNull(digestTokens.usedAt)));
-    return { ok: true as const, restaurantId: t.restaurantId, already: res.already, sent: res.sent, inviteIds: res.inviteIds ?? [] };
+    return { ok: true as const, restaurantId: t.restaurantId, planId: t.planId, already: res.already, sent: res.sent, inviteIds: res.inviteIds ?? [] };
   });
 }
 

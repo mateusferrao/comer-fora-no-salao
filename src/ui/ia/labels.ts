@@ -20,6 +20,10 @@ const RULE: Record<string, string> = {
   candidata_fora_da_faixa: "opção de outra faixa",
   faixa_sem_escolha: "faixa sem escolha",
   ordem_nao_e_permutacao: "ordem das faixas inválida",
+  // D226 (revisão S4–S6, produto 9).
+  sem_horario: "convite sem dia e horário",
+  artigo_antes_do_horario: "“no/na/em” antes do horário",
+  oferta_repetida: "oferta repetida ao lado de {oferta}",
 };
 export const usd = (x: number, d = 4) => `US$ ${x.toLocaleString("pt-BR", { minimumFractionDigits: d, maximumFractionDigits: d })}`;
 
@@ -30,6 +34,7 @@ export function guardNote(note: string): string {
   const [rule = "", arg] = parts;
   let text = RULE[rule] ?? rule.replace(/_/g, " ");
   if (rule === "proibida") text = `palavra proibida '${arg ?? ""}'`;
+  else if (rule === "evitar") text = arg ? `termo a evitar '${arg}'` : "termo a evitar";
   else if (rule === "referencia") text = "referência desconhecida";
   else if (rule === "tamanho") text = "texto longo demais";
   else if (rule === "dia_turno") text = "dia ou turno que não bate com a faixa";

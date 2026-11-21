@@ -62,13 +62,14 @@ export function Step2Salao({ initial, extractionId, extraction, manual = false }
     setErrors(e);
     if (Object.keys(e).length) return;
     setBusy(true);
-    const r = await api<{ ok?: boolean; slotErrors?: string[][] }>("/api/parceiro/salao", "POST", { ...f, name: f.name.trim(), ticketCents });
+    const r = await api<{ ok?: boolean; erro?: string; slotErrors?: string[][] }>("/api/parceiro/salao", "POST", { ...f, name: f.name.trim(), ticketCents });
     setBusy(false);
     if (r.ok) {
       router.push(manual ? "/parceiro/salao/ativar/3?manual=1" : "/parceiro/salao/ativar/3");
       router.refresh();
       return;
     }
+    if (r.data.erro === "nome_marca") return setErrors({ name: "O nome do restaurante não pode citar a marca iFood." });
     const se: Record<string, string> = {};
     r.data.slotErrors?.forEach((errs, i) => errs[0] && (se[`slot${i}`] = SLOT_ERRORS[errs[0]] ?? "Confira este horário."));
     setErrors(Object.keys(se).length ? se : { geral: "Confira os campos e tente de novo." });

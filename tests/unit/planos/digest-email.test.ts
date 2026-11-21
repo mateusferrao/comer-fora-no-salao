@@ -18,7 +18,7 @@ describe("e-mail do resumo semanal (S6.1, D188)", () => {
   it("com plano proposto e aprovação por e-mail: assunto, números do código, topo rotulado, plano e links", () => {
     const m = digestEmail(base);
     expect(m.subject).toBe("Cantina Nonna Lucia: seu plano da semana está pronto para aprovar");
-    expect(m.text).toContain("Semana de 16/11 a 22/11");
+    expect(m.text).toContain("Resultado da semana passada (16/11 a 22/11)");
     expect(m.text).toContain("42 check-ins · 31 códigos validados · 9 convites usados");
     expect(m.text).toContain("Estimativa, não causal: parte dessas pessoas voltaria sem convite.");
     expect(m.text).toMatch(/≈ R\$\s?810 em consumo \(R\$\s?324 de margem\) · custo dos convites R\$\s?198/);

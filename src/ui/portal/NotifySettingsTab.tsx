@@ -113,6 +113,12 @@ export function NotifySettingsTab({ view, flags }: { view: NotifyView; flags: { 
           Para seus clientes
         </h2>
         <p className="text-sm text-ink-muted">Só para quem aceitou receber e-mails. No app, o convite aparece sempre.</p>
+        {view.clientEmailsOffSince && (
+          <p className="text-sm text-ink" data-testid="emails-desligados">
+            Convites só no app desde {new Intl.DateTimeFormat("pt-BR", { timeZone: "America/Sao_Paulo", day: "2-digit", month: "2-digit" }).format(new Date(view.clientEmailsOffSince))}. O
+            painel continua comparando todos os convidados com o grupo de controle; só a forma de avisar mudou.
+          </p>
+        )}
         <Switch label="Convite por e-mail quando o cliente ganha o convite na mesa" checked={s.emails.convite} onChange={(convite) => set({ emails: { ...s.emails, convite } })} />
         <Switch label="Convite de volta (reativação) por e-mail" checked={s.emails.reativacao} onChange={(reativacao) => set({ emails: { ...s.emails, reativacao } })} />
         <Switch label="Lembrete no dia do convite" hint={!flags.agendador ? OFF_HINT : undefined} checked={s.emails.lembrete} disabled={!flags.agendador} onChange={(lembrete) => set({ emails: { ...s.emails, lembrete } })} />
