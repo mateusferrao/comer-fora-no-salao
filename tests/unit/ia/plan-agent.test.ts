@@ -41,7 +41,7 @@ describe("ferramentas do agente (S6.3b, D166): só leitura, números do código,
 
   it("checar_texto = o mesmo guard (inclui o 'O que evitar')", async () => {
     const ok = await tools.checar_texto!.execute({ campo: "textoConvite", faixa: "A", texto: "Volte {horario:A} e aproveite {oferta}." });
-    expect(ok).toEqual({ ok: true });
+    expect(ok).toEqual({ ok: true, renderizado: expect.stringMatching(/^Volte terça, quarta e quinta/) });
     const bad = (await tools.checar_texto!.execute({ campo: "textoConvite", faixa: "A", texto: "Ganhe 50% e um drink sem alcool" })) as { ok: boolean; problemas: string[] };
     expect(bad.ok).toBe(false);
     expect(bad.problemas).toEqual(expect.arrayContaining(["numero", "evitar:álcool"]));

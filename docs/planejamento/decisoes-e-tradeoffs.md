@@ -1189,3 +1189,10 @@ Detalhes, revisão independente (2 subagentes, 2 rodadas) e itens [C] em [docs/f
 
 **D200 — Itens [C] da rodada da S6** (21/11, IA [C]) ✅
 - Lista em docs/fatias/S6/planejamento.md §12, entre eles: recuperação `T + 24 h` com virada de semana; reservas idempotentes sem advisory lock de sessão; `approvePlanInTx`; cadeia agente → chamada única → sem IA com `prepareStep`; cookie do garçom de 30 dias; exclusão lógica do item; `email_skip_reason`; jsonb com `.catch` por campo; padrões de injeção só em "Fatos"; migração 0007 aditiva.
+
+**D225 — Plano como agente ligado, passando por cima da regra da D159** (21/11, U) ✅ (muda D159 para a S6)
+- Medida (eval/relatorio-t3-agente-rodada1.md, prompt `plano-agente-v1`, sem limite de taxa): agente 10/10 nas regras × chamada única 5/10; p50 12,4 s × 2,6 s; custo US$ 0,011 × 0,002; juiz cego 2 × 3 (pela D159, "pior" → desligado).
+- O candidato viu as diferenças (a chamada única reprova por número no convite e por tamanho; o agente perde em redação: "Volte no terça", "grátis por nossa conta", tom burocrático) e escolheu ligar: confiabilidade nas regras vence; a chamada única fica de reserva (cadeia agente → única → sem IA).
+- Depois perguntou se ajustar as instruções resolveria a derrota no juiz → prompt `plano-agente-v2` (texto renderizado no "checar texto", sem repetir o que {oferta} diz, sem artigo antes de {horario}, tom caloroso com 1 fato) e 2ª rodada; ligado de qualquer jeito, as 2 rodadas no relatório.
+- 2ª rodada (`plano-agente-v2`, eval/relatorio-t3-agente.md): agente 9/10 × única 8/10; p50 14 s × 2,6 s; juiz 3 × 4 em 7 pares (o juiz agora critica o convite do agente sem dias e horários e a justificativa mais vaga). O ajuste não virou o placar; a diferença segue dentro do acaso. Ligado (D225).
+- Alternativas: seguir a regra (desligado); opção do dono por restaurante; ver os textos antes. Trade-off: menos texto modelo e mais IA real × 5× custo e ~12 s por plano. A 1ª rodada do dia (429 em 12 de 20) foi descartada.

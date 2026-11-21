@@ -6,19 +6,24 @@
  */
 import { z } from "zod";
 import type { SlotCandidates } from "@/src/modules/onboarding/domain/candidates";
-import { formatFact } from "@/src/modules/textos/domain/references";
+import { formatFact, renderReferences } from "@/src/modules/textos/domain/references";
 import { guardText } from "../guardrails";
 import type { AgentStep, AiTool, ModelRef } from "../gateway";
 import type { TaskDef } from "../run-task";
 import { buildPackageTask, type PackageOut, type PackagePrompt } from "./package";
 
-export const AGENT_PROMPT_VERSION = "plano-agente-v1";
+export const AGENT_PROMPT_VERSION = "plano-agente-v2";
 export const AGENT_MAX_STEPS = 6;
 
 export const AGENT_RULES = `Você trabalha como agente. Antes da resposta final, use as ferramentas:
 - ver_candidatas para cada faixa e ver_fatos para os números do restaurante;
 - custo_semana para conferir o custo máximo da oferta escolhida;
-- checar_texto em CADA textoConvite e justificativa; se apontar problema, reescreva e confira de novo.
+- checar_texto em CADA textoConvite e justificativa. Ela devolve o texto como o cliente e o dono vão ler ("renderizado"): leia em voz alta; se apontar problema ou soar estranho, reescreva e confira de novo.
+Escrita (vale o tom da casa acima):
+- textoConvite é um recado caloroso da casa, curto e natural, como se o dono falasse com o cliente. Nada de linguagem de relatório.
+- {oferta} já diz o benefício inteiro (ex.: "Cannoli grátis"): não repita "grátis", "por nossa conta" nem o nome do prato ao lado dela.
+- {horario:X} vira uma frase completa (ex.: "terça, quarta e quinta, das 15h às 18h"): não ponha "no", "na", "nas" nem "em" antes dela; use "Volte {horario:X}" ou "De {horario:X}…" só se ler bem no renderizado.
+- justificativa: cite pelo menos 1 fato concreto do restaurante com {fato:chave} e explique em 1 ou 2 frases por que a oferta casa com o horário.
 A resposta final segue exatamente o formato pedido.`;
 
 const BRL = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 });
@@ -74,8 +79,11 @@ export function buildPlanAgentTools(pp: PackagePrompt, cands: readonly SlotCandi
         const oferta = faixa ? [...pp.candByAlias.values()].find((c) => c.slotAlias === faixa)?.gain : undefined;
         const allowed = campo === "textoConvite" ? (["prato", "horario", "oferta"] as const) : (["fato", "prato", "horario", "oferta"] as const);
         const maxLen = campo === "textoConvite" ? 160 : campo === "justificativa" ? 400 : 300;
-        const g = guardText(texto, { ...pp.ctxBase, oferta: oferta ?? "a oferta" }, { allowed, maxLen, field: campo, mode: "ia", avoid: pp.avoid });
-        return g.ok ? { ok: true } : { ok: false, problemas: g.reasons };
+        const ctx = { ...pp.ctxBase, oferta: oferta ?? "a oferta" };
+        const g = guardText(texto, ctx, { allowed, maxLen, field: campo, mode: "ia", avoid: pp.avoid });
+        // O agente lê o texto como vai ficar (revisão da 1ª rodada da T3: "Volte no terça" passou sem ninguém ler).
+        const renderizado = renderReferences(texto, ctx);
+        return g.ok ? { ok: true, renderizado } : { ok: false, problemas: g.reasons, renderizado };
       },
     },
   ];

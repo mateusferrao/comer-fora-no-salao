@@ -57,6 +57,8 @@ describe("plano da semana (S3 §4.3–4.4)", () => {
     await seedAll(getDb(), fixedClock(NOW.toISOString()), vitrineHistory);
     // Revisor (ligado por padrão — D148) só nos testes dele, com gateway falso.
     await setFlag(getDb(), "revisor", false);
+    // Estes testes medem a chamada única (o agente — D225 — tem o próprio teste em plan-agent.test.ts).
+    await setFlag(getDb(), "plano_agente", false);
     calls = 0;
   }, 120_000);
   afterAll(closeDb);

@@ -86,7 +86,8 @@ describe("plano como agente (S6.3b, D159, D194)", () => {
 
     withTools = 0;
     withoutTools = 0;
-    // Sem `agent`: lê a flag global (desligada por padrão — D159).
+    // Sem `agent`: lê a flag global (ligada por padrão desde a D225); desligada nos Bastidores → sem agente.
+    await setFlag(getDb(), "plano_agente", false);
     await generateWeeklyPlan(getDb(), { restaurantId: VITRINE_ID, ownerId: VITRINE_OWNER_ID, now: new Date(NOW.getTime() + 60_000), gateway: agentGateway() });
     expect(withTools).toBe(0);
     expect(withoutTools).toBe(1);

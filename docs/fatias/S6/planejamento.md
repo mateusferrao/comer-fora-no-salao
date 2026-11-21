@@ -622,5 +622,11 @@ type AiTool = { name: string; description: string; input: ZodType; execute(input
 - depois, a E2E profunda e a de produção da `revisar-fatia`.
 
 
-## 14. Mudanças durante a implementação
-(a preencher)
+## 14. Mudanças durante a implementação (21/11)
+- **S6.0:** a geração (Portal) não apaga mais um plano `proposto` que já foi por e-mail: ele vira `vencido`, para o link mostrar "substituído" [C]. `finalFromStored` compartilhado entre o MCP e o link do e-mail. Rodapé de protótipo extraído para `shared/prototype.ts`.
+- **S6.1:** dono "via link" sem e-mail vê a prévia com o link funcionando; "Rodar o ciclo agora neste restaurante" usa o `scope` do tique (sem horário, só restaurantes do dono). `SidePanel` passou a usar id único no título (2 painéis na mesma tela davam o nome acessível errado). O lembrete não aparece na Jornada (`listCustomerMessages` filtra). "Notificação no app" virou "Convites de volta no app" também no cadastro.
+- **S6.2:** o link é a rota `/garcom/<token>` (redireciona para `/garcom` depois de gravar o cookie); o cartão impresso troca "valide no Portal" por "valide no link do garçom" na renderização.
+- **S6.3a:** "Pode entrar em ofertas" recusa só quando zera as candidatas (as candidatas são as mesmas em todas as faixas); avisos "uma_opcao" e "em_uso_ate_trocar". Exclusão lógica com `deleted_at` (o item some da lista; códigos e textos antigos continuam). Padrões de instrução com limite de palavra só em "Fatos"; fixture com 30 textos legítimos e 15 injeções. `no-raw-sql.test.ts` com 2 usos permitidos (constantes).
+- **S6.3b:** spike: o Gemini recusa ferramenta obrigatória junto com saída JSON → escolha automática e último passo sem ferramentas. A 1ª rodada da T3 do agente (429 em 12 de 20) foi descartada; a rodada válida ficou em `eval/relatorio-t3-agente-rodada1.md`; o candidato decidiu ligar (D225) e pediu o ajuste das instruções (`plano-agente-v2`, 2ª rodada em `eval/relatorio-t3-agente.md`).
+- **S6.4:** porta-conta com `BillHolder` (faixa DL de 21 × 9,9 cm), nasce no kit novo com a flag e por "Adicionar porta-conta" (POST com lock) nos kits existentes.
+- **Abas de Configurações:** degradê na borda (7 abas no celular); `?aba=` abre a aba (`avisos`, `ia`, `cardapio`…).

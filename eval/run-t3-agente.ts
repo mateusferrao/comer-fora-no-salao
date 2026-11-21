@@ -12,7 +12,7 @@ import { noopTracer } from "@/src/modules/ia/gateway";
 import { runTask } from "@/src/modules/ia/run-task";
 import { MODELS } from "@/src/modules/ia/models";
 import { buildPackageTask, resolveLearned, resolvePackage } from "@/src/modules/ia/tasks/package";
-import { AGENT_RULES, buildPlanAgentTask, buildPlanAgentTools, storedSteps } from "@/src/modules/ia/tasks/plan-agent";
+import { AGENT_PROMPT_VERSION, AGENT_RULES, buildPlanAgentTask, buildPlanAgentTools, storedSteps } from "@/src/modules/ia/tasks/plan-agent";
 import { mulberry32 } from "@/src/shared/rng";
 import { hash32 } from "@/src/shared/hash32";
 import { systemClock } from "@/src/shared/clock";
@@ -99,7 +99,7 @@ async function main() {
   const reasons = runs.filter((x) => !x.ok).map((x) => `- ${x.mode} ${x.fixture} #${x.rep}: ${x.reason}`);
   const md = `# T3 do agente — plano da semana como agente × chamada única (D159, D191)
 
-Rodada de ${new Date().toISOString().slice(0, 10)} · pausa de 3 s entre chamadas e nova tentativa no limite de taxa (429 não conta como falha do modelo; a 1ª rodada do dia perdeu 12 de 20 execuções por 429 e foi descartada) · modelo ${MODEL.id} (vencedor da T3) · ${FIXTURES.length} fixtures fictícias × ${REPS} repetições · sem reserva (falha conta como falha) · juiz cego fixo \`${JUDGE.id}\` em pares (ordem sorteada) · custo total US$ ${totalCost.toFixed(4)}.
+Rodada de ${new Date().toISOString().slice(0, 10)} · prompt do agente \`${AGENT_PROMPT_VERSION}\` · pausa de 3 s entre chamadas e nova tentativa no limite de taxa (429 não conta como falha do modelo) · modelo ${MODEL.id} (vencedor da T3) · ${FIXTURES.length} fixtures fictícias × ${REPS} repetições · sem reserva (falha conta como falha) · juiz cego fixo \`${JUDGE.id}\` em pares (ordem sorteada) · custo total US$ ${totalCost.toFixed(4)}.
 
 | Modo | Passou nas regras | p50 | Custo/chamada | Passos (média) |
 |---|---|---|---|---|
@@ -110,7 +110,7 @@ Juiz (pares agente × única): agente ${wins} · empate ${ties} · única ${loss
 
 Regra fixada antes da rodada (D159): liga \`plano_agente\` com regras ok ≥ 90%, p50 ≤ 20 s e juiz não pior (vitórias + empates ≥ derrotas).
 
-**Decisão: ${turnOn ? "ligar `plano_agente`" : "manter `plano_agente` desligada"}.**
+**Pela regra da D159: ${turnOn ? "ligaria `plano_agente`" : "não ligaria `plano_agente`"}.** Decisão do candidato (D225): ligado, com a chamada única de reserva — confiabilidade nas regras vence; as rodadas anteriores estão em \`eval/relatorio-t3-agente-rodada1.md\` (prompt \`plano-agente-v1\`; a rodada com 429 foi descartada).
 
 ${reasons.length ? `Falhas:\n${reasons.join("\n")}\n` : ""}
 Exemplo de passos do agente: ${runs.find((x) => x.mode === "agente" && x.ok)?.stepLabels.join(" → ") ?? "—"}

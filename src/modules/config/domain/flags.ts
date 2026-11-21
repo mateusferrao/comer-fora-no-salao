@@ -34,7 +34,8 @@ export const FLAG_DEFAULTS: Flags = {
   resumo_email: false,
   agendador: false,
   modo_garcom: false,
-  plano_agente: false,
+  // D225 (candidato): ligado — confiabilidade nas regras vence; a chamada única fica de reserva.
+  plano_agente: true,
   porta_conta: false,
 };
 export const FLAG_LABEL: Record<Flag, string> = {
@@ -50,7 +51,7 @@ export const FLAG_LABEL: Record<Flag, string> = {
   resumo_email: "Resumo semanal do dono por e-mail com 'Revisar e aprovar' (S6)",
   agendador: "Envio automático do resumo (segunda 08:30) e do lembrete do convite (S6)",
   modo_garcom: "Link do garçom só com 'Validar código' (S6)",
-  plano_agente: "Plano da semana como agente com ferramentas (S6; ligado só se ganhar na medida)",
+  plano_agente: "Plano da semana como agente com ferramentas (S6; ligado pela D225, com a chamada única de reserva)",
   porta_conta: "Peça porta-conta no kit (S6)",
 };
 
