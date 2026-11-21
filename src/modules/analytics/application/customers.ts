@@ -7,6 +7,7 @@ import type { Executor } from "@/src/db/executor";
 import { daySP } from "@/src/shared/tz";
 import { addDaysSP } from "@/src/shared/week";
 import { segmentOf, SEGMENTS, type Segment } from "../domain/segments";
+import { DEFAULT_QUERY, listPage, type ListQuery } from "../domain/customer-list";
 import type { ReactivationCustomer } from "@/src/modules/planos/domain/reactivation";
 
 export type CustomerRow = {
@@ -25,7 +26,15 @@ export type CustomerRow = {
   hasActiveInvite: boolean;
 };
 
-export type SegmentsView = { counts: Record<Segment, { count: number; optIn: number }>; list: CustomerRow[]; segment: Segment };
+export type SegmentsView = {
+  counts: Record<Segment, { count: number; optIn: number }>;
+  list: CustomerRow[];
+  segment: Segment;
+  query: ListQuery;
+  /** Resultado da busca no grupo, a página efetiva e o total de páginas (ajuste de 21/11). */
+  total: number;
+  pages: number;
+};
 
 import { shortName } from "@/src/shared/name";
 export { shortName };
@@ -59,7 +68,7 @@ export async function loadCustomerRows(ex: Executor, restaurantId: string, now: 
     return {
       id: String(r.customer_id),
       displayName: shortName(r.name == null ? null : String(r.name)),
-      phoneHint: `•••• ${String(r.phone_last4 ?? "")}`,
+      phoneHint: r.phone_last4 ? `•••• ${String(r.phone_last4)}` : "—",
       firstDay: (r.first_day as string | null) ?? null,
       lastDay,
       visits,
@@ -80,16 +89,16 @@ export function toReactivationCustomers(rows: readonly CustomerRow[]): Reactivat
   return rows.map((c) => ({ id: c.id, arm: c.arm, optIn: hasOptIn(c), segments: c.segments, hasActiveInvite: c.hasActiveInvite, lastDay: c.lastDay }));
 }
 
-export async function getSegments(ex: Executor, restaurantId: string, now: Date, segment: Segment = "sumiu"): Promise<SegmentsView> {
+export async function getSegments(ex: Executor, restaurantId: string, now: Date, segment: Segment = "sumiu", query: ListQuery = DEFAULT_QUERY): Promise<SegmentsView> {
   const all = await loadCustomerRows(ex, restaurantId, now);
   const counts = Object.fromEntries(SEGMENTS.map((s) => [s, { count: 0, optIn: 0 }])) as SegmentsView["counts"];
   for (const c of all) for (const s of c.segments) {
     counts[s].count++;
     if (hasOptIn(c)) counts[s].optIn++;
   }
-  const list = all
-    .filter((c) => c.segments.includes(segment))
-    .sort((a, b) => ((b.lastDay ?? "") > (a.lastDay ?? "") ? 1 : (b.lastDay ?? "") < (a.lastDay ?? "") ? -1 : 0))
-    .slice(0, 20);
-  return { counts, list, segment };
+  const r = listPage(
+    all.filter((c) => c.segments.includes(segment)),
+    query,
+  );
+  return { counts, list: r.items, segment, query: { ...query, page: r.page }, total: r.total, pages: r.pages };
 }
