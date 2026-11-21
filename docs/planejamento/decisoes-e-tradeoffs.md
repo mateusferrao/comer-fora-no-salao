@@ -1231,3 +1231,24 @@ Detalhes, revisão independente (2 subagentes, 2 rodadas) e itens [C] em [docs/f
 - "Rollback por revert": as migrações 0006–0007 são só de ida; volta por flag ou por correção nova, nunca por imagem antiga (registrado no roteiro de deploy).
 - Data final do agendador (31/12): o candidato decidiu "sem data, desligo a flag" (D193); mantido.
 - Roteiro da demo de 8 minutos, fala sobre o agente ("empata nas regras; ganho de redação indicativo"), visão de negócio do iFood e escopo mostrado: entram na S7 (apresentação), como pediu a revisão de aderência.
+
+### Ajustes pedidos pelo candidato depois do fechamento S4–S6 (21/11)
+**D232 — Clientes: todos do grupo, 20 por página, busca por nome e ordenação por coluna** (21/11, candidato: "Só paginar os grupos") ✅
+- Os 4 grupos continuam; cada um lista todos os clientes, 20 por página, com busca (sem acento nem caixa) e ordenação clicando no título (`aria-sort`). Tudo por URL (`?q&ordem&dir&pagina`), funciona sem JS.
+- [C] A busca é pelo nome mostrado (primeiro nome + inicial, D106): buscar pelo sobrenome revelaria o que a tela esconde. Telefone não ordena nem busca.
+- Alternativas: aba "Todos os clientes"; lista única com filtro de grupo.
+
+**D233 — Porta-conta: 3 por A4, com o porquê na tela; folha encaixada no celular** (21/11, candidato: "3 por A4 + explicação") ✅
+- DL (21 × 9,9 cm = ⅓ de A4) é o encarte de porta-conta; a folha rende 3 iguais para recortar. A tela de impressão explica isso (e os 4 cartões do garçom).
+- [C] Na tela, a folha é reduzida por escala para caber na largura (`FitSheet`); na impressão, tamanho real. Vale para as 4 peças.
+- Alternativas: 1 por folha (sobra ⅔); o dono escolher.
+
+**D234 — Seletor próprio no design system** (21/11, candidato: "Componente próprio") ✅
+- `Select` no lugar dos 19 `<select>` nativos: lista suspensa no computador, `BottomSheet` no celular, padrão ARIA listbox com teclado.
+- Alternativas: nativo estilizado (barato, picker do sistema); manter. Trade-off: mais código e testes × aparência única do sistema.
+
+**D235 — Cabeçalho do Portal fixo no celular** (21/11, pedido do candidato; forma [C]) ✅
+- Gruda logo abaixo da barra de protótipo (altura medida em `--proto-h`, 1 ou 2 linhas); `scroll-padding-top` para foco e âncoras não ficarem escondidos (WCAG 2.4.11).
+
+**D236 — Unidade repetida depois do fato** (21/11, IA [C], achado no print do candidato) ✅
+- "{fato:convites_x} convites" virava "160 convites convites". `renderReferences` tira a unidade repetida logo depois de um fato que já a traz. Alternativa: regra no guard que bloqueia (geraria nova tentativa da IA por um problema de forma).
