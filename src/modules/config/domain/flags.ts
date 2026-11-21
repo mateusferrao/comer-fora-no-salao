@@ -18,6 +18,10 @@ export const FLAGS = [
   "modo_garcom",
   "plano_agente",
   "porta_conta",
+  // S8 (D270): copiloto e MCP sobre o catálogo; nascem desligados e ligam quando verdes.
+  "copiloto",
+  "mcp_clientes",
+  "mcp_edicao",
 ] as const;
 export type Flag = (typeof FLAGS)[number];
 export type Flags = Record<Flag, boolean>;
@@ -37,6 +41,9 @@ export const FLAG_DEFAULTS: Flags = {
   // D225 (candidato): ligado — confiabilidade nas regras vence; a chamada única fica de reserva.
   plano_agente: true,
   porta_conta: false,
+  copiloto: false,
+  mcp_clientes: false,
+  mcp_edicao: false,
 };
 export const FLAG_LABEL: Record<Flag, string> = {
   ab: "A/B das peças (status e 'promover vencedora')",
@@ -53,6 +60,9 @@ export const FLAG_LABEL: Record<Flag, string> = {
   modo_garcom: "Link do garçom só com 'Validar código' (S6)",
   plano_agente: "Plano da semana como agente com ferramentas (S6; ligado pela D225, com a chamada única de reserva)",
   porta_conta: "Peça porta-conta no kit (S6)",
+  copiloto: "Assistente do salão no Portal: pedidos viram propostas que o dono aplica (S8)",
+  mcp_clientes: "MCP: agente vê clientes por nome curto, sem contato (S8)",
+  mcp_edicao: "MCP: agente propõe e aplica mudanças nas Configurações (S8)",
 };
 
 /** Tarefas com bloco de instruções editável ao vivo (D58): só instruções/tom; schema e regras ficam no código. */

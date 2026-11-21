@@ -6,6 +6,7 @@ import { resolveGitSha } from "@/src/shared/git-sha";
 import { createHealthHandler } from "@/src/shared/health";
 import { mailConfigured } from "@/src/modules/contas/adapters/mail-factory";
 import { keyState } from "@/src/modules/ia/gateway-factory";
+import { fakeCopilotEnabled } from "@/src/modules/agente/adapters/fake-copilot-gateway";
 
 export const dynamic = "force-dynamic";
 
@@ -27,4 +28,5 @@ export const GET = createHealthHandler({
   sha: resolveGitSha(),
   mail: () => mailConfigured(),
   ia: () => ({ publica: keyState(process.env.OPENROUTER_KEY_PUBLIC), demo: keyState(process.env.OPENROUTER_KEY_DEMO) }),
+  fakeAi: () => fakeCopilotEnabled(process.env),
 });
