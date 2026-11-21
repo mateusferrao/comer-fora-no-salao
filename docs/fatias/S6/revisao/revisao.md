@@ -69,7 +69,9 @@ Logs: `e2e-profunda-1.log` (antes das correções) e `e2e-profunda-2.log` (depoi
 | Telas públicas a 390 e 1280 px (raiz, entrar, apresentação, Como funciona, `/r/cantina-nonna-lucia`) | 200, sem rolagem lateral, axe limpo | ok | `capturas/prod-*` | ✓ |
 | Rotas atrás de flag desligada (`/garcom`, `/parceiro/aprovar/<inválido>`) | 404 | 404 | `capturas/prod-*` | ✓ |
 | `/api/health` durante a fumaça | sempre ok | ok em 27 leituras (5 min) | — | ✓ |
-| Passada com as flags da S5/S6 ligadas (`E2E_FLAGS=on`) | `*.on.spec.ts` verdes | **pendente**: ligar as flags exige a senha dos Bastidores, que só o candidato lê (D139) | — | pendente |
+| Flags da S5/S6 ligadas nos Bastidores (21/11, 16h50, com autorização do candidato) | 14 flags `true` | `painel_valor`, `copy_v2`, `explica_ia`, `resumo_email`, `modo_garcom`, `porta_conta`, `agendador` ligadas; as da S3 e `plano_agente` mantidas | `GET /api/bastidores/estado` | ✓ |
+| Suíte E2E inteira contra produção com `E2E_FLAGS=on` (`chromium` + `flags-on`) | verde | 82 ✓, 8 pulados de propósito (preparação de flags e testes só locais) em 3,2 min | log local | ✓ |
+| Telas públicas de novo, com as flags | `/garcom` sem 404 | 200, axe limpo, sem rolagem lateral | `capturas/prod-*` | ✓ |
 
 ## 5. Console, rede, tempos e acessibilidade
 - Antes: rolagem horizontal de 203 px em Configurações › Cardápio a 390 px; `heading-order` em Cardápio e Restaurante. Depois: nenhum.
@@ -93,4 +95,5 @@ D227–D231 em `decisoes-e-tradeoffs.md` (seção "Revisão S4–S6 — decisõe
 - Merge único na `main` (`959f679`, D167). Conflito só nos documentos (a `main` tinha as cópias dos planejamentos); ficou a versão do branch, que contém as da `main`. Árvore do merge idêntica à revisada.
 - CI #75: `check`, `integracao`, `e2e` (88 ✓) e `deploy` + fumaça em produção (45 ✓) verdes.
 - Nenhuma variável de ambiente nova: a chave do e-mail deriva do `SESSION_SECRET` (S4).
-- **Pendente**: ligar `painel_valor`, `copy_v2`, `explica_ia`, `resumo_email`, `modo_garcom`, `porta_conta` e `agendador` nos Bastidores e rodar a E2E com `E2E_FLAGS=on`.
+- Flags da S5/S6 ligadas em produção pela IA, com a senha lida no Easypanel por autorização explícita do candidato ("Eu permito você a usar a senha de produção"); a senha não foi gravada em arquivo, código, commit nem log. Uma tentativa anterior (sem senha) gastou 1 dos 5 logins por 15 min.
+- E2E de produção com as flags: 82 ✓. Com o `agendador` ligado, o 1º resumo automático sai segunda, 08:30, só para donos com e-mail real (D187, D193).
