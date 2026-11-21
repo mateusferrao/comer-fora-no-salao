@@ -20,8 +20,18 @@ test("clientes: 20 por página, página 2, ordenar por Selos (aria-sort), buscar
   await nav.getByRole("link", { name: "Próxima →" }).click();
   await expect(nav).toContainText("Página 2 de");
 
+  // Ordenar não joga a tela para o topo (ajuste de 21/11).
+  await page.evaluate(() => window.scrollTo(0, 300));
+  await expect.poll(() => page.evaluate(() => window.scrollY)).toBe(300);
+  const before = 300;
+  expect(before).toBeGreaterThan(100);
   await page.getByRole("link", { name: /^Selos/ }).click();
   await expect(page.getByRole("columnheader", { name: /Selos/ })).toHaveAttribute("aria-sort", "descending");
+  const after = await page.evaluate(() => window.scrollY);
+  expect(Math.abs(after - before)).toBeLessThan(40);
+  // Setas em SVG (nunca emoji).
+  await expect(page.getByRole("columnheader", { name: /Selos/ }).locator("svg")).toHaveCount(1);
+  await expect(page.locator("thead")).not.toContainText(/[↕▲▼]/);
   const stamps = await rows.locator("td:nth-child(5)").allTextContents();
   const n = stamps.map((t) => Number(t.split("/")[0]));
   expect(n).toEqual([...n].sort((a, b) => b - a));

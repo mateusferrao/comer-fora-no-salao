@@ -24,6 +24,16 @@ const COLS: Array<{ label: string; sort?: SortKey }> = [
   { label: "Opt-in", sort: "optin" },
 ];
 
+/** Setas pretas de ordenação (SVG, nunca emoji): as duas em cinza quando a coluna não está ordenada. */
+function SortIcon({ dir }: { dir: "asc" | "desc" | null }) {
+  return (
+    <svg aria-hidden="true" viewBox="0 0 10 14" className="h-3.5 w-2.5 shrink-0">
+      <path d="M5 1 9 6H1z" className={dir === "asc" ? "fill-ink" : dir === null ? "fill-ink-muted" : "fill-transparent"} />
+      <path d="M5 13 1 8h8z" className={dir === "desc" ? "fill-ink" : dir === null ? "fill-ink-muted" : "fill-transparent"} />
+    </svg>
+  );
+}
+
 function href(segment: Segment, q: Partial<ListQuery>): string {
   const p = new URLSearchParams({ segmento: segment });
   if (q.q) p.set("q", q.q);
@@ -58,7 +68,7 @@ export function CustomersView({ data }: { data: SegmentsView }) {
           {LABEL[data.segment].title}
         </h2>
         <p className="text-sm text-ink-muted">{LABEL[data.segment].hint}</p>
-        <form method="get" action={BASE} role="search" className="flex flex-wrap items-end gap-2">
+        <form method="get" action={`${BASE}#lista`} role="search" className="flex flex-wrap items-end gap-2">
           <input type="hidden" name="segmento" value={data.segment} />
           <input type="hidden" name="ordem" value={data.query.sort} />
           <input type="hidden" name="dir" value={data.query.dir} />
@@ -77,7 +87,7 @@ export function CustomersView({ data }: { data: SegmentsView }) {
             Buscar
           </button>
           {data.query.q && (
-            <Link href={href(data.segment, { sort: data.query.sort, dir: data.query.dir })} className="min-h-11 content-center px-2 text-sm font-semibold text-red-text underline">
+            <Link href={href(data.segment, { sort: data.query.sort, dir: data.query.dir })} scroll={false} className="min-h-11 content-center px-2 text-sm font-semibold text-red-text underline">
               Limpar busca
             </Link>
           )}
@@ -100,10 +110,11 @@ export function CustomersView({ data }: { data: SegmentsView }) {
                         {c.sort ? (
                           <Link
                             href={href(data.segment, { q: data.query.q, sort: c.sort, dir: next })}
+                            scroll={false}
                             className={`inline-flex min-h-8 items-center gap-1 underline-offset-2 hover:underline ${active ? "font-semibold text-ink" : ""}`}
                           >
                             {c.label}
-                            <span aria-hidden="true">{active ? (data.query.dir === "asc" ? "▲" : "▼") : "↕"}</span>
+                            <SortIcon dir={active ? data.query.dir : null} />
                             <span className="sr-only">{active ? `, ordenado ${data.query.dir === "asc" ? "do menor para o maior" : "do maior para o menor"}` : ", ordenar"}</span>
                           </Link>
                         ) : (
@@ -133,7 +144,7 @@ export function CustomersView({ data }: { data: SegmentsView }) {
         {data.pages > 1 && (
           <nav aria-label="Páginas da lista de clientes" className="flex flex-wrap items-center justify-between gap-2 text-sm">
             {data.query.page > 1 ? (
-              <Link href={href(data.segment, { ...data.query, page: data.query.page - 1 })} className="min-h-11 content-center font-semibold text-red-text underline" rel="prev">
+              <Link href={`${href(data.segment, { ...data.query, page: data.query.page - 1 })}#lista`} className="min-h-11 content-center font-semibold text-red-text underline" rel="prev">
                 ← Anterior
               </Link>
             ) : (
@@ -143,7 +154,7 @@ export function CustomersView({ data }: { data: SegmentsView }) {
               Página {data.query.page} de {data.pages}
             </span>
             {data.query.page < data.pages ? (
-              <Link href={href(data.segment, { ...data.query, page: data.query.page + 1 })} className="min-h-11 content-center font-semibold text-red-text underline" rel="next">
+              <Link href={`${href(data.segment, { ...data.query, page: data.query.page + 1 })}#lista`} className="min-h-11 content-center font-semibold text-red-text underline" rel="next">
                 Próxima →
               </Link>
             ) : (
