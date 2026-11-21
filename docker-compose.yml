@@ -1,0 +1,15 @@
+# Postgres local para quem tem Docker (alternativa ao Postgres nativo).
+# DATABASE_URL=postgres://salao:salao@localhost:5432/salao
+services:
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: salao
+      POSTGRES_PASSWORD: salao
+      POSTGRES_DB: salao
+    ports:
+      - "5432:5432"
+    volumes:
+      - salao-db:/var/lib/postgresql/data
+volumes:
+  salao-db:

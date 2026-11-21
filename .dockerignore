@@ -1,0 +1,25 @@
+# Só o .git mínimo para resolver o SHA no build (alternativa 2 do planejamento S0 §6.5)
+.git
+!.git/HEAD
+!.git/refs
+!.git/packed-refs
+
+node_modules
+.next
+docs
+referencias
+eval
+tests
+.claude
+.github
+playwright-report
+test-results
+docker-compose.yml
+*.md
+**/*.pdf
+**/*.png
+!public/**
+
+# Segredos nunca entram na imagem
+.env
+.env.*

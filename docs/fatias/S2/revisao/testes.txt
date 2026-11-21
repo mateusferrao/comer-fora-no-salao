@@ -1,0 +1,22 @@
+ RUN  v5.1.1 /home/user/ifood-genai-2027
+
+
+ Test Files  35 passed (35)
+      Tests  221 passed (221)
+   Start at  13:06:29
+   Duration  13.36s (tests 82%, import 15%, transform 2%, worker 1%)
+
+ RUN  v5.1.1 /home/user/ifood-genai-2027
+
+
+ Test Files  11 passed (11)
+      Tests  50 passed (50)
+   Start at  13:06:43
+   Duration  29.56s (tests 83%, import 16%, transform 1%)
+
+E2E local: 45/45 (3 execuções seguidas), tests/e2e/dono.spec.ts com 10 testes do dono. Lint, tipos e fronteiras verdes. Build: pico 1,39 GB.
+      Tests  228 passed (228)
+   Start at  14:16:35
+   Duration  13.49s (tests 75%, import 21%, transform 3%, worker 1%)
+
+Revisão: unit 228, integração 51, E2E local 45/45.

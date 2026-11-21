@@ -1,0 +1,51 @@
+/*
+ * Tokens do design system (D80, D82). Cores, alturas e raios medidos nos prints de `referencias/`
+ * (amostragem de pixels, prints a 3x); neutros e sombras da designmd.app quando o print não mostra.
+ * O print vence. Espaçamento: escala padrão do Tailwind 4 (--spacing = 0,25rem = 4px), não redefinida.
+ * Espelho em TS: src/ui/tokens.ts.
+ */
+@theme {
+  /* Neutros (app/04, app/11) */
+  --color-white: #ffffff;
+  --color-ink: #151515; /* texto principal, botão principal do app */
+  --color-ink-muted: #666666; /* texto secundário, abas inativas, chips */
+  --color-surface: #ffffff;
+  --color-surface-muted: #f5f5f5; /* botão secundário, chips, card de benefícios */
+  --color-sheet: #fafafa; /* fundo do bottom sheet */
+  --color-page: #f2f2f2; /* fundo fora da coluna do app (neutro) */
+  --color-border: #ebebeb; /* contorno do botão secundário */
+  --color-divider: #e0e0e0; /* linha sob as abas */
+  --color-handle: #d8d8d8; /* alça do bottom sheet */
+
+  /* Vermelhos (D80) */
+  --color-red-button: #e71c2b; /* fundo de botão com texto branco */
+  --color-red-brand: #ea1d2c; /* logo e áreas sem texto */
+  --color-red-text: #d72e3b; /* texto vermelho pequeno, contorno */
+  --color-red-chart: #ef5652; /* barras do funil (S3) */
+  --color-nav-active: #fef6f7; /* item ativo da barra lateral (portal/05: fundo rosado) — texto vermelho a 4,54:1 */
+
+  /* Verde: só com texto escuro ou texto grande em negrito (branco dá 2,86:1) */
+  --color-green: #52aa6e;
+
+  /* Barra de protótipo */
+  --color-proto-bg: #2b2b2b;
+  --color-proto-fg: #ffffff;
+
+  /* Raios: escala da designmd.app; botão (12) e sheet (56) medidos */
+  --radius-xs: 4px; /* botões do Portal (portal/01) */
+  --radius-sm: 8px;
+  --radius-md: 12px; /* botões do app (app/04: 48 pt de altura, raio 12) */
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+  --radius-sheet: 56px; /* app/11: ~55 pt */
+
+  /* Sombras (designmd.app) */
+  --shadow-low: 0 1px 3px rgba(0, 0, 0, 0.08);
+  --shadow-medium: 0 2px 8px rgba(0, 0, 0, 0.12);
+  --shadow-high: 0 4px 16px rgba(0, 0, 0, 0.16);
+  --shadow-highest: 0 8px 24px rgba(0, 0, 0, 0.2);
+}
+
+@theme inline {
+  --font-sans: "Inter Variable", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}

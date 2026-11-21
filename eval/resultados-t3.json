@@ -1,0 +1,1145 @@
+{
+  "when": "2026-11-20T18:41:20.052Z",
+  "judge": "moonshotai/kimi-k3.1-pro",
+  "reps": 2,
+  "fixtures": [
+    {
+      "id": "boteco",
+      "nota": "boteco, tarde vazia de semana e domingo à noite"
+    },
+    {
+      "id": "burger",
+      "nota": "hamburgueria, almoço de terça a quinta vazio"
+    },
+    {
+      "id": "sushi",
+      "nota": "japonês, segunda e terça à noite vazias"
+    },
+    {
+      "id": "vitrine",
+      "nota": "cantina com histórico: plano da semana com veredito do código"
+    },
+    {
+      "id": "borda",
+      "nota": "borda: cardápio pequeno (5 itens), 1 faixa de café da tarde"
+    }
+  ],
+  "summary": [
+    {
+      "model": "gemini-3.1-flash-lite",
+      "provider": "google",
+      "id": "google/gemini-3.1-flash-lite",
+      "okPct": 0.7,
+      "p50Ms": 1081,
+      "avgCostUsd": 0.0007328999999999999,
+      "differsFromTopPct": 1,
+      "judge": {
+        "n": 4,
+        "item_turno": 4.75,
+        "fato": 3,
+        "voz": 3.25,
+        "media": 3.6666666666666665,
+        "vitorias": 3,
+        "empates": 0
+      },
+      "eligible": false
+    },
+    {
+      "model": "gpt-6-luna",
+      "provider": "openai",
+      "id": "openai/gpt-6-luna",
+      "okPct": 0.9,
+      "p50Ms": 1494,
+      "avgCostUsd": 0.0001799485,
+      "differsFromTopPct": 0.6923076923076923,
+      "judge": {
+        "n": 5,
+        "item_turno": 4.6,
+        "fato": 3.4,
+        "voz": 2.6,
+        "media": 3.533333333333333,
+        "vitorias": 3,
+        "empates": 0
+      },
+      "eligible": true
+    },
+    {
+      "model": "deepseek-v4.1-flash",
+      "provider": "deepseek",
+      "id": "deepseek/deepseek-v4.1-flash",
+      "okPct": 0.6,
+      "p50Ms": 1375,
+      "avgCostUsd": 0.0006258980000000001,
+      "differsFromTopPct": 0.75,
+      "judge": {
+        "n": 3,
+        "item_turno": 4.666666666666667,
+        "fato": 5,
+        "voz": 4,
+        "media": 4.555555555555555,
+        "vitorias": 3,
+        "empates": 0
+      },
+      "eligible": false
+    },
+    {
+      "model": "claude-haiku-5.5 (conflito declarado)",
+      "provider": "anthropic",
+      "id": "anthropic/claude-haiku-5.5",
+      "okPct": 0.5,
+      "p50Ms": 2277,
+      "avgCostUsd": 0.0004127799999999999,
+      "differsFromTopPct": 0.7142857142857143,
+      "judge": {
+        "n": 2,
+        "item_turno": 5,
+        "fato": 4,
+        "voz": 4,
+        "media": 4.333333333333333,
+        "vitorias": 2,
+        "empates": 0
+      },
+      "eligible": false
+    },
+    {
+      "model": "qwen3.8-flash",
+      "provider": "qwen",
+      "id": "qwen/qwen3.8-flash",
+      "okPct": 0,
+      "p50Ms": null,
+      "avgCostUsd": 0,
+      "differsFromTopPct": null,
+      "judge": {
+        "n": 0,
+        "item_turno": null,
+        "fato": null,
+        "voz": null,
+        "media": null,
+        "vitorias": 0,
+        "empates": 0
+      },
+      "eligible": false
+    },
+    {
+      "model": "gemini-3.8-flash (referência)",
+      "provider": "google",
+      "id": "google/gemini-3.8-flash",
+      "okPct": 0.9,
+      "p50Ms": 2794,
+      "avgCostUsd": 0.0020870999999999997,
+      "differsFromTopPct": 0.75,
+      "judge": {
+        "n": 4,
+        "item_turno": 4.75,
+        "fato": 4.5,
+        "voz": 4,
+        "media": 4.416666666666667,
+        "vitorias": 3,
+        "empates": 0
+      },
+      "eligible": true
+    }
+  ],
+  "winner": "gemini-3.8-flash (referência)",
+  "reserve": "gpt-6-luna",
+  "baseScores": {
+    "item_turno": 4.277777777777778,
+    "fato": 3.611111111111111,
+    "voz": 2.3333333333333335
+  },
+  "totalCostUsd": 0.14112479500000003,
+  "runs": [
+    {
+      "model": "gemini-3.1-flash-lite",
+      "provider": "google",
+      "fixture": "boteco",
+      "rep": 1,
+      "ok": false,
+      "reason": "invalid: textoConvite:tamanho:180>160; textoConvite:tamanho:194>160; justificativa:referencia:fato:fato:faixa_B_mesas",
+      "latencyMs": 1994,
+      "costUsd": 0.000859,
+      "differsFromTop": 0,
+      "slots": 0
+    },
+    {
+      "model": "gemini-3.1-flash-lite",
+      "provider": "google",
+      "fixture": "boteco",
+      "rep": 2,
+      "ok": false,
+      "reason": "invalid: justificativa:referencia:fato:fato_A_turno; justificativa:referencia:fato:fato_B_turno",
+      "latencyMs": 1855,
+      "costUsd": 0.000934,
+      "differsFromTop": 0,
+      "slots": 0
+    },
+    {
+      "model": "gemini-3.1-flash-lite",
+      "provider": "google",
+      "fixture": "burger",
+      "rep": 1,
+      "ok": true,
+      "latencyMs": 1054,
+      "costUsd": 0.00053625,
+      "differsFromTop": 1,
+      "slots": 1
+    },
+    {
+      "model": "gemini-3.1-flash-lite",
+      "provider": "google",
+      "fixture": "burger",
+      "rep": 2,
+      "ok": true,
+      "latencyMs": 1081,
+      "costUsd": 0.00058125,
+      "differsFromTop": 1,
+      "slots": 1
+    },
+    {
+      "model": "gemini-3.1-flash-lite",
+      "provider": "google",
+      "fixture": "sushi",
+      "rep": 1,
+      "ok": true,
+      "latencyMs": 1069,
+      "costUsd": 0.00055425,
+      "differsFromTop": 1,
+      "slots": 1
+    },
+    {
+      "model": "gemini-3.1-flash-lite",
+      "provider": "google",
+      "fixture": "sushi",
+      "rep": 2,
+      "ok": true,
+      "latencyMs": 1273,
+      "costUsd": 0.00055725,
+      "differsFromTop": 1,
+      "slots": 1
+    },
+    {
+      "model": "gemini-3.1-flash-lite",
+      "provider": "google",
+      "fixture": "vitrine",
+      "rep": 1,
+      "ok": true,
+      "latencyMs": 2108,
+      "costUsd": 0.00117225,
+      "differsFromTop": 2,
+      "slots": 2
+    },
+    {
+      "model": "gemini-3.1-flash-lite",
+      "provider": "google",
+      "fixture": "vitrine",
+      "rep": 2,
+      "ok": true,
+      "latencyMs": 1770,
+      "costUsd": 0.00113025,
+      "differsFromTop": 2,
+      "slots": 2
+    },
+    {
+      "model": "gemini-3.1-flash-lite",
+      "provider": "google",
+      "fixture": "borda",
+      "rep": 1,
+      "ok": true,
+      "latencyMs": 911,
+      "costUsd": 0.00050525,
+      "differsFromTop": 1,
+      "slots": 1
+    },
+    {
+      "model": "gemini-3.1-flash-lite",
+      "provider": "google",
+      "fixture": "borda",
+      "rep": 2,
+      "ok": false,
+      "reason": "invalid: textoConvite:tamanho:178>160",
+      "latencyMs": 1156,
+      "costUsd": 0.00049925,
+      "differsFromTop": 0,
+      "slots": 0
+    },
+    {
+      "model": "gpt-6-luna",
+      "provider": "openai",
+      "fixture": "boteco",
+      "rep": 1,
+      "ok": true,
+      "latencyMs": 1558,
+      "costUsd": 0.000278825,
+      "differsFromTop": 1,
+      "slots": 2
+    },
+    {
+      "model": "gpt-6-luna",
+      "provider": "openai",
+      "fixture": "boteco",
+      "rep": 2,
+      "ok": true,
+      "latencyMs": 1554,
+      "costUsd": 0.00012805,
+      "differsFromTop": 1,
+      "slots": 2
+    },
+    {
+      "model": "gpt-6-luna",
+      "provider": "openai",
+      "fixture": "burger",
+      "rep": 1,
+      "ok": true,
+      "latencyMs": 1081,
+      "costUsd": 0.000202325,
+      "differsFromTop": 1,
+      "slots": 1
+    },
+    {
+      "model": "gpt-6-luna",
+      "provider": "openai",
+      "fixture": "burger",
+      "rep": 2,
+      "ok": true,
+      "latencyMs": 1494,
+      "costUsd": 0.00007775,
+      "differsFromTop": 1,
+      "slots": 1
+    },
+    {
+      "model": "gpt-6-luna",
+      "provider": "openai",
+      "fixture": "sushi",
+      "rep": 1,
+      "ok": true,
+      "latencyMs": 972,
+      "costUsd": 0.0002022,
+      "differsFromTop": 1,
+      "slots": 1
+    },
+    {
+      "model": "gpt-6-luna",
+      "provider": "openai",
+      "fixture": "sushi",
+      "rep": 2,
+      "ok": false,
+      "reason": "invalid: justificativa:proibida:gratis",
+      "latencyMs": 849,
+      "costUsd": 0.00006834,
+      "differsFromTop": 0,
+      "slots": 0
+    },
+    {
+      "model": "gpt-6-luna",
+      "provider": "openai",
+      "fixture": "vitrine",
+      "rep": 1,
+      "ok": true,
+      "latencyMs": 1718,
+      "costUsd": 0.000341825,
+      "differsFromTop": 1,
+      "slots": 2
+    },
+    {
+      "model": "gpt-6-luna",
+      "provider": "openai",
+      "fixture": "vitrine",
+      "rep": 2,
+      "ok": true,
+      "latencyMs": 1974,
+      "costUsd": 0.00019427,
+      "differsFromTop": 1,
+      "slots": 2
+    },
+    {
+      "model": "gpt-6-luna",
+      "provider": "openai",
+      "fixture": "borda",
+      "rep": 1,
+      "ok": true,
+      "latencyMs": 1111,
+      "costUsd": 0.0001537,
+      "differsFromTop": 1,
+      "slots": 1
+    },
+    {
+      "model": "gpt-6-luna",
+      "provider": "openai",
+      "fixture": "borda",
+      "rep": 2,
+      "ok": true,
+      "latencyMs": 1120,
+      "costUsd": 0.0001522,
+      "differsFromTop": 1,
+      "slots": 1
+    },
+    {
+      "model": "deepseek-v4.1-flash",
+      "provider": "deepseek",
+      "fixture": "boteco",
+      "rep": 1,
+      "ok": true,
+      "latencyMs": 1590,
+      "costUsd": 0.0009099,
+      "differsFromTop": 1,
+      "slots": 2
+    },
+    {
+      "model": "deepseek-v4.1-flash",
+      "provider": "deepseek",
+      "fixture": "boteco",
+      "rep": 2,
+      "ok": false,
+      "reason": "invalid: textoConvite:tamanho:166>160",
+      "latencyMs": 1203,
+      "costUsd": 0.00048798,
+      "differsFromTop": 0,
+      "slots": 0
+    },
+    {
+      "model": "deepseek-v4.1-flash",
+      "provider": "deepseek",
+      "fixture": "burger",
+      "rep": 1,
+      "ok": true,
+      "latencyMs": 633,
+      "costUsd": 0.000585,
+      "differsFromTop": 1,
+      "slots": 1
+    },
+    {
+      "model": "deepseek-v4.1-flash",
+      "provider": "deepseek",
+      "fixture": "burger",
+      "rep": 2,
+      "ok": true,
+      "latencyMs": 1839,
+      "costUsd": 0.00034262,
+      "differsFromTop": 1,
+      "slots": 1
+    },
+    {
+      "model": "deepseek-v4.1-flash",
+      "provider": "deepseek",
+      "fixture": "sushi",
+      "rep": 1,
+      "ok": true,
+      "latencyMs": 1015,
+      "costUsd": 0.000531204,
+      "differsFromTop": 1,
+      "slots": 1
+    },
+    {
+      "model": "deepseek-v4.1-flash",
+      "provider": "deepseek",
+      "fixture": "sushi",
+      "rep": 2,
+      "ok": false,
+      "reason": "invalid: justificativa:numero; justificativa:proibida:gratis; faixa_repetida:A",
+      "latencyMs": 1797,
+      "costUsd": 0.000592644,
+      "differsFromTop": 0,
+      "slots": 0
+    },
+    {
+      "model": "deepseek-v4.1-flash",
+      "provider": "deepseek",
+      "fixture": "vitrine",
+      "rep": 1,
+      "ok": false,
+      "reason": "invalid: justificativa:numero; justificativa:numero; aprendemos:proibida:gratis",
+      "latencyMs": 1747,
+      "costUsd": 0.001143204,
+      "differsFromTop": 0,
+      "slots": 0
+    },
+    {
+      "model": "deepseek-v4.1-flash",
+      "provider": "deepseek",
+      "fixture": "vitrine",
+      "rep": 2,
+      "ok": true,
+      "latencyMs": 1375,
+      "costUsd": 0.000664116,
+      "differsFromTop": 1,
+      "slots": 2
+    },
+    {
+      "model": "deepseek-v4.1-flash",
+      "provider": "deepseek",
+      "fixture": "borda",
+      "rep": 1,
+      "ok": false,
+      "reason": "invalid: faixa_repetida:A; faixa_repetida:A",
+      "latencyMs": 1097,
+      "costUsd": 0.000723804,
+      "differsFromTop": 0,
+      "slots": 0
+    },
+    {
+      "model": "deepseek-v4.1-flash",
+      "provider": "deepseek",
+      "fixture": "borda",
+      "rep": 2,
+      "ok": true,
+      "latencyMs": 598,
+      "costUsd": 0.000278508,
+      "differsFromTop": 1,
+      "slots": 1
+    },
+    {
+      "model": "claude-haiku-5.5 (conflito declarado)",
+      "provider": "anthropic",
+      "fixture": "boteco",
+      "rep": 1,
+      "ok": true,
+      "latencyMs": 2934,
+      "costUsd": 0.0004513,
+      "differsFromTop": 1,
+      "slots": 2
+    },
+    {
+      "model": "claude-haiku-5.5 (conflito declarado)",
+      "provider": "anthropic",
+      "fixture": "boteco",
+      "rep": 2,
+      "ok": true,
+      "latencyMs": 2520,
+      "costUsd": 0.0004228,
+      "differsFromTop": 1,
+      "slots": 2
+    },
+    {
+      "model": "claude-haiku-5.5 (conflito declarado)",
+      "provider": "anthropic",
+      "fixture": "burger",
+      "rep": 1,
+      "ok": true,
+      "latencyMs": 2109,
+      "costUsd": 0.0003276,
+      "differsFromTop": 1,
+      "slots": 1
+    },
+    {
+      "model": "claude-haiku-5.5 (conflito declarado)",
+      "provider": "anthropic",
+      "fixture": "burger",
+      "rep": 2,
+      "ok": true,
+      "latencyMs": 2277,
+      "costUsd": 0.0003441,
+      "differsFromTop": 1,
+      "slots": 1
+    },
+    {
+      "model": "claude-haiku-5.5 (conflito declarado)",
+      "provider": "anthropic",
+      "fixture": "sushi",
+      "rep": 1,
+      "ok": false,
+      "reason": "invalid: justificativa:numero",
+      "latencyMs": 2029,
+      "costUsd": 0.0003322,
+      "differsFromTop": 0,
+      "slots": 0
+    },
+    {
+      "model": "claude-haiku-5.5 (conflito declarado)",
+      "provider": "anthropic",
+      "fixture": "sushi",
+      "rep": 2,
+      "ok": true,
+      "latencyMs": 2270,
+      "costUsd": 0.0003467,
+      "differsFromTop": 1,
+      "slots": 1
+    },
+    {
+      "model": "claude-haiku-5.5 (conflito declarado)",
+      "provider": "anthropic",
+      "fixture": "vitrine",
+      "rep": 1,
+      "ok": false,
+      "reason": "invalid: textoConvite:tamanho:165>160; aprendemos:proibida:gratis; aprendemos:proibida:gratis",
+      "latencyMs": 3694,
+      "costUsd": 0.0006154,
+      "differsFromTop": 0,
+      "slots": 0
+    },
+    {
+      "model": "claude-haiku-5.5 (conflito declarado)",
+      "provider": "anthropic",
+      "fixture": "vitrine",
+      "rep": 2,
+      "ok": false,
+      "reason": "invalid: justificativa:numero",
+      "latencyMs": 3920,
+      "costUsd": 0.0006079,
+      "differsFromTop": 0,
+      "slots": 0
+    },
+    {
+      "model": "claude-haiku-5.5 (conflito declarado)",
+      "provider": "anthropic",
+      "fixture": "borda",
+      "rep": 1,
+      "ok": false,
+      "reason": "invalid: justificativa:numero",
+      "latencyMs": 2350,
+      "costUsd": 0.0003309,
+      "differsFromTop": 0,
+      "slots": 0
+    },
+    {
+      "model": "claude-haiku-5.5 (conflito declarado)",
+      "provider": "anthropic",
+      "fixture": "borda",
+      "rep": 2,
+      "ok": false,
+      "reason": "invalid: justificativa:tamanho:422>400",
+      "latencyMs": 2312,
+      "costUsd": 0.0003489,
+      "differsFromTop": 0,
+      "slots": 0
+    },
+    {
+      "model": "qwen3.8-flash",
+      "provider": "qwen",
+      "fixture": "boteco",
+      "rep": 1,
+      "ok": false,
+      "reason": "timeout: ",
+      "latencyMs": 20004,
+      "costUsd": 0,
+      "differsFromTop": 0,
+      "slots": 0
+    },
+    {
+      "model": "qwen3.8-flash",
+      "provider": "qwen",
+      "fixture": "boteco",
+      "rep": 2,
+      "ok": false,
+      "reason": "timeout: ",
+      "latencyMs": 20006,
+      "costUsd": 0,
+      "differsFromTop": 0,
+      "slots": 0
+    },
+    {
+      "model": "qwen3.8-flash",
+      "provider": "qwen",
+      "fixture": "burger",
+      "rep": 1,
+      "ok": false,
+      "reason": "timeout: ",
+      "latencyMs": 20001,
+      "costUsd": 0,
+      "differsFromTop": 0,
+      "slots": 0
+    },
+    {
+      "model": "qwen3.8-flash",
+      "provider": "qwen",
+      "fixture": "burger",
+      "rep": 2,
+      "ok": false,
+      "reason": "timeout: ",
+      "latencyMs": 20002,
+      "costUsd": 0,
+      "differsFromTop": 0,
+      "slots": 0
+    },
+    {
+      "model": "qwen3.8-flash",
+      "provider": "qwen",
+      "fixture": "sushi",
+      "rep": 1,
+      "ok": false,
+      "reason": "timeout: ",
+      "latencyMs": 20002,
+      "costUsd": 0,
+      "differsFromTop": 0,
+      "slots": 0
+    },
+    {
+      "model": "qwen3.8-flash",
+      "provider": "qwen",
+      "fixture": "sushi",
+      "rep": 2,
+      "ok": false,
+      "reason": "timeout: ",
+      "latencyMs": 20001,
+      "costUsd": 0,
+      "differsFromTop": 0,
+      "slots": 0
+    },
+    {
+      "model": "qwen3.8-flash",
+      "provider": "qwen",
+      "fixture": "vitrine",
+      "rep": 1,
+      "ok": false,
+      "reason": "timeout: ",
+      "latencyMs": 20002,
+      "costUsd": 0,
+      "differsFromTop": 0,
+      "slots": 0
+    },
+    {
+      "model": "qwen3.8-flash",
+      "provider": "qwen",
+      "fixture": "vitrine",
+      "rep": 2,
+      "ok": false,
+      "reason": "timeout: ",
+      "latencyMs": 20002,
+      "costUsd": 0,
+      "differsFromTop": 0,
+      "slots": 0
+    },
+    {
+      "model": "qwen3.8-flash",
+      "provider": "qwen",
+      "fixture": "borda",
+      "rep": 1,
+      "ok": false,
+      "reason": "timeout: ",
+      "latencyMs": 20006,
+      "costUsd": 0,
+      "differsFromTop": 0,
+      "slots": 0
+    },
+    {
+      "model": "qwen3.8-flash",
+      "provider": "qwen",
+      "fixture": "borda",
+      "rep": 2,
+      "ok": false,
+      "reason": "timeout: ",
+      "latencyMs": 20002,
+      "costUsd": 0,
+      "differsFromTop": 0,
+      "slots": 0
+    },
+    {
+      "model": "gemini-3.8-flash (referência)",
+      "provider": "google",
+      "fixture": "boteco",
+      "rep": 1,
+      "ok": false,
+      "reason": "invalid: textoConvite:referencia:fato:faixa_A_turno (não permitida aqui); textoConvite:referencia:fato:faixa_B_turno (não permitida aqui)",
+      "latencyMs": 4112,
+      "costUsd": 0.00260325,
+      "differsFromTop": 0,
+      "slots": 0
+    },
+    {
+      "model": "gemini-3.8-flash (referência)",
+      "provider": "google",
+      "fixture": "boteco",
+      "rep": 2,
+      "ok": true,
+      "latencyMs": 3286,
+      "costUsd": 0.0024195,
+      "differsFromTop": 1,
+      "slots": 2
+    },
+    {
+      "model": "gemini-3.8-flash (referência)",
+      "provider": "google",
+      "fixture": "burger",
+      "rep": 1,
+      "ok": true,
+      "latencyMs": 2843,
+      "costUsd": 0.001626,
+      "differsFromTop": 1,
+      "slots": 1
+    },
+    {
+      "model": "gemini-3.8-flash (referência)",
+      "provider": "google",
+      "fixture": "burger",
+      "rep": 2,
+      "ok": true,
+      "latencyMs": 2166,
+      "costUsd": 0.0015585,
+      "differsFromTop": 1,
+      "slots": 1
+    },
+    {
+      "model": "gemini-3.8-flash (referência)",
+      "provider": "google",
+      "fixture": "sushi",
+      "rep": 1,
+      "ok": true,
+      "latencyMs": 2022,
+      "costUsd": 0.0017385,
+      "differsFromTop": 1,
+      "slots": 1
+    },
+    {
+      "model": "gemini-3.8-flash (referência)",
+      "provider": "google",
+      "fixture": "sushi",
+      "rep": 2,
+      "ok": true,
+      "latencyMs": 2337,
+      "costUsd": 0.00182475,
+      "differsFromTop": 1,
+      "slots": 1
+    },
+    {
+      "model": "gemini-3.8-flash (referência)",
+      "provider": "google",
+      "fixture": "vitrine",
+      "rep": 1,
+      "ok": true,
+      "latencyMs": 3910,
+      "costUsd": 0.00302475,
+      "differsFromTop": 1,
+      "slots": 2
+    },
+    {
+      "model": "gemini-3.8-flash (referência)",
+      "provider": "google",
+      "fixture": "vitrine",
+      "rep": 2,
+      "ok": true,
+      "latencyMs": 4091,
+      "costUsd": 0.00306975,
+      "differsFromTop": 1,
+      "slots": 2
+    },
+    {
+      "model": "gemini-3.8-flash (referência)",
+      "provider": "google",
+      "fixture": "borda",
+      "rep": 1,
+      "ok": true,
+      "latencyMs": 2248,
+      "costUsd": 0.00139425,
+      "differsFromTop": 1,
+      "slots": 1
+    },
+    {
+      "model": "gemini-3.8-flash (referência)",
+      "provider": "google",
+      "fixture": "borda",
+      "rep": 2,
+      "ok": true,
+      "latencyMs": 2794,
+      "costUsd": 0.00161175,
+      "differsFromTop": 1,
+      "slots": 1
+    }
+  ],
+  "judged": [
+    {
+      "model": "gemini-3.1-flash-lite",
+      "fixture": "burger",
+      "ai": {
+        "item_turno": 4,
+        "fato": 4,
+        "voz": 3
+      },
+      "base": {
+        "item_turno": 5,
+        "fato": 4,
+        "voz": 3
+      },
+      "pref": "base",
+      "motivo": "O Smash Simples é uma oferta mais direta e adequada ao almoço, e o convite é claro, embora pouco caloroso. B traz uma cortesia pertinente, mas tem construção artificial e o erro em “nosso Limonada suíça”.",
+      "costUsd": 0.00768777
+    },
+    {
+      "model": "gemini-3.1-flash-lite",
+      "fixture": "sushi",
+      "ai": {
+        "item_turno": 5,
+        "fato": 3,
+        "voz": 2
+      },
+      "base": {
+        "item_turno": 4,
+        "fato": 4,
+        "voz": 2
+      },
+      "pref": "ia",
+      "motivo": "O Sunomono grátis combina melhor com o jantar e o convite começa de forma mais acolhedora, apesar da repetição desajeitada e das afirmações sem respaldo na justificativa.",
+      "costUsd": 0.00576628
+    },
+    {
+      "model": "gemini-3.1-flash-lite",
+      "fixture": "vitrine",
+      "ai": {
+        "item_turno": 5,
+        "fato": 3,
+        "voz": 4
+      },
+      "base": {
+        "item_turno": 4,
+        "fato": 4,
+        "voz": 2
+      },
+      "pref": "ia",
+      "motivo": "B tem convites mais calorosos e itens bem ajustados aos turnos, além de dados de aprendizado mais concretos. Perde pontos por frases truncadas, construções como “no terça” e inferências não comprovadas sobre saída dos itens e preferência dos clientes.",
+      "costUsd": 0.00688636
+    },
+    {
+      "model": "gemini-3.1-flash-lite",
+      "fixture": "borda",
+      "ai": {
+        "item_turno": 5,
+        "fato": 2,
+        "voz": 4
+      },
+      "base": {
+        "item_turno": 3,
+        "fato": 4,
+        "voz": 2
+      },
+      "pref": "ia",
+      "motivo": "O cappuccino combina melhor com a tarde de um café e o convite é mais acolhedor. A justificativa de B, porém, tem trechos confusos; A é mais concreta com o dono, mas soa fria e mecânica.",
+      "costUsd": 0.0052477
+    },
+    {
+      "model": "gpt-6-luna",
+      "fixture": "boteco",
+      "ai": {
+        "item_turno": 5,
+        "fato": 4,
+        "voz": 4
+      },
+      "base": {
+        "item_turno": 5,
+        "fato": 5,
+        "voz": 2
+      },
+      "pref": "ia",
+      "motivo": "As duas acertam os itens e os turnos, e B traz dados mais concretos ao dono, mas A faz convites bem mais calorosos e naturais para um boteco.",
+      "costUsd": 0.00564308
+    },
+    {
+      "model": "gpt-6-luna",
+      "fixture": "burger",
+      "ai": {
+        "item_turno": 4,
+        "fato": 4,
+        "voz": 2
+      },
+      "base": {
+        "item_turno": 5,
+        "fato": 3,
+        "voz": 2
+      },
+      "pref": "ia",
+      "motivo": "B conecta melhor a cortesia ao almoço e dá uma justificativa mais concreta, embora o convite tenha uma repetição estranha. A acerta no prato e no turno, mas soa genérica e pouco calorosa.",
+      "costUsd": 0.00492563
+    },
+    {
+      "model": "gpt-6-luna",
+      "fixture": "sushi",
+      "ai": {
+        "item_turno": 4,
+        "fato": 3,
+        "voz": 4
+      },
+      "base": {
+        "item_turno": 4,
+        "fato": 4,
+        "voz": 3
+      },
+      "pref": "base",
+      "motivo": "B tem justificativa mais específica, com dias, horário e meta, e liga a escolha ao equilíbrio entre benefício e custo. A tem convite mais caloroso, mas a explicação da oferta é mais genérica.",
+      "costUsd": 0.00456595
+    },
+    {
+      "model": "gpt-6-luna",
+      "fixture": "vitrine",
+      "ai": {
+        "item_turno": 5,
+        "fato": 2,
+        "voz": 1
+      },
+      "base": {
+        "item_turno": 5,
+        "fato": 5,
+        "voz": 4
+      },
+      "pref": "base",
+      "motivo": "A combina bem as ofertas com os turnos, traz dados concretos de ocupação, metas e resgate, e evita as repetições estranhas e pouco naturais dos convites de B.",
+      "costUsd": 0.0053712
+    },
+    {
+      "model": "gpt-6-luna",
+      "fixture": "borda",
+      "ai": {
+        "item_turno": 5,
+        "fato": 4,
+        "voz": 2
+      },
+      "base": {
+        "item_turno": 2,
+        "fato": 4,
+        "voz": 2
+      },
+      "pref": "ia",
+      "motivo": "A combina muito melhor com a pausa da tarde e traz algum acolhimento, apesar da repetição desastrada no convite; B é mais adequada a uma refeição e soa meramente promocional.",
+      "costUsd": 0.00597435
+    },
+    {
+      "model": "deepseek-v4.1-flash",
+      "fixture": "boteco",
+      "ai": {
+        "item_turno": 5,
+        "fato": 5,
+        "voz": 4
+      },
+      "base": {
+        "item_turno": 3,
+        "fato": 2,
+        "voz": 2
+      },
+      "pref": "ia",
+      "motivo": "A combina melhor cada cortesia com o momento, usa dados concretos da casa e das metas e fala com o cliente de forma mais calorosa; B é genérica e apenas troca as ofertas entre os turnos.",
+      "costUsd": 0.00622072
+    },
+    {
+      "model": "deepseek-v4.1-flash",
+      "fixture": "burger",
+      "ai": {
+        "item_turno": 5,
+        "fato": 5,
+        "voz": 5
+      },
+      "base": {
+        "item_turno": 5,
+        "fato": 3,
+        "voz": 2
+      },
+      "pref": "ia",
+      "motivo": "B combina uma cortesia adequada ao almoço com justificativa mais concreta, incluindo ticket e custo, e usa um convite mais caloroso e natural; A é pertinente, mas soa frio e repetitivo.",
+      "costUsd": 0.00500716
+    },
+    {
+      "model": "deepseek-v4.1-flash",
+      "fixture": "sushi",
+      "ai": {
+        "item_turno": 4,
+        "fato": 5,
+        "voz": 3
+      },
+      "base": {
+        "item_turno": 5,
+        "fato": 2,
+        "voz": 2
+      },
+      "pref": "ia",
+      "motivo": "B usa fatos concretos do restaurante e apresenta uma cortesia coerente com o jantar; A é adequada ao turno, mas soa genérica e robótica. O convite de B, porém, precisa revisar a gramática e a repetição.",
+      "costUsd": 0.00579789
+    },
+    {
+      "model": "claude-haiku-5.5 (conflito declarado)",
+      "fixture": "boteco",
+      "ai": {
+        "item_turno": 5,
+        "fato": 4,
+        "voz": 5
+      },
+      "base": {
+        "item_turno": 5,
+        "fato": 2,
+        "voz": 2
+      },
+      "pref": "ia",
+      "motivo": "B combina as cortesias com os turnos, justifica as escolhas com itens do cardápio e usa convites mais calorosos e naturais; A é correta, mas repetitiva e genérica.",
+      "costUsd": 0.00633295
+    },
+    {
+      "model": "claude-haiku-5.5 (conflito declarado)",
+      "fixture": "burger",
+      "ai": {
+        "item_turno": 5,
+        "fato": 4,
+        "voz": 3
+      },
+      "base": {
+        "item_turno": 5,
+        "fato": 4,
+        "voz": 2
+      },
+      "pref": "ia",
+      "motivo": "B tem um convite mais caloroso e uma cortesia coerente com o almoço, embora devesse deixar explícito que a limonada é grátis. A é adequada ao turno, mas soa fria e meramente promocional.",
+      "costUsd": 0.00505206
+    },
+    {
+      "model": "gemini-3.8-flash (referência)",
+      "fixture": "burger",
+      "ai": {
+        "item_turno": 5,
+        "fato": 4,
+        "voz": 4
+      },
+      "base": {
+        "item_turno": 5,
+        "fato": 3,
+        "voz": 2
+      },
+      "pref": "ia",
+      "motivo": "A combina uma cortesia adequada ao almoço com um convite mais caloroso e uma justificativa mais concreta sobre margem e público. B também escolhe um item adequado, mas o texto é seco e a alegação de melhor custo-benefício não é demonstrada.",
+      "costUsd": 0.00474238
+    },
+    {
+      "model": "gemini-3.8-flash (referência)",
+      "fixture": "sushi",
+      "ai": {
+        "item_turno": 5,
+        "fato": 5,
+        "voz": 5
+      },
+      "base": {
+        "item_turno": 5,
+        "fato": 4,
+        "voz": 2
+      },
+      "pref": "ia",
+      "motivo": "B combina uma entrada adequada ao jantar com convite mais caloroso e justificativa concreta sobre margem, estímulo aos pratos principais e meta de mesas.",
+      "costUsd": 0.0042598
+    },
+    {
+      "model": "gemini-3.8-flash (referência)",
+      "fixture": "vitrine",
+      "ai": {
+        "item_turno": 4,
+        "fato": 5,
+        "voz": 2
+      },
+      "base": {
+        "item_turno": 4,
+        "fato": 4,
+        "voz": 4
+      },
+      "pref": "base",
+      "motivo": "B traz convites mais naturais e diretos, sem a repetição e a redação artificial de A. A justificativa de A tem números mais concretos, mas isso não compensa a voz pouco calorosa.",
+      "costUsd": 0.00578881
+    },
+    {
+      "model": "gemini-3.8-flash (referência)",
+      "fixture": "borda",
+      "ai": {
+        "item_turno": 5,
+        "fato": 4,
+        "voz": 5
+      },
+      "base": {
+        "item_turno": 3,
+        "fato": 4,
+        "voz": 2
+      },
+      "pref": "ia",
+      "motivo": "A combina melhor a sobremesa com a pausa da tarde e faz um convite caloroso; B é mais frio e promove um prato menos característico desse horário.",
+      "costUsd": 0.00546844
+    }
+  ]
+}

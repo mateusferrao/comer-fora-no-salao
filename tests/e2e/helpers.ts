@@ -1,0 +1,70 @@
+import AxeBuilder from "@axe-core/playwright";
+import { expect, type APIRequestContext, type Page } from "@playwright/test";
+import { E2E_LOGIN_TOKEN_LOCAL } from "../../playwright.config";
+
+export const BARRA = "Protótipo de case · não é produto oficial do iFood";
+export const PROD = !!process.env.BASE_URL;
+/** Flags da S5 (D160: corte por flag). */
+export const S5_FLAGS = ["painel_valor", "copy_v2", "explica_ia"] as const;
+/**
+ * Estado das flags da S5 que a spec deve esperar. Local: a passada `chromium` roda sempre com elas desligadas.
+ * Produção: `E2E_FLAGS=on` depois de ligá-las pelos Bastidores.
+ */
+export const S5_ON = PROD && process.env.E2E_FLAGS === "on";
+/** Flags da S6 ligadas na passada `flags-on` (o `agendador` nunca: provado por integração; `plano_agente` só se ganhar — D159). */
+export const S6_FLAGS = ["resumo_email", "modo_garcom", "porta_conta"] as const;
+
+export async function axe(page: Page) {
+  // Durante router.refresh() o Next 16 reinsere os metadados por streaming: espera o <title> voltar.
+  await expect.poll(() => page.title(), { timeout: 5_000 }).not.toBe("");
+  const r = await new AxeBuilder({ page }).analyze();
+  expect(r.violations.map((v) => `${v.id}: ${v.nodes.map((n) => n.target.join(" ")).join(", ")}`)).toEqual([]);
+}
+
+/** Login de teste (D123): pede o código com o token e confere — o cookie fica no contexto da página. */
+export async function loginE2E(request: APIRequestContext, n: number): Promise<void> {
+  // O secret colado no GitHub pode vir com quebra de linha ou aspas em volta (revisão da S2: "Invalid character
+  // in header content"); limpa como `cleanApiKey` faz com as chaves de IA.
+  const token = e2eToken();
+  const email = `e2e-dono+${n}@exemplo.invalid`;
+  const r = await request.post("/api/parceiro/entrar", { data: { email }, headers: { "x-e2e-token": token } });
+  expect(r.status()).toBe(200);
+  const { codigo } = (await r.json()) as { codigo: string };
+  const v = await request.post("/api/parceiro/entrar/codigo", { data: { email, codigo } });
+  expect(v.status()).toBe(200);
+}
+
+export function e2eToken(): string {
+  const raw = process.env.E2E_LOGIN_TOKEN ?? (PROD ? "" : E2E_LOGIN_TOKEN_LOCAL);
+  const token = raw.trim().replace(/^["'\u201c\u201d\u2018\u2019]+|["'\u201c\u201d\u2018\u2019]+$/g, "").trim();
+  expect(token, "E2E_LOGIN_TOKEN ausente (secret do GitHub)").not.toBe("");
+  return token;
+}
+
+let seq = 0;
+/** E-mail de cliente do E2E (padrão D123, S4): id largo para não repetir entre execuções em produção. */
+export function e2eCustomerEmail(): string {
+  seq = (seq + 1) % 1000;
+  return `e2e-cliente+${Date.now()}${String(seq).padStart(3, "0")}@exemplo.invalid`;
+}
+
+/**
+ * Login do cliente pela API (S4 — D154, D173): e-mail de teste + token → código na resposta → confirmar → perfil.
+ * `apiBase` é "/api/r/<slug>". O cookie do cliente fica no contexto do `request`.
+ */
+export async function loginCustomer(request: APIRequestContext, apiBase: string, name = "Cliente Automático", email = e2eCustomerEmail()): Promise<string> {
+  const r = await request.post(`${apiBase}/entrar`, { data: { email, accept: true }, headers: { "x-e2e-token": e2eToken() } });
+  expect(r.status(), await r.text()).toBe(200);
+  const { codigo } = (await r.json()) as { codigo: string };
+  const v = await request.post(`${apiBase}/entrar/confirmar`, { data: { email, code: codigo } });
+  expect(v.status()).toBe(200);
+  const { etapa } = (await v.json()) as { etapa: string };
+  if (etapa === "perfil") {
+    const pf = await request.post(`${apiBase}/perfil`, { data: { name, phone: "", optEmail: true, optApp: true } });
+    expect(pf.status()).toBe(200);
+  } else if (etapa === "consentir") {
+    const c = await request.post(`${apiBase}/consentimento`, { data: { optEmail: true, optApp: true } });
+    expect(c.status()).toBe(200);
+  }
+  return email;
+}

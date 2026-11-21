@@ -1,0 +1,141 @@
+{
+  "id": "boteco",
+  "inputHash": "e84ed0d844f8576037aa024582c0b4f6c49af1c6fa58abfb965bfa2252c1d141",
+  "model": "google/gemini-3.1-flash-lite",
+  "promptVersion": "cardapio-v1",
+  "at": "2026-11-20T12:14:52.860Z",
+  "extraction": {
+    "ehCardapio": true,
+    "itens": [
+      {
+        "categoria": "porcao",
+        "nome": "Bolinho de bacalhau",
+        "precoCentavos": 3890,
+        "confira": false
+      },
+      {
+        "categoria": "porcao",
+        "nome": "Mandioca frita",
+        "precoCentavos": 2990,
+        "confira": false
+      },
+      {
+        "categoria": "porcao",
+        "nome": "Calabresa acebolada",
+        "precoCentavos": 3490,
+        "confira": false
+      },
+      {
+        "categoria": "porcao",
+        "nome": "Torresmo pururuca",
+        "precoCentavos": 3200,
+        "confira": false
+      },
+      {
+        "categoria": "porcao",
+        "nome": "Pastel de queijo",
+        "precoCentavos": 2650,
+        "confira": false
+      },
+      {
+        "categoria": "porcao",
+        "nome": "Frango a passarinho",
+        "precoCentavos": 4290,
+        "confira": false
+      },
+      {
+        "categoria": "entrada",
+        "nome": "Caldinho de feijão",
+        "precoCentavos": 1400,
+        "confira": false
+      },
+      {
+        "categoria": "entrada",
+        "nome": "Salada vinagrete",
+        "precoCentavos": 1650,
+        "confira": false
+      },
+      {
+        "categoria": "prato",
+        "nome": "Feijoada da casa",
+        "precoCentavos": 5490,
+        "confira": false
+      },
+      {
+        "categoria": "prato",
+        "nome": "Picanha na chapa",
+        "precoCentavos": 11900,
+        "confira": false
+      },
+      {
+        "categoria": "prato",
+        "nome": "Parmegiana de frango",
+        "precoCentavos": 4850,
+        "confira": false
+      },
+      {
+        "categoria": "prato",
+        "nome": "Baião de dois",
+        "precoCentavos": 4400,
+        "confira": false
+      },
+      {
+        "categoria": "sobremesa",
+        "nome": "Pudim de leite",
+        "precoCentavos": 1490,
+        "confira": false
+      },
+      {
+        "categoria": "sobremesa",
+        "nome": "Cocada de forno",
+        "precoCentavos": 1200,
+        "confira": false
+      },
+      {
+        "categoria": "sobremesa",
+        "nome": "Romeu e Julieta",
+        "precoCentavos": 1350,
+        "confira": false
+      },
+      {
+        "categoria": "bebida",
+        "nome": "Chopp claro 300 ml",
+        "precoCentavos": 1200,
+        "confira": false
+      },
+      {
+        "categoria": "bebida",
+        "nome": "Chopp claro 500 ml",
+        "precoCentavos": 1800,
+        "confira": false
+      },
+      {
+        "categoria": "bebida",
+        "nome": "Caipirinha de limão",
+        "precoCentavos": 2200,
+        "confira": false
+      },
+      {
+        "categoria": "bebida",
+        "nome": "Refrigerante lata",
+        "precoCentavos": 700,
+        "confira": false
+      },
+      {
+        "categoria": "bebida",
+        "nome": "Água com gás",
+        "precoCentavos": 550,
+        "confira": false
+      },
+      {
+        "categoria": "bebida",
+        "nome": "Suco de caju",
+        "precoCentavos": 900,
+        "confira": false
+      }
+    ],
+    "culinaria": "Brasileira",
+    "faixaPreco": "$$",
+    "parcial": false
+  }
+}

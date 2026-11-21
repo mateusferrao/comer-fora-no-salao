@@ -1,0 +1,59 @@
+{
+  "judge": "moonshotai/kimi-k3.1-pro",
+  "pairs": [
+    {
+      "n": 1,
+      "pref": "A",
+      "motivo": "A mantém as ofertas adequadas aos turnos e cria convites mais calorosos, com justificativas ligadas às metas e ao comportamento do cliente; há apenas pequenos deslizes de redação. B é correta, mas fria, repetitiva e apoia-se numa justificativa genérica de custo-benefício.",
+      "costUsd": 0.00733932
+    },
+    {
+      "n": 2,
+      "pref": "A",
+      "motivo": "A combina a cortesia com o almoço e faz um convite mais caloroso e natural. B tem um item adequado ao turno, mas o texto é seco e a justificativa usa uma avaliação genérica de custo-benefício, sem dados concretos.",
+      "costUsd": 0.00323001
+    },
+    {
+      "n": 3,
+      "pref": "B",
+      "motivo": "B combina uma cortesia leve com o almoço e tem convite mais caloroso, além de justificar o baixo impacto operacional. A é mais precisa nos dias e horários, mas soa fria e apenas repete a mecânica do desconto.",
+      "costUsd": 0.00503449
+    },
+    {
+      "n": 4,
+      "pref": "A",
+      "motivo": "A usa uma entrada adequada ao jantar, faz um convite mais caloroso e relaciona a oferta a metas concretas de movimento e margem. B é adequada ao turno, mas soa mecânica e sua alegação de melhor custo-benefício não é demonstrada.",
+      "costUsd": 0.00478175
+    },
+    {
+      "n": 5,
+      "pref": "B",
+      "motivo": "B encaixa uma entrada leve no jantar, usa dados concretos da casa e faz um convite mais caloroso; A é adequada ao turno, mas soa genérica e promocional.",
+      "costUsd": 0.00451611
+    },
+    {
+      "n": 6,
+      "pref": "A",
+      "motivo": "A combina bem as cortesias com os turnos, apresenta dados concretos e usa convites mais naturais; B tem justificativas genéricas e um convite redundante e artificial.",
+      "costUsd": 0.00518145
+    },
+    {
+      "n": 7,
+      "pref": "B",
+      "motivo": "As duas ofertas combinam com os turnos e usam dados concretos, mas B faz convites mais calorosos e naturais e ainda enriquece o aprendizado com os volumes de convites.",
+      "costUsd": 0.00530929
+    },
+    {
+      "n": 8,
+      "pref": "B",
+      "motivo": "B combina melhor o bolo de cenoura com a pausa da tarde, faz um convite mais caloroso e usa fatos concretos da faixa vazia e da meta de duas mesas. A é funcional, mas soa mecânica e sua justificativa sobre custo-benefício é genérica e sem dados.",
+      "costUsd": 0.00428219
+    },
+    {
+      "n": 9,
+      "pref": "A",
+      "motivo": "A combina melhor com a pausa da tarde, usa dados concretos da casa e faz um convite caloroso. B é mais frio e genérico, embora o misto quente também seja adequado ao horário.",
+      "costUsd": 0.00432015
+    }
+  ]
+}

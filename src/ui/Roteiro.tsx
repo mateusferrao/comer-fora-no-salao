@@ -1,0 +1,36 @@
+import Link from "next/link";
+
+/**
+ * Roteiro do avaliador (D153, D156, D172): fora das telas do produto — na página do link de avaliação e nas
+ * Ferramentas do avaliador (Bastidores).
+ */
+export function Roteiro({ className = "" }: { className?: string }) {
+  return (
+    <section aria-labelledby="roteiro-curto" className={`rounded-sm border border-border bg-white p-4 text-left text-sm leading-6 text-ink ${className}`}>
+      <h2 id="roteiro-curto" className="mb-1 text-base font-semibold">
+        Como testar sozinho
+      </h2>
+      <ol className="list-decimal pl-5">
+        <li>No Portal, o restaurante de exemplo já tem 60 dias de histórico. Cadastre o seu em &quot;Cadastrar meu restaurante&quot;.</li>
+        <li>Abra &quot;Ver minha página&quot; e faça check-in como cliente com o seu e-mail (o código chega por e-mail).</li>
+        <li>Valide o código em &quot;Validar código&quot; e veja o check-in em &quot;Últimos check-ins de hoje&quot;.</li>
+        <li>
+          Para ver a volta com convite hoje, use &quot;Avançar 1 dia&quot; nas{" "}
+          <Link className="text-red-text underline" href="/bastidores/avaliador">
+            Ferramentas do avaliador
+          </Link>{" "}
+          e faça check-in de novo.
+        </li>
+      </ol>
+      <p className="mt-2 text-ink-muted">
+        1 em cada 10 clientes cai no grupo de controle e não recebe convite (é assim que o efeito é medido). Para testar outro cliente, saia em &quot;Sua
+        jornada&quot; e entre com outro e-mail (ex.: seu+2@gmail.com).
+      </p>
+      <p className="mt-2">
+        <Link className="text-red-text underline" href="/bastidores/como-funciona">
+          Como este protótipo funciona
+        </Link>
+      </p>
+    </section>
+  );
+}

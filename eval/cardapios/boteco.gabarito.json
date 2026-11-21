@@ -1,0 +1,111 @@
+{
+  "culinaria": "Brasileira",
+  "faixaPreco": "$$",
+  "itens": [
+    {
+      "categoria": "porcao",
+      "nome": "Bolinho de bacalhau",
+      "precoCentavos": 3890
+    },
+    {
+      "categoria": "porcao",
+      "nome": "Mandioca frita",
+      "precoCentavos": 2990
+    },
+    {
+      "categoria": "porcao",
+      "nome": "Calabresa acebolada",
+      "precoCentavos": 3490
+    },
+    {
+      "categoria": "porcao",
+      "nome": "Torresmo pururuca",
+      "precoCentavos": 3200
+    },
+    {
+      "categoria": "porcao",
+      "nome": "Pastel de queijo",
+      "precoCentavos": 2650
+    },
+    {
+      "categoria": "porcao",
+      "nome": "Frango a passarinho",
+      "precoCentavos": 4290
+    },
+    {
+      "categoria": "entrada",
+      "nome": "Caldinho de feijão",
+      "precoCentavos": 1400
+    },
+    {
+      "categoria": "entrada",
+      "nome": "Salada vinagrete",
+      "precoCentavos": 1650
+    },
+    {
+      "categoria": "prato",
+      "nome": "Feijoada da casa",
+      "precoCentavos": 5490
+    },
+    {
+      "categoria": "prato",
+      "nome": "Picanha na chapa",
+      "precoCentavos": 11900
+    },
+    {
+      "categoria": "prato",
+      "nome": "Parmegiana de frango",
+      "precoCentavos": 4850
+    },
+    {
+      "categoria": "prato",
+      "nome": "Baião de dois",
+      "precoCentavos": 4400
+    },
+    {
+      "categoria": "sobremesa",
+      "nome": "Pudim de leite",
+      "precoCentavos": 1490
+    },
+    {
+      "categoria": "sobremesa",
+      "nome": "Cocada de forno",
+      "precoCentavos": 1200
+    },
+    {
+      "categoria": "sobremesa",
+      "nome": "Romeu e Julieta",
+      "precoCentavos": 1350
+    },
+    {
+      "categoria": "bebida",
+      "nome": "Chopp claro 300 ml",
+      "precoCentavos": 1200
+    },
+    {
+      "categoria": "bebida",
+      "nome": "Chopp claro 500 ml",
+      "precoCentavos": 1800
+    },
+    {
+      "categoria": "bebida",
+      "nome": "Caipirinha de limão",
+      "precoCentavos": 2200
+    },
+    {
+      "categoria": "bebida",
+      "nome": "Refrigerante lata",
+      "precoCentavos": 700
+    },
+    {
+      "categoria": "bebida",
+      "nome": "Água com gás",
+      "precoCentavos": 550
+    },
+    {
+      "categoria": "bebida",
+      "nome": "Suco de caju",
+      "precoCentavos": 900
+    }
+  ]
+}
