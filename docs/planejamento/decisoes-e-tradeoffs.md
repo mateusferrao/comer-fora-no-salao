@@ -1349,3 +1349,7 @@ Detalhes, perguntas, revisão independente (2 subagentes) e itens [C] em [docs/f
 
 **D271 — Itens [C] da S8** (21/11, IA [C]) ✅
 - Lista em docs/fatias/S8/planejamento.md §9 e §10, entre eles: nome "Assistente do salão"; painel não modal que empurra o conteúdo; histórico só no navegador (12 turnos); proposta expira em 30 min ou se o "antes" mudar (`base_hash`); aplicar com reserva `UPDATE … RETURNING`; `checkOffer` puro extraído de `updateOffer`/`approvePlanInTx`; migração 0010 gerada no fim; guard `chat` (sem número cru nem por extenso, sem URL, lista própria de proibidas); contexto pronto com apelidos; ≤ 3 passos; teto diário próprio de US$ 0,20 na chave pública; gateway falso só no E2E local com `fakeAi:false` no health; chip da demo = trocar a oferta do convite de Ter–Qui 15h–18h.
+
+**D272 — Ícone da aba com o ícone do iFood** (21/11, candidato: "buscar e adicionar o .ico do ifood na barra"; enviou a imagem do ícone) ✅ (estende D42/D81)
+- O `.ico` do site do iFood não pôde ser baixado (página bloqueada para a sessão; o do Portal do Parceiro é outro desenho, uma fachada). O candidato enviou a imagem do ícone (círculo vermelho com o "sorriso"), usada como veio: `app/favicon.ico` (16/32/48 px), `app/icon.png` (256 px) e `app/apple-icon.png` (180 px), servidos pelo Next; cantos fora do círculo transparentes.
+- Risco de confusão com o iFood oficial aumenta um pouco; mantidos a barra de protótipo, o título da aba sem "iFood" e o `noindex` (D88, D164). Alternativa: ícone neutro do projeto.
