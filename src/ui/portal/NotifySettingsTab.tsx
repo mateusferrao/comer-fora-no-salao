@@ -12,7 +12,7 @@ const DAYS = ["Domingo", "Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sáb
 const hhmm = (m: number) => `${String(Math.floor(m / 60)).padStart(2, "0")}:${String(m % 60).padStart(2, "0")}`;
 const TIMES = Array.from({ length: (22 * 60 - 6 * 60) / 30 + 1 }, (_, i) => 6 * 60 + i * 30);
 const HOURS = Array.from({ length: 24 }, (_, i) => i + 1);
-const OFF_HINT = "O envio automático está desligado por enquanto.";
+const OFF_HINT = "O envio automático ainda não está ligado. Veja a prévia do e-mail em Plano da semana.";
 
 /**
  * "Avisos e automação" (S6.1 — D196): o que o sistema faz sozinho e o que vai por e-mail, em 3 grupos. Tudo ligado
@@ -32,7 +32,10 @@ export function NotifySettingsTab({ view, flags }: { view: NotifyView; flags: { 
     if (r?.ok) router.refresh();
   };
   const when = `${DAYS[s.resumo.weekday]} às ${hhmm(s.resumo.minute)}`;
-  const digestOff = !flags.resumo_email;
+  // O plano nasce meia hora antes do horário do resumo (revisão S4–S6, produto 4: a dica dizia a hora do resumo).
+  const planWhen = `${DAYS[s.resumo.weekday]} às ${hhmm(s.resumo.minute - 30)}`;
+  // Sem o agendador, nada sai sozinho: o resumo também aparece desligado (revisão S4–S6, produto 5).
+  const digestOff = !flags.resumo_email || !flags.agendador;
   return (
     <div className="flex flex-col gap-6">
       <section aria-labelledby="avisos-voce" className="flex flex-col gap-2 rounded-sm border border-border p-4">
@@ -79,7 +82,7 @@ export function NotifySettingsTab({ view, flags }: { view: NotifyView; flags: { 
         </div>
         <Switch
           label="Permitir aprovar o plano pelo link do e-mail"
-          hint={!s.resumo.on || digestOff ? "Precisa do resumo ligado." : "O link vale uma vez, só para o plano daquela semana."}
+          hint={digestOff ? OFF_HINT : !s.resumo.on ? "Precisa do resumo ligado." : "O link vale uma vez, só para o plano daquela semana."}
           checked={s.aprovarEmail}
           disabled={!s.resumo.on || digestOff}
           onChange={(aprovarEmail) => set({ aprovarEmail })}
@@ -92,7 +95,13 @@ export function NotifySettingsTab({ view, flags }: { view: NotifyView; flags: { 
         </h2>
         <Switch
           label="Gerar o plano da semana sozinho"
-          hint={!flags.agendador ? OFF_HINT : `${when}, meia hora antes do resumo. O plano espera sua aprovação no Portal.`}
+          hint={
+            !flags.agendador
+              ? OFF_HINT
+              : s.resumo.on && !digestOff
+                ? `${planWhen}, meia hora antes do resumo. O plano espera sua aprovação no Portal.`
+                : `${planWhen}. O plano espera sua aprovação no Portal.`
+          }
           checked={s.planoAuto}
           disabled={!flags.agendador}
           onChange={(planoAuto) => set({ planoAuto })}

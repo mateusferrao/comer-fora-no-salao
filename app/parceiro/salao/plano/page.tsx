@@ -32,8 +32,9 @@ export default async function PlanoPage() {
         <p className="text-sm text-ink-muted">O código calcula os números e decide o que é válido; a IA escolhe a oferta de cada horário vazio e explica. Você aprova.</p>
       </header>
       {ops && <Operations view={ops} showAb={false} showAlerts />}
-      {view ? <PlanManager initial={view} explicaIa={flags.explica_ia} /> : <p className="text-sm text-ink">Ative o restaurante para receber o plano da semana.</p>}
+      {/* Revisão S4–S6 (produto 1): o cartão do resumo logo abaixo do cabeçalho, não depois do plano inteiro. */}
       {notify && <DigestCard to={notify.to} on={notify.settings.resumo.on} when={`${DAYS[notify.settings.resumo.weekday]} às ${hhmm(notify.settings.resumo.minute)}`} />}
+      {view ? <PlanManager initial={view} explicaIa={flags.explica_ia} /> : <p className="text-sm text-ink">Ative o restaurante para receber o plano da semana.</p>}
     </main>
   );
 }

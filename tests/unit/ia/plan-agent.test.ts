@@ -56,9 +56,14 @@ describe("ferramentas do agente (S6.3b, D166): só leitura, números do código,
   });
 
   it("passos gravados com rótulos legíveis e resumidos", () => {
-    expect(stepLabel({ tool: "ver_candidatas", input: { faixa: "A" } })).toBe("Viu as ofertas possíveis da faixa A");
+    // Sem apelidos internos na tela (revisão S4–S6, produto 3).
+    expect(stepLabel({ tool: "ver_candidatas", input: { faixa: "A" } })).toBe("Viu as ofertas possíveis de um horário");
+    const names = { faixa: (a: string) => (a === "A" ? "terça, quarta e quinta, das 15h às 18h" : undefined), candidata: (a: string) => (a === "A1" ? "Cannoli grátis" : undefined) };
+    expect(stepLabel({ tool: "ver_candidatas", input: { faixa: "A" } }, names)).toBe("Viu as ofertas possíveis de terça, quarta e quinta, das 15h às 18h");
+    expect(stepLabel({ tool: "custo_semana", input: { faixa: "A", candidata: "A1" } }, names)).toBe("Calculou o custo máximo da semana de Cannoli grátis");
+    expect(stepLabel({ tool: "ver_fatos", input: { grupo: "faixas" } })).toBe("Consultou os números dos horários");
     const s = storedSteps([{ tool: "ver_fatos", input: { grupo: "faixas" }, output: { x: "y".repeat(500) }, ms: 400 }]);
-    expect(s[0]).toMatchObject({ tool: "ver_fatos", label: "Consultou os números de faixas", ms: 400 });
+    expect(s[0]).toMatchObject({ tool: "ver_fatos", label: "Consultou os números dos horários", ms: 400 });
     expect(s[0]!.output.length).toBeLessThanOrEqual(200);
   });
 });

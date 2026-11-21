@@ -5,7 +5,7 @@
  */
 import { ownerDataOf } from "@/src/modules/config/domain/ai-profile";
 import { parseAiFeatures } from "@/src/modules/config/domain/ai-profile";
-import { AGENT_PROMPT_VERSION, AGENT_RULES, buildPlanAgentTask, buildPlanAgentTools, storedSteps } from "@/src/modules/ia/tasks/plan-agent";
+import { AGENT_PROMPT_VERSION, AGENT_RULES, buildPlanAgentTask, buildPlanAgentTools, stepNames, storedSteps } from "@/src/modules/ia/tasks/plan-agent";
 import type { PackageOut } from "@/src/modules/ia/tasks/package";
 import { and, eq } from "drizzle-orm";
 import type { Db } from "@/src/db/client";
@@ -103,7 +103,7 @@ export async function generateWeeklyPlan(
       // Cadeia (revisão técnica B1): agente → chamada única já medida → modo sem IA.
       if (agentRes.status === "ok") {
         res = agentRes;
-        agentSteps = storedSteps(agentRes.steps ?? []);
+        agentSteps = storedSteps(agentRes.steps ?? [], stepNames(pp));
       }
     }
     if (!res) {

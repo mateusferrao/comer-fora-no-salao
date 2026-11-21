@@ -6,6 +6,7 @@
  */
 import { z } from "zod";
 import type { SlotCandidates } from "@/src/modules/onboarding/domain/candidates";
+import { slotLabel } from "@/src/modules/beneficios/domain/slot-text";
 import { formatFact, renderReferences } from "@/src/modules/textos/domain/references";
 import { guardText } from "../guardrails";
 import type { AgentStep, AiTool, ModelRef } from "../gateway";
@@ -100,24 +101,45 @@ const short = (v: unknown, n = 200) => {
   return s.length > n ? `${s.slice(0, n - 1)}…` : s;
 };
 
-/** Rótulo legível de um passo (revisão de produto: "1. Consultou os turnos · 0,4 s"). */
-export function stepLabel(s: Pick<AgentStep, "tool" | "input">): string {
+/** Nomes para o dono: apelido da faixa → "terça, quarta e quinta, das 15h às 18h"; da candidata → "Cannoli grátis". */
+export type StepNames = { faixa: (alias: string) => string | undefined; candidata: (alias: string) => string | undefined };
+const GROUP_NAMES: Record<string, string> = { faixas: "dos horários", convites: "dos convites", clientes: "dos clientes" };
+
+export function stepNames(pp: Pick<PackagePrompt, "slotByAlias" | "candByAlias">): StepNames {
+  return {
+    faixa: (a) => {
+      const s = pp.slotByAlias.get(a);
+      return s ? slotLabel(s) : undefined;
+    },
+    candidata: (a) => pp.candByAlias.get(a)?.gain,
+  };
+}
+
+/**
+ * Rótulo legível de um passo (revisão de produto: "1. Consultou os turnos · 0,4 s"). Sem apelidos internos (A, A1)
+ * na tela do dono (revisão S4–S6, produto 3): com `names`, a faixa e a oferta aparecem pelo nome.
+ */
+export function stepLabel(s: Pick<AgentStep, "tool" | "input">, names?: StepNames): string {
   const i = (s.input ?? {}) as Record<string, string>;
   switch (s.tool) {
     case "ver_fatos":
-      return i.grupo === "todos" ? "Consultou os números do restaurante" : `Consultou os números de ${i.grupo}`;
-    case "ver_candidatas":
-      return `Viu as ofertas possíveis da faixa ${i.faixa}`;
-    case "custo_semana":
-      return `Calculou o custo máximo da semana (${i.candidata})`;
+      return i.grupo === "todos" ? "Consultou os números do restaurante" : `Consultou os números ${GROUP_NAMES[i.grupo ?? ""] ?? "do restaurante"}`;
+    case "ver_candidatas": {
+      const f = names?.faixa(i.faixa ?? "");
+      return f ? `Viu as ofertas possíveis de ${f}` : "Viu as ofertas possíveis de um horário";
+    }
+    case "custo_semana": {
+      const c = names?.candidata(i.candidata ?? "");
+      return c ? `Calculou o custo máximo da semana de ${c}` : "Calculou o custo máximo da semana de uma oferta";
+    }
     case "checar_texto":
       return i.campo === "textoConvite" ? "Conferiu o texto do convite nas regras" : i.campo === "justificativa" ? "Conferiu a justificativa nas regras" : "Conferiu o “o que aprendemos” nas regras";
     default:
-      return s.tool;
+      return "Consultou os dados do restaurante";
   }
 }
 
 /** Passos como ficam gravados em `weekly_plans.agent_steps` (entrada e saída resumidas; nunca PII — só dados do código). */
-export function storedSteps(steps: readonly AgentStep[]): Array<{ tool: string; label: string; input: string; output: string; ms: number }> {
-  return steps.map((s) => ({ tool: s.tool, label: stepLabel(s), input: short(s.input), output: short(s.output), ms: s.ms }));
+export function storedSteps(steps: readonly AgentStep[], names?: StepNames): Array<{ tool: string; label: string; input: string; output: string; ms: number }> {
+  return steps.map((s) => ({ tool: s.tool, label: stepLabel(s, names), input: short(s.input), output: short(s.output), ms: s.ms }));
 }
