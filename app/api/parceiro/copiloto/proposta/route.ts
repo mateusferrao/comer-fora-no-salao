@@ -6,6 +6,7 @@ import { consume } from "@/src/shared/rate-limit";
 import { rejectCrossSite } from "@/src/web/guards";
 import { readJson, tooMany } from "@/src/web/http";
 import { requireStore } from "@/src/web/portal-guards";
+import { scheduleInviteEmails } from "@/src/web/invite-emails";
 
 export const dynamic = "force-dynamic";
 
@@ -24,6 +25,6 @@ export async function POST(req: Request) {
   const now = new Date();
   const lim = await consume(db, `copiloto:aplicar:${auth.r.id}`, 60, 3600, now);
   if (!lim.ok) return tooMany(lim.retryAfterSec);
-  const r = await decideProposal(db, { restaurantId: auth.r.id, proposalId: parsed.data.id, origin: "copiloto", acao: parsed.data.acao, now });
+  const r = await decideProposal(db, { restaurantId: auth.r.id, proposalId: parsed.data.id, origin: "copiloto", acao: parsed.data.acao, now, onApproved: (rid, ids) => scheduleInviteEmails(rid, ids) });
   return Response.json(r, { status: r.ok ? 200 : r.status === "nao_encontrada" ? 404 : 409 });
 }

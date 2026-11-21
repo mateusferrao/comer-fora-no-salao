@@ -16,8 +16,8 @@ export type CardPreview = {
 export type Card = { id: string; status: "pendente"; preview: CardPreview } | { id: null; status: "recusada"; motivo: string };
 type Status = "pendente" | "aplicando" | "aplicada" | "descartada" | "erro";
 
-const ABA_LABEL: Record<string, string> = { agora: "Benefício agora", cartela: "Cartela", convites: "Horários vazios e convites", cardapio: "Cardápio" };
-export const abaHref = (aba: string, v?: string) => `/parceiro/salao/configuracoes?aba=${aba}${v ? `&v=${v.slice(0, 8)}` : ""}`;
+const ABA_LABEL: Record<string, string> = { agora: "Benefício agora", cartela: "Cartela", convites: "Horários vazios e convites", cardapio: "Cardápio", restaurante: "Restaurante", ia: "IA do restaurante", avisos: "Avisos e automação", plano: "Plano da semana" };
+export const abaHref = (aba: string, v?: string) => (aba === "plano" ? "/parceiro/salao/plano" : `/parceiro/salao/configuracoes?aba=${aba}${v ? `&v=${v.slice(0, 8)}` : ""}`);
 
 /**
  * Cartão de proposta (S8 — D261): antes → depois, alcance e custo escritos pelo código; nada muda sem "Aplicar".
@@ -48,7 +48,7 @@ export function ProposalCard({ card, dirty, onApplied }: { card: Card; dirty: ()
       if (acao === "descartar") return setMsg("Descartada.");
       if (data.ok) {
         setStatus("aplicada");
-        setMsg(`Aplicado. Veja em Configurações › ${ABA_LABEL[p.aba] ?? "Configurações"}.`);
+        setMsg(p.aba === "plano" ? "Plano aprovado. Veja em Plano da semana." : `Aplicado. Veja em Configurações › ${ABA_LABEL[p.aba] ?? "Configurações"}.`);
         onApplied(p.aba, card.id);
       } else {
         setStatus("erro");

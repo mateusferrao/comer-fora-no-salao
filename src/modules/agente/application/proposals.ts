@@ -12,7 +12,13 @@ import { describeOffer, offerFromInput } from "@/src/modules/beneficios/domain/o
 import { slotPhrase } from "@/src/modules/beneficios/domain/slot-text";
 import { guardText } from "@/src/modules/ia/guardrails";
 import { textIssues } from "@/src/modules/ia/guardrails/messages";
-import { deactivateSlot, getSettingsView, setItemOfferAllowed, setMenuItemActive, updateMenuItem, updateOffer, updateSlot } from "@/src/modules/config/application/update-settings";
+import { addMenuItem, deactivateSlot, getSettingsView, setItemOfferAllowed, setMenuItemActive, updateMenuItem, updateNotifySettings, updateOffer, updateRestaurantInfo, updateSlot, updateTone } from "@/src/modules/config/application/update-settings";
+import { parseNotifySettings } from "@/src/modules/config/domain/notify-settings";
+import { validateTone } from "@/src/modules/config/domain/tone";
+import { FORBIDDEN } from "@/src/modules/ia/guardrails";
+import { approvePlan, finalFromStored, latestPlan, type ApproveVia } from "@/src/modules/planos/application/approve-plan";
+import { getPlanView } from "@/src/modules/planos/application/plan-view";
+import { restaurants } from "@/src/db/schema";
 import { previewProposal, type PreviewOk, type ProposalPayload, type Snapshot } from "../domain/proposals";
 
 export const PROPOSAL_TTL_MS = 30 * 60_000;
@@ -28,10 +34,25 @@ export function stableJson(v: unknown): string {
 }
 export const baseHash = (antes: unknown) => createHash("sha256").update(stableJson(antes)).digest("hex");
 
-export async function loadSnapshot(db: Db, restaurantId: string): Promise<Snapshot | null> {
+export async function loadSnapshot(db: Db, restaurantId: string, opts: { plan?: boolean; now?: Date } = {}): Promise<Snapshot | null> {
   const v = await getSettingsView(db, restaurantId);
   if (!v) return null;
+  const [r] = await db.select({ notify: restaurants.notifySettings }).from(restaurants).where(eq(restaurants.id, restaurantId));
+  // Plano proposto (onda 2): só quando a ação é aprovar (a prévia da reativação custa consultas).
+  let plan: Snapshot["plan"] = null;
+  if (opts.plan) {
+    const lp = await latestPlan(db, restaurantId);
+    if (lp && lp.status === "proposto") {
+      const final = finalFromStored(lp);
+      const view = await getPlanView(db, restaurantId, opts.now ?? new Date(), lp.id);
+      plan = { id: lp.id, slots: final.slots, audience: view?.reactivation.real ?? 0 };
+    }
+  }
   return {
+    tone: v.restaurant.aiTone,
+    ticketCents: v.restaurant.ticketCents,
+    resumo: parseNotifySettings(r?.notify).resumo,
+    plan,
     marginPct: v.restaurant.marginPct,
     opening: v.restaurant.opening,
     agora: v.agora,
@@ -53,7 +74,7 @@ function inviteTextProblem(snap: Snapshot, p: Extract<ProposalPayload, { acao: "
 
 /** Prévia + gravação (status `pendente`). Recusas do código voltam com o motivo e não são gravadas. */
 export async function createProposals(db: Db, p: { restaurantId: string; origin: Origin; payloads: readonly ProposalPayload[]; aiCallId?: string | null; now: Date }): Promise<ProposalCard[]> {
-  const snap = await loadSnapshot(db, p.restaurantId);
+  const snap = await loadSnapshot(db, p.restaurantId, { plan: p.payloads.some((x) => x.acao === "plano"), now: p.now });
   if (!snap) return p.payloads.map((payload) => ({ id: null, status: "recusada" as const, motivo: "Restaurante não encontrado.", payload }));
   const out: ProposalCard[] = [];
   for (const payload of p.payloads) {
@@ -61,6 +82,13 @@ export async function createProposals(db: Db, p: { restaurantId: string; origin:
     if (!pv.ok) {
       out.push({ id: null, status: "recusada", motivo: pv.motivo, payload });
       continue;
+    }
+    if (payload.acao === "tom") {
+      const v = validateTone(payload.tone, FORBIDDEN);
+      if (!v.ok) {
+        out.push({ id: null, status: "recusada", motivo: TONE_ERR[v.erro] ?? "O tom não passou nas regras.", payload });
+        continue;
+      }
     }
     if (payload.acao === "oferta" && payload.papel === "convite" && payload.inviteText?.trim()) {
       const bad = inviteTextProblem(snap, payload, payload.inviteText);
@@ -78,6 +106,14 @@ export async function createProposals(db: Db, p: { restaurantId: string; origin:
   return out;
 }
 
+const TONE_ERR: Record<string, string> = {
+  longo: "O tom passa de 200 caracteres.",
+  caracteres: "Tire chaves, sinais < > e quebras de linha do tom.",
+  url: "Tire links do tom.",
+  proibida: "O tom usa uma palavra que as regras dos textos não permitem (promessa de preço ou da marca).",
+  dados: "Tire e-mail ou números longos do tom.",
+};
+
 export type DecideResult =
   | { ok: true; status: "aplicada" | "descartada"; already?: boolean; aba?: PreviewOk["aba"]; warnings?: string[] }
   | { ok: false; status: "expirada" | "falhou" | "nao_encontrada" | "descartada"; motivo: string };
@@ -90,10 +126,51 @@ const APPLY_ERR: Record<string, string> = {
   oferta: "A oferta não passou nas regras.",
   texto: "O texto do convite não passou nas regras.",
   faixa: "O horário não passou nas regras.",
+  funcionamento: "Algum horário vazio ficaria fora do funcionamento.",
+  nao_proposto: "O plano não está mais esperando aprovação.",
+  revisor: "O revisor ainda está conferindo o plano ou pediu ajustes. Veja a aba Plano da semana.",
+  inativo: "O restaurante não está ativo.",
 };
 
-async function run(db: Db, restaurantId: string, payload: ProposalPayload, snap: Snapshot, pv: PreviewOk, now: Date): Promise<{ ok: true; warnings?: string[] } | { ok: false; erro: string }> {
+type RunCtx = { via: ApproveVia; onApproved?: (restaurantId: string, inviteIds: string[]) => void };
+
+async function run(db: Db, restaurantId: string, payload: ProposalPayload, snap: Snapshot, pv: PreviewOk, now: Date, rc: RunCtx): Promise<{ ok: true; warnings?: string[] } | { ok: false; erro: string }> {
   switch (payload.acao) {
+    case "plano": {
+      const lp = await latestPlan(db, restaurantId);
+      if (!lp || lp.id !== payload.planId || lp.status !== "proposto") return { ok: false, erro: "nao_proposto" };
+      const final = finalFromStored(lp);
+      const slots = final.slots.map((s) => {
+        if (s.slotId !== payload.slotId) return s;
+        const offer = payload.offer ?? s.offer;
+        const cited = [...s.inviteText.matchAll(/\{prato:([^}]+)\}/g)].some((m) => m[1] !== offer.itemId);
+        return { ...s, offer, weeklyCap: payload.weeklyCap ?? s.weeklyCap, inviteText: cited ? `Volte {horario:${s.slotId}} e aproveite {oferta}.` : s.inviteText };
+      });
+      const r = await approvePlan(db, { restaurantId, planId: lp.id, final: { slots }, via: rc.via, now });
+      if (!r.ok) return { ok: false, erro: r.erro };
+      if (r.inviteIds?.length) rc.onApproved?.(restaurantId, r.inviteIds);
+      return { ok: true };
+    }
+    case "tom": {
+      const r = await updateTone(db, { restaurantId, tone: payload.tone, now });
+      return r.ok ? { ok: true } : { ok: false, erro: "texto" };
+    }
+    case "item_novo": {
+      const r = await addMenuItem(db, { restaurantId, name: payload.name, category: payload.category, priceCents: payload.priceCents, now });
+      return r.ok ? { ok: true } : { ok: false, erro: "texto" };
+    }
+    case "restaurante": {
+      const v = await getSettingsView(db, restaurantId);
+      if (!v) return { ok: false, erro: "nao_encontrado" };
+      const x = v.restaurant;
+      return updateRestaurantInfo(db, { restaurantId, name: x.name, ticketCents: payload.ticketCents !== undefined ? payload.ticketCents : x.ticketCents, marginPct: payload.marginPct !== undefined ? payload.marginPct : x.marginPct, tables: x.tables, weeklyCustomers: x.weeklyCustomers, description: x.description, address: x.address, opening: x.opening, now });
+    }
+    case "avisos": {
+      const [r] = await db.select({ notify: restaurants.notifySettings }).from(restaurants).where(eq(restaurants.id, restaurantId));
+      const cur = parseNotifySettings(r?.notify);
+      await updateNotifySettings(db, { restaurantId, input: { ...cur, resumo: { on: payload.resumoOn ?? cur.resumo.on, weekday: payload.weekday ?? cur.resumo.weekday, minute: payload.minute ?? cur.resumo.minute } }, now });
+      return { ok: true };
+    }
     case "oferta":
       return updateOffer(db, { restaurantId, role: payload.papel, slotId: payload.slotId, offer: payload.offer, ...(payload.papel === "convite" ? { weeklyCap: Math.max(1, Math.min(999, Math.round(payload.weeklyCap ?? snap.slots.find((s) => s.id === payload.slotId)?.weeklyCap ?? 4))), inviteText: pv.inviteText } : {}), now });
     case "item": {
@@ -114,7 +191,7 @@ async function run(db: Db, restaurantId: string, payload: ProposalPayload, snap:
  * Aplicar ou descartar. A proposta precisa ser da loja atual e da mesma porta (no MCP só as do MCP — D269), estar
  * pendente e ter menos de 30 min; o "antes" é recalculado e comparado.
  */
-export async function decideProposal(db: Db, p: { restaurantId: string; proposalId: string; origin: Origin; acao: "aplicar" | "descartar"; now: Date }): Promise<DecideResult> {
+export async function decideProposal(db: Db, p: { restaurantId: string; proposalId: string; origin: Origin; acao: "aplicar" | "descartar"; now: Date; onApproved?: RunCtx["onApproved"] }): Promise<DecideResult> {
   const where = and(eq(agentProposals.id, p.proposalId), eq(agentProposals.restaurantId, p.restaurantId), eq(agentProposals.origin, p.origin));
   if (p.acao === "descartar") {
     const upd = await db.update(agentProposals).set({ status: "descartada", decidedAt: p.now }).where(and(where, eq(agentProposals.status, "pendente"))).returning({ id: agentProposals.id });
@@ -134,14 +211,14 @@ export async function decideProposal(db: Db, p: { restaurantId: string; proposal
   }
   const finish = (status: "aplicada" | "expirada" | "falhou", error?: string) => db.update(agentProposals).set({ status, error: error ?? null, decidedAt: p.now }).where(eq(agentProposals.id, row.id));
   const payload = row.payload as ProposalPayload;
-  const snap = await loadSnapshot(db, p.restaurantId);
+  const snap = await loadSnapshot(db, p.restaurantId, { plan: payload.acao === "plano", now: p.now });
   const pv = snap ? previewProposal(snap, payload) : null;
   if (!snap || !pv?.ok || baseHash(pv.antes) !== row.baseHash) {
     await finish("expirada", "antes_mudou");
     return { ok: false, status: "expirada", motivo: "Algo mudou desde a proposta. Peça de novo para ver a versão atual." };
   }
   try {
-    const res = await run(db, p.restaurantId, payload, snap, pv, p.now);
+    const res = await run(db, p.restaurantId, payload, snap, pv, p.now, { via: p.origin === "mcp" ? "agente" : "copiloto", onApproved: p.onApproved });
     if (!res.ok) {
       await finish("falhou", res.erro);
       return { ok: false, status: "falhou", motivo: APPLY_ERR[res.erro] ?? "Não deu para aplicar." };

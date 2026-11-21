@@ -161,7 +161,7 @@ export function PlanManager({ initial, explicaIa = false }: { initial: PlanView;
         <div className="flex flex-col gap-1">
           <p className="text-sm text-ink-muted">{p ? `Semana de ${weekLabel(p.weekKey)}` : "Nenhum plano ainda"}</p>
           <p className="font-semibold text-ink" data-testid="plan-status" data-status={v.generating ? "gerando" : (p?.status ?? "nenhum")}>
-            {v.generating ? "A IA está escolhendo as ofertas…" : !p ? "Gere o primeiro plano da semana" : p.status === "aprovado" ? (p.stale ? "Vencido · gere o desta semana" : `Aprovado${p.approvedVia === "agente" ? " via agente" : p.approvedVia === "email" ? " pelo e-mail" : ""}`) : p.stale ? "Proposta da semana passada · gere uma nova" : "Proposto · revise e aprove"}
+            {v.generating ? "A IA está escolhendo as ofertas…" : !p ? "Gere o primeiro plano da semana" : p.status === "aprovado" ? (p.stale ? "Vencido · gere o desta semana" : `Aprovado${p.approvedVia === "agente" ? " via agente" : p.approvedVia === "email" ? " pelo e-mail" : p.approvedVia === "copiloto" ? " pelo assistente" : ""}`) : p.stale ? "Proposta da semana passada · gere uma nova" : "Proposto · revise e aprove"}
           </p>
           {p && !v.generating && (
             <div className="flex flex-wrap items-center gap-2">

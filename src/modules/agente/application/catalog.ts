@@ -44,7 +44,7 @@ export function catalogTools(flags: McpFlags): Array<Omit<ToolDef, "gate">> {
 type Out = { data: unknown; isError?: boolean };
 
 /** Executa uma ferramenta do catálogo; `null` = não é do catálogo (ou está desligada pela flag). */
-export async function callCatalogTool(db: Db, restaurantId: string, name: string, args: Record<string, unknown>, now: Date, flags: McpFlags): Promise<Out | null> {
+export async function callCatalogTool(db: Db, restaurantId: string, name: string, args: Record<string, unknown>, now: Date, flags: McpFlags, onApproved?: (restaurantId: string, inviteIds: string[]) => void): Promise<Out | null> {
   const def = CATALOG_TOOLS.find((t) => t.name === name);
   if (!def || (def.gate && !flags[def.gate])) return null;
   if (name === "ver_configuracao") {
@@ -68,7 +68,8 @@ export async function callCatalogTool(db: Db, restaurantId: string, name: string
     const tool = buildCopilotTools(input).find((t) => t.name === name)!;
     const parsed = tool.input.safeParse(name === "buscar_clientes" ? { segmento: args.segmento ?? null, nome: args.nome ?? null } : {});
     if (!parsed.success) return { data: { erro: "argumentos_invalidos" }, isError: true };
-    return { data: await tool.execute(parsed.data) };
+    const { execute } = tool;
+    return { data: await execute(parsed.data) };
   }
   if (name === "propor_mudanca") {
     const parsed = proposalPayloadSchema.safeParse(args.mudanca);
@@ -80,6 +81,6 @@ export async function callCatalogTool(db: Db, restaurantId: string, name: string
   }
   const id = typeof args.id === "string" ? args.id : "";
   if (!/^[0-9a-f-]{36}$/i.test(id)) return { data: { erro: "id_invalido" }, isError: true };
-  const r = await decideProposal(db, { restaurantId, proposalId: id, origin: "mcp", acao: name === "aplicar_proposta" ? "aplicar" : "descartar", now });
+  const r = await decideProposal(db, { restaurantId, proposalId: id, origin: "mcp", acao: name === "aplicar_proposta" ? "aplicar" : "descartar", now, onApproved });
   return r.ok ? { data: { status: r.status, ja_estava: r.already ?? false, ...(r.warnings?.length ? { avisos: r.warnings } : {}) } } : { data: { status: r.status, motivo: r.motivo }, isError: true };
 }

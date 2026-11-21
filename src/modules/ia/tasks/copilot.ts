@@ -9,13 +9,14 @@ import { OFFER_KINDS, type OfferKind } from "@/src/modules/beneficios/domain/off
 import { INTENSITIES, INTENSITY_LABEL, type Intensity } from "@/src/modules/beneficios/domain/slots";
 import { slotLabel, slotPhrase } from "@/src/modules/beneficios/domain/slot-text";
 import { ITEM_CHANGES, type ProposalPayload, type Snapshot } from "@/src/modules/agente/domain/proposals";
+import { MENU_CATEGORIES } from "@/src/modules/beneficios/domain/menu";
 import { formatFact, renderReferences, type RefContext } from "@/src/modules/textos/domain/references";
 import { factLabel } from "@/src/modules/textos/domain/fact-labels";
 import { CHAT_FORBIDDEN, guardText } from "../guardrails";
 import type { AiTool, ChatTurn, GuardResult, ModelRef } from "../gateway";
 import type { TaskDef } from "../run-task";
 
-export const COPILOT_PROMPT_VERSION = "copiloto-v2";
+export const COPILOT_PROMPT_VERSION = "copiloto-v3";
 export const COPILOT_MAX_STEPS = 3;
 export const MAX_TURNS = 12;
 export const MAX_MESSAGE_CHARS = 1000;
@@ -28,13 +29,17 @@ export type CopilotInput = {
   /** apelido de faixa (A, B…) → id, na ordem de prioridade (mesmos apelidos dos fatos do plano). */
   slotAliases: Array<{ alias: string; slotId: string }>;
   customers: CopilotCustomer[];
-  plan: { status: string; slots: Array<{ alias: string; gain: string | null; weeklyCap: number }> } | null;
+  /** Plano mais recente ainda proposto (onda 2: aprovar pelo copiloto). */
+  plan: { id: string; status: string; slots: Array<{ alias: string; gain: string | null; weeklyCap: number }> } | null;
   page: string;
   tone?: string | null;
 };
 
 export type CopilotPrompt = {
   system: string;
+  planId?: string | null;
+  /** Oferta atual do convite por faixa: "só o teto" (ou só o texto) não exige repetir prato e tipo (T4, rodada 3). */
+  slotOffer?: Map<string, { kind: OfferKind; itemId: string; pct?: number }>;
   ctx: RefContext;
   itemByAlias: Map<string, string>;
   slotByAlias: Map<string, string>;
@@ -68,6 +73,11 @@ Propostas (campos que não se aplicam = null):
 - acao "oferta": papel ("agora" = benefício de 1ª visita, "recompensa" = cartela, "convite" = convite de um horário vazio), faixa (obrigatória no convite), prato, tipo, pct (só desconto), teto (só se o dono pediu outro teto), texto (só se o dono pediu outro texto de convite: recado curto que cita {horario:X} da própria faixa e {oferta}; sem "no/na" antes do horário).
 - acao "item": prato e mudanca ("indisponivel" = acabou/sair do cardápio, "disponivel", "fora_das_ofertas", "nas_ofertas", "preco" com preco_centavos).
 - acao "faixa": faixa e mudanca ("editar" com dias, inicio, fim no formato HH:MM, intensidade, mesas — só o que muda; "desativar" = parar o convite nesse horário).
+- acao "plano": aprovar o plano da semana que está proposto (só se o dono pedir para aprovar); para trocar a oferta ou o teto de UM horário junto, preencha faixa e prato/tipo/pct ou teto.
+- acao "tom": tom (novo estilo dos textos da IA, até duzentos caracteres, sem números nem links).
+- acao "item_novo": nome, categoria e preco_centavos de um prato novo.
+- acao "restaurante": ticket_centavos (gasto médio por pessoa) e/ou margem_pct, só o que o dono disse.
+- acao "avisos": resumo semanal por e-mail — resumo_ligado, dia_semana (0 = domingo … 6) e hora (HH:MM, em hora cheia ou meia hora).
 - dias: 0 = domingo … 6 = sábado. Tipos de oferta: doce_gratis (sobremesa), entrada_gratis (entrada ou porção), cortesia (bebida ou sobremesa), leve2pague1, desconto (pct até 50).
 "sugestoes": até 3 próximos pedidos curtos que o dono pode tocar (sem números).
 Ferramentas: ver_numeros para mais números; buscar_clientes para clientes (nome curto e histórico, nunca contato); ver_plano para o plano da semana. Use só quando precisar.`;
@@ -124,13 +134,17 @@ export function buildCopilotPrompt(input: CopilotInput): CopilotPrompt {
     `HORÁRIOS VAZIOS (cite com {horario:X}):\n${slotLines.join("\n") || "- nenhum"}`,
     `CARDÁPIO (cite com {prato:Pn}):\n${menuLines.join("\n")}`,
     `FATOS (cite com {fato:chave}):\n${factLines.join("\n")}`,
-    input.plan ? `Plano da semana: ${input.plan.status}.` : "Plano da semana: nenhum ainda.",
+    input.plan ? `Plano da semana: ${input.plan.status === "proposto" ? "PROPOSTO, esperando aprovação (pode virar acao plano)" : input.plan.status}.` : "Plano da semana: nenhum esperando aprovação (acao plano não se aplica).",
     `</dados_de_terceiros>`,
   ]
     .filter(Boolean)
     .join("\n\n");
   void active;
-  return { system, ctx, itemByAlias, slotByAlias, itemAliases: [...itemByAlias.keys()], slotAliasList: [...slotByAlias.keys()] };
+  const slotOffer = new Map(input.slotAliases.flatMap(({ alias, slotId }) => {
+    const o = input.snap.slots.find((x) => x.id === slotId)?.offer;
+    return o ? [[alias, { kind: o.kind as OfferKind, itemId: o.itemId, ...(o.pct ? { pct: o.pct } : {}) }] as const] : [];
+  }));
+  return { system, ctx, itemByAlias, slotByAlias, itemAliases: [...itemByAlias.keys()], slotAliasList: [...slotByAlias.keys()], planId: input.plan?.status === "proposto" ? input.plan.id : null, slotOffer };
 }
 
 const nonEmpty = (xs: string[]): [string, ...string[]] => (xs.length ? (xs as [string, ...string[]]) : ["-"]);
@@ -138,7 +152,7 @@ const HHMM = /^([01]?\d|2[0-4]):([0-5]\d)$/;
 
 export function copilotSchema(cp: Pick<CopilotPrompt, "itemAliases" | "slotAliasList">) {
   const proposal = z.object({
-    acao: z.enum(["oferta", "item", "faixa"]),
+    acao: z.enum(["oferta", "item", "faixa", "plano", "tom", "item_novo", "restaurante", "avisos"]),
     papel: z.enum(["agora", "recompensa", "convite"]).nullable(),
     faixa: z.enum(nonEmpty(cp.slotAliasList)).nullable(),
     prato: z.enum(nonEmpty(cp.itemAliases)).nullable(),
@@ -153,6 +167,14 @@ export function copilotSchema(cp: Pick<CopilotPrompt, "itemAliases" | "slotAlias
     fim: z.string().nullable(),
     intensidade: z.enum(INTENSITIES).nullable(),
     mesas: z.number().int().nullable(),
+    tom: z.string().max(200).nullable(),
+    nome: z.string().max(120).nullable(),
+    categoria: z.enum(MENU_CATEGORIES).nullable(),
+    ticket_centavos: z.number().int().nullable(),
+    margem_pct: z.number().int().nullable(),
+    resumo_ligado: z.boolean().nullable(),
+    dia_semana: z.number().int().min(0).max(6).nullable(),
+    hora: z.string().nullable(),
   });
   return z.object({ resposta: z.string().max(900), propostas: z.array(proposal).max(3), sugestoes: z.array(z.string().max(80)).max(3) });
 }
@@ -166,13 +188,33 @@ const toMin = (s: string | null) => {
 };
 
 /** Proposta da IA → payload com ids reais; `null` quando falta campo obrigatório (vira motivo no guard). */
-export function toPayload(cp: Pick<CopilotPrompt, "itemByAlias" | "slotByAlias">, r: RawProposal): ProposalPayload | { erro: string } {
+export function toPayload(cp: Pick<CopilotPrompt, "itemByAlias" | "slotByAlias" | "planId" | "slotOffer">, r: RawProposal): ProposalPayload | { erro: string } {
   const item = r.prato ? cp.itemByAlias.get(r.prato) : undefined;
   const slot = r.faixa ? cp.slotByAlias.get(r.faixa) : undefined;
   // Texto do convite: apelidos → ids (o guard da aplicação confere com os ids reais).
   const text = r.texto?.replace(/\{horario:([A-H])\}/g, (_, a: string) => `{horario:${cp.slotByAlias.get(a) ?? a}}`).replace(/\{prato:(P\d+)\}/g, (_, a: string) => `{prato:${cp.itemByAlias.get(a) ?? a}}`);
   switch (r.acao) {
-    case "oferta":
+    case "plano":
+      if (!cp.planId) return { erro: "sem_plano_proposto" };
+      return { acao: "plano", planId: cp.planId, ...(slot ? { slotId: slot } : {}), ...(slot && item && r.tipo ? { offer: { kind: r.tipo as OfferKind, itemId: item, ...(r.tipo === "desconto" ? { pct: r.pct ?? 10 } : {}) } } : {}), ...(slot && r.teto ? { weeklyCap: r.teto } : {}) };
+    case "tom":
+      return r.tom !== null ? { acao: "tom", tone: r.tom } : { erro: "tom_faltando" };
+    case "item_novo":
+      if (!r.nome || !r.categoria || r.preco_centavos === null || r.preco_centavos < 0) return { erro: "item_novo_incompleto" };
+      return { acao: "item_novo", name: r.nome, category: r.categoria, priceCents: r.preco_centavos };
+    case "restaurante":
+      if (r.ticket_centavos === null && r.margem_pct === null) return { erro: "restaurante_incompleto" };
+      return { acao: "restaurante", ...(r.ticket_centavos !== null ? { ticketCents: r.ticket_centavos } : {}), ...(r.margem_pct !== null ? { marginPct: r.margem_pct } : {}) };
+    case "avisos": {
+      const minute = toMin(r.hora);
+      if (Number.isNaN(minute)) return { erro: "horario_invalido" };
+      if (r.resumo_ligado === null && r.dia_semana === null && minute === undefined) return { erro: "avisos_incompleto" };
+      return { acao: "avisos", ...(r.resumo_ligado !== null ? { resumoOn: r.resumo_ligado } : {}), ...(r.dia_semana !== null ? { weekday: r.dia_semana } : {}), ...(minute !== undefined ? { minute } : {}) };
+    }
+    case "oferta": {
+      // Convite só com teto ou texto: o código completa com a oferta atual do horário.
+      const cur = r.papel === "convite" && r.faixa && (!item || !r.tipo) && (r.teto || r.texto) ? cp.slotOffer?.get(r.faixa) : undefined;
+      if (cur && slot) return { acao: "oferta", papel: "convite", slotId: slot, offer: cur, ...(r.teto ? { weeklyCap: r.teto } : {}), ...(text?.trim() ? { inviteText: text } : {}) };
       if (!r.papel || !item || !r.tipo) return { erro: "oferta_incompleta" };
       if (r.papel === "convite" && !slot) return { erro: "faixa_faltando" };
       return {
@@ -183,6 +225,7 @@ export function toPayload(cp: Pick<CopilotPrompt, "itemByAlias" | "slotByAlias">
         ...(r.papel === "convite" && r.teto ? { weeklyCap: r.teto } : {}),
         ...(r.papel === "convite" && text?.trim() ? { inviteText: text } : {}),
       };
+    }
     case "item":
       if (!item || !r.mudanca || !(ITEM_CHANGES as readonly string[]).includes(r.mudanca)) return { erro: "item_incompleto" };
       if (r.mudanca === "preco" && (r.preco_centavos === null || r.preco_centavos < 0)) return { erro: "preco_faltando" };

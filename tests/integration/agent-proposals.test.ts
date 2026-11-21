@@ -1,7 +1,8 @@
 import { afterAll, beforeEach, describe, expect, it } from "vitest";
 import { and, eq, isNull } from "drizzle-orm";
 import { closeDb, getDb } from "@/src/db/client";
-import { agentProposals, benefitVersions, menuItems, ownerEdits } from "@/src/db/schema";
+import { agentProposals, benefitVersions, menuItems, ownerEdits, restaurants, weeklyPlans } from "@/src/db/schema";
+import { generateWeeklyPlan } from "@/src/modules/planos/application/generate-plan";
 import { createProposals, decideProposal, PROPOSAL_TTL_MS } from "@/src/modules/agente/application/proposals";
 import { updateOffer } from "@/src/modules/config/application/update-settings";
 import { createRestaurant, resetDb } from "./helpers/db";
@@ -76,4 +77,53 @@ describe("propostas do copiloto (S8 — D261, D269)", () => {
     const [card] = await createProposals(getDb(), { restaurantId: r.restaurantId, origin: "copiloto", payloads: [{ acao: "oferta", papel: "convite", slotId: r.slots.A!, offer: { kind: "entrada_gratis", itemId: r.items.bruschetta! }, inviteText: "Volte logo e aproveite {oferta}." }], now: NOW });
     expect(card!.status).toBe("recusada");
   });
+
+  it("onda 2: aprovar o plano com troca de oferta e teto → aprovado 'copiloto', e-mails agendados pelo chamador", async () => {
+    const r = await createRestaurant();
+    const g = await generateWeeklyPlan(getDb(), { restaurantId: r.restaurantId, ownerId: r.ownerId, now: NOW, gateway: null });
+    expect(g.ok).toBe(true);
+    const planId = (g as { planId: string }).planId;
+    const [card] = await createProposals(getDb(), { restaurantId: r.restaurantId, origin: "copiloto", payloads: [{ acao: "plano", planId, slotId: r.slots.A!, offer: { kind: "entrada_gratis", itemId: r.items.bruschetta! }, weeklyCap: 7 }], now: NOW });
+    expect(card).toMatchObject({ status: "pendente" });
+    const approved: string[][] = [];
+    const res = await decideProposal(getDb(), { restaurantId: r.restaurantId, proposalId: card!.id!, origin: "copiloto", acao: "aplicar", now: later(1000), onApproved: (_rid, ids) => approved.push(ids) });
+    expect(res).toMatchObject({ ok: true, status: "aplicada" });
+    const [plan] = await getDb().select().from(weeklyPlans).where(eq(weeklyPlans.id, planId));
+    expect(plan!.status).toBe("aprovado");
+    expect(plan!.approvedVia).toBe("copiloto");
+    const [v] = await getDb().select().from(benefitVersions).where(and(eq(benefitVersions.restaurantId, r.restaurantId), isNull(benefitVersions.supersededAt), eq(benefitVersions.kind, "entrada_gratis")));
+    expect(v!.weeklyCap).toBe(7);
+  });
+
+  it("onda 2: sem plano proposto → recusa", async () => {
+    const r = await createRestaurant();
+    const [card] = await createProposals(getDb(), { restaurantId: r.restaurantId, origin: "copiloto", payloads: [{ acao: "plano", planId: crypto.randomUUID() }], now: NOW });
+    expect(card).toMatchObject({ status: "recusada" });
+  });
+
+  it("onda 2: tom com link → recusa; tom ok, item novo, ticket e resumo → aplicados", async () => {
+    const r = await createRestaurant();
+    const [bad] = await createProposals(getDb(), { restaurantId: r.restaurantId, origin: "copiloto", payloads: [{ acao: "tom", tone: "Descontraído, veja www.site.com" }], now: NOW });
+    expect(bad).toMatchObject({ status: "recusada", motivo: "Tire links do tom." });
+    const cards = await createProposals(getDb(), {
+      restaurantId: r.restaurantId,
+      origin: "copiloto",
+      payloads: [
+        { acao: "tom", tone: "Descontraído e acolhedor" },
+        { acao: "item_novo", name: "Torta de limão", category: "sobremesa", priceCents: 2100 },
+        { acao: "restaurante", ticketCents: 9000 },
+        { acao: "avisos", resumoOn: false },
+      ],
+      now: NOW,
+    });
+    expect(cards.map((c) => c.status)).toEqual(["pendente", "pendente", "pendente", "pendente"]);
+    for (const c of cards) expect(await decideProposal(getDb(), { restaurantId: r.restaurantId, proposalId: c.id!, origin: "copiloto", acao: "aplicar", now: later(10) })).toMatchObject({ ok: true, status: "aplicada" });
+    const [rest] = await getDb().select().from(restaurants).where(eq(restaurants.id, r.restaurantId));
+    expect(rest!.aiTone).toBe("Descontraído e acolhedor");
+    expect(rest!.ticketCents).toBe(9000);
+    expect((rest!.notifySettings as { resumo: { on: boolean } }).resumo.on).toBe(false);
+    const items = await getDb().select().from(menuItems).where(eq(menuItems.restaurantId, r.restaurantId));
+    expect(items.some((i) => i.name === "Torta de limão" && i.priceCents === 2100)).toBe(true);
+  });
 });
+

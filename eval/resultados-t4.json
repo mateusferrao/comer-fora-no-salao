@@ -2,24 +2,17 @@
   "summary": [
     {
       "model": "google/gemini-3.8-flash",
-      "acerto": 12,
-      "regras": 12,
-      "p50": 3079,
-      "custo": 0.041839499999999995
+      "acerto": 16,
+      "regras": 16,
+      "p50": 3561,
+      "custo": 0.07306125
     },
     {
       "model": "openai/gpt-6-luna",
-      "acerto": 10,
-      "regras": 10,
-      "p50": 1349,
-      "custo": 0.0029963249999999998
-    },
-    {
-      "model": "anthropic/claude-haiku-5.5",
-      "acerto": 11,
-      "regras": 11,
-      "p50": 4830.5,
-      "custo": 0.009436500000000002
+      "acerto": 15,
+      "regras": 15,
+      "p50": 1003.5,
+      "custo": 0.004312265
     }
   ],
   "rows": [
@@ -28,9 +21,9 @@
       "id": "trocar_oferta",
       "rulesOk": true,
       "right": true,
-      "ms": 3007,
-      "cost": 0.0032355,
-      "resposta": "Preparei a proposta abaixo para mudar a oferta de {horario:A} para {prato:P7}. Você poderá conferir o antes e depois antes de confirmar.",
+      "ms": 2851,
+      "cost": 0.00401175,
+      "resposta": "Preparei a proposta abaixo para atualizar o convite de {horario:A} com {prato:P7}. Você pode conferir os detalhes e confirmar a mudança.",
       "propostas": [
         {
           "acao": "oferta",
@@ -48,9 +41,9 @@
       "id": "acabou_tiramisu",
       "rulesOk": true,
       "right": true,
-      "ms": 2538,
-      "cost": 0.00321225,
-      "resposta": "Preparei a proposta abaixo para marcar o {prato:P6} como indisponível. Como ele está na recompensa da cartela, você também pode escolher outra sobremesa para substituí-lo.",
+      "ms": 8148,
+      "cost": 0.004041,
+      "resposta": "Preparei a proposta abaixo para marcar {prato:P6} como indisponível. Como ele é a recompensa da cartela, você pode definir outra sobremesa para substituí-lo.",
       "propostas": [
         {
           "acao": "item",
@@ -64,9 +57,9 @@
       "id": "teto",
       "rulesOk": true,
       "right": true,
-      "ms": 2599,
-      "cost": 0.00321825,
-      "resposta": "Preparei a proposta abaixo para ajustar o teto do convite de {horario:A}. O sistema calculou o novo limite semanal para sua aprovação.",
+      "ms": 2755,
+      "cost": 0.00400575,
+      "resposta": "Preparei a proposta abaixo para ajustar o teto do convite de {horario:A}. O teto semanal ajuda a proteger o custo do restaurante.",
       "propostas": [
         {
           "acao": "oferta",
@@ -85,9 +78,9 @@
       "id": "preco",
       "rulesOk": true,
       "right": true,
-      "ms": 4006,
-      "cost": 0.003192,
-      "resposta": "Preparei a proposta abaixo para atualizar o valor de {prato:P2}. Você pode conferir os detalhes no cartão e decidir se aprova a mudança.",
+      "ms": 2734,
+      "cost": 0.00396075,
+      "resposta": "Preparei a proposta abaixo para atualizar o valor de {prato:P2}. Você pode conferir os detalhes antes de confirmar.",
       "propostas": [
         {
           "acao": "item",
@@ -102,9 +95,9 @@
       "id": "fora_ofertas",
       "rulesOk": true,
       "right": true,
-      "ms": 2943,
-      "cost": 0.0028575,
-      "resposta": "Preparei a proposta abaixo para retirar {prato:P8} das ofertas. Você pode conferir os detalhes e decidir no cartão.",
+      "ms": 3217,
+      "cost": 0.00400125,
+      "resposta": "Preparei a proposta abaixo para retirar {prato:P8} das ofertas. O item continuará no cardápio normalmente, mas não será sugerido nem usado em benefícios.",
       "propostas": [
         {
           "acao": "item",
@@ -118,9 +111,9 @@
       "id": "faixa_fim",
       "rulesOk": true,
       "right": true,
-      "ms": 4413,
-      "cost": 0.004398,
-      "resposta": "Preparei a proposta abaixo para estender o término de {horario:A}. Você pode conferir os detalhes e decidir no cartão.",
+      "ms": 4698,
+      "cost": 0.00397425,
+      "resposta": "Preparei a proposta abaixo para ajustar o término de {horario:A}. O sistema calculou o impacto para você decidir no cartão.",
       "propostas": [
         {
           "acao": "faixa",
@@ -135,9 +128,9 @@
       "id": "desativar",
       "rulesOk": true,
       "right": true,
-      "ms": 6476,
-      "cost": 0.0055815,
-      "resposta": "Preparei a proposta abaixo para desativar os convites em {horario:B}. O sistema calculou o impacto e você pode conferir antes de confirmar.",
+      "ms": 3714,
+      "cost": 0.0039735,
+      "resposta": "Preparei a proposta abaixo para desativar os convites de {horario:B}. Dê uma olhada no cartão com o antes e depois para confirmar.",
       "propostas": [
         {
           "acao": "faixa",
@@ -151,9 +144,9 @@
       "id": "sabado",
       "rulesOk": true,
       "right": true,
-      "ms": 4675,
-      "cost": 0.00271275,
-      "resposta": "Hoje o restaurante não tem nenhum horário vazio configurado para sábado, apenas em {horario:A} e {horario:B}. Para ter convites no sábado, você pode editar uma das faixas ou criar uma nova. Qual faixa você gostaria de ajustar?",
+      "ms": 4398,
+      "cost": 0.006288,
+      "resposta": "Nenhum dos seus horários vazios inclui sábado. Para aumentar o teto de um convite, escolha entre {horario:A} ou {horario:B}, ou adicione o sábado aos dias de uma dessas faixas.",
       "propostas": []
     },
     {
@@ -161,9 +154,9 @@
       "id": "pergunta_numeros",
       "rulesOk": true,
       "right": true,
-      "ms": 2109,
-      "cost": 0.00285675,
-      "resposta": "Em {horario:A}, saíram {fato:convites7d_A} com uso de {fato:uso7d_A_pct}. Já em {horario:B}, foram {fato:convites7d_B} com uso de {fato:uso7d_B_pct}. O teto semanal protege o custo em cada faixa.",
+      "ms": 4788,
+      "cost": 0.0065055,
+      "resposta": "Em {horario:A}, foram emitidos {fato:convites7d_A} com taxa de uso de {fato:uso7d_A_pct}. Já em {horario:B}, saíram {fato:convites7d_B} e a conversão ficou em {fato:uso7d_B_pct}.",
       "propostas": []
     },
     {
@@ -171,9 +164,9 @@
       "id": "pergunta_regra",
       "rulesOk": true,
       "right": true,
-      "ms": 2285,
-      "cost": 0.002718,
-      "resposta": "Uma parte dos clientes não recebe convite, para medir quanto o convite trouxe de verdade. Assim comparamos o retorno de quem recebeu com quem não recebeu. Isso garante que o resultado medido é real.",
+      "ms": 2616,
+      "cost": 0.00323175,
+      "resposta": "Uma parte dos clientes não recebe convite de volta. Isso serve para medir quanto o convite trouxe de movimento de verdade. Assim comparamos quem recebeu com quem não recebeu.",
       "propostas": []
     },
     {
@@ -181,29 +174,100 @@
       "id": "clientes",
       "rulesOk": true,
       "right": true,
-      "ms": 4162,
-      "cost": 0.005173499999999999,
+      "ms": 4383,
+      "cost": 0.006276,
       "resposta": "Temos {fato:segmento_perto} clientes perto de completar a cartela. Entre eles estão {cliente:C1} e {cliente:C3}.",
       "propostas": []
+    },
+    {
+      "model": "google/gemini-3.8-flash",
+      "id": "tom",
+      "rulesOk": true,
+      "right": true,
+      "ms": 2760,
+      "cost": 0.00398475,
+      "resposta": "Preparei a proposta abaixo para atualizar o estilo dos textos da IA. O cartão vai mostrar a alteração para você decidir.",
+      "propostas": [
+        {
+          "acao": "tom",
+          "tone": "Descontraído, caloroso e acolhedor, com jeito de cantina italiana de família."
+        }
+      ]
+    },
+    {
+      "model": "google/gemini-3.8-flash",
+      "id": "ticket",
+      "rulesOk": true,
+      "right": true,
+      "ms": 5967,
+      "cost": 0.00393975,
+      "resposta": "Preparei a proposta abaixo para atualizar o gasto médio por pessoa. Confira o cartão e decida se quer aplicar.",
+      "propostas": [
+        {
+          "acao": "restaurante",
+          "ticketCents": 9000
+        }
+      ]
+    },
+    {
+      "model": "google/gemini-3.8-flash",
+      "id": "resumo_off",
+      "rulesOk": true,
+      "right": true,
+      "ms": 3408,
+      "cost": 0.00394275,
+      "resposta": "Preparei a proposta abaixo para desativar o envio do resumo semanal por e-mail. Você pode conferir os detalhes e confirmar a alteração no cartão.",
+      "propostas": [
+        {
+          "acao": "avisos",
+          "resumoOn": false
+        }
+      ]
+    },
+    {
+      "model": "google/gemini-3.8-flash",
+      "id": "aprovar_plano",
+      "rulesOk": true,
+      "right": true,
+      "ms": 4984,
+      "cost": 0.00685725,
+      "resposta": "Preparei a proposta abaixo para aprovar o plano da semana. Você pode conferir os detalhes e confirmar.",
+      "propostas": [
+        {
+          "acao": "plano",
+          "planId": "plano-1"
+        }
+      ]
     },
     {
       "model": "google/gemini-3.8-flash",
       "id": "desconto_60",
       "rulesOk": true,
       "right": true,
-      "ms": 3151,
-      "cost": 0.0026835,
-      "resposta": "O sistema não permite desconto acima de {fato:desconto_maximo_pct}. Se quiser, posso aplicar o teto máximo de desconto em {prato:P2} para {horario:B}.",
-      "propostas": []
+      "ms": 2670,
+      "cost": 0.00406725,
+      "resposta": "O desconto máximo permitido pelo sistema é de {fato:desconto_maximo_pct}, então não consigo aplicar o valor pedido. Preparei uma proposta com o teto de desconto permitido para {prato:P2} em {horario:B}.",
+      "propostas": [
+        {
+          "acao": "oferta",
+          "papel": "convite",
+          "slotId": "slotB",
+          "offer": {
+            "kind": "desconto",
+            "itemId": "lasanha",
+            "pct": 50
+          }
+        }
+      ]
     },
     {
       "model": "openai/gpt-6-luna",
       "id": "trocar_oferta",
       "rulesOk": true,
       "right": true,
-      "ms": 3215,
-      "cost": 0.00038451999999999996,
-      "resposta": "A terça à tarde está na {horario:A}; posso trocar o convite para {prato:P7}. Preparei a proposta abaixo; você decide se aprova.",
+      "ms": 1012,
+      "cost": 0.00040045,
+      "resposta": "Preparei a proposta abaixo para trocar a oferta do convite de terça à tarde por {prato:P7}; não apliquei a mudança.",
       "propostas": [
         {
           "acao": "oferta",
@@ -221,9 +285,9 @@
       "id": "acabou_tiramisu",
       "rulesOk": true,
       "right": true,
-      "ms": 2425,
-      "cost": 0.00009905,
-      "resposta": "Preparei a proposta para marcar {prato:P6} como indisponível; ela sai do cardápio, e você pode aprovar no cartão. Não dá para pausar um prato só por hoje: depois, você pode propor voltar a disponibilizá-lo.",
+      "ms": 1073,
+      "cost": 0.000395575,
+      "resposta": "Preparei a proposta para tirar o tiramisù do cardápio; não existe pausa só por hoje.",
       "propostas": [
         {
           "acao": "item",
@@ -235,22 +299,32 @@
     {
       "model": "openai/gpt-6-luna",
       "id": "teto",
-      "rulesOk": false,
-      "right": false,
-      "ms": 3255,
-      "cost": 0.000115635,
-      "resposta": "",
-      "propostas": [],
-      "reasons": "guard:proposta1:oferta_incompleta"
+      "rulesOk": true,
+      "right": true,
+      "ms": 2267,
+      "cost": 0.00014257499999999998,
+      "resposta": "Preparei a proposta para aumentar o teto do convite da tarde, sem alterar o plano da semana.",
+      "propostas": [
+        {
+          "acao": "oferta",
+          "papel": "convite",
+          "slotId": "slotA",
+          "offer": {
+            "kind": "doce_gratis",
+            "itemId": "cannoli"
+          },
+          "weeklyCap": 12
+        }
+      ]
     },
     {
       "model": "openai/gpt-6-luna",
       "id": "preco",
       "rulesOk": true,
       "right": true,
-      "ms": 2978,
-      "cost": 0.00014547,
-      "resposta": "Preparei a proposta para atualizar o preço de {prato:P2}; você decide se aprova.",
+      "ms": 995,
+      "cost": 0.000395825,
+      "resposta": "Preparei a proposta para atualizar o preço de {prato:P2}; você decide se quer aplicá-la.",
       "propostas": [
         {
           "acao": "item",
@@ -265,9 +339,9 @@
       "id": "fora_ofertas",
       "rulesOk": true,
       "right": true,
-      "ms": 1009,
-      "cost": 0.000334575,
-      "resposta": "Preparei a proposta para tirar {prato:P8} de todas as promoções; ela continua disponível no cardápio.",
+      "ms": 892,
+      "cost": 0.00039545,
+      "resposta": "Preparei a proposta para tirar a soda italiana das promoções; ela continuará no cardápio.",
       "propostas": [
         {
           "acao": "item",
@@ -281,8 +355,8 @@
       "id": "faixa_fim",
       "rulesOk": false,
       "right": false,
-      "ms": 945,
-      "cost": 0.00033395,
+      "ms": 898,
+      "cost": 0.000394325,
       "resposta": "",
       "propostas": [],
       "reasons": "guard:resposta:numero_extenso:dezenove"
@@ -292,9 +366,9 @@
       "id": "desativar",
       "rulesOk": true,
       "right": true,
-      "ms": 844,
-      "cost": 0.000329825,
-      "resposta": "Preparei a proposta para desativar o convite no horário {horario:B}.",
+      "ms": 1121,
+      "cost": 0.0003952,
+      "resposta": "Preparei a proposta para parar o convite de {horario:B}; isso não altera o outro horário.",
       "propostas": [
         {
           "acao": "faixa",
@@ -308,9 +382,9 @@
       "id": "sabado",
       "rulesOk": true,
       "right": true,
-      "ms": 3157,
-      "cost": 0.00010423,
-      "resposta": "Não há horário vazio de sábado configurado; os convites atuais são para {horario:A} e {horario:B}. Posso propor a criação de um horário de sábado ou aumentar o teto de um desses horários.",
+      "ms": 774,
+      "cost": 0.00006288,
+      "resposta": "Não há convite configurado para sábado; os horários vazios disponíveis são {horario:A} e {horario:B}. Posso aumentar o teto de um desses horários, se preferir.",
       "propostas": []
     },
     {
@@ -318,9 +392,9 @@
       "id": "pergunta_numeros",
       "rulesOk": true,
       "right": true,
-      "ms": 1470,
-      "cost": 0.00038368,
-      "resposta": "Não tenho dados de convites desta semana. Nos convites com uma semana completa, a faixa A teve {fato:uso7d_A_pct} de uso ({fato:convites7d_A}) e a faixa B, {fato:uso7d_B_pct} ({fato:convites7d_B}).",
+      "ms": 1701,
+      "cost": 0.00016699,
+      "resposta": "Não tenho um consolidado desta semana: os dados disponíveis mostram convites de coortes com uma semana completa. Neles, a faixa A teve uso de {fato:uso7d_A_pct} entre {fato:convites7d_A}, e a faixa B, {fato:uso7d_B_pct} entre {fato:convites7d_B}.",
       "propostas": []
     },
     {
@@ -328,9 +402,9 @@
       "id": "pergunta_regra",
       "rulesOk": true,
       "right": true,
-      "ms": 625,
-      "cost": 0.00004398,
-      "resposta": "O grupo de controle é uma parte dos clientes que não recebe convite, para medir quanto o convite trouxe de verdade.",
+      "ms": 553,
+      "cost": 0.00004537,
+      "resposta": "É a parte dos clientes que não recebe convite, para medir quanto o convite trouxe de verdade.",
       "propostas": []
     },
     {
@@ -338,182 +412,79 @@
       "id": "clientes",
       "rulesOk": true,
       "right": true,
-      "ms": 1228,
-      "cost": 0.000346285,
-      "resposta": "Estão perto da recompensa {cliente:C1} e {cliente:C3}.",
+      "ms": 1443,
+      "cost": 0.00010782499999999999,
+      "resposta": "Ana S. {cliente:C1} e Carla T. {cliente:C3} estão perto de completar a cartela de recompensa.",
       "propostas": []
+    },
+    {
+      "model": "openai/gpt-6-luna",
+      "id": "tom",
+      "rulesOk": true,
+      "right": true,
+      "ms": 1063,
+      "cost": 0.000402075,
+      "resposta": "Preparei a proposta abaixo para deixar os textos mais descontraídos, com jeito de cantina de família.",
+      "propostas": [
+        {
+          "acao": "tom",
+          "tone": "Descontraído e acolhedor, com jeito de cantina de família."
+        }
+      ]
+    },
+    {
+      "model": "openai/gpt-6-luna",
+      "id": "ticket",
+      "rulesOk": true,
+      "right": true,
+      "ms": 962,
+      "cost": 0.0001049,
+      "resposta": "Preparei a proposta para atualizar o ticket médio por pessoa; ela só será aplicada se você aprovar.",
+      "propostas": [
+        {
+          "acao": "restaurante",
+          "ticketCents": 9000
+        }
+      ]
+    },
+    {
+      "model": "openai/gpt-6-luna",
+      "id": "resumo_off",
+      "rulesOk": true,
+      "right": true,
+      "ms": 920,
+      "cost": 0.000396075,
+      "resposta": "Preparei a proposta abaixo para desativar o resumo semanal por e-mail; nada será alterado até você aprovar.",
+      "propostas": [
+        {
+          "acao": "avisos",
+          "resumoOn": false
+        }
+      ]
+    },
+    {
+      "model": "openai/gpt-6-luna",
+      "id": "aprovar_plano",
+      "rulesOk": true,
+      "right": true,
+      "ms": 2487,
+      "cost": 0.00014755,
+      "resposta": "Preparei a proposta para aprovar o plano da semana.",
+      "propostas": [
+        {
+          "acao": "plano",
+          "planId": "plano-1"
+        }
+      ]
     },
     {
       "model": "openai/gpt-6-luna",
       "id": "desconto_60",
       "rulesOk": true,
       "right": true,
-      "ms": 1227,
-      "cost": 0.000375125,
-      "resposta": "O desconto pedido ultrapassa o limite de {fato:desconto_maximo_pct}, então não posso preparar essa proposta. Posso preparar o convite da noite com desconto dentro do limite.",
-      "propostas": []
-    },
-    {
-      "model": "anthropic/claude-haiku-5.5",
-      "id": "trocar_oferta",
-      "rulesOk": true,
-      "right": true,
-      "ms": 2842,
-      "cost": 0.0007381,
-      "resposta": "Preparei a proposta abaixo: o convite do {horario:A} passa a ser sobremesa grátis com {prato:P7}, no lugar do {prato:P5}. Você confere o antes e depois no cartão e decide se aplica.",
-      "propostas": [
-        {
-          "acao": "oferta",
-          "papel": "convite",
-          "slotId": "slotA",
-          "offer": {
-            "kind": "doce_gratis",
-            "itemId": "gelato"
-          }
-        }
-      ]
-    },
-    {
-      "model": "anthropic/claude-haiku-5.5",
-      "id": "acabou_tiramisu",
-      "rulesOk": true,
-      "right": true,
-      "ms": 4819,
-      "cost": 0.0007493,
-      "resposta": "Preparei a proposta abaixo para tirar o {prato:P6} do cardápio. Ele também é usado na recompensa da cartela, então o cartão mostra o antes e depois antes de você decidir. Nada foi aplicado ainda.",
-      "propostas": [
-        {
-          "acao": "item",
-          "itemId": "tiramisu",
-          "mudanca": "indisponivel"
-        }
-      ]
-    },
-    {
-      "model": "anthropic/claude-haiku-5.5",
-      "id": "teto",
-      "rulesOk": false,
-      "right": false,
-      "ms": 5010,
-      "cost": 0.0007041,
-      "resposta": "",
-      "propostas": [],
-      "reasons": "guard:proposta1:oferta_incompleta"
-    },
-    {
-      "model": "anthropic/claude-haiku-5.5",
-      "id": "preco",
-      "rulesOk": true,
-      "right": true,
-      "ms": 2186,
-      "cost": 0.0006563,
-      "resposta": "Preparei a proposta abaixo: o novo preço de {prato:P2} aparece no cartão com o antes e o depois calculados pelo sistema. Você decide se aplica.",
-      "propostas": [
-        {
-          "acao": "item",
-          "itemId": "lasanha",
-          "mudanca": "preco",
-          "priceCents": 6200
-        }
-      ]
-    },
-    {
-      "model": "anthropic/claude-haiku-5.5",
-      "id": "fora_ofertas",
-      "rulesOk": true,
-      "right": true,
-      "ms": 5006,
-      "cost": 0.0006999,
-      "resposta": "Preparei a proposta abaixo para tirar {prato:P8} de todas as promoções. Você vê o antes e o depois no cartão e decide se aplica.",
-      "propostas": [
-        {
-          "acao": "item",
-          "itemId": "soda",
-          "mudanca": "fora_das_ofertas"
-        }
-      ]
-    },
-    {
-      "model": "anthropic/claude-haiku-5.5",
-      "id": "faixa_fim",
-      "rulesOk": true,
-      "right": true,
-      "ms": 4558,
-      "cost": 0.0007378,
-      "resposta": "Preparei a proposta abaixo: o {horario:A} passa a terminar mais tarde, e só o fim muda. Você confere o antes e depois no cartão e decide se aplica.",
-      "propostas": [
-        {
-          "acao": "faixa",
-          "slotId": "slotA",
-          "mudanca": "editar",
-          "endMin": 1140
-        }
-      ]
-    },
-    {
-      "model": "anthropic/claude-haiku-5.5",
-      "id": "desativar",
-      "rulesOk": true,
-      "right": true,
-      "ms": 2473,
-      "cost": 0.0006778,
-      "resposta": "Entendi, o horário da noite lotou. Preparei a proposta abaixo para parar o convite de {horario:B}. Você vê o antes e o depois no cartão e decide se aplica.",
-      "propostas": [
-        {
-          "acao": "faixa",
-          "slotId": "slotB",
-          "mudanca": "desativar"
-        }
-      ]
-    },
-    {
-      "model": "anthropic/claude-haiku-5.5",
-      "id": "sabado",
-      "rulesOk": true,
-      "right": true,
-      "ms": 4842,
-      "cost": 0.0008063,
-      "resposta": "No sábado não há horário vazio com convite, então não existe teto para aumentar nesse dia. Os convites hoje saem só em {horario:A} e {horario:B}. Quer que eu aumente o teto de um desses horários?",
-      "propostas": []
-    },
-    {
-      "model": "anthropic/claude-haiku-5.5",
-      "id": "pergunta_numeros",
-      "rulesOk": true,
-      "right": true,
-      "ms": 7471,
-      "cost": 0.0008361,
-      "resposta": "Nos convites já com a semana inteira passada, o {horario:A} teve {fato:uso7d_A_pct} de uso em {fato:convites7d_A}, e o {horario:B} teve {fato:uso7d_B_pct} em {fato:convites7d_B}. Os convites mais recentes ainda estão no prazo de uso, então esses percentuais podem subir.",
-      "propostas": []
-    },
-    {
-      "model": "anthropic/claude-haiku-5.5",
-      "id": "pergunta_regra",
-      "rulesOk": true,
-      "right": true,
-      "ms": 3771,
-      "cost": 0.0005485,
-      "resposta": "O grupo de controle é uma parte dos clientes que não recebe convite de volta. Assim dá para medir quanto o convite trouxe de verdade, comparando com quem recebeu. Sem ele, não dá para saber se o cliente voltaria de qualquer jeito.",
-      "propostas": []
-    },
-    {
-      "model": "anthropic/claude-haiku-5.5",
-      "id": "clientes",
-      "rulesOk": true,
-      "right": true,
-      "ms": 6246,
-      "cost": 0.0012752,
-      "resposta": "Estes clientes estão no segmento perto da recompensa da cartela: {cliente:C1} e {cliente:C3}. O total do segmento aparece em {fato:segmento_perto}.",
-      "propostas": []
-    },
-    {
-      "model": "anthropic/claude-haiku-5.5",
-      "id": "desconto_60",
-      "rulesOk": true,
-      "right": true,
-      "ms": 5929,
-      "cost": 0.0010071,
-      "resposta": "Não consigo aplicar esse desconto: o máximo permitido é {fato:desconto_maximo_pct}, e o sistema recusa qualquer valor acima disso. Para o convite de {horario:B}, posso montar um desconto na {prato:P2} dentro desse limite, se você me disser o percentual. Também dá para manter a entrada grátis com {prato:P1}.",
+      "ms": 725,
+      "cost": 0.0003592,
+      "resposta": "O desconto solicitado ultrapassa o limite de {fato:desconto_maximo_pct}. Posso preparar uma proposta com o desconto máximo permitido para a lasanha no convite da noite?",
       "propostas": []
     }
   ]

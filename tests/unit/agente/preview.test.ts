@@ -96,3 +96,29 @@ describe("prévia do copiloto — item e faixa (S8)", () => {
     expect(previewProposal(snap, { acao: "item", itemId: "x", mudanca: "indisponivel" })).toEqual({ ok: false, motivo: "Não encontrei esse prato no cardápio." });
   });
 });
+
+describe("prévia do copiloto — onda 2 (S8, D270)", () => {
+  const withPlan: Snapshot = { ...snap, tone: null, ticketCents: 7800, resumo: { on: true, weekday: 1, minute: 510 }, plan: { id: "p1", slots: [{ slotId: "A", offer: { kind: "doce_gratis", itemId: "cannoli" }, weeklyCap: 8, inviteText: "Volte {horario:A} e prove o {prato:cannoli}." }], audience: 42 } };
+  it("aprovar o plano com troca: linhas, aviso da reativação e do texto", () => {
+    const p = previewProposal(withPlan, { acao: "plano", planId: "p1", slotId: "A", offer: { kind: "doce_gratis", itemId: "gelato" } });
+    expect(p.ok && p.titulo).toBe("Aprovar o plano da semana com ajuste");
+    expect(p.ok && p.linhas).toContainEqual({ campo: "Plano da semana", antes: "Proposto", depois: "Aprovado" });
+    expect(p.ok && p.avisos[0]).toBe("Ao aprovar, o convite de volta vai para até 42 clientes (no app e por e-mail para quem aceitou).");
+    expect(p.ok && p.avisos).toContain("O texto do convite desse horário citava o prato antigo e volta ao texto padrão.");
+  });
+  it("plano errado → recusa", () => {
+    expect(previewProposal(withPlan, { acao: "plano", planId: "outro" }).ok).toBe(false);
+  });
+  it("resumo: segunda 08:30 → desligado", () => {
+    const p = previewProposal(withPlan, { acao: "avisos", resumoOn: false });
+    expect(p.ok && p.linhas).toEqual([{ campo: "Resumo da semana", antes: "segunda, 08:30", depois: "desligado" }]);
+  });
+  it("ticket: R$ 78,00 → R$ 90,00", () => {
+    const p = previewProposal(withPlan, { acao: "restaurante", ticketCents: 9000 });
+    expect(p.ok && p.linhas).toEqual([{ campo: "Ticket médio por pessoa", antes: "R$ 78,00", depois: "R$ 90,00" }]);
+  });
+  it("item novo com nome repetido → recusa", () => {
+    expect(previewProposal(withPlan, { acao: "item_novo", name: "cannoli", category: "sobremesa", priceCents: 2000 }).ok).toBe(false);
+  });
+});
+

@@ -1,5 +1,5 @@
 /**
- * T4 (S8 — D266): mini-avaliação do copiloto. 12 pedidos com gabarito sobre um retrato da Cantina (o mesmo do seed:
+ * T4 (S8 — D266): mini-avaliação do copiloto. 16 pedidos com gabarito sobre um retrato da Cantina (o mesmo do seed:
  * Tiramisù é a recompensa, faixa A = Ter–Qui 15h–18h, faixa B = Seg–Qua 21h–23h, sem horário no sábado) × 3 modelos
  * × 1 repetição, cada modelo sozinho (sem reserva). Mede: ação e parâmetros certos, regras do guard ok (resposta sem
  * número cru, contato ou link), latência p50 e custo. Regra fixada antes: maior acerto; empate → menor p50; p50 > 12 s
@@ -13,11 +13,14 @@ import { systemClock } from "../src/shared/clock";
 import { buildCopilotPrompt, buildCopilotTask, buildCopilotTools, toPayload, type CopilotInput, type CopilotOut } from "../src/modules/ia/tasks/copilot";
 import type { ProposalPayload, Snapshot } from "../src/modules/agente/domain/proposals";
 
-const MODELS: ModelRef[] = [
+const ALL_MODELS: ModelRef[] = [
   { id: "google/gemini-3.8-flash", provider: "google", sort: "latency", reasoningEffort: "low" },
   { id: "openai/gpt-6-luna", provider: "openai", sort: "latency", reasoningEffort: "none" },
   { id: "anthropic/claude-haiku-5.5", provider: "anthropic", sort: "latency" },
 ];
+// Rodada 4: só os modelos que aceitam o schema da onda 2 (o Anthropic limita 16 parâmetros com união; o schema tem 22).
+const only = (process.env.T4_MODELS ?? "").split(",").filter(Boolean);
+const MODELS = only.length ? ALL_MODELS.filter((m) => only.includes(m.id)) : ALL_MODELS;
 
 const snap: Snapshot = {
   marginPct: 60,
@@ -52,7 +55,7 @@ const input: CopilotInput = {
     { alias: "C2", name: "Bruno M.", visits: 1, stamps: 1, lastDay: "2026-10-30", segments: ["sumiu"] },
     { alias: "C3", name: "Carla T.", visits: 5, stamps: 5, lastDay: "2026-11-18", segments: ["perto"] },
   ],
-  plan: null,
+  plan: { id: "plano-1", status: "proposto", slots: [] },
   page: "configuracoes",
 };
 
@@ -70,6 +73,10 @@ const CASES: Array<{ id: string; ask: string; ok: Expect }> = [
   { id: "pergunta_numeros", ask: "como foram os convites nesta semana?", ok: none },
   { id: "pergunta_regra", ask: "o que é o grupo de controle?", ok: none },
   { id: "clientes", ask: "quem está perto da recompensa?", ok: none },
+  { id: "tom", ask: "quero os textos da IA mais descontraídos, com jeito de cantina de família", ok: (p) => p.some((x) => x.acao === "tom" && x.tone.length > 5) },
+  { id: "ticket", ask: "nosso ticket médio agora é 90 reais por pessoa", ok: (p) => p.some((x) => x.acao === "restaurante" && x.ticketCents === 9000) },
+  { id: "resumo_off", ask: "não quero mais receber o resumo semanal por e-mail", ok: (p) => p.some((x) => x.acao === "avisos" && x.resumoOn === false) },
+  { id: "aprovar_plano", ask: "pode aprovar o plano da semana", ok: (p) => p.some((x) => x.acao === "plano" && x.planId === "plano-1") },
   { id: "desconto_60", ask: "coloca um desconto de 60% na lasanha no convite da noite", ok: (p) => none(p) || p.some((x) => x.acao === "oferta" && x.slotId === "slotB" && x.offer.itemId === "lasanha" && x.offer.kind === "desconto") },
 ];
 
@@ -113,9 +120,9 @@ async function main() {
   const md = [
     "# T4 — mini-avaliação do copiloto (S8, D266)",
     "",
-    "12 pedidos com gabarito sobre um retrato da Cantina × 3 modelos × 1 repetição, cada modelo sozinho. Regra fixada antes: maior acerto; empate → menor p50; p50 > 12 s → o copiloto sai da demo. Amostra pequena: resultado indicativo (\"teste de fumaça\").",
+    "16 pedidos com gabarito sobre um retrato da Cantina × 3 modelos × 1 repetição, cada modelo sozinho. Regra fixada antes: maior acerto; empate → menor p50; p50 > 12 s → o copiloto sai da demo. Amostra pequena: resultado indicativo (\"teste de fumaça\").",
     "",
-    "| Modelo | Acerto (de 12) | Regras ok (de 12) | p50 | Custo total |",
+    "| Modelo | Acerto (de 16) | Regras ok (de 16) | p50 | Custo total |",
     "|---|---|---|---|---|",
     ...summary.map((s) => `| ${s.model} | ${s.acerto} | ${s.regras} | ${(s.p50 / 1000).toFixed(1)} s | US$ ${s.custo.toFixed(4)} |`),
     "",

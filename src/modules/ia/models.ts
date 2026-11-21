@@ -9,8 +9,6 @@ const GEMINI_31_FLASH_LITE: ModelRef = { id: "google/gemini-3.1-flash-lite", pro
 const GEMINI_38_FLASH: ModelRef = { id: "google/gemini-3.8-flash", provider: "google", sort: "latency", reasoningEffort: "low" };
 /** Revisor (espec. 4.4): 3º provedor, fora do laço do kit/plano (google + openai). */
 const DEEPSEEK_V41_FLASH: ModelRef = { id: "deepseek/deepseek-v4.1-flash", provider: "deepseek", sort: "latency", reasoningEffort: "none" };
-/** S8 (T4): reserva do copiloto (11/12 na 2ª rodada; conflito declarado: o assistente da construção é da Anthropic). */
-const CLAUDE_HAIKU_55: ModelRef = { id: "anthropic/claude-haiku-5.5", provider: "anthropic", sort: "latency" };
 const GPT_6_LUNA: ModelRef = { id: "openai/gpt-6-luna", provider: "openai", sort: "latency", reasoningEffort: "none" };
 
 export const MODELS = {
@@ -18,6 +16,6 @@ export const MODELS = {
   pacote: [GEMINI_38_FLASH, GPT_6_LUNA],
   kit: [GEMINI_38_FLASH, GPT_6_LUNA],
   revisor: [DEEPSEEK_V41_FLASH],
-  /** S8: escolhidos pela T4 (eval/relatorio-t4.md; D266): vencedor + reserva de outro provedor. */
-  copiloto: [GEMINI_38_FLASH, CLAUDE_HAIKU_55],
+  /** S8: escolhidos pela T4, rodada 4 (eval/relatorio-t4.md; D266): vencedor 16/16 + reserva de outro provedor (15/16). */
+  copiloto: [GEMINI_38_FLASH, GPT_6_LUNA],
 } satisfies Record<string, ModelRef[]>;

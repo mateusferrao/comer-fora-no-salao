@@ -11,7 +11,7 @@ export function fakeCopilotEnabled(env: Record<string, string | undefined>): boo
   return env.COPILOT_FAKE_AI === "1" && !env.OPENROUTER_KEY_PUBLIC && !env.OPENROUTER_KEY_DEMO && env.E2E_LOGIN_TOKEN === LOCAL_E2E_TOKEN;
 }
 
-const EMPTY = { papel: null, faixa: null, prato: null, tipo: null, pct: null, teto: null, texto: null, mudanca: null, preco_centavos: null, dias: null, inicio: null, fim: null, intensidade: null, mesas: null };
+const EMPTY = { papel: null, faixa: null, prato: null, tipo: null, pct: null, teto: null, texto: null, mudanca: null, preco_centavos: null, dias: null, inicio: null, fim: null, intensidade: null, mesas: null, tom: null, nome: null, categoria: null, ticket_centavos: null, margem_pct: null, resumo_ligado: null, dia_semana: null, hora: null };
 const norm = (s: string) => s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
 
 /** Lê o contexto do prompt (apelidos do cardápio e das faixas) e responde por palavras do pedido. */

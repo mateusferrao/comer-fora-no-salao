@@ -102,7 +102,7 @@ export async function handleRpc(db: Db, restaurantId: string, raw: unknown, now:
   if (m.method === "tools/call") {
     const name = typeof m.params?.name === "string" ? m.params.name : "";
     const args = (m.params?.arguments && typeof m.params.arguments === "object" ? m.params.arguments : {}) as Json;
-    const c = await callCatalogTool(db, restaurantId, name, args, now, cat);
+    const c = await callCatalogTool(db, restaurantId, name, args, now, cat, deps.onApproved);
     const r = c ? text(c.data, c.isError) : await callTool(db, restaurantId, name, args, now, deps);
     return r ? { jsonrpc: "2.0", id, result: r } : { jsonrpc: "2.0", id, error: { code: -32602, message: `Unknown tool: ${name.slice(0, 40)}` } };
   }

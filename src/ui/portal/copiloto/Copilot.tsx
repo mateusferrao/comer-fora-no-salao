@@ -200,7 +200,7 @@ export function Copilot({ chips }: { chips: Chips }) {
   const onApplied = (aba: string, id: string) => {
     dirty.current = false;
     // Vai à aba alterada; `v` remonta o formulário com os dados novos (revisão técnica I7).
-    if (path.startsWith("/parceiro/salao/configuracoes"))
+    if (path.startsWith("/parceiro/salao/configuracoes") && aba !== "plano")
       router.push(abaHref(aba, id));
     else router.refresh();
   };

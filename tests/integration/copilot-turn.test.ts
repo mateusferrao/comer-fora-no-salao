@@ -8,7 +8,7 @@ import { createRestaurant, resetDb } from "./helpers/db";
 
 const NOW = new Date("2026-11-23T16:00:00Z");
 const alias = (system: string, name: string) => new RegExp(`- (P\\d+): ${name} `).exec(system)![1]!;
-const empty = { papel: null, faixa: null, prato: null, tipo: null, pct: null, teto: null, texto: null, mudanca: null, preco_centavos: null, dias: null, inicio: null, fim: null, intensidade: null, mesas: null };
+const empty = { papel: null, faixa: null, prato: null, tipo: null, pct: null, teto: null, texto: null, mudanca: null, preco_centavos: null, dias: null, inicio: null, fim: null, intensidade: null, mesas: null, tom: null, nome: null, categoria: null, ticket_centavos: null, margem_pct: null, resumo_ligado: null, dia_semana: null, hora: null };
 
 /** Gateway roteirizado: por modelo, uma função que recebe o pedido e devolve a saída (pode chamar ferramentas). */
 function scripted(byModel: Record<string, (req: AiGenerateRequest) => Promise<unknown> | unknown>): AiGateway & { calls: AiGenerateRequest[] } {
@@ -54,7 +54,7 @@ describe("turno do copiloto (S8)", () => {
     const r = await createRestaurant();
     const gw = scripted({
       "google/gemini-3.8-flash": () => ({ resposta: "Foram 12 convites.", propostas: [], sugestoes: [] }),
-      "anthropic/claude-haiku-5.5": () => ({ resposta: "Foram {fato:checkins_30d} check-ins no último mês.", propostas: [], sugestoes: [] }),
+      "openai/gpt-6-luna": () => ({ resposta: "Foram {fato:checkins_30d} check-ins no último mês.", propostas: [], sugestoes: [] }),
     });
     const out = await runCopilotTurn(getDb(), { restaurantId: r.restaurantId, ownerId: r.ownerId, turns: [{ role: "user", text: "como foi o mês?" }], page: "painel", now: NOW, gateway: gw });
     expect(out.generatedBy).toBe("ia");

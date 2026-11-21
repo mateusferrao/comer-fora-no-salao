@@ -8,7 +8,7 @@ Registro pedido pela D98: uso de modelos fora do rastro do app (Langfuse), com o
 | 20/11 | **Mini-avaliação T1 (D117, D128, D129)**: 4 cardápios × 7 modelos × 2 repetições + 3 linhas de base de OCR | 7 de visão + Google Vision + gemini-2.5-flash-lite (texto) | demo + service account do Google (só no script) | 0,0841 (inclui o preço de tabela do Vision, coberto pela cota grátis) | `eval/run-t1.ts`, `eval/relatorio-t1.md` |
 | 20/11 | Cache das extrações dos 3 exemplos | gemini-3.1-flash-lite | demo | < 0,01 | `scripts/gerar-cache-exemplos.ts` |
 | 21/11 | **Spike do copiloto (S8)**: saída achatada + ferramenta + histórico | gemini-3.8-flash, gpt-6-luna, claude-haiku-5.5 | demo | ~0,004 | `eval/spike-copiloto.ts` |
-| 21/11 | **Mini-avaliação T4 (S8, D266)**: 2 rodadas × 3 modelos × 12 pedidos com gabarito | gemini-3.8-flash, gpt-6-luna, claude-haiku-5.5 | demo | ~0,11 | `eval/run-t4.ts`, `eval/relatorio-t4.md` |
+| 21/11 | **Mini-avaliação T4 (S8, D266)**: 4 rodadas (12 e 16 pedidos com gabarito) × até 3 modelos | gemini-3.8-flash, gpt-6-luna, claude-haiku-5.5 | demo | ~0,29 | `eval/run-t4.ts`, `eval/relatorio-t4.md` |
 | 20/11 | **Mini-avaliação T3 (D137, D147)**: 2 rodadas (a 1ª descartada após corrigir o prompt) × 6 modelos × 5 fixtures × 2 repetições + juiz cego nos pares | gemini-3.1-flash-lite, gpt-6-luna, deepseek-v4.1-flash, claude-haiku-5.5, qwen3.8-flash, gemini-3.8-flash; juiz kimi-k3.1-pro | demo | 0,33 (0,14 + 0,14 + 0,04 do juiz nos pares cegos) | `eval/run-t3.ts`, `eval/judge-t3-cego.ts`, `eval/relatorio-t3.md` |
 
 ## Como a T1 foi feita (e por quê)

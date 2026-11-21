@@ -8,9 +8,10 @@ import { getPlanInsights } from "@/src/modules/planos/application/insights";
 import { shortName } from "@/src/shared/name";
 import type { CopilotCustomer, CopilotInput } from "@/src/modules/ia/tasks/copilot";
 import { loadSnapshot } from "./proposals";
+import { latestPlan } from "@/src/modules/planos/application/approve-plan";
 
 export async function loadAgentContext(db: Db, p: { restaurantId: string; restaurantName: string; tone?: string | null; page: string; now: Date }): Promise<CopilotInput | null> {
-  const [snap, ins] = await Promise.all([loadSnapshot(db, p.restaurantId), getPlanInsights(db, p.restaurantId, p.now)]);
+  const [snap, ins, lp] = await Promise.all([loadSnapshot(db, p.restaurantId), getPlanInsights(db, p.restaurantId, p.now), latestPlan(db, p.restaurantId)]);
   if (!snap || !ins) return null;
   // Apelidos estáveis: ordem do id (C1…); nome curto (primeiro nome + inicial).
   const customers: CopilotCustomer[] = [...ins.customers]
@@ -22,7 +23,7 @@ export async function loadAgentContext(db: Db, p: { restaurantId: string; restau
     facts: ins.facts,
     slotAliases: slotAliases(ins.ctx.slots).map(({ alias, slot }) => ({ alias, slotId: slot.id })),
     customers,
-    plan: ins.offers.length ? { status: "veja ver_plano", slots: ins.offers.map((o) => ({ alias: o.alias, gain: o.gain, weeklyCap: o.recalibratedCap })) } : null,
+    plan: lp ? { id: lp.id, status: lp.status, slots: ins.offers.map((o) => ({ alias: o.alias, gain: o.gain, weeklyCap: o.recalibratedCap })) } : null,
     page: p.page,
     tone: p.tone ?? null,
   };

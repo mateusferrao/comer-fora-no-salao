@@ -42,7 +42,7 @@ async function sentFor(db: Executor, planId: string): Promise<{ real: number; fa
   return { real: rows.rows.find((r) => r.arm === "convidavel")?.n ?? 0, fantasma: rows.rows.find((r) => r.arm === "holdout")?.n ?? 0 };
 }
 
-export type ApproveVia = "portal" | "agente" | "email";
+export type ApproveVia = "portal" | "agente" | "email" | "copiloto";
 
 /** Plano "como está" (MCP e link do e-mail): as escolhas guardadas, com o teto sugerido. */
 export function finalFromStored(plan: { candidates: unknown; choices: unknown; decision: unknown }): FinalPlan {

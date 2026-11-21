@@ -5,7 +5,7 @@
  * Configurações), então a prévia nunca é a última palavra; ela usa as MESMAS regras puras (`checkOffer`, `validateSlot`).
  */
 import { z } from "zod";
-import type { MenuCategory, MenuItem } from "@/src/modules/beneficios/domain/menu";
+import { CATEGORY_LABELS, MENU_CATEGORIES, type MenuCategory, type MenuItem } from "@/src/modules/beneficios/domain/menu";
 import { checkOffer, describeOffer, OFFER_KINDS, offerFromInput, unitCost, type OfferError, type OfferKind } from "@/src/modules/beneficios/domain/offers";
 import { INTENSITIES, INTENSITY_LABEL, validateSlot, type Intensity, type OpeningHours } from "@/src/modules/beneficios/domain/slots";
 import { slotLabel } from "@/src/modules/beneficios/domain/slot-text";
@@ -21,6 +21,12 @@ export type Snapshot = {
   recompensa: OfferInput | null;
   slots: Array<{ id: string; days: number[]; startMin: number; endMin: number; intensity: Intensity; extraTables: number; offer: OfferInput | null; weeklyCap: number | null; inviteText: string }>;
   menu: Array<{ id: string; name: string; category: MenuCategory; priceCents: number; active: boolean; inUse: boolean; offerAllowed: boolean }>;
+  /** Onda 2 (D270). */
+  tone?: string | null;
+  ticketCents?: number | null;
+  resumo?: { on: boolean; weekday: number; minute: number };
+  /** Plano mais recente ainda proposto (aprovar pelo copiloto). */
+  plan?: { id: string; slots: Array<{ slotId: string; offer: OfferInput; weeklyCap: number; inviteText: string }>; audience: number } | null;
 };
 
 export const ITEM_CHANGES = ["indisponivel", "disponivel", "fora_das_ofertas", "nas_ofertas", "preco"] as const;
@@ -29,7 +35,13 @@ export type ItemChange = (typeof ITEM_CHANGES)[number];
 export type ProposalPayload =
   | { acao: "oferta"; papel: Role; slotId?: string; offer: OfferInput; weeklyCap?: number; inviteText?: string }
   | { acao: "item"; itemId: string; mudanca: ItemChange; priceCents?: number }
-  | { acao: "faixa"; slotId: string; mudanca: "editar" | "desativar"; days?: number[]; startMin?: number; endMin?: number; intensity?: Intensity; extraTables?: number };
+  | { acao: "faixa"; slotId: string; mudanca: "editar" | "desativar"; days?: number[]; startMin?: number; endMin?: number; intensity?: Intensity; extraTables?: number }
+  // Onda 2 (D270): aprovar o plano (com uma troca opcional), tom, item novo, ticket/margem e resumo semanal.
+  | { acao: "plano"; planId: string; slotId?: string; offer?: OfferInput; weeklyCap?: number }
+  | { acao: "tom"; tone: string }
+  | { acao: "item_novo"; name: string; category: MenuCategory; priceCents: number }
+  | { acao: "restaurante"; ticketCents?: number | null; marginPct?: number | null }
+  | { acao: "avisos"; resumoOn?: boolean; weekday?: number; minute?: number };
 
 /** Contrato da proposta para quem chama de fora (MCP — D269): ids reais, o código confere tudo na prévia. */
 const uuid = z.string().uuid();
@@ -38,6 +50,10 @@ export const proposalPayloadSchema = z.discriminatedUnion("acao", [
   z.object({ acao: z.literal("oferta"), papel: z.enum(["agora", "recompensa", "convite"]), slotId: uuid.optional(), offer: z.object({ kind: z.enum(OFFER_KINDS), itemId: uuid, pct: z.number().int().min(1).max(100).optional() }), weeklyCap: z.number().int().min(1).max(999).optional(), inviteText: z.string().max(300).optional() }),
   z.object({ acao: z.literal("item"), itemId: uuid, mudanca: z.enum(ITEM_CHANGES), priceCents: z.number().int().min(0).max(1_000_000).optional() }),
   z.object({ acao: z.literal("faixa"), slotId: uuid, mudanca: z.enum(["editar", "desativar"]), days: z.array(z.number().int().min(0).max(6)).min(1).max(7).optional(), startMin: minutes.optional(), endMin: minutes.optional(), intensity: z.enum(INTENSITIES).optional(), extraTables: z.number().int().min(1).max(200).optional() }),
+  z.object({ acao: z.literal("tom"), tone: z.string().max(200) }),
+  z.object({ acao: z.literal("item_novo"), name: z.string().min(2).max(120), category: z.enum(MENU_CATEGORIES), priceCents: z.number().int().min(0).max(1_000_000) }),
+  z.object({ acao: z.literal("restaurante"), ticketCents: z.number().int().min(100).max(1_000_000).nullable().optional(), marginPct: z.number().int().min(1).max(95).nullable().optional() }),
+  z.object({ acao: z.literal("avisos"), resumoOn: z.boolean().optional(), weekday: z.number().int().min(0).max(6).optional(), minute: z.number().int().min(360).max(1320).optional() }),
 ]);
 
 export type PreviewLine = { campo: string; antes: string; depois: string };
@@ -49,7 +65,7 @@ export type PreviewOk = {
   impacto?: string;
   avisos: string[];
   /** Aba de Configurações onde a mesma mudança se faz à mão ("Editar no formulário"). */
-  aba: "agora" | "cartela" | "convites" | "cardapio";
+  aba: "agora" | "cartela" | "convites" | "cardapio" | "restaurante" | "ia" | "avisos" | "plano";
   /** Estado canônico do alvo antes da mudança (o `base_hash` sai daqui). */
   antes: unknown;
   /** Convite: o texto que será gravado (atual, novo ou o padrão). */
@@ -207,8 +223,71 @@ function previewSlot(snap: Snapshot, p: Extract<ProposalPayload, { acao: "faixa"
   return { ok: true, titulo: `Ajustar o horário vazio ${slotLabel(s)}`, linhas, alcance: `Vale para ${slotLabel(next)}`, avisos: ["Convites já emitidos guardam o horário de quando foram emitidos."], aba: "convites", antes };
 }
 
+const WEEKDAYS = ["domingo", "segunda", "terça", "quarta", "quinta", "sexta", "sábado"];
+const hhmm = (m: number) => `${String(Math.floor(m / 60)).padStart(2, "0")}:${String(m % 60).padStart(2, "0")}`;
+
+function previewPlan(snap: Snapshot, p: Extract<ProposalPayload, { acao: "plano" }>): Preview {
+  const plan = snap.plan;
+  if (!plan || plan.id !== p.planId) return { ok: false, motivo: "Não há plano da semana esperando aprovação. Gere o plano na aba Plano da semana." };
+  const menu = menuOf(snap);
+  const linhas: PreviewLine[] = [];
+  const avisos: string[] = [];
+  if (p.slotId) {
+    const s = plan.slots.find((x) => x.slotId === p.slotId);
+    const slot = snap.slots.find((x) => x.id === p.slotId);
+    if (!s || !slot) return { ok: false, motivo: "Esse horário não está no plano." };
+    if (p.offer) {
+      const errs = checkOffer(offerFromInput(p.offer), menuOf({ ...snap, menu: snap.menu.filter((m) => m.active) }), snap.menu.filter((m) => !m.offerAllowed).map((m) => m.id));
+      if (errs.length) return { ok: false, motivo: errs[0] === "item_fora_das_ofertas" ? "Esse prato está marcado como fora das ofertas." : OFFER_ERR[errs[0]!] };
+      if (!sameOffer(s.offer, p.offer)) linhas.push({ campo: `Oferta de ${slotLabel(slot)}`, antes: describeOffer(offerFromInput(s.offer), menu, "convite").gain, depois: describeOffer(offerFromInput(p.offer), menu, "convite").gain });
+      if ([...s.inviteText.matchAll(/\{prato:([^}]+)\}/g)].some((m) => m[1] !== p.offer!.itemId)) avisos.push("O texto do convite desse horário citava o prato antigo e volta ao texto padrão.");
+    }
+    if (p.weeklyCap && p.weeklyCap !== s.weeklyCap) linhas.push({ campo: `Teto de ${slotLabel(slot)}`, antes: `${s.weeklyCap} convites`, depois: `${p.weeklyCap} convites` });
+  }
+  linhas.push({ campo: "Plano da semana", antes: "Proposto", depois: "Aprovado" });
+  if (plan.audience > 0) avisos.unshift(`Ao aprovar, o convite de volta vai para até ${plan.audience} clientes (no app e por e-mail para quem aceitou).`);
+  return { ok: true, titulo: linhas.length > 1 ? "Aprovar o plano da semana com ajuste" : "Aprovar o plano da semana", linhas, avisos, aba: "plano", antes: { planId: plan.id, slots: plan.slots } };
+}
+
+function previewOther(snap: Snapshot, p: Extract<ProposalPayload, { acao: "tom" | "item_novo" | "restaurante" | "avisos" }>): Preview {
+  switch (p.acao) {
+    case "tom": {
+      const t = p.tone.trim().replace(/\s+/g, " ");
+      if ((snap.tone ?? "") === t) return { ok: false, motivo: "Isso já está assim." };
+      return { ok: true, titulo: "Mudar o tom dos textos da IA", linhas: [{ campo: "Tom", antes: snap.tone || "padrão", depois: t || "padrão" }], avisos: ["Vale para os próximos textos da IA; os convites atuais não mudam."], aba: "ia", antes: { tone: snap.tone ?? null } };
+    }
+    case "item_novo": {
+      const name = p.name.trim();
+      if (snap.menu.some((m) => m.name.toLowerCase() === name.toLowerCase() && m.active)) return { ok: false, motivo: "Já existe um prato com esse nome no cardápio." };
+      return { ok: true, titulo: `Incluir “${name}” no cardápio`, linhas: [{ campo: "Prato novo", antes: "—", depois: `${name} · ${CATEGORY_LABELS[p.category]} · ${money(p.priceCents)}` }], avisos: [], aba: "cardapio", antes: { names: snap.menu.map((m) => m.name).sort() } };
+    }
+    case "restaurante": {
+      const linhas: PreviewLine[] = [];
+      if (p.ticketCents !== undefined && p.ticketCents !== (snap.ticketCents ?? null)) linhas.push({ campo: "Ticket médio por pessoa", antes: snap.ticketCents ? money(snap.ticketCents) : "não informado", depois: p.ticketCents ? money(p.ticketCents) : "não informado" });
+      if (p.marginPct !== undefined && p.marginPct !== snap.marginPct) linhas.push({ campo: "Margem aproximada", antes: snap.marginPct ? `${snap.marginPct}%` : "não informada", depois: p.marginPct ? `${p.marginPct}%` : "não informada" });
+      if (!linhas.length) return { ok: false, motivo: "Isso já está assim." };
+      return { ok: true, titulo: "Atualizar ticket e margem", linhas, avisos: ["Muda o cálculo de custo e de retorno em reais daqui para a frente."], aba: "restaurante", antes: { ticketCents: snap.ticketCents ?? null, marginPct: snap.marginPct } };
+    }
+    case "avisos": {
+      const cur = snap.resumo ?? { on: true, weekday: 1, minute: 510 };
+      const next = { on: p.resumoOn ?? cur.on, weekday: p.weekday ?? cur.weekday, minute: p.minute ?? cur.minute };
+      if (next.minute % 30 !== 0) return { ok: false, motivo: "O horário do resumo precisa ser em hora cheia ou meia hora." };
+      const show = (r: typeof cur) => (r.on ? `${WEEKDAYS[r.weekday]}, ${hhmm(r.minute)}` : "desligado");
+      if (show(next) === show(cur)) return { ok: false, motivo: "Isso já está assim." };
+      return { ok: true, titulo: "Mudar o resumo semanal por e-mail", linhas: [{ campo: "Resumo da semana", antes: show(cur), depois: show(next) }], avisos: [], aba: "avisos", antes: { resumo: cur } };
+    }
+  }
+}
+
 export function previewProposal(snap: Snapshot, p: ProposalPayload): Preview {
   switch (p.acao) {
+    case "plano":
+      return previewPlan(snap, p);
+    case "tom":
+    case "item_novo":
+    case "restaurante":
+    case "avisos":
+      return previewOther(snap, p);
     case "oferta":
       return previewOffer(snap, p);
     case "item":
