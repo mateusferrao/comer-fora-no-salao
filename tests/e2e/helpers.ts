@@ -99,11 +99,12 @@ export async function optionValues(scope: Page | Locator, label: string | RegExp
 }
 
 /**
- * Restaurantes da conta cujo rótulo no seletor "Trocar loja" contém `marca` (ex.: "teste"). Sem seletor (1 loja só) →
- * lista vazia. Usado pela limpeza das specs que cadastram restaurantes.
+ * Restaurantes cadastrados da conta (todos menos a cópia do exemplo), lidos no seletor "Trocar loja". Sem seletor (1
+ * loja só) → lista vazia. Limpeza das specs que cadastram restaurantes (o rótulo deixou de ter "teste" na S4, e a
+ * limpeza antiga não apagava nada — as contas de E2E de produção chegavam ao limite de 3).
  */
-export async function storeIds(page: Page, marca: string): Promise<string[]> {
+export async function storeIds(page: Page): Promise<string[]> {
   const picker = page.getByLabel("Trocar loja").and(page.getByRole("button"));
   if (!(await picker.count())) return [];
-  return (await optionValues(page, "Trocar loja")).filter((o) => o.text.includes(marca)).map((o) => o.value);
+  return (await optionValues(page, "Trocar loja")).filter((o) => !o.text.includes("exemplo")).map((o) => o.value);
 }

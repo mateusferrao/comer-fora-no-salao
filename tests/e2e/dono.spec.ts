@@ -108,7 +108,7 @@ test("assistente completo com exemplo: salão pré-preenchido → revisão → p
   // Começa limpo: apaga restaurantes de teste antigos desta conta de E2E.
   await page.goto("/parceiro/salao");
   for (;;) {
-    const ids = await storeIds(page, "teste");
+    const ids = await storeIds(page);
     if (!ids.length) break;
     for (const id of ids) await page.request.delete("/api/parceiro/restaurantes", { data: { restaurantId: id } });
     await page.reload();

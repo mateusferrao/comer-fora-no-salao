@@ -11,7 +11,7 @@ test("cardápio manual: digitar → seu salão → seu cardápio vazio → inclu
   await loginE2E(page.request, 25);
   await page.goto("/parceiro/salao");
   for (;;) {
-    const ids = await storeIds(page, "teste");
+    const ids = await storeIds(page);
     if (!ids.length) break;
     for (const id of ids) await page.request.delete("/api/parceiro/restaurantes", { data: { restaurantId: id } });
     await page.reload();
