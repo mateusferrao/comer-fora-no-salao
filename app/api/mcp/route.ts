@@ -1,7 +1,8 @@
 /**
  * MCP (flag `mcp`): Streamable HTTP só com POST e respostas JSON (sem SSE, sem sessão). Autenticação por
- * `Authorization: Bearer <token do dono>`; `Origin` de outro site é recusado (DNS rebinding); 60 chamadas/h
- * por token.
+ * `Authorization: Bearer <token do dono>` (o token sozinho também vale); 60 chamadas/h por token. D248: qualquer
+ * `Origin` é aceito — o conector do Claude chama de outra origem, e a proteção contra DNS rebinding é o próprio token
+ * (sem cookie; o navegador de um atacante não tem o token).
  */
 import { after } from "next/server";
 import { getDb } from "@/src/db/client";
@@ -10,7 +11,6 @@ import { handleRpc } from "@/src/modules/mcp/server";
 import { resolveToken } from "@/src/modules/mcp/tokens";
 import { consume } from "@/src/shared/rate-limit";
 import { readJson } from "@/src/web/http";
-import { publicBaseUrl } from "@/src/web/qr";
 import { scheduleInviteEmails } from "@/src/web/invite-emails";
 
 export const dynamic = "force-dynamic";
@@ -21,11 +21,8 @@ const err = (status: number, code: number, message: string, headers: Record<stri
 export async function POST(req: Request) {
   const db = getDb();
   if (!(await getFlags(db)).mcp) return new Response(null, { status: 404 });
-  const origin = req.headers.get("origin");
-  // Atrás do proxy, `req.url` pode não ter o host público: vale a origem pública configurada (ou a da própria URL).
-  if (origin && origin !== new URL(req.url).origin && origin !== new URL(publicBaseUrl()).origin) return err(403, -32600, "Origin not allowed");
-  const auth = req.headers.get("authorization") ?? "";
-  const tok = await resolveToken(db, auth.startsWith("Bearer ") ? auth.slice(7).trim() : null);
+  const auth = (req.headers.get("authorization") ?? "").trim();
+  const tok = await resolveToken(db, /^bearer\s+/i.test(auth) ? auth.replace(/^bearer\s+/i, "").trim() : auth || null);
   if (!tok) return err(401, -32001, "Unauthorized", { "www-authenticate": 'Bearer realm="comer-fora-no-salao"' });
   const now = new Date();
   const lim = await consume(db, `mcp:${tok.tokenId}`, 60, 3600, now);

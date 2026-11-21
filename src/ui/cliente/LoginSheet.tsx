@@ -1,5 +1,6 @@
 "use client";
 
+import { Checkbox } from "../components/Checkbox";
 import { useEffect, useRef, useState } from "react";
 import type { OfferView } from "@/src/modules/salao/application/views";
 import { maskPhone } from "@/src/modules/salao/domain/phone";
@@ -289,14 +290,14 @@ export function LoginSheet({ open, slug, restaurantName, agora, initialStep, fir
     >
       <form id="form-email" noValidate className="flex flex-col gap-4 text-left" onSubmit={(ev) => (ev.preventDefault(), void sendEmail())}>
         <Field label="E-mail" name="email" type="email" inputMode="email" autoComplete="email" value={email} onChange={(ev) => setEmail(ev.target.value)} error={errors.email} maxLength={254} />
-        <label className="flex min-h-11 items-start gap-3 text-sm leading-5">
-          <input
-            type="checkbox"
+        <label className="flex min-h-11 cursor-pointer items-start gap-3 text-sm leading-5">
+          <Checkbox
+            tone="app"
             checked={accept}
             onChange={(ev) => setAccept(ev.target.checked)}
             aria-invalid={errors.accept ? true : undefined}
             aria-describedby={errors.accept ? "aceite-erro" : undefined}
-            className="mt-0.5 size-5 accent-red-button"
+            className="mt-0.5"
           />
           <span>{TXT.consentimento(restaurantName)}</span>
         </label>

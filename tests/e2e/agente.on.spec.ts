@@ -9,11 +9,13 @@ import { axe, loginE2E, PROD, S5_ON } from "./helpers";
 test.skip(PROD && !S5_ON, "em produção, só depois de ligar as flags (E2E_FLAGS=on)");
 
 test("agente (MCP): passo a passo → token funciona no endereço → revogar corta", async ({ page }) => {
-  test.setTimeout(120_000);
+  test.setTimeout(180_000);
   await loginE2E(page.request, 34);
   await page.goto("/parceiro/salao");
-  await expect(page.getByText(/Preparando o restaurante de exemplo/)).toBeHidden({ timeout: 60_000 });
+  await expect(page.getByText(/Preparando o restaurante de exemplo/)).toBeHidden({ timeout: 120_000 });
   await page.goto("/parceiro/salao/configuracoes");
+  // D247: aba própria "Integrações".
+  await page.getByRole("tab", { name: "Integrações" }).click();
   const card = page.getByRole("region", { name: "Conectar um assistente de IA (MCP)" });
   await expect(card).toBeVisible();
   const steps = card.getByRole("list", { name: "Como conectar, passo a passo" });

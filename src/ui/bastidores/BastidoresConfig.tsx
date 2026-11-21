@@ -1,5 +1,6 @@
 "use client";
 
+import { Checkbox } from "../components/Checkbox";
 import { confirmDialog } from "../components/ConfirmDialog";
 import { useCallback, useEffect, useState } from "react";
 import { FLAG_LABEL, FLAGS, PROMPT_TASKS, type Flag, type PromptTask } from "@/src/modules/config/domain/flags";
@@ -186,9 +187,8 @@ export function BastidoresConfig({ logged }: { logged: boolean }) {
           Recursos com flag
         </h2>
         {FLAGS.map((f) => (
-          <label key={f} className="flex min-h-11 items-center gap-3 text-sm text-ink">
-            <input
-              type="checkbox"
+          <label key={f} className="flex min-h-11 cursor-pointer items-center gap-3 text-sm text-ink">
+            <Checkbox
               checked={st.flags[f]}
               onChange={(e) => {
                 const on = e.target.checked;

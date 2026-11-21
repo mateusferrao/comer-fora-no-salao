@@ -30,14 +30,18 @@ describe("MCP (flag; D219)", () => {
   }, 120_000);
   afterAll(closeDb);
 
-  it("flag desligada → 404; sem token → 401; Origin de outro site → 403; token revogado → 401", async () => {
+  it("flag desligada → 404; sem token → 401; Origin de outro site com token → 200 (D248); token revogado → 401", async () => {
     const { token } = await createToken(getDb(), VITRINE_ID, NOW);
     await setFlag(getDb(), "mcp", false);
     expect((await rpc(token, { jsonrpc: "2.0", id: 1, method: "ping" })).status).toBe(404);
     await setFlag(getDb(), "mcp", true);
     expect((await rpc(null, { jsonrpc: "2.0", id: 1, method: "ping" })).status).toBe(401);
     expect((await rpc("cfs_" + "x".repeat(43), { jsonrpc: "2.0", id: 1, method: "ping" })).status).toBe(401);
-    expect((await rpc(token, { jsonrpc: "2.0", id: 1, method: "ping" }, { origin: "https://malicioso.example" })).status).toBe(403);
+    // D248: o conector do Claude (e de outros assistentes) chama de outra origem; quem protege é o token.
+    expect((await rpc(token, { jsonrpc: "2.0", id: 1, method: "ping" }, { origin: "https://claude.ai" })).status).toBe(200);
+    expect((await rpc(null, { jsonrpc: "2.0", id: 1, method: "ping" }, { origin: "https://malicioso.example" })).status).toBe(401);
+    // Valor do cabeçalho colado só com o token (sem "Bearer ") também vale.
+    expect((await rpc(null, { jsonrpc: "2.0", id: 1, method: "ping" }, { authorization: token })).status).toBe(200);
     expect((await rpc(token, { jsonrpc: "2.0", id: 1, method: "ping" })).status).toBe(200);
     // Notificação → 202 sem corpo; lote → 400.
     expect((await rpc(token, { jsonrpc: "2.0", method: "notifications/initialized" })).status).toBe(202);

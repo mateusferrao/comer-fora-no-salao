@@ -1,6 +1,6 @@
 "use client";
 
-import { useId, useRef, type KeyboardEvent, type ReactNode } from "react";
+import { useEffect, useId, useRef, type KeyboardEvent, type ReactNode } from "react";
 import { cn } from "../cn";
 
 export type TabItem = { id: string; label: string; content: ReactNode };
@@ -16,6 +16,14 @@ type Props = {
 export function Tabs({ items, value, onValueChange, label }: Props) {
   const base = useId();
   const refs = useRef<Array<HTMLButtonElement | null>>([]);
+  // A aba ativa sempre à vista na barra (ex.: abrir direto em "Integrações", a última): rola só a barra, não a página.
+  useEffect(() => {
+    const el = refs.current[items.findIndex((t) => t.id === value)];
+    const bar = el?.parentElement;
+    if (!el || !bar) return;
+    if (el.offsetLeft < bar.scrollLeft || el.offsetLeft + el.offsetWidth > bar.scrollLeft + bar.clientWidth - 32) bar.scrollLeft = el.offsetLeft - 16;
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- só ao trocar de aba (items é um array novo a cada render)
+  }, [value, items.length]);
 
   const onKeyDown = (e: KeyboardEvent<HTMLButtonElement>, index: number) => {
     const last = items.length - 1;

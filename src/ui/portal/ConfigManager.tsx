@@ -1,5 +1,6 @@
 "use client";
 
+import { Checkbox } from "../components/Checkbox";
 import { confirmDialog } from "../components/ConfirmDialog";
 import {
   inviteIssues,
@@ -15,7 +16,7 @@ const TABLES_HINT =
   "Com isso calculamos quantos convites mandar: 4 mesas ≈ 16 convites por semana, depois ajustado pelo uso real.";
 import { Select } from "../components/Select";
 import { useNumberField } from "../components/use-number-field";
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import type { MenuCategory } from "@/src/modules/beneficios/domain/menu";
 import { describeOffer } from "@/src/modules/beneficios/domain/offers";
@@ -132,6 +133,7 @@ export function ConfigManager({
   notify,
   flags,
   initialTab = "agora",
+  integrations,
 }: {
   v: SettingsView;
   isTest: boolean;
@@ -139,6 +141,8 @@ export function ConfigManager({
   notify?: NotifyView;
   flags?: { agendador: boolean; resumo_email: boolean; plano_agente?: boolean; aprende?: boolean };
   initialTab?: string;
+  /** D247: aba "Integrações" (hoje, o assistente de IA por MCP), em vez de um card no fim de todas as abas. */
+  integrations?: ReactNode;
 }) {
   const [tab, setTab] = useState(initialTab);
   // Pratos "fora das ofertas" (D197) não aparecem nos seletores de oferta.
@@ -157,6 +161,7 @@ export function ConfigManager({
         // S6.3a (D197): logo depois de "Restaurante" (revisão de produto I6).
         { id: "ia", label: "IA do restaurante", content: <div className="py-4"><ToneSection v={v} agenteGlobal={!!flags?.plano_agente} aprendeGlobal={flags?.aprende ?? true} /></div> },
         ...(notify && flags ? [{ id: "avisos", label: "Avisos e automação", content: <NotifySettingsTab view={notify} flags={flags} /> }] : []),
+        ...(integrations ? [{ id: "integracoes", label: "Integrações", content: <div className="py-4">{integrations}</div> }] : []),
       ]}
     />
   );
@@ -416,35 +421,36 @@ function MenuTab({ v }: { v: SettingsView }) {
                   <input aria-label={`Preço de ${r.name}`} inputMode="decimal" className="min-h-11 w-24 rounded-sm border border-border px-2" value={r.preco} onChange={(e) => setRows(rows.map((x, k) => (k === i ? { ...x, preco: e.target.value } : x)))} />
                 </td>
                 <td className="px-2 py-1">
-                  <label className="flex min-h-11 items-center gap-2">
-                    <input type="checkbox" checked={r.active} disabled={r.inUse && r.active} onChange={(e) => save(`ativo-${r.id}`, { acao: "item_ativo", itemId: r.id, active: e.target.checked }, "Cardápio atualizado").then((ok) => ok && setRows(rows.map((x, k) => (k === i ? { ...x, active: !x.active } : x))))} />
-                    <span className="text-xs text-ink-muted">{r.inUse ? "em uso numa oferta" : r.active ? "ativo" : "fora"}</span>
+                  <label className="flex min-h-11 cursor-pointer items-center gap-2">
+                    <Checkbox aria-label={`No cardápio: ${r.name}`} checked={r.active} disabled={r.inUse && r.active} onChange={(e) => save(`ativo-${r.id}`, { acao: "item_ativo", itemId: r.id, active: e.target.checked }, "Cardápio atualizado").then((ok) => ok && setRows(rows.map((x, k) => (k === i ? { ...x, active: !x.active } : x))))} />
+                    <span className="text-sm text-ink">{r.inUse ? "Em uso numa oferta" : r.active ? "Ativo" : "Fora"}</span>
                   </label>
                 </td>
                 <td className="px-2 py-1">
                   {/* S6.3a (D197): fora das ofertas = nunca vira convite, "agora" nem recompensa; a IA nem vê. */}
-                  <label className="flex min-h-11 items-center gap-2">
-                    <input
-                      type="checkbox"
+                  <label className="flex min-h-11 cursor-pointer items-center gap-2">
+                    <Checkbox
                       aria-label={`Pode entrar em ofertas: ${r.name}`}
                       checked={r.offerAllowed}
                       onChange={(e) =>
                         save(`oferta-${r.id}`, { acao: "item_oferta", itemId: r.id, allowed: e.target.checked }, e.target.checked ? "Pode entrar em ofertas" : "Fora das ofertas").then((ok) => ok && setRows(rows.map((x, k) => (k === i ? { ...x, offerAllowed: !x.offerAllowed } : x))))
                       }
                     />
-                    <span className="text-xs text-ink-muted">{r.offerAllowed ? "sim" : "não"}</span>
+                    <span className="text-sm text-ink">{r.offerAllowed ? "Sim" : "Não"}</span>
                   </label>
                 </td>
                 <td className="px-2 py-1">
-                  <div className="flex flex-wrap items-center gap-2">
+                  {/* Ajuste de 21/11 (D247): Salvar e Excluir lado a lado; excluir como ícone de lixeira com nome acessível. */}
+                  <div className="flex flex-nowrap items-center justify-end gap-1">
                     <Button variant="outline-portal" loading={busy === `item-${r.id}`} onClick={() => save(`item-${r.id}`, { acao: "item_editar", itemId: r.id, name: r.name, priceCents: cents(r.preco) ?? 0, category: r.category }, "Item salvo")}>
                       Salvar
                     </Button>
                     {!r.inUse && (
                       <button
                         type="button"
-                        className="min-h-11 px-2 text-sm font-semibold text-red-text underline"
+                        className="inline-flex size-11 shrink-0 items-center justify-center rounded-xs text-red-text hover:bg-red-text/5 focus-visible:outline-2 focus-visible:outline-ink"
                         aria-label={`Excluir ${r.name}`}
+                        title="Excluir do cardápio"
                         onClick={async () =>
                           (await confirmDialog({
                             title: `Excluir "${r.name}" do cardápio?`,
@@ -461,9 +467,13 @@ function MenuTab({ v }: { v: SettingsView }) {
                           )
                         }
                       >
-                        Excluir
+                        <svg aria-hidden="true" viewBox="0 0 24 24" className="size-5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M4 7h16M10 11v6M14 11v6M6 7l1 12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-12M9 7V4h6v3" />
+                        </svg>
                       </button>
                     )}
+                    {/* Em uso numa oferta não se exclui: o espaço fica, para o "Salvar" alinhar com as outras linhas. */}
+                    {r.inUse && <span aria-hidden="true" className="size-11 shrink-0" />}
                   </div>
                   <Msg k={`item-${r.id}`} />
                   <Msg k={`ativo-${r.id}`} />
