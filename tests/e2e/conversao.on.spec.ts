@@ -24,21 +24,29 @@ for (const width of [390, 1280]) {
     await expect(page.getByRole("heading", { name: "Encha a terça à tarde com quem lotou seu sábado à noite", level: 1 })).toBeVisible();
     await expect(page.getByRole("link", { name: "Ativar meu salão" }).first()).toHaveAttribute("href", "/parceiro/entrar");
     await expect(page.getByRole("link", { name: "Veja o que seu cliente vê" })).toHaveAttribute("href", "/r/cantina-nonna-lucia");
-    await expect(page.getByRole("heading", { name: /Segundo o iFood, 63% de quem usou o Comer Fora no Rio/ })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "63% voltaram em menos de 1 mês", level: 2 })).toBeVisible();
+    await expect(page.getByText(/Segundo o iFood, 63% de quem usou o Comer Fora no Rio/)).toBeVisible();
     await expect(page.getByRole("link", { name: "Fonte" })).toHaveAttribute("href", "/bastidores/como-funciona#fontes");
-    await expect(page.getByText("Para restaurantes com salão e horário sobrando")).toBeVisible();
-    await expect(page.getByRole("img", { name: /Visão geral da Cantina Nonna Lúcia/ })).toBeVisible();
-    await expect(page.getByRole("img", { name: /Celular do cliente/ })).toBeVisible();
-    await expect(page.getByText("Restaurante de exemplo · dados gerados")).toBeVisible();
-    for (const t of ["Pronto com uma foto do cardápio.", "O cliente da mesa deixa de ser anônimo.", "Um plano por semana, aprovado por você.", "Só conta a volta a mais."]) {
+    await expect(page.getByText("Comer Fora no salão · para restaurantes com horário sobrando")).toBeVisible();
+    const print = page.getByRole("img", { name: /Visão geral do restaurante de exemplo: Quanto os convites renderam/ });
+    await expect(print).toBeVisible();
+    // S9: abaixo de 640 px, o recorte só do cartão em R$ (legível); acima, o print inteiro.
+    await expect.poll(() => print.evaluate((img: HTMLImageElement) => img.currentSrc)).toMatch(width < 640 ? /visao-geral-topo\.webp$/ : /visao-geral\.webp$/);
+    const phone = page.getByRole("img", { name: /Celular do cliente/ });
+    await expect(phone).toBeVisible();
+    expect((await phone.boundingBox())!.width).toBeGreaterThanOrEqual(140);
+    await expect(page.getByText(/^Restaurante de exemplo: histórico gerado, com o efeito do convite fixado em \+0,2 visita .* Não é resultado medido\.$/)).toBeVisible();
+    for (const t of ["Do cardápio ao kit para imprimir em 5 passos.", "O cliente da mesa deixa de ser anônimo.", "Um plano por semana, aprovado por você.", "Só conta a volta a mais."]) {
       await expect(page.getByRole("heading", { name: t, level: 3 })).toBeVisible();
     }
-    await expect(page.getByRole("heading", { name: "O custo tem teto, e você vê antes de aprovar" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Você vê o custo antes de aprovar, e os convites têm teto semanal" })).toBeVisible();
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
     await page.getByText("O que a IA decide?").click();
     await expect(page.getByText(/escolhe entre ofertas que o sistema calculou/)).toBeVisible();
     await page.getByText("Quanto custa?").click();
-    await expect(page.getByText("Você paga só os benefícios que aprovar, até o teto semanal que você define.")).toBeVisible();
+    await expect(page.getByText(/^Você paga só os benefícios que aprovar\. Os convites têm um teto por semana, que você ajusta\./)).toBeVisible();
+    await page.getByText("Preciso de equipe?").click();
+    await expect(page.getByText("Não. O garçom confere o código no celular ou no computador do caixa.")).toBeVisible();
     expect(PROIBIDO.exec(await visibleText(page))).toBeNull();
     await axe(page);
   });

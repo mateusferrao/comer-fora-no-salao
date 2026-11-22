@@ -146,7 +146,7 @@ test("assistente completo com exemplo: salão pré-preenchido → revisão → p
   await axe(page);
   await page.keyboard.press("Escape");
   await expect(panel).toBeHidden();
-  await page.getByLabel("Teto de convites por semana").first().fill("10");
+  await page.getByLabel("Teto semanal de convites").first().fill("10");
   await expect(page.getByText(/até 10 convites\/semana ≈ 3 mesas/)).toBeVisible();
   // D244: texto apagado → mensagem no campo, na hora; "Revisar e ativar" não sai do passo e leva o foco ao campo.
   const texto = page.getByRole("textbox", { name: /Texto do convite/ }).first();

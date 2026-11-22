@@ -173,7 +173,7 @@ export function Galeria({ cabecalho }: { cabecalho: string }) {
           <BottomSheet
             open={sheet}
             onClose={() => setSheet(false)}
-            title="Parece que você não está no restaurante!"
+            title="Parece que você não está no restaurante"
             actions={
               <>
                 <Button variant="outline-app" onClick={() => setSheet(false)}>

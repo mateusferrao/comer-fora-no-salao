@@ -323,7 +323,7 @@ function PackageEditor(p: {
             </div>
             <div className="flex flex-wrap items-end gap-4">
               <label className="flex flex-col gap-1.5 text-sm font-medium text-ink">
-                Teto de convites por semana
+                Teto semanal de convites
                 <CapInput value={st.weeklyCap} onValue={(n) => setSlot(s.slotId, { weeklyCap: n })} />
               </label>
               <p className="pb-2 text-sm text-ink">

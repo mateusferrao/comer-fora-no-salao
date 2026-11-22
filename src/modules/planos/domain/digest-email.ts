@@ -3,6 +3,7 @@
  * rodapé de protótipo (D164) e "Não quero mais receber" (D193). Números e reais vêm do código (topo da S5, D179).
  */
 import type { Topline } from "@/src/modules/analytics/domain/value";
+import { crossZeroMoneyText, showSwapOffer } from "@/src/modules/analytics/domain/value-text";
 import { PROTOTYPE_FOOTER } from "@/src/shared/prototype";
 
 export type DigestView = {
@@ -43,7 +44,8 @@ function causalLines(t: Extract<Topline, { cents: number }>): string[] {
     return [`${head} Vale trocar a oferta no plano da semana.`, base];
   }
   const head = t.visitas === "positivo" ? "Os convites trouxeram visitas a mais." : "Quem recebeu convite voltou menos do que quem ficou sem.";
-  return [`${head} Em reais, ainda não dá para garantir lucro: pode ficar ${range}, já descontado o custo dos convites.`, base];
+  const swap = showSwapOffer(t) ? " Vale trocar a oferta no plano da semana." : "";
+  return [`${head} ${crossZeroMoneyText(brl(t.lo), brl(t.hi))}${swap}`, base];
 }
 
 function earlyLines(t: Extract<Topline, { kind: "antecipado" | "sem_valores" }>): string[] {

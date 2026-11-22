@@ -162,7 +162,7 @@ export function PlanManager({ initial, explicaIa = false }: { initial: PlanView;
         <div className="flex flex-col gap-1">
           <p className="text-sm text-ink-muted">{p ? `Semana de ${weekLabel(p.weekKey)}` : "Nenhum plano ainda"}</p>
           <p className="font-semibold text-ink" data-testid="plan-status" data-status={v.generating ? "gerando" : (p?.status ?? "nenhum")}>
-            {v.generating ? "A IA está escolhendo as ofertas…" : !p ? "Gere o primeiro plano da semana" : p.status === "aprovado" ? (p.stale ? "Vencido · gere o desta semana" : `Aprovado${p.approvedVia === "agente" ? " por app de IA conectado" : p.approvedVia === "email" ? " pelo e-mail" : p.approvedVia === "copiloto" ? " pelo Assistente do salão" : ""}`) : p.stale ? "Plano da semana passada · gere um novo" : "Sugerido · revise e aprove"}
+            {v.generating ? "A IA está escolhendo as ofertas…" : !p ? "Gere o primeiro plano da semana" : p.status === "aprovado" ? (p.stale ? "O plano da semana passada venceu" : `Aprovado${p.approvedVia === "agente" ? " por app de IA conectado" : p.approvedVia === "email" ? " pelo e-mail" : p.approvedVia === "copiloto" ? " pelo Assistente do salão" : ""}`) : p.stale ? "O plano da semana passada venceu" : "Sugerido · esperando sua aprovação"}
           </p>
           {p && !v.generating && (
             <div className="flex flex-wrap items-center gap-2">
@@ -355,7 +355,7 @@ export function PlanManager({ initial, explicaIa = false }: { initial: PlanView;
           {v.slots[0] && (
             <div className="max-w-sm rounded-md bg-surface-muted p-3 text-sm text-ink">
               <p className="text-xs text-ink-muted">Prévia: como o cliente recebe</p>
-              <p>Oi, {"{nome}"}. {v.slots[0].inviteRendered || "Volte e aproveite o convite."}</p>
+              <p>{v.slots[0].inviteRendered || "Volte e aproveite o convite."}</p>
             </div>
           )}
         </section>

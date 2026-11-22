@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { Topline } from "@/src/modules/analytics/domain/value";
+import { crossZeroMoneyText, showSwapOffer, SWAP_OFFER_CTA } from "@/src/modules/analytics/domain/value-text";
 import { brl, int } from "./format";
 
 const CONFIG_VALORES = "/parceiro/salao/configuracoes?aba=restaurante";
@@ -10,7 +11,8 @@ const buttonCls = "flex min-h-11 max-w-xs items-center justify-center self-start
 /**
  * Topo em R$ (S5.1, D179; S9: auditoria do Portal §3). Um título para os 4 estados ("Quanto os convites renderam").
  * Camada causal: o valor já desconta o custo dos convites e o texto sai do estado da MARGEM (A5): "a mais" só com o
- * intervalo inteiro acima de zero. Camada antecipada: um número líquido (margem − custo dos convites) e a conta embaixo.
+ * intervalo inteiro acima de zero; "Trocar a oferta" no negativo e no cruza zero com visitas a menos. Camada antecipada: um
+ * número líquido (margem − custo dos convites), o aviso de que parte voltaria sem convite e a conta embaixo.
  */
 export function ValueHero({ topline: t }: { topline: Topline }) {
   return (
@@ -41,19 +43,24 @@ function Causal({ t }: { t: Extract<Topline, { cents: number }> }) {
         <p className="text-3xl font-bold text-ink">Os convites custaram {brl(Math.abs(t.cents))} a mais do que renderam de margem</p>
         {t.visitas === "positivo" && <p className="text-base text-ink">Eles trouxeram visitas a mais, mas o custo dos convites passou da margem dessas visitas.</p>}
         <p className="text-sm text-ink-muted">{base}</p>
-        <Link href={PLANO} className={buttonCls}>
-          Trocar a oferta no plano da semana
-        </Link>
+        <SwapOffer />
       </>
     );
   return (
     <>
       <p className="text-2xl font-bold text-ink">{t.visitas === "positivo" ? "Os convites trouxeram visitas a mais" : "Quem recebeu convite voltou menos do que quem ficou sem"}</p>
-      <p className="text-base text-ink">
-        Em reais, ainda não dá para garantir lucro: pode ficar entre {brl(t.lo)} e {brl(t.hi)}, já descontado o custo dos convites.
-      </p>
+      <p className="text-base text-ink">{crossZeroMoneyText(brl(t.lo), brl(t.hi))}</p>
       <p className="text-sm text-ink-muted">{base}</p>
+      {showSwapOffer(t) && <SwapOffer />}
     </>
+  );
+}
+
+function SwapOffer() {
+  return (
+    <Link href={PLANO} className={buttonCls}>
+      {SWAP_OFFER_CTA}
+    </Link>
   );
 }
 
@@ -78,12 +85,12 @@ function Early({ t }: { t: Extract<Topline, { kind: "antecipado" | "sem_valores"
       ) : t.kind === "antecipado" ? (
         <>
           <p className="text-3xl font-bold text-ink">
-            {t.liquidoCents >= 0 ? `≈ ${brl(t.liquidoCents)} de margem depois de pagar os convites` : `Os convites custaram ≈ ${brl(Math.abs(t.liquidoCents))} a mais do que a margem dessas visitas`}
+            {t.liquidoCents >= 0 ? `≈ ${brl(t.liquidoCents)} de margem nas visitas com convite, já pagos os convites` : `Os convites custaram ≈ ${brl(Math.abs(t.liquidoCents))} a mais do que a margem dessas visitas`}
           </p>
+          <p className="text-base text-ink">{t.liquidoCents >= 0 ? "Parte desses clientes voltaria mesmo sem convite, então o ganho a mais é menor." : "Parte desses clientes voltaria mesmo sem convite."}</p>
           <p className="text-sm text-ink">
             {usados} · consumo {brl(t.consumoCents)} · margem {brl(t.margemCents)} · convites {brl(t.custoCents)}. Só conta código validado pelo garçom.
           </p>
-          <p className="text-sm text-ink">Parte desses clientes voltaria mesmo sem convite.</p>
         </>
       ) : (
         <>

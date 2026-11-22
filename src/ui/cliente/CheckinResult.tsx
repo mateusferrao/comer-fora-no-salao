@@ -8,7 +8,7 @@ import { StampCard } from "@/src/ui/components/StampCard";
 import { InviteCard } from "./InviteCard";
 import { codeTitle, TXT } from "./textos";
 
-const CODE_LABEL: Record<CodeView["type"], string> = { primeira_visita: "Benefício da 1ª visita", convite: "Seu convite", recompensa: "Cartela completa" };
+const CODE_LABEL: Record<CodeView["type"], string> = { primeira_visita: "Benefício de 1ª visita", convite: "Seu convite", recompensa: "Cartela completa" };
 
 /** Título e linha de apoio (S9: sem exclamação; o que fazer com o código vem primeiro). */
 export function resultHeading(view: Pick<CheckinView, "outcome" | "codes" | "stamps" | "required">): { title: string; sub: string } {
@@ -58,7 +58,7 @@ export function CheckinResult({ view, slug, token, copyV2 = false }: { view: Che
 
       <div className="mt-2 flex flex-col gap-3">
         <Link href="/app/jornada" className="flex min-h-12 items-center justify-center rounded-full bg-white text-base font-medium text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white">
-          Ver Sua jornada
+          Ir para Sua jornada
         </Link>
         <Link href={back} className="flex min-h-11 items-center justify-center text-base font-medium text-white underline">
           Voltar ao restaurante
