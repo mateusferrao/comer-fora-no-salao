@@ -52,16 +52,16 @@ test("link do garçom: criar → validar sem login → revogar corta na hora", a
   await found.getByRole("button", { name: "Confirmar" }).click();
   await expect(w.getByText(/Código validado ✓ às \d{2}:\d{2}/)).toBeVisible();
 
-  await card.getByRole("button", { name: "Revogar" }).click();
+  await card.getByRole("button", { name: "Desligar link" }).click();
   const conf = page.getByRole("alertdialog", {
-    name: "Revogar o link do garçom?",
+    name: "Desligar o link do garçom?",
   });
   await expect(conf).toContainText(
     "Quem usa o link atual perde o acesso na hora.",
   );
   await axe(page);
-  await conf.getByRole("button", { name: "Revogar" }).click();
-  await expect(card.getByText("Link revogado.")).toBeVisible();
+  await conf.getByRole("button", { name: "Desligar link" }).click();
+  await expect(card.getByText("Link desligado.")).toBeVisible();
   await w.reload();
   await expect(w.getByText("Este link do garçom não vale mais. Peça um novo ao responsável.")).toBeVisible();
   await wctx.close();

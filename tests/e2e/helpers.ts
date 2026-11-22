@@ -61,12 +61,12 @@ export async function waitExampleReady(page: Page, timeout = 120_000): Promise<v
 
 /**
  * Cadastra um restaurante pela Visão geral (D256): no 1º cadastro, o botão "Cadastrar meu restaurante"; com loja já
- * cadastrada, a opção "+ Nova loja" do seletor "Trocar loja" (o card "Cadastre outro restaurante" saiu).
+ * cadastrada, a opção "+ Novo restaurante" do seletor "Trocar restaurante" (o card "Cadastre outro restaurante" saiu).
  */
 export async function startNewStore(page: Page): Promise<void> {
   const first = page.getByRole("button", { name: "Cadastrar meu restaurante" });
   if (await first.isVisible()) await first.click();
-  else await pickOption(page, "Trocar loja", /Nova loja/);
+  else await pickOption(page, "Trocar restaurante", /Novo restaurante/);
 }
 
 /** Login de teste (D123): pede o código com o token e confere — o cookie fica no contexto da página. */
@@ -147,13 +147,13 @@ export async function optionValues(scope: Page | Locator, label: string | RegExp
 }
 
 /**
- * Restaurantes cadastrados da conta (todos menos a cópia do exemplo), lidos no seletor "Trocar loja". Sem seletor (1
+ * Restaurantes cadastrados da conta (todos menos a cópia do exemplo), lidos no seletor "Trocar restaurante". Sem seletor (1
  * loja só) → lista vazia. Limpeza das specs que cadastram restaurantes (o rótulo deixou de ter "teste" na S4, e a
  * limpeza antiga não apagava nada — as contas de E2E de produção chegavam ao limite de 3).
  */
 export async function storeIds(page: Page): Promise<string[]> {
-  const picker = page.getByLabel("Trocar loja").and(page.getByRole("button"));
+  const picker = page.getByLabel("Trocar restaurante").and(page.getByRole("button"));
   if (!(await picker.count())) return [];
-  // D256: "+ Nova loja" é uma opção do seletor, não uma loja.
-  return (await optionValues(page, "Trocar loja")).filter((o) => !o.text.includes("exemplo") && o.value !== "__nova_loja__").map((o) => o.value);
+  // D256: "+ Novo restaurante" é uma opção do seletor, não uma loja.
+  return (await optionValues(page, "Trocar restaurante")).filter((o) => !o.text.includes("exemplo") && o.value !== "__nova_loja__").map((o) => o.value);
 }

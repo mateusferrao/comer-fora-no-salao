@@ -35,11 +35,12 @@ function Step({ n, title, children }: { n: number; title: string; children: Reac
 }
 
 /**
- * Configurações › Agente (MCP; flag): token do dono para um agente ler e aprovar o plano (D219). D246: passo a passo para
- * quem não é técnico — o que é, o que o assistente pode fazer, onde colar endereço e token, como testar e como cortar o
- * acesso; exemplo pronto só para o assistente cuja configuração conhecemos (Claude Code).
+ * Configurações › Integrações (MCP; flag): token do dono para um app de IA ler e aprovar o plano (D219). D246: passo a passo
+ * para quem não é técnico — o que é, o que o app pode fazer, onde colar endereço e token, como testar e como cortar o
+ * acesso; exemplo pronto só para o app cuja configuração conhecemos (Claude). S9: a lista do que o app pode fazer segue as
+ * flags `mcp_clientes` e `mcp_edicao` (antes dizia "não vê nome de clientes" mesmo com a flag ligada).
  */
-export function AgentSection({ initial, endpoint }: { initial: Tok[]; endpoint: string }) {
+export function AgentSection({ initial, endpoint, can = { clientes: false, edicao: false } }: { initial: Tok[]; endpoint: string; can?: { clientes: boolean; edicao: boolean } }) {
   const [tokens, setTokens] = useState(initial);
   const [shown, setShown] = useState<string | null>(null);
   const [busy, setBusy] = useState("");
@@ -58,27 +59,32 @@ export function AgentSection({ initial, endpoint }: { initial: Tok[]; endpoint: 
     <section aria-labelledby="agente" className="flex flex-col gap-4 rounded-sm border border-border p-4">
       <div className="flex flex-col gap-1">
         <h2 id="agente" className="font-semibold text-ink">
-          Conectar um assistente de IA (MCP)
+          Conectar outro app de IA (Claude e similares)
         </h2>
         <p className="text-sm text-ink-muted">
-          Opcional. Se você já usa um assistente de IA (como o Claude), pode conectá-lo ao seu restaurante e pedir em conversa: &quot;como foram os convites?&quot;,
+          Opcional. Se você já usa um app de IA (como o Claude), pode conectá-lo ao seu restaurante e pedir em conversa: &quot;como foram os convites?&quot;,
           &quot;gere o plano da semana&quot;, &quot;aprove o plano&quot;. Não usa? Tudo isso já dá para fazer aqui no Portal.
         </p>
       </div>
 
       <div className="rounded-sm bg-surface-muted p-3 text-sm text-ink">
-        <p className="font-semibold">O que o assistente pode fazer</p>
+        <p className="font-semibold">O que o app de IA conectado pode fazer</p>
         <ul className="mt-1 list-disc pl-5 leading-6">
           <li>Ler os números dos últimos 30 dias (convites, clientes, horários).</li>
           <li>Ver o plano da semana e gerar um novo.</li>
-          <li>Aprovar o plano proposto: passa a valer no salão e fica registrado como &quot;aprovado via agente&quot;.</li>
+          <li>Aprovar o plano sugerido: passa a valer no salão e fica registrado como &quot;aprovado por app de IA conectado&quot;.</li>
+          {can.edicao && <li>Propor e aplicar mudanças em ofertas, cardápio, horários vazios e avisos, pelas mesmas regras das Configurações.</li>}
         </ul>
-        <p className="mt-1">Ele só enxerga este restaurante e não vê nome, telefone nem e-mail de clientes.</p>
+        <p className="mt-1">
+          {can.clientes
+            ? "Ele só enxerga este restaurante. Vê o primeiro nome e a inicial dos clientes, nunca telefone ou e-mail."
+            : "Ele só enxerga este restaurante e não vê nome, telefone nem e-mail de clientes."}
+        </p>
       </div>
 
       <ol className="flex flex-col gap-5" aria-label="Como conectar, passo a passo">
         <Step n={1} title="Gere a sua chave de acesso (token)">
-          <p>O token funciona como uma senha só para o assistente. Ele aparece uma vez só: copie e guarde.</p>
+          <p>O token funciona como uma senha só para o app de IA. Ele aparece uma vez só: copie e guarde.</p>
           <p>{active ? `Você já tem um token ativo (termina em ${active.hint}).` : "Você ainda não tem token."}</p>
           {shown && (
             <div role="status" className="flex flex-col gap-2 rounded-sm border border-red-text/40 bg-nav-active p-3" data-testid="token-agente">
@@ -114,9 +120,9 @@ export function AgentSection({ initial, endpoint }: { initial: Tok[]; endpoint: 
           </div>
         </Step>
 
-        <Step n={3} title="Cole os dois no seu assistente">
+        <Step n={3} title="Cole os dois no seu app de IA">
           <p>
-            No seu assistente, procure a opção de adicionar um <strong>servidor MCP</strong> (às vezes chamado de &quot;conector&quot; ou &quot;integração
+            No seu app de IA, procure a opção de adicionar um <strong>servidor MCP</strong> (às vezes chamado de &quot;conector&quot; ou &quot;integração
             personalizada&quot;) e preencha:
           </p>
           <ul className="list-disc pl-5 leading-6">
@@ -159,30 +165,30 @@ export function AgentSection({ initial, endpoint }: { initial: Tok[]; endpoint: 
               <CopyButton text={command} label="Copiar o comando do Claude Code" />
             </div>
           </details>
-          <p className="text-ink-muted">Cada assistente tem a sua tela de configuração. Se não achar a opção, procure &quot;MCP&quot; na ajuda dele.</p>
+          <p className="text-ink-muted">Cada app de IA tem a sua tela de configuração. Se não achar a opção, procure &quot;MCP&quot; na ajuda dele.</p>
         </Step>
 
         <Step n={4} title="Teste">
           <p>
-            Pergunte ao assistente: <em>&quot;Como estão os convites do meu restaurante?&quot;</em> Ele deve responder com os números dos últimos 30 dias. Se disser
+            Pergunte ao app de IA: <em>&quot;Como estão os convites do meu restaurante?&quot;</em> Ele deve responder com os números dos últimos 30 dias. Se disser
             que não tem acesso, confira se o token foi colado inteiro, com &quot;Bearer&quot; e um espaço antes.
           </p>
         </Step>
 
         <Step n={5} title="Para cortar o acesso">
-          <p>Revogue o token: o assistente perde o acesso na hora. Para voltar a usar, gere um novo e troque no assistente.</p>
+          <p>Revogue o token: o app de IA perde o acesso na hora. Para voltar a usar, gere um novo e troque no app.</p>
           {active && (
             <div>
               <Button
                 variant="outline-portal"
                 loading={busy === "agente_revogar"}
                 onClick={async () => {
-                  if (!(await confirmDialog({ title: "Revogar o token?", body: "O assistente perde o acesso ao restaurante na hora.", confirmLabel: "Revogar" }))) return;
+                  if (!(await confirmDialog({ title: "Revogar o token?", body: "O app de IA perde o acesso ao restaurante na hora.", confirmLabel: "Revogar" }))) return;
                   const r = await call("agente_revogar");
                   if (r.ok) {
                     setShown(null);
                     setTokens(tokens.map((t) => ({ ...t, active: false })));
-                    setMsg("Token revogado: o assistente não tem mais acesso.");
+                    setMsg("Token revogado: o app de IA não tem mais acesso.");
                   } else setMsg("Não deu para revogar agora. Tente de novo em instantes.");
                 }}
               >
@@ -192,7 +198,7 @@ export function AgentSection({ initial, endpoint }: { initial: Tok[]; endpoint: 
           )}
         </Step>
       </ol>
-      <p className="text-xs text-ink-muted">Guarde o token como uma senha: quem tiver o token pode aprovar o plano. Limite de 60 pedidos por hora.</p>
+      <p className="text-xs text-ink-muted">Guarde o token como uma senha: quem tiver o token pode aprovar o plano{can.edicao ? " e mudar ofertas e cardápio" : ""}. Limite de 60 pedidos por hora.</p>
       {msg && (
         <p role="status" className="text-sm text-ink">
           {msg}

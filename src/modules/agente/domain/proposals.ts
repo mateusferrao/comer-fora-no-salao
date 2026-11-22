@@ -153,7 +153,7 @@ function previewOffer(snap: Snapshot, p: Extract<ProposalPayload, { acao: "ofert
     titulo: `Trocar ${linhas.length === 1 && linhas[0]!.campo === "Teto semanal" ? "o teto" : "a oferta"} do convite de ${slotLabel(slot)}`,
     linhas,
     alcance: `Vale para ${slotLabel(slot)}`,
-    impacto: `Até ${cap} convites por semana · custo máximo de ${cost.isMax ? "até " : ""}${money(cost.cents * cap)} por semana`,
+    impacto: `Até ${cap} convites por semana · custo máximo de ${money(cost.cents * cap)} por semana`,
     avisos,
     aba: "convites",
     antes: { slotId: slot.id, offer: slot.offer, weeklyCap: slot.weeklyCap, inviteText: slot.inviteText },
@@ -248,8 +248,8 @@ function previewPlan(snap: Snapshot, p: Extract<ProposalPayload, { acao: "plano"
     }
     if (p.weeklyCap && p.weeklyCap !== s.weeklyCap) linhas.push({ campo: `Teto de ${slotLabel(slot)}`, antes: `${s.weeklyCap} convites`, depois: `${p.weeklyCap} convites` });
   }
-  linhas.push({ campo: "Plano da semana", antes: "Proposto", depois: "Aprovado" });
-  if (plan.audience > 0) avisos.unshift(`Ao aprovar, o convite de volta vai para até ${plan.audience} clientes (no app e por e-mail para quem aceitou).`);
+  linhas.push({ campo: "Plano da semana", antes: "Sugerido", depois: "Aprovado" });
+  if (plan.audience > 0) avisos.unshift(`Ao aprovar, o convite para quem sumiu vai para até ${plan.audience} clientes (no app e por e-mail para quem aceitou).`);
   return { ok: true, titulo: linhas.length > 1 ? "Aprovar o plano da semana com ajuste" : "Aprovar o plano da semana", linhas, avisos, aba: "plano", antes: { planId: plan.id, slots: plan.slots } };
 }
 

@@ -26,7 +26,7 @@ async function copilotChips(restaurantId: string): Promise<Record<string, string
     painel: ["Como foi a semana?", "Quem está perto da recompensa?", trocar],
     // "…" no fim: o chip só preenche o campo para o dono completar (revisão S8, produto 7).
     configuracoes: [trocar, "Tirar das ofertas o prato…", first ? `Mudar o teto do convite de ${slotLabel(first)} para…` : "Mudar o teto de um horário para…"],
-    plano: ["O que o plano está propondo?", trocar, "O que é o grupo de controle?"],
+    plano: ["O que o plano da semana sugere?", trocar, "Por que 1 em cada 10 fica sem convite?"],
     clientes: ["Quem está perto da recompensa?", "Quem sumiu?"],
     kit: ["O que é o teto de convites?", "Como o QR conta as leituras?"],
     validar: ["Como o garçom valida o código?"],

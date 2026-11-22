@@ -26,7 +26,7 @@ export default async function ValidarPage() {
       {garcom ? (
         <WaiterLinkCard activeSince={active?.createdAt.toISOString() ?? null} />
       ) : (
-        <p className="text-xs text-ink-muted">Benefício, convite e recompensa só valem depois de validados aqui. Em produção, esta tela abriria num &quot;modo salão&quot; com PIN, sem o resto do Portal.</p>
+        <p className="text-xs text-ink-muted">Benefício, convite e recompensa só valem depois de validados aqui.</p>
       )}
     </main>
   );

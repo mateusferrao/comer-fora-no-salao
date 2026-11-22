@@ -8,7 +8,7 @@ const when = (iso: string) => new Intl.DateTimeFormat("pt-BR", { timeZone: "Amer
 
 /**
  * "Link do garçom" (S6.2 — D190): link + QR mostrados UMA vez (o banco guarda só o hash); criar de novo revoga o
- * anterior; "Revogar" corta na hora. Sem PIN.
+ * anterior; "Desligar link" corta na hora. Sem PIN.
  */
 export function WaiterLinkCard({ activeSince }: { activeSince: string | null }) {
   const [since, setSince] = useState(activeSince);
@@ -30,9 +30,9 @@ export function WaiterLinkCard({ activeSince }: { activeSince: string | null }) 
     if (
       acao === "revogar" &&
       !(await confirmDialog({
-        title: "Revogar o link do garçom?",
+        title: "Desligar o link do garçom?",
         body: "Quem usa o link atual perde o acesso na hora.",
-        confirmLabel: "Revogar",
+        confirmLabel: "Desligar link",
       }))
     )
       return;
@@ -45,7 +45,7 @@ export function WaiterLinkCard({ activeSince }: { activeSince: string | null }) 
     if (acao === "revogar") {
       setSince(null);
       setShown(null);
-      return setMsg({ ok: true, text: "Link revogado. Ninguém mais valida códigos por ele." });
+      return setMsg({ ok: true, text: "Link desligado. Ninguém mais valida códigos por ele." });
     }
     setSince(j!.createdAt!);
     setShown({ url: j!.url!, qr: j!.qr! });
@@ -113,7 +113,7 @@ export function WaiterLinkCard({ activeSince }: { activeSince: string | null }) 
         </Button>
         {since && (
           <Button variant="outline-portal" loading={busy === "revogar"} disabled={!!busy} onClick={() => void act("revogar")}>
-            Revogar
+            Desligar link
           </Button>
         )}
       </div>

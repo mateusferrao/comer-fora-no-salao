@@ -189,7 +189,7 @@ export function Copilot({ chips, scope }: { chips: Chips; scope: string }) {
     dirty.current = false;
     // No celular, o painel fecha para mostrar a tela atualizada (revisão S8, produto 8).
     if (!desktop) close();
-    // Vai à aba alterada; `v` remonta o formulário e mostra a faixa "Atualizado pelo assistente".
+    // Vai à aba alterada; `v` remonta o formulário e mostra a faixa "Mudança aplicada pelo Assistente do salão".
     if (aba !== "plano" && (path.startsWith("/parceiro/salao/configuracoes") || !desktop)) router.push(abaHref(aba, id));
     else router.refresh();
   };
@@ -319,7 +319,7 @@ export function Copilot({ chips, scope }: { chips: Chips; scope: string }) {
             Enviar
           </Button>
         </form>
-        <p className="mt-2 text-xs text-ink-muted">As respostas usam IA e passam por provedores fora do Brasil. Nomes de clientes podem ser enviados; contatos não. Aqui, nada muda sem o seu clique.</p>
+        <p className="mt-2 text-xs text-ink-muted">As respostas usam IA de provedores fora do Brasil. A IA recebe o primeiro nome e a inicial dos clientes, nunca telefone ou e-mail. Aqui, nada muda sem o seu clique.</p>
       </div>
     </div>
   );

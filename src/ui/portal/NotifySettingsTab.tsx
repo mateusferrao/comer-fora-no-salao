@@ -14,7 +14,7 @@ const DAYS = ["Domingo", "Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sáb
 const hhmm = (m: number) => `${String(Math.floor(m / 60)).padStart(2, "0")}:${String(m % 60).padStart(2, "0")}`;
 const TIMES = Array.from({ length: (22 * 60 - 6 * 60) / 30 + 1 }, (_, i) => 6 * 60 + i * 30);
 const HOURS = Array.from({ length: 24 }, (_, i) => i + 1);
-const OFF_HINT = "O envio automático ainda não está ligado. Veja a prévia do e-mail em Plano da semana.";
+const OFF_HINT = "O envio automático está desligado neste protótipo. Veja a prévia do e-mail em Plano da semana.";
 
 /**
  * "Avisos e automação" (S6.1 — D196): o que o sistema faz sozinho e o que vai por e-mail, em 3 grupos. Tudo ligado
@@ -55,7 +55,7 @@ export function NotifySettingsTab({ view, flags }: { view: NotifyView; flags: { 
           <p className="text-sm text-ink-muted">
             {view.ownerVia === "link" ? "Esta conta entrou pelo link de acesso e não tem e-mail guardado: " : "Entre com seu e-mail para receber o resumo. Enquanto isso, "}
             <Link href="/parceiro/salao/plano#resumo" className="font-semibold text-red-text underline">
-              veja o e-mail que o dono recebe em Plano da semana
+              veja o e-mail do resumo em Plano da semana
             </Link>
             .
           </p>
@@ -120,7 +120,7 @@ export function NotifySettingsTab({ view, flags }: { view: NotifyView; flags: { 
           </p>
         )}
         <Switch label="Convite por e-mail quando o cliente ganha o convite na mesa" checked={s.emails.convite} onChange={(convite) => set({ emails: { ...s.emails, convite } })} />
-        <Switch label="Convite de volta (reativação) por e-mail" checked={s.emails.reativacao} onChange={(reativacao) => set({ emails: { ...s.emails, reativacao } })} />
+        <Switch label="Convite para quem sumiu (reativação) por e-mail" checked={s.emails.reativacao} onChange={(reativacao) => set({ emails: { ...s.emails, reativacao } })} />
         <Switch label="Lembrete no dia do convite" hint={!flags.agendador ? OFF_HINT : undefined} checked={s.emails.lembrete} disabled={!flags.agendador} onChange={(lembrete) => set({ emails: { ...s.emails, lembrete } })} />
         <Select
           label="Lembrete: horas antes do horário do convite (nunca antes das 7h)"
