@@ -23,6 +23,11 @@ describe("kit — holdout protegido (revisão P-I2)", () => {
     expect(bad.ok).toBe(false);
     expect(bad.ok === false && bad.reasons).toEqual(expect.arrayContaining(["A.subtitulo:dia_turno:terca", "A.subtitulo:dia_turno:tarde", "menciona_convite", "recado:numero"]));
   });
+  it("prompt kit-v2 (S9): sem exclamação, sem travessão, sem fórmulas de anúncio; benefício da 1ª visita", () => {
+    expect(kp.system).toContain("Sem ponto de exclamação e sem travessão");
+    expect(kp.system).toContain('"descubra"');
+    expect(kp.text).toContain("o cliente ganha na 1ª visita");
+  });
   it("apelidos viram ids", () => {
     expect(resolveKit(kp, good).B.titulo).toBe("Prove {prato:i-pizza4}");
   });
