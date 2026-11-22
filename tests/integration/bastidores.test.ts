@@ -1,7 +1,7 @@
 import { afterAll, beforeEach, describe, expect, it } from "vitest";
 import { eq, sql } from "drizzle-orm";
 import { closeDb, getDb } from "@/src/db/client";
-import { owners, restaurants } from "@/src/db/schema";
+import { aiCalls, owners, restaurants } from "@/src/db/schema";
 import { seedAll } from "@/src/db/seed";
 import { vitrineHistory } from "@/src/db/seed/history";
 import { VITRINE_ID, VITRINE_OWNER_ID } from "@/src/db/seed/vitrine";
@@ -82,6 +82,30 @@ describe("páginas públicas agregadas", () => {
     const q = await getQualityView(getDb());
     expect(q.tasks).toEqual([]);
     expect(q.aiVsTop).toEqual({ compared: 0, differs: 0 });
+  });
+
+  it("custo de IA separado: ativação por restaurante ativado, por plano semanal e do assistente (S9, IA M9)", async () => {
+    const { restaurantId } = await createRestaurant();
+    const [p1, p2] = [crypto.randomUUID(), crypto.randomUUID()];
+    const row = (task: string, cost: number, planId: string | null = null) => ({ task, promptVersion: "t", restaurantId, status: "ok", attempts: [], keyKind: "publica", costUsd: String(cost), at: NOW, planId });
+    await getDb().insert(aiCalls).values([
+      row("cardapio", 0.01),
+      row("pacote", 0.02, crypto.randomUUID()),
+      row("kit", 0.004),
+      row("revisor", 0.001),
+      row("plano_agente", 0.014, p1),
+      row("revisor", 0.002, p1),
+      row("plano", 0.004, p2),
+      row("copiloto", 0.004),
+      row("salao_frase", 0.001),
+    ]);
+    const v = await getPlatformView(getDb(), NOW);
+    expect(v.activated).toBe(1);
+    expect(v.aiCostPerActivatedUsd).toBeCloseTo(0.035, 6);
+    expect(v.aiCostPerPlanUsd).toBeCloseTo(0.01, 6);
+    expect(v.plans).toBe(2);
+    expect(v.aiCostAssistantUsd).toBeCloseTo(0.005, 6);
+    expect(v.aiCostTotalUsd).toBeCloseTo(0.06, 6);
   });
 
 });
