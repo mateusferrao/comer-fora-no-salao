@@ -1403,3 +1403,12 @@ Detalhes, perguntas, revisão independente (2 subagentes) e itens [C] em [docs/f
 - **`agent_proposals`:** faxina a cada tique global do agendador (independe da flag `agendador`): pendente > 30 min → `expirada` (`sem_decisao`); reserva presa → `falhou`. Trade-off: **não apagar** linhas antigas — não têm dado pessoal e apagar só as não aplicadas inflaria o "% aplicadas".
 - **Produção (depois do merge `58e90ef`):** a fileira de sugestões do copiloto acusava `scrollable-region-focusable` a 390 px enquanto a resposta não chegava (chips `disabled`). Correção: `aria-disabled` (os chips seguem focáveis, e o clique é ignorado enquanto espera). Alternativa descartada: `tabIndex=0` na lista, que criaria uma parada de Tab a mais sempre.
 - **Ação `restaurante`:** `updateRestaurantFinance` grava só ticket/margem (antes regravava nome, endereço e horário lidos na aplicação). **Rastro privado:** `telemetryFor` puro com teste de `recordInputs`/`recordOutputs` false.
+
+**D276 — Roadmap: ativação conectada ao iFood** (22/11, candidato: "possível melhoria seria integrar direto com o iFood para puxar todos os dados do restaurante do usuário logo na primeira vez") ✅
+- Registrada na especificação, §9 Fase 2. Substitui o item "cardápio vindo do Portal", que vira parte dela.
+- O que entra: cardápio, funcionamento, endereço, ticket médio, clientes e frequência, puxados do iFood na primeira entrada.
+- Por que não está no protótipo: depende do login iFood real e de acesso a dados do iFood (D118; §10). A ativação atual (foto/PDF do cardápio, campos declarados, frase do "Seu salão") é o substituto.
+- Trade-offs:
+  - ganha velocidade de ativação e números medidos em vez de declarados;
+  - pede base legal e transparência para usar dados de clientes de delivery no salão (hoje "convite a clientes de delivery" está fora de escopo);
+  - o dono continua conferindo antes de ativar.
