@@ -29,7 +29,7 @@ export default async function PlanoPage() {
     <main className="mx-auto flex max-w-5xl flex-col gap-6 px-4 py-6 sm:px-8">
       <header className="flex flex-col gap-1">
         <h1 className="text-2xl font-bold text-ink">Plano da semana</h1>
-        <p className="text-sm text-ink-muted">O código calcula os números e decide o que é válido; a IA escolhe a oferta de cada horário vazio e explica. Você aprova.</p>
+        <p className="text-sm text-ink-muted">O sistema calcula custos e limites, a IA sugere a oferta de cada horário vazio e explica por quê. Nada vale sem a sua aprovação.</p>
       </header>
       {ops && <Operations view={ops} showAb={false} showAlerts />}
       {/* Revisão S4–S6 (produto 1): o cartão do resumo logo abaixo do cabeçalho, não depois do plano inteiro. */}

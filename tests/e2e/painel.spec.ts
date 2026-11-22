@@ -69,7 +69,7 @@ test("plano da semana: exemplo pronto → gerar (sem IA local / IA em produção
   await expect(page.getByRole("heading", { name: "Plano da semana", level: 1 })).toBeVisible();
   await expect(page.getByRole("heading", { name: "O que os seus dados dizem" })).toBeVisible();
   await expect(page.getByRole("heading", { name: "O que aprendemos" })).toBeVisible();
-  await expect(page.getByText("O veredito é do código, por indicadores antecipados; não é causal.")).toBeVisible();
+  await expect(page.getByText("Manter ou trocar sai do uso dos convites na 1ª semana. Isso não prova que trouxeram clientes a mais.")).toBeVisible();
   await axe(page);
   // Descartar uma proposta (com motivo) nesta execução e gerar uma nova. Sem proposta (a conta já aprovou antes), gera
   // uma para descartar: o histórico desta execução sempre tem um "Descartado".
@@ -103,10 +103,10 @@ test("plano da semana: exemplo pronto → gerar (sem IA local / IA em produção
   await expect(page.getByTestId("reativacao-previa")).toContainText(
     "Para medir o efeito, 1 em cada 10 não recebe",
   );
-  await page.getByRole("button", { name: "Aprovar plano" }).click();
-  await expect(page.getByText(/Plano aprovado · convite entregue a \d+ clientes em Sua jornada/)).toBeVisible({ timeout: 30_000 });
+  await page.getByRole("button", { name: "Aprovar e enviar convites" }).click();
+  await expect(page.getByText(/Plano aprovado\. \d+ clientes? receb\w+ o convite no app/)).toBeVisible({ timeout: 30_000 });
   await expect(page.getByTestId("plan-status")).toHaveAttribute("data-status", "aprovado");
-  await expect(page.getByRole("button", { name: "Aprovar plano" })).toHaveCount(0);
+  await expect(page.getByRole("button", { name: "Aprovar e enviar convites" })).toHaveCount(0);
   await page.getByRole("link", { name: "Histórico de planos" }).click();
   await expect(page.getByRole("cell", { name: "Aprovado" }).first()).toBeVisible();
   await expect(page.getByRole("cell", { name: "Descartado" }).first()).toBeVisible();

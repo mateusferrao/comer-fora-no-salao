@@ -166,7 +166,7 @@ test("assistente completo com exemplo: salão pré-preenchido → revisão → p
   await expect(page.getByRole("region", { name: /Prévia do convite · / }).first().getByTestId("invite-message")).toBeVisible();
   await axe(page);
   await page.getByRole("button", { name: "Ativar Comer Fora no salão" }).click();
-  await expect(page.getByRole("heading", { name: "Comer Fora no salão ativo!" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Comer Fora no salão ativado" })).toBeVisible();
   const slug = (await page.getByRole("link", { name: "Ver minha página" }).getAttribute("href"))!.replace("/r/", "");
 
   // Kit: gerado depois da ativação (sem IA no CI/local), aprovar, "no salão", impressão com QR.
@@ -178,7 +178,7 @@ test("assistente completo com exemplo: salão pré-preenchido → revisão → p
   await display.getByRole("button", { name: "Aprovar peça" }).click();
   await display.getByRole("switch", { name: "Está no salão" }).click();
   await expect(display.getByText("No salão")).toBeVisible();
-  const qrHref = await display.getByRole("link", { name: "Abrir este QR" }).first().getAttribute("href");
+  const qrHref = await display.getByRole("link", { name: "Testar este QR como cliente" }).first().getAttribute("href");
   expect(qrHref).toMatch(new RegExp(`^/r/${slug}\\?p=`));
   await display.getByRole("link", { name: "Imprimir versão A" }).click();
   await expect(page.getByRole("img", { name: "QR da versão A" })).toBeVisible();
@@ -260,10 +260,10 @@ test("restaurante cadastrado: Primeiros passos no lugar do roteiro de teste; nad
 });
 
 /**
- * D256: "+ Nova loja" no seletor (o card "Cadastre outro restaurante" saiu da Visão geral), logo do iFood leva à Visão
+ * D256: "+ Novo restaurante" no seletor (o card "Cadastre outro restaurante" saiu da Visão geral), logo do iFood leva à Visão
  * geral e, no celular, o rodapé da gaveta (usuário logado e Sair) fica preso embaixo. Conta própria (e2e-dono+37).
  */
-test("Portal: + Nova loja no seletor, logo leva à Visão geral e rodapé da gaveta no celular", async ({ page }) => {
+test("Portal: + Novo restaurante no seletor, logo leva à Visão geral e rodapé da gaveta no celular", async ({ page }) => {
   test.setTimeout(180_000);
   await loginE2E(page.request, 37);
   await page.goto("/parceiro/salao");
@@ -271,13 +271,13 @@ test("Portal: + Nova loja no seletor, logo leva à Visão geral e rodapé da gav
   for (const id of await storeIds(page)) await page.request.delete("/api/parceiro/restaurantes", { data: { restaurantId: id } });
   await page.reload();
   await waitExampleReady(page);
-  // 1º cadastro: botão na Visão geral. Depois, só "+ Nova loja" no seletor.
+  // 1º cadastro: botão na Visão geral. Depois, só "+ Novo restaurante" no seletor.
   await page.getByRole("button", { name: "Cadastrar meu restaurante" }).click();
   await expect(page).toHaveURL(/\/parceiro\/salao\/ativar/);
   await page.getByRole("link", { name: "iFood · ir para a Visão geral" }).first().click();
   await expect(page.getByRole("heading", { name: "Visão geral", level: 1 })).toBeVisible();
   await expect(page.getByRole("heading", { name: /Cadastre (o seu|outro) restaurante/ })).toHaveCount(0);
-  await pickOption(page, "Trocar loja", /Nova loja/);
+  await pickOption(page, "Trocar restaurante", /Novo restaurante/);
   await expect(page).toHaveURL(/\/parceiro\/salao\/ativar/);
   // Celular: gaveta com o rodapé visível embaixo.
   await page.setViewportSize({ width: 390, height: 844 });

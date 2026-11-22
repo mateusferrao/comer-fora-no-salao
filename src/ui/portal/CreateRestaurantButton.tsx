@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "../components/Button";
 
-/** Cria um restaurante e vai para a ativação (botão do 1º acesso e "+ Nova loja" do seletor — D256). */
+/** Cria um restaurante e vai para a ativação (botão do 1º acesso e "+ Novo restaurante" do seletor — D256). */
 export function useCreateRestaurant() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
@@ -26,7 +26,7 @@ export function useCreateRestaurant() {
           : j.erro === "limite_conta"
             ? "Sua conta já tem 3 restaurantes cadastrados. Exclua um em Configurações para cadastrar outro."
             : res.status === 429
-              ? "Muitos restaurantes criados hoje a partir desta rede. Tente amanhã."
+              ? "Muitos restaurantes criados hoje a partir desta conexão de internet. Tente amanhã."
               : "Não conseguimos criar agora. Tente de novo.",
       );
     } finally {

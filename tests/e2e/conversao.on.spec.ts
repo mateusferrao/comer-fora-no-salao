@@ -18,14 +18,25 @@ async function visibleText(page: Page): Promise<string> {
 }
 
 for (const width of [390, 1280]) {
-  test(`landing do dono em ${width} px: herói, 3 passos, 63% com fonte, controle de custo e FAQ`, async ({ page }) => {
+  test(`landing do dono em ${width} px: herói com prints, 4 blocos de valor, 63% com fonte, custo com teto e FAQ`, async ({ page }) => {
     await page.setViewportSize({ width, height: 900 });
     await page.goto("/");
-    await expect(page.getByRole("heading", { name: "Seu salão cheio divulga seu horário vazio", level: 1 })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Encha a terça à tarde com quem lotou seu sábado à noite", level: 1 })).toBeVisible();
     await expect(page.getByRole("link", { name: "Ativar meu salão" }).first()).toHaveAttribute("href", "/parceiro/entrar");
     await expect(page.getByRole("link", { name: "Veja o que seu cliente vê" })).toHaveAttribute("href", "/r/cantina-nonna-lucia");
     await expect(page.getByRole("heading", { name: /Segundo o iFood, 63% de quem usou o Comer Fora no Rio/ })).toBeVisible();
     await expect(page.getByRole("link", { name: "Fonte" })).toHaveAttribute("href", "/bastidores/como-funciona#fontes");
+    await expect(page.getByText("Para restaurantes com salão e horário sobrando")).toBeVisible();
+    await expect(page.getByRole("img", { name: /Visão geral da Cantina Nonna Lúcia/ })).toBeVisible();
+    await expect(page.getByRole("img", { name: /Celular do cliente/ })).toBeVisible();
+    await expect(page.getByText("Restaurante de exemplo · dados gerados")).toBeVisible();
+    for (const t of ["Pronto com uma foto do cardápio.", "O cliente da mesa deixa de ser anônimo.", "Um plano por semana, aprovado por você.", "Só conta a volta a mais."]) {
+      await expect(page.getByRole("heading", { name: t, level: 3 })).toBeVisible();
+    }
+    await expect(page.getByRole("heading", { name: "O custo tem teto, e você vê antes de aprovar" })).toBeVisible();
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
+    await page.getByText("O que a IA decide?").click();
+    await expect(page.getByText(/escolhe entre ofertas que o sistema calculou/)).toBeVisible();
     await page.getByText("Quanto custa?").click();
     await expect(page.getByText("Você paga só os benefícios que aprovar, até o teto semanal que você define.")).toBeVisible();
     expect(PROIBIDO.exec(await visibleText(page))).toBeNull();

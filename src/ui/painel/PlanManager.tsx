@@ -21,7 +21,7 @@ const VERDICT: Record<string, { label: string; tone: "green" | "red" | "neutral"
   trocar: { label: "Trocar", tone: "neutral" },
   cedo_demais: { label: "Cedo demais", tone: "neutral" },
 };
-const ORIGIN: Record<string, string> = { ia: "Gerado pela IA", sem_ia: "Texto modelo (sem IA)", fixo: "Plano pronto do restaurante de exemplo (escrito antes, sem IA ao vivo)" };
+const ORIGIN: Record<string, string> = { ia: "Gerado pela IA", sem_ia: "Texto modelo (sem IA)", fixo: "Plano de exemplo (sem IA)" };
 const WD = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
 const WD_LONG = ["domingo", "segunda", "terça", "quarta", "quinta", "sexta", "sábado"];
 const TURN: Record<string, string> = { almoco: "Almoço", tarde: "Tarde", noite: "Noite" };
@@ -81,7 +81,7 @@ export function PlanManager({ initial, explicaIa = false }: { initial: PlanView;
       v.plan?.status === "proposto" &&
       !(await confirmDialog({
         title: "Gerar o plano de novo?",
-        body: "A proposta atual é substituída por uma nova.",
+        body: "O plano sugerido atual é substituído por um novo.",
         confirmLabel: "Gerar de novo",
       }))
     )
@@ -91,7 +91,7 @@ export function PlanManager({ initial, explicaIa = false }: { initial: PlanView;
       v.plan.currentWeek &&
       !(await confirmDialog({
         title: "Gerar um novo plano?",
-        body: "Já há um plano aprovado nesta semana. O novo, se você aprovar, substitui a regra a partir de agora.",
+        body: "Já há um plano aprovado nesta semana. O novo, se você aprovar, passa a valer no lugar dele a partir de agora.",
         confirmLabel: "Gerar novo plano",
       }))
     )
@@ -104,7 +104,7 @@ export function PlanManager({ initial, explicaIa = false }: { initial: PlanView;
     setBusy("");
     if (!r.ok) {
       setV((x) => ({ ...x, generating: false }));
-      setMsg({ kind: "erro", text: j.erro === "limite" ? "Você gerou muitos planos hoje. Tente amanhã." : j.erro === "gerando" ? "Já estamos gerando um plano. Aguarde." : "Não deu para gerar agora. Tente de novo." });
+      setMsg({ kind: "erro", text: j.erro === "limite" ? "Você gerou muitos planos hoje. Tente amanhã." : j.erro === "gerando" ? "O plano está sendo gerado. Leva alguns segundos." : "Não deu para gerar agora. Tente de novo." });
       return;
     }
     await reload();
@@ -131,7 +131,7 @@ export function PlanManager({ initial, explicaIa = false }: { initial: PlanView;
         kind: "erro",
         text:
           j.erro === "revisor"
-            ? "O revisor ainda está conferindo ou pediu ajustes nos convites. Veja os motivos acima; se reescrever o convite, você assume o texto."
+            ? "A conferência dos textos ainda não terminou ou pediu ajuste. Veja os motivos acima ou escreva seu próprio texto."
             : j.erro === "texto"
               ? `Convite de ${slotLabel(j.detalhe?.slotId)}: ${reasonMessage(j.detalhe?.motivos?.[0] ?? "", { maxLen: 160 })}`
               : j.erro === "oferta"
@@ -140,7 +140,7 @@ export function PlanManager({ initial, explicaIa = false }: { initial: PlanView;
       });
       return;
     }
-    setMsg({ kind: "ok", text: `Plano aprovado · convite entregue a ${int(j.sent.real)} clientes em Sua jornada${j.sent.emails ? ` · ${int(j.sent.emails)} também por e-mail` : ""}${j.semEmail ? " · textos com link ou contato não vão por e-mail" : ""}` });
+    setMsg({ kind: "ok", text: `Plano aprovado. ${int(j.sent.real)} ${j.sent.real === 1 ? "cliente recebeu" : "clientes receberam"} o convite no app${j.sent.emails ? ` (${int(j.sent.emails)} também por e-mail)` : ""}.${j.semEmail ? " Textos com link ou contato não vão por e-mail." : ""}` });
     await reload();
   };
 
@@ -162,7 +162,7 @@ export function PlanManager({ initial, explicaIa = false }: { initial: PlanView;
         <div className="flex flex-col gap-1">
           <p className="text-sm text-ink-muted">{p ? `Semana de ${weekLabel(p.weekKey)}` : "Nenhum plano ainda"}</p>
           <p className="font-semibold text-ink" data-testid="plan-status" data-status={v.generating ? "gerando" : (p?.status ?? "nenhum")}>
-            {v.generating ? "A IA está escolhendo as ofertas…" : !p ? "Gere o primeiro plano da semana" : p.status === "aprovado" ? (p.stale ? "Vencido · gere o desta semana" : `Aprovado${p.approvedVia === "agente" ? " via agente" : p.approvedVia === "email" ? " pelo e-mail" : p.approvedVia === "copiloto" ? " pelo assistente" : ""}`) : p.stale ? "Proposta da semana passada · gere uma nova" : "Proposto · revise e aprove"}
+            {v.generating ? "A IA está escolhendo as ofertas…" : !p ? "Gere o primeiro plano da semana" : p.status === "aprovado" ? (p.stale ? "Vencido · gere o desta semana" : `Aprovado${p.approvedVia === "agente" ? " por app de IA conectado" : p.approvedVia === "email" ? " pelo e-mail" : p.approvedVia === "copiloto" ? " pelo Assistente do salão" : ""}`) : p.stale ? "Plano da semana passada · gere um novo" : "Sugerido · revise e aprove"}
           </p>
           {p && !v.generating && (
             <div className="flex flex-wrap items-center gap-2">
@@ -178,7 +178,7 @@ export function PlanManager({ initial, explicaIa = false }: { initial: PlanView;
           {p && p.agentSteps.length > 0 && (
             <details className="text-sm text-ink" data-testid="plano-agente">
               <summary className="flex min-h-11 cursor-pointer items-center font-medium">
-                Montado por agente de IA · {p.agentSteps.length} {p.agentSteps.length === 1 ? "consulta" : "consultas"} · ver passos
+                A IA fez {p.agentSteps.length} {p.agentSteps.length === 1 ? "consulta" : "consultas"} aos seus números antes de sugerir · ver passos
               </summary>
               <ol className="ml-5 list-decimal">
                 {p.agentSteps.map((st, i) => (
@@ -222,13 +222,13 @@ export function PlanManager({ initial, explicaIa = false }: { initial: PlanView;
             ))}
           </ul>
         )}
-        <p className="text-xs text-ink-muted">O veredito é do código, por indicadores antecipados; não é causal.</p>
+        <p className="text-xs text-ink-muted">Manter ou trocar sai do uso dos convites na 1ª semana. Isso não prova que trouxeram clientes a mais.</p>
       </section>
 
       {p && (
         <section aria-labelledby="proposta" className="flex flex-col gap-4">
           <h2 id="proposta" className="text-lg font-bold text-ink">
-            {editable ? "Proposta para esta semana" : "Regra desta semana"}
+            {editable ? "Plano sugerido para esta semana" : "Plano em vigor nesta semana"}
           </h2>
           {v.slots.map((s) => {
             const e = edits[s.slotId]!;
@@ -257,7 +257,7 @@ export function PlanManager({ initial, explicaIa = false }: { initial: PlanView;
                   labelClassName="text-sm text-ink"
                   disabled={!editable}
                   value={e.optionId}
-                  options={s.options.map((o) => ({ value: o.id, label: o.gain, hint: `${o.title} · custo ${brl(o.unitCostCents)}${o.isTop ? " · melhor nota" : ""}` }))}
+                  options={s.options.map((o) => ({ value: o.id, label: o.gain, hint: `${o.title} · custo ${brl(o.unitCostCents)}${o.isTop ? " · melhor custo-benefício" : ""}` }))}
                   onChange={(v) => setEdits((x) => ({ ...x, [s.slotId]: { ...e, optionId: v } }))}
                 />
                 <div className="flex flex-wrap items-end gap-4">
@@ -265,13 +265,18 @@ export function PlanManager({ initial, explicaIa = false }: { initial: PlanView;
                     Teto semanal de convites
                     <input disabled={!editable} type="number" min={1} max={999} inputMode="numeric" value={e.cap} onChange={(ev) => setEdits((x) => ({ ...x, [s.slotId]: { ...e, cap: Math.max(1, Math.min(999, Number(ev.target.value) || 1)) } }))} className="min-h-11 w-28 rounded-xs border border-border px-2" />
                   </label>
-                  <p className="text-sm text-ink-muted">
-                    até {int(e.cap)} convites/semana ≈ {int(tables)} {tables === 1 ? "mesa" : "mesas"} ({ins?.usage != null ? `com o uso de ${Math.round(100 * ins.usage)}% dos convites` : "supondo 1 em 4 convites usado"}) · custo máximo {opt ? brl(opt.unitCostCents * e.cap) : "—"} · esperado ≈ {opt ? brl(Math.round(opt.unitCostCents * e.cap * use)) : "—"}
-                  </p>
+                  <div className="flex flex-col text-sm text-ink-muted">
+                    <p>
+                      Até {int(e.cap)} convites por semana ≈ {int(tables)} {tables === 1 ? "mesa" : "mesas"} a mais
+                    </p>
+                    <p>
+                      Custo máximo {opt ? brl(opt.unitCostCents * e.cap) : "—"} · provável ≈ {opt ? brl(Math.round(opt.unitCostCents * e.cap * use)) : "—"} ({ins?.usage != null ? `se ${Math.round(100 * use)}% usarem` : "se 1 em 4 usar"})
+                    </p>
+                  </div>
                   {ins && ins.recalibratedCap !== e.cap && <p className="text-xs text-ink-muted">Teto sugerido pelo uso real: {int(ins.recalibratedCap)}/semana.</p>}
                 </div>
                 <label className="flex flex-col gap-1 text-sm text-ink">
-                  Texto do convite (aparece no 2º card do cliente)
+                  Texto do convite (o cliente vê no app, logo depois do check-in)
                   <textarea
                     id={`texto-${s.slotId}`}
                     disabled={!editable}
@@ -336,17 +341,21 @@ export function PlanManager({ initial, explicaIa = false }: { initial: PlanView;
         <section aria-labelledby="reativacao" className="flex flex-col gap-3 rounded-sm border border-border bg-white p-4">
           <div className="flex flex-wrap items-center gap-2">
             <h2 id="reativacao" className="text-lg font-bold text-ink">
-              Reativação
+              Convite para quem sumiu
             </h2>
           </div>
           <p className="text-sm text-ink" data-testid="reativacao-previa">
-            Vai para {int(v.reactivation.audience)} clientes com opt-in (1 visita e sumiu: {int(v.reactivation.bySegment.sumiu)}; perto da recompensa: {int(v.reactivation.bySegment.perto)}).{" "}
-            {v.reactivation.quota.map((q) => (q.use > 0 ? `Usa até ${int(q.use)} dos ${int(q.free)} convites livres desta semana em ${q.slotLabel}; sobram ${int(Math.max(0, q.left))} para quem fizer check-in na mesa.` : `${q.slotLabel}: não usa convites desta vez.`)).join(" ")} Para medir o efeito, 1 em cada 10 não recebe (grupo de controle).
+            Ao aprovar, o convite vai para até {int(v.reactivation.audience)} clientes que aceitaram receber avisos: {int(v.reactivation.bySegment.sumiu)} vieram uma vez e não voltaram, {int(v.reactivation.bySegment.perto)} estão perto da recompensa. Para medir o efeito, 1 em cada 10 não recebe (grupo sem convite, por sorteio).
           </p>
+          <ul className="flex flex-col gap-1 text-sm text-ink">
+            {v.reactivation.quota.map((q) => (
+              <li key={q.slotLabel}>{q.use > 0 ? `${q.slotLabel}: usa até ${int(q.use)} dos ${int(q.free)} convites livres da semana; sobram ${int(Math.max(0, q.left))} para quem fizer check-in na mesa.` : `${q.slotLabel}: não usa convites desta vez.`}</li>
+            ))}
+          </ul>
           {v.slots[0] && (
             <div className="max-w-sm rounded-md bg-surface-muted p-3 text-sm text-ink">
-              <p className="text-xs text-ink-muted">Como o cliente recebe</p>
-              <p>Oi, Ana! {v.slots[0].inviteRendered || "Volte e aproveite o convite."}</p>
+              <p className="text-xs text-ink-muted">Prévia: como o cliente recebe</p>
+              <p>Oi, {"{nome}"}. {v.slots[0].inviteRendered || "Volte e aproveite o convite."}</p>
             </div>
           )}
         </section>
@@ -355,7 +364,7 @@ export function PlanManager({ initial, explicaIa = false }: { initial: PlanView;
       {p?.review && (
         <div className="flex flex-col gap-1 rounded-sm border border-border bg-white p-3 text-sm" data-testid="revisor-plano" role="status">
           <p className="font-semibold text-ink">
-            {p.review.status === "revisando" ? "Revisor (outro provedor de IA): conferindo os textos…" : p.review.status === "ok" ? "Revisor: ok" : p.review.status === "atencao" ? "Revisor: atenção" : p.review.status === "bloquear" ? "Revisor: ajuste os convites antes de aprovar" : "Revisor: não revisado"}
+            {p.review.status === "revisando" ? "Uma segunda IA está conferindo os textos dos convites…" : p.review.status === "ok" ? "Conferência dos textos: ok" : p.review.status === "atencao" ? "Conferência dos textos: vale revisar" : p.review.status === "bloquear" ? "Conferência dos textos: ajuste os convites antes de aprovar" : "Conferência dos textos: não feita"}
           </p>
           {p.review.reasons.length > 0 && (
             <ul className="list-disc pl-5 text-ink">
@@ -370,11 +379,11 @@ export function PlanManager({ initial, explicaIa = false }: { initial: PlanView;
       {p && editable && (
         <StickyActions justify="between">
           <button type="button" onClick={approve} disabled={v.generating || p.review?.status === "revisando"} aria-busy={busy === "aprovar" || undefined} aria-describedby={v.generating || p.review?.status === "revisando" ? "aprovar-espera" : undefined} className="min-h-11 rounded-xs bg-red-button px-6 text-sm font-semibold text-white hover:brightness-95 disabled:opacity-60">
-            {busy === "aprovar" ? "Aprovando…" : "Aprovar plano"}
+            {busy === "aprovar" ? "Aprovando…" : "Aprovar e enviar convites"}
           </button>
           {(v.generating || p.review?.status === "revisando") && (
             <p id="aprovar-espera" className="self-center text-sm text-ink-muted">
-              {v.generating ? "Espere o novo plano ficar pronto." : "Espere o revisor (alguns segundos)."}
+              {v.generating ? "Espere o novo plano ficar pronto." : "Espere a conferência dos textos (alguns segundos)."}
             </p>
           )}
           <button type="button" onClick={() => setDiscarding((x) => !x)} className="min-h-11 rounded-xs border border-border bg-white px-5 text-sm font-semibold text-ink">
@@ -422,7 +431,7 @@ function Insights({ v }: { v: PlanView }) {
         aria-label="Mapa de check-ins por dia e turno (rolável)"
       >
         <table className="min-w-[520px] text-center text-sm">
-          <caption className="pb-2 text-left text-sm text-ink-muted">Check-ins por dia e turno nos últimos 30 dias (mede quem leu o QR, não a lotação). Contorno: horário vazio que você declarou.</caption>
+          <caption className="pb-2 text-left text-sm text-ink-muted">Check-ins por dia e turno nos últimos 30 dias. Mostra quem fez check-in, não o movimento total. Contorno: horários vazios que você marcou.</caption>
           <thead>
             <tr>
               <th scope="col" className="w-20">
@@ -467,16 +476,16 @@ function Insights({ v }: { v: PlanView }) {
           className="relative overflow-x-auto no-scrollbar"
           tabIndex={0}
           role="region"
-          aria-label="Resposta aos convites (rolável)"
+          aria-label="Uso dos convites (rolável)"
         >
           <table className="w-full min-w-[520px] text-sm">
-            <caption className="pb-2 text-left text-sm text-ink-muted">Resposta aos convites (convites reais; o efeito causal só no total do restaurante, na Visão geral)</caption>
+            <caption className="pb-2 text-left text-sm text-ink-muted">Uso dos convites por horário vazio. O resultado em clientes a mais está na Visão geral.</caption>
             <thead>
               <tr className="text-left text-xs text-ink-muted">
                 <th scope="col" className="font-normal">Horário</th>
                 <th scope="col" className="font-normal">Oferta</th>
-                <th scope="col" className="font-normal">Emitidos (30 dias)</th>
-                <th scope="col" className="font-normal">Usados em 1 semana</th>
+                <th scope="col" className="font-normal">Entregues (30 dias)</th>
+                <th scope="col" className="font-normal">Usados na 1ª semana</th>
                 <th scope="col" className="font-normal">Teto sugerido</th>
               </tr>
             </thead>
@@ -492,10 +501,11 @@ function Insights({ v }: { v: PlanView }) {
               ))}
             </tbody>
           </table>
+          <p className="pt-2 text-xs text-ink-muted">Usados na 1ª semana: conta os convites entregues entre 37 e 7 dias atrás, que já completaram uma semana. Por isso a base pode ser diferente dos entregues nos últimos 30 dias.</p>
         </div>
       )}
       <p className="text-sm text-ink">
-        Clientes acionáveis: {int(v.insights.segments.sumiu.count)} com 1 visita e sumiram · {int(v.insights.segments.perto.count)} perto da recompensa ·{" "}
+        Clientes para chamar de volta: {int(v.insights.segments.sumiu.count)} vieram uma vez e não voltaram · {int(v.insights.segments.perto.count)} perto da recompensa ·{" "}
         <Link className="text-red-text underline" href="/parceiro/salao/clientes">
           ver Clientes
         </Link>

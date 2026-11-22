@@ -2,7 +2,7 @@ import { expect, test } from "@playwright/test";
 import { axe, loginE2E, PROD, S5_ON, waitExampleReady } from "./helpers";
 
 /**
- * D246 com a flag `mcp` (passada `flags-on`): o card "Conectar um assistente de IA" ensina passo a passo; o token
+ * D246 com a flag `mcp` (passada `flags-on`): o card "Conectar outro app de IA" ensina passo a passo; o token
  * gerado no passo 1, usado como o passo 3 manda (Authorization: Bearer), lista as ferramentas do servidor; revogar
  * (passo 5) corta na hora. Conta própria (e2e-dono+34).
  */
@@ -16,10 +16,10 @@ test("agente (MCP): passo a passo → token funciona no endereço → revogar co
   await page.goto("/parceiro/salao/configuracoes");
   // D247: aba própria "Integrações".
   await page.getByRole("tab", { name: "Integrações" }).click();
-  const card = page.getByRole("region", { name: "Conectar um assistente de IA (MCP)" });
+  const card = page.getByRole("region", { name: "Conectar outro app de IA (Claude e similares)" });
   await expect(card).toBeVisible();
   const steps = card.getByRole("list", { name: "Como conectar, passo a passo" });
-  for (const t of ["Gere a sua chave de acesso (token)", "Copie o endereço do seu restaurante", "Cole os dois no seu assistente", "Teste", "Para cortar o acesso"]) {
+  for (const t of ["Gere a sua chave de acesso (token)", "Copie o endereço do seu restaurante", "Cole os dois no seu app de IA", "Teste", "Para cortar o acesso"]) {
     await expect(steps.getByRole("heading", { name: t, exact: true })).toBeVisible();
   }
   const endpoint = (await card.locator("code").filter({ hasText: /\/api\/mcp$/ }).first().textContent())!.trim();
@@ -44,7 +44,7 @@ test("agente (MCP): passo a passo → token funciona no endereço → revogar co
 
   await card.getByRole("button", { name: "Revogar token" }).click();
   await page.getByRole("alertdialog", { name: "Revogar o token?" }).getByRole("button", { name: "Revogar" }).click();
-  await expect(card.getByText("Token revogado: o assistente não tem mais acesso.")).toBeVisible();
+  await expect(card.getByText("Token revogado: o app de IA não tem mais acesso.")).toBeVisible();
   const cut = await page.request.post("/api/mcp", { data: list, headers: { authorization: `Bearer ${token}` } });
   expect(cut.status()).toBe(401);
 });

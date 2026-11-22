@@ -5,13 +5,13 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useCreateRestaurant } from "./CreateRestaurantButton";
 
-/** Valor da opção "+ Nova loja" no seletor (D256): não é uma loja, cria uma e abre a ativação. */
+/** Valor da opção "+ Novo restaurante" no seletor (D256): não é um restaurante, cria uma e abre a ativação. */
 const NEW_STORE = "__nova_loja__";
 
 export type StoreOption = { id: string; name: string; label: string };
 type Props = { name: string | null; open: boolean | null; stores: StoreOption[]; currentId: string | null };
 
-/** Topo da barra lateral (portal/02 e 05): nome da loja, "Trocar loja" e caixa aberta/fechada. */
+/** Topo da barra lateral (portal/02 e 05): nome do restaurante, "Trocar restaurante" e caixa aberta/fechada. */
 export function StoreBox({ name, open, stores, currentId }: Props) {
   const router = useRouter();
   const [busy, setBusy] = useState(false);
@@ -30,14 +30,14 @@ export function StoreBox({ name, open, stores, currentId }: Props) {
   }
   return (
     <div className="flex flex-col gap-2">
-      <p className="text-center text-base font-bold leading-5 text-ink">{name ?? "Nenhuma loja ainda"}</p>
+      <p className="text-center text-base font-bold leading-5 text-ink">{name ?? "Nenhum restaurante ainda"}</p>
       {stores.length > 0 && (
         <Select
-          label="Trocar loja"
+          label="Trocar restaurante"
           labelClassName="text-xs font-medium text-ink-muted"
           value={currentId ?? ""}
           disabled={busy || newStore.loading}
-          options={[...stores.map((s) => ({ value: s.id, label: s.name, hint: s.label })), { value: NEW_STORE, label: "+ Nova loja", hint: "Cadastrar outro restaurante" }]}
+          options={[...stores.map((s) => ({ value: s.id, label: s.name, hint: s.label })), { value: NEW_STORE, label: "+ Novo restaurante", hint: "Cadastrar outro restaurante" }]}
           onChange={(v) => change(v)}
         />
       )}

@@ -95,12 +95,12 @@ test.describe("copiloto (local, IA roteirizada)", () => {
     await page.getByRole("listitem").filter({ hasText: "Boteco do Seu Zé" }).getByRole("button", { name: "Usar este exemplo" }).click();
     await expect(page.getByRole("heading", { name: "Seu salão" })).toBeVisible();
     await page.getByLabel("Descrição do salão").fill("12 mesas, abro de terça a domingo das 11h às 23h; terça e quarta à tarde, das 15h às 18h, fica muito vazio e quero 4 mesas a mais. Ticket de 85 reais.");
-    await page.getByRole("button", { name: "Ler a frase" }).click();
+    await page.getByRole("button", { name: "Preencher com a frase" }).click();
     await expect(page.getByText("Vou preencher:")).toBeVisible({ timeout: 30_000 });
     // 300 clientes por semana não estava no texto: o código descarta.
     await expect(page.getByText(/Não informado .*clientes por semana/)).toBeVisible();
     await axe(page);
-    await page.getByRole("button", { name: "Preencher o formulário" }).click();
+    await page.getByRole("button", { name: "Usar estes dados" }).click();
     await expect(page.getByLabel("Número de mesas")).toHaveValue("12");
     await expect(page.getByLabel("Quantas mesas a mais você quer por semana nesse horário?")).toHaveValue("4");
     await expect(page).toHaveURL(/\/ativar\/2/);

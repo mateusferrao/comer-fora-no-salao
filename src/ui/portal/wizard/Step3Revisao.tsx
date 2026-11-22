@@ -26,7 +26,7 @@ const cents = (s: string) => {
 
 export type ReviewInitial = { rows: Array<{ categoria: Row["categoria"]; nome: string; precoCentavos: number; confira?: boolean }> | null; cuisine: string | null; priceBand: string | null };
 
-/** Passo 3 (espec. 3.2): tabela editável do que a IA leu; o código já marcou o que conferir. */
+/** Passo 3 (espec. 3.2): tabela editável do que a IA leu; o sistema já marcou o que conferir. */
 export function Step3Revisao({ extractionId, extraction, initial, manual = false }: { extractionId: string | null; extraction: ExtractionState | null; initial: ReviewInitial; manual?: boolean }) {
   const router = useRouter();
   const ext = useExtraction(initial.rows ? null : extractionId, extraction);
@@ -170,7 +170,7 @@ export function Step3Revisao({ extractionId, extraction, initial, manual = false
           <div className="grid gap-4 sm:grid-cols-2">
             <Field label="Culinária (sugerida)" value={cuisine} maxLength={40} onChange={(e) => setCuisine(e.target.value)} />
             <Select
-              label="Faixa de preço (sugerida)"
+              label="Nível de preço (sugerido)"
               size="lg"
               className="gap-1.5"
               value={band}

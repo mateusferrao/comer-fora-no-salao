@@ -14,7 +14,7 @@ import {
 } from "@/src/modules/beneficios/domain/slots";
 
 const TABLES_HINT =
-  "Com isso calculamos quantos convites mandar: 4 mesas ≈ 16 convites por semana, depois ajustado pelo uso real.";
+  "Com isso calculamos quantos convites entregar: 4 mesas ≈ 16 convites por semana, depois ajustado pelo uso real.";
 import { Select } from "../components/Select";
 import { useNumberField } from "../components/use-number-field";
 import { useState, type ReactNode } from "react";
@@ -45,7 +45,7 @@ const cents = (s: string) => {
 };
 const ERR: Record<string, string> = {
   oferta: "Oferta inválida: confira o item (categoria) e o desconto (até 50%).",
-  texto: "Escreva o texto (sem e-mail, telefone, HTML) com até 160 caracteres.",
+  texto: "Escreva o texto com até 160 caracteres, sem e-mail, telefone ou sinais como < >.",
   rede: "Sem conexão com o servidor. Verifique a internet e tente de novo.",
   em_uso:
     "Este item está numa oferta em vigor. Troque a oferta antes de excluir.",
@@ -64,7 +64,7 @@ function okWithWarnings(okText: string, w: string[]): string {
   // S6.3a (D197): avisos de "Pode entrar em ofertas".
   const offer = [w.includes("em_uso_ate_trocar") ? "está numa oferta em vigor e continua nela até a próxima troca" : null, w.includes("uma_opcao") ? "sobrou só 1 opção de oferta para os convites" : null].filter(Boolean);
   if (offer.length) return `${okText}. Atenção: ${offer.join("; ")}.`;
-  return w.length ? `${okText}. Atenção: o texto cita número ou promessa; vale a oferta da regra.` : okText;
+  return w.length ? `${okText}. Atenção: o texto cita número ou promessa; vale a oferta escolhida acima.` : okText;
 }
 
 async function post(body: unknown) {
@@ -154,7 +154,7 @@ export function ConfigManager({
       value={tab}
       onValueChange={setTab}
       items={[
-        { id: "agora", label: "Benefício agora", content: <OfferTab title="Benefício de 1ª visita (o “agora”)" note="Vale em qualquer horário de funcionamento, uma vez por cliente." role="agora" value={v.agora} menu={menu} /> },
+        { id: "agora", label: "Benefício de 1ª visita", content: <OfferTab title="Benefício de 1ª visita" note="Vale em qualquer horário de funcionamento, uma vez por cliente." role="agora" value={v.agora} menu={menu} /> },
         { id: "convites", label: "Horários vazios e convites", content: <SlotsTab v={v} menu={menu} /> },
         { id: "cartela", label: "Cartela", content: <OfferTab title="Recompensa da cartela" note="6 selos, 1 por dia, validade de 90 dias após o 1º check-in (regras iguais às do app)." role="recompensa" value={v.recompensa} menu={menu} /> },
         { id: "cardapio", label: "Cardápio", content: <MenuTab v={v} /> },
@@ -177,7 +177,7 @@ function OfferTab({ title, note, role, value, menu }: { title: string; note: str
       <h2 className="text-lg font-bold text-ink">{title}</h2>
       <p className="text-sm text-ink-muted">{note}</p>
       <p className="text-base text-ink">
-        Agora: <strong>{gain}</strong>
+        O cliente ganha: <strong>{gain}</strong>
       </p>
       <OfferEditor label={title} value={o} menu={menu} onChange={setO} />
       <div className="flex flex-wrap items-center gap-3">
@@ -299,7 +299,7 @@ function SlotCard({ s, menu, canRemove }: { s: SettingsView["slots"][number]; me
               save(
                 "faixa",
                 { acao: "faixa_editar", slotId: s.id, ...f },
-                "Horário salvo (convites já emitidos não mudam)",
+                "Horário salvo (convites já entregues não mudam)",
               )
             }
           >
@@ -313,7 +313,7 @@ function SlotCard({ s, menu, canRemove }: { s: SettingsView["slots"][number]; me
               onClick={async () =>
                 (await confirmDialog({
                   title: "Desativar este horário vazio?",
-                  body: "Ele para de receber convites. Os já emitidos continuam valendo.",
+                  body: "Os clientes deixam de ganhar convite para este horário. Os convites já entregues continuam valendo.",
                   confirmLabel: "Desativar",
                 })) &&
                 save(
@@ -334,7 +334,7 @@ function SlotCard({ s, menu, canRemove }: { s: SettingsView["slots"][number]; me
         <OfferEditor label={`Oferta do convite de ${s.label}`} value={o} menu={menu} onChange={setO} />
         <Field className="w-48" label="Teto de convites por semana" inputMode="numeric" {...capField} />
         <label className="flex flex-col gap-1.5 text-sm font-medium text-ink">
-          Texto do convite (2º card)
+          Texto do convite (o cliente vê no app)
           <textarea
             className={`min-h-16 rounded-md border p-3 text-base ${textIssue.errors.length ? "border-red-text" : "border-border"}`}
             maxLength={160}
@@ -527,8 +527,8 @@ function RestaurantTab({ v, isTest, restaurantId }: { v: SettingsView; isTest: b
         <Field label="Nome do restaurante" value={f.name} onChange={(e) => setF({ ...f, name: e.target.value })} />
         <Field label="Número de mesas" type="number" min={1} value={f.tables ?? ""} onChange={(e) => setF({ ...f, tables: e.target.value ? Number(e.target.value) : null })} />
         <Field label="Clientes de salão por semana" type="number" min={0} value={f.weeklyCustomers ?? ""} onChange={(e) => setF({ ...f, weeklyCustomers: e.target.value ? Number(e.target.value) : null })} />
-        <Field label="Ticket médio por pessoa (R$)" inputMode="decimal" value={f.ticket} onChange={(e) => setF({ ...f, ticket: e.target.value })} hint="Estimativa sua; usada só para calcular retorno." />
-        <Field label="Margem aproximada (%)" type="number" min={1} max={95} value={f.marginPct ?? ""} onChange={(e) => setF({ ...f, marginPct: e.target.value ? Number(e.target.value) : null })} hint="Estimativa sua; usada só para calcular retorno." />
+        <Field label="Ticket médio por pessoa (R$)" inputMode="decimal" value={f.ticket} onChange={(e) => setF({ ...f, ticket: e.target.value })} hint="Sem ticket e margem, o painel mostra visitas, mas não reais." />
+        <Field label="Margem aproximada (%)" type="number" min={1} max={95} value={f.marginPct ?? ""} onChange={(e) => setF({ ...f, marginPct: e.target.value ? Number(e.target.value) : null })} hint="Estimativa sua. Sem ela, o painel não mostra o resultado em reais." />
         <Field label="Endereço" value={f.address} onChange={(e) => setF({ ...f, address: e.target.value })} />
       </div>
       <label className="flex flex-col gap-1.5 text-sm font-medium text-ink">
@@ -539,8 +539,8 @@ function RestaurantTab({ v, isTest, restaurantId }: { v: SettingsView; isTest: b
         <legend className="px-1 font-semibold text-ink">Horário de funcionamento</legend>
         {f.opening.map((b, i) => (
           <div key={i} className="flex flex-col gap-2">
-            <DaySelector label={`Dias do turno ${i + 1}`} value={b.days} onChange={(days) => setF({ ...f, opening: f.opening.map((x, k) => (k === i ? { ...x, days } : x)) })} />
-            <TimeRange label={`Horário do turno ${i + 1}`} start={b.startMin} end={b.endMin} onChange={(startMin, endMin) => setF({ ...f, opening: f.opening.map((x, k) => (k === i ? { ...x, startMin, endMin } : x)) })} />
+            <DaySelector label={`Dias do período ${i + 1}`} value={b.days} onChange={(days) => setF({ ...f, opening: f.opening.map((x, k) => (k === i ? { ...x, days } : x)) })} />
+            <TimeRange label={`Horário do período ${i + 1}`} start={b.startMin} end={b.endMin} onChange={(startMin, endMin) => setF({ ...f, opening: f.opening.map((x, k) => (k === i ? { ...x, startMin, endMin } : x)) })} />
           </div>
         ))}
       </fieldset>
@@ -608,7 +608,7 @@ const TONE_ERR: Record<string, string> = {
 
 /**
  * "IA do restaurante" (D138; S6.3a — D197): tom, fatos e termos a evitar, todos opcionais (vazio = padrão com os dados
- * que o sistema já tem). "Ver como fica" regenera o convite de 1 faixa com os 3 campos digitados (antes × depois).
+ * que o sistema já tem). "Ver como fica" regenera o convite de 1 horário vazio com os 3 campos digitados (antes × depois).
  */
 function ToneSection({ v, agenteGlobal = false, aprendeGlobal = true }: { v: SettingsView; agenteGlobal?: boolean; aprendeGlobal?: boolean }) {
   const router = useRouter();
@@ -636,21 +636,6 @@ function ToneSection({ v, agenteGlobal = false, aprendeGlobal = true }: { v: Set
         ofertas e os números continuam do sistema.
       </p>
       <Field label="Tom (até 200 caracteres)" value={tone} maxLength={200} placeholder="Ex.: descontraído, com gírias de boteco" onChange={(e) => setTone(e.target.value)} />
-      <div className="flex flex-wrap items-end gap-3">
-        <Button
-          variant="primary-portal"
-          loading={busy === "salvar"}
-          onClick={async () => {
-            setBusy("salvar");
-            const r = await call({ acao: "tom", tone });
-            setBusy("");
-            setMsg(r.ok ? "Tom salvo: vale nos próximos textos da IA." : TONE_ERR[r.j.erro] ?? "Não deu para salvar.");
-            if (r.ok) router.refresh();
-          }}
-        >
-          Salvar tom
-        </Button>
-      </div>
       <label className="flex flex-col gap-1.5 text-sm font-medium text-ink">
         Fatos para a IA (não aparece no app) · até 500 caracteres
         <textarea
@@ -668,7 +653,7 @@ function ToneSection({ v, agenteGlobal = false, aprendeGlobal = true }: { v: Set
       <Field label="O que evitar (termos separados por vírgula) · até 200 caracteres" value={avoid} maxLength={200} placeholder="Ex.: gírias, álcool" onChange={(e) => setAvoid(e.target.value)} />
       <p className="-mt-2 text-xs text-ink-muted">{avoid.length}/200</p>
       <div className="flex flex-col">
-        {agenteGlobal && <Switch label="Usar agente de IA no plano da semana" hint="O agente consulta os números do sistema antes de escolher." checked={feat.agente} onChange={(agente) => setFeat({ ...feat, agente })} />}
+        {agenteGlobal && <Switch label="IA consulta seus números antes de sugerir" hint="Vale para o plano da semana e para o Assistente do salão. O plano demora mais para ficar pronto." checked={feat.agente} onChange={(agente) => setFeat({ ...feat, agente })} />}
         <Switch
           label="Aprender com minhas edições"
           hint={aprendeGlobal ? "Seus textos aprovados viram exemplo de estilo só para este restaurante." : "Desligado por enquanto."}
@@ -683,6 +668,15 @@ function ToneSection({ v, agenteGlobal = false, aprendeGlobal = true }: { v: Set
           loading={busy === "perfil"}
           onClick={async () => {
             setBusy("perfil");
+            // S9 (auditoria 1.10): um só "Salvar" para tom, fatos e preferências; o tom só é gravado se mudou.
+            if (tone !== (v.restaurant.aiTone ?? "")) {
+              const t = await call({ acao: "tom", tone });
+              if (!t.ok) {
+                setBusy("");
+                setMsg(TONE_ERR[t.j.erro] ?? "Não deu para salvar.");
+                return;
+              }
+            }
             const r = await call({ acao: "ia_perfil", about, avoid, features: feat });
             setBusy("");
             const w = (r.j.warnings ?? []) as string[];
@@ -695,12 +689,12 @@ function ToneSection({ v, agenteGlobal = false, aprendeGlobal = true }: { v: Set
             if (r.ok) router.refresh();
           }}
         >
-          Salvar fatos e preferências
+          Salvar preferências da IA
         </Button>
         {v.slots.length > 0 && (
           <>
             <Select
-              label="Prévia nesta faixa"
+              label="Prévia no horário"
               labelClassName="text-sm text-ink"
               value={slotId}
               options={v.slots.map((s) => ({ value: s.id, label: s.label }))}
@@ -723,6 +717,7 @@ function ToneSection({ v, agenteGlobal = false, aprendeGlobal = true }: { v: Set
           </>
         )}
       </div>
+      {v.slots.length > 0 && <p className="-mt-1 text-xs text-ink-muted">A prévia usa o que está escrito, mesmo sem salvar.</p>}
       {msg && (
         <p role="status" className="text-sm text-ink">
           {msg}
@@ -735,7 +730,7 @@ function ToneSection({ v, agenteGlobal = false, aprendeGlobal = true }: { v: Set
             <p className="text-ink">“{prev.before}”</p>
           </div>
           <div className="rounded-sm bg-surface-muted p-3 text-sm">
-            <p className="text-xs text-ink-muted">Depois (com o tom)</p>
+            <p className="text-xs text-ink-muted">Depois (com suas preferências)</p>
             <p className="text-ink">“{prev.after}”</p>
             <Button
               variant="outline-portal"

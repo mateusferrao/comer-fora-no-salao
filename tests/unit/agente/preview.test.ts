@@ -102,8 +102,8 @@ describe("prévia do copiloto — onda 2 (S8, D270)", () => {
   it("aprovar o plano com troca: linhas, aviso da reativação e do texto", () => {
     const p = previewProposal(withPlan, { acao: "plano", planId: "p1", slotId: "A", offer: { kind: "doce_gratis", itemId: "gelato" } });
     expect(p.ok && p.titulo).toBe("Aprovar o plano da semana com ajuste");
-    expect(p.ok && p.linhas).toContainEqual({ campo: "Plano da semana", antes: "Proposto", depois: "Aprovado" });
-    expect(p.ok && p.avisos[0]).toBe("Ao aprovar, o convite de volta vai para até 42 clientes (no app e por e-mail para quem aceitou).");
+    expect(p.ok && p.linhas).toContainEqual({ campo: "Plano da semana", antes: "Sugerido", depois: "Aprovado" });
+    expect(p.ok && p.avisos[0]).toBe("Ao aprovar, o convite para quem sumiu vai para até 42 clientes (no app e por e-mail para quem aceitou).");
     expect(p.ok && p.avisos).toContain("O texto do convite desse horário citava o prato antigo e volta ao texto padrão.");
   });
   it("plano errado → recusa", () => {

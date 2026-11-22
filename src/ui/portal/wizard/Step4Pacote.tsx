@@ -87,7 +87,7 @@ export function Step4Pacote({ explicaIa = false }: { explicaIa?: boolean } = {})
       setTimeout(load, 2000);
     } else {
       setState(v ? "pronto" : "erro");
-      setError(r.status === 429 ? "Você já gerou o pacote muitas vezes hoje. Ajuste a proposta atual." : "Não conseguimos montar o pacote agora. Tente de novo.");
+      setError(r.status === 429 ? "Você já gerou o pacote muitas vezes hoje. Ajuste o pacote atual." : "Não conseguimos montar o pacote agora. Tente de novo.");
     }
   }
 
@@ -134,8 +134,8 @@ export function Step4Pacote({ explicaIa = false }: { explicaIa?: boolean } = {})
     if (
       changed &&
       !(await confirmDialog({
-        title: "Gerar a proposta de novo?",
-        body: "A proposta atual e os seus ajustes são substituídos por uma nova.",
+        title: "Gerar o pacote de novo?",
+        body: "O pacote atual e os seus ajustes são substituídos por um novo.",
         confirmLabel: "Gerar de novo",
       }))
     )
@@ -162,7 +162,7 @@ export function Step4Pacote({ explicaIa = false }: { explicaIa?: boolean } = {})
         ) : (
           <>
             <p role="status" className="text-sm text-ink">
-              Montando seu pacote: o código calcula as ofertas possíveis, o teto e o custo; a IA escolhe a que combina com cada horário e explica por quê.
+              Montando seu pacote: o sistema calcula as ofertas possíveis, o teto e o custo; a IA escolhe a que combina com cada horário e explica por quê.
             </p>
             {[0, 1, 2].map((i) => (
               <div key={i} className="h-28 animate-pulse rounded-sm bg-surface-muted" />
@@ -206,19 +206,19 @@ function PackageEditor(p: {
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <h2 className="text-xl font-bold text-ink">Pacote proposto</h2>
-          <p className="mt-1 text-sm text-ink-muted">O sistema propõe, você aprova ou ajusta. Números e custos são calculados pelas regras; a IA escolhe a oferta de cada horário e explica.</p>
+          <p className="mt-1 text-sm text-ink-muted">Você aprova ou ajusta. Números e custos são calculados pelo sistema; a IA escolhe a oferta de cada horário vazio e explica por quê.</p>
         </div>
         {v.generatedBy === "sem_ia" ? <Badge tone="neutral">Sugestão automática (sem IA)</Badge> : <Badge tone="outline-red">Escolhido pela IA</Badge>}
       </div>
-      {v.generatedBy === "sem_ia" && v.semIa && <p className="rounded-sm bg-surface-muted px-3 py-2 text-sm text-ink">{SEM_IA[v.semIa] ?? "A IA não respondeu."} Usamos a opção de maior nota e um texto modelo.</p>}
+      {v.generatedBy === "sem_ia" && v.semIa && <p className="rounded-sm bg-surface-muted px-3 py-2 text-sm text-ink">{SEM_IA[v.semIa] ?? "A IA não respondeu."} Usamos a oferta com melhor custo-benefício e um texto padrão.</p>}
 
       <section aria-labelledby="agora" className="flex flex-col gap-3 rounded-sm border border-border p-4">
         <h3 id="agora" className="font-semibold text-ink">
-          Benefício de 1ª visita (o &quot;agora&quot;)
+          Benefício de 1ª visita
         </h3>
         <p className="text-sm text-ink">
           <strong>{describeOffer(toOffer(f.agora), v.menu, "agora").gain}</strong> para quem faz check-in pela primeira vez, em qualquer horário. Custo{" "}
-          {agoraCost.isMax ? "máximo" : "estimado"} ≈ {brl(agoraCost.cents)} por cliente identificado.
+          {agoraCost.isMax ? `máximo ${brl(agoraCost.cents)}` : `estimado ≈ ${brl(agoraCost.cents)}`} por cliente novo.
         </p>
         <OfferEditor label="Benefício de 1ª visita" value={f.agora} menu={v.menu} onChange={(agora) => setF({ ...f, agora })} />
       </section>
@@ -271,7 +271,7 @@ function PackageEditor(p: {
             </p>
             {s.justificativa && chosenOption?.id === s.chosenId && (
               <div className="rounded-sm bg-surface-muted p-3 text-sm text-ink">
-                <p className="font-semibold">Por que esta</p>
+                <p className="font-semibold">Por que esta oferta</p>
                 <p className="mt-1">{s.justificativa}</p>
               </div>
             )}
@@ -283,7 +283,7 @@ function PackageEditor(p: {
               </Button>
             </div>
             <label className="flex flex-col gap-1.5 text-sm font-medium text-ink">
-              Texto do convite (o cliente vê no 2º card)
+              Texto do convite (o cliente vê no app, logo depois do check-in)
               <textarea
                 id={`texto-${s.slotId}`}
                 className={`min-h-20 rounded-md border p-3 text-base ${invalid ? "border-red-text" : "border-border"}`}
@@ -327,8 +327,7 @@ function PackageEditor(p: {
                 <CapInput value={st.weeklyCap} onValue={(n) => setSlot(s.slotId, { weeklyCap: n })} />
               </label>
               <p className="pb-2 text-sm text-ink">
-                até {st.weeklyCap} convites/semana ≈ {Math.max(1, Math.round(st.weeklyCap / 4))} {Math.max(1, Math.round(st.weeklyCap / 4)) === 1 ? "mesa" : "mesas"} · custo {cost.isMax ? "máximo" : "estimado"} ≈{" "}
-                {brl(cost.cents * st.weeklyCap)}/semana
+                até {st.weeklyCap} convites/semana ≈ {Math.max(1, Math.round(st.weeklyCap / 4))} {Math.max(1, Math.round(st.weeklyCap / 4)) === 1 ? "mesa" : "mesas"} · custo {cost.isMax ? `máximo ${brl(cost.cents * st.weeklyCap)}` : `estimado ≈ ${brl(cost.cents * st.weeklyCap)}`}/semana
               </p>
             </div>
             <SidePanel
@@ -341,7 +340,7 @@ function PackageEditor(p: {
                 </Button>
               }
             >
-              <p className="text-sm text-ink-muted">Ofertas válidas calculadas pelo código (item do cardápio, custo dentro do teto, tipo permitido).</p>
+              <p className="text-sm text-ink-muted">Ofertas possíveis com o seu cardápio e dentro do limite de custo.</p>
               <ul className="mt-3 flex flex-col gap-2">
                 {s.options.map((o) => {
                   const on = st.offer.kind === o.offer.kind && st.offer.itemId === o.offer.params.itemId;
@@ -355,7 +354,7 @@ function PackageEditor(p: {
                             {o.id === s.chosenId && v.generatedBy === "ia" ? " · escolha da IA" : ""}
                           </strong>
                           <span className="text-ink-muted">
-                            {o.title} · custo {o.isMax ? "máximo" : "estimado"} ≈ {brl(o.unitCostCents)} por convite usado
+                            {o.title} · custo {o.isMax ? `máximo ${brl(o.unitCostCents)}` : `estimado ≈ ${brl(o.unitCostCents)}`} por convite usado
                           </span>
                         </span>
                       </label>
