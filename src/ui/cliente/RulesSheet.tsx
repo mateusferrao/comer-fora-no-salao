@@ -11,7 +11,7 @@ export function RulesSheet({ open, onClose, restaurantName }: { open: boolean; o
     "A cartela vale 90 dias a partir do 1º selo",
     "Com 6 selos, a cartela completa vale 1 recompensa",
     `Benefícios e recompensas valem só para consumo no local, no restaurante ${restaurantName}`,
-    "O benefício da 1ª visita vale 1 vez por cliente, em qualquer horário de funcionamento",
+    "O benefício de 1ª visita vale 1 vez por cliente, em qualquer horário de funcionamento",
     "Cada código do benefício vale só no dia do check-in",
     "Benefícios e recompensas valem depois que o garçom confirma o código",
   ];

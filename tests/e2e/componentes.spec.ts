@@ -41,7 +41,7 @@ for (const vp of VIEWPORTS) {
       await page.goto(URL);
       const gatilho = page.getByRole("button", { name: "Abrir painel inferior" });
       await gatilho.click();
-      const sheet = page.getByRole("dialog", { name: "Parece que você não está no restaurante!" });
+      const sheet = page.getByRole("dialog", { name: "Parece que você não está no restaurante" });
       await expect(sheet).toBeVisible();
       for (let i = 0; i < 6; i++) {
         await page.keyboard.press("Tab");
