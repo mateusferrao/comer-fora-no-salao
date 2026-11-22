@@ -582,6 +582,8 @@ Todas as rotas são validadas com Zod, têm limite de uso e tiram o restaurante 
 ---
 
 ## 5. Demo (P8) — 8 minutos, via Meet, no modo apresentação
+
+> **Nota (22/11, S7):** roteiro escrito na v2. O produto mudou nas fatias S4–S9 (landing, painel em R$, assistente, agente, MCP, "Avançar 1 dia" nos Bastidores). O caminho de avaliação atual está no [README](../../README.md#como-avaliar-em-5-minutos).
 | Tempo | Conteúdo |
 |---|---|
 | 0:00–0:45 | Problema (20% divulgam), promessa ("seu salão cheio divulga seu horário vazio") e **contraste com o print 04**: "benefício por turno já existe: público, para qualquer um, sem medida → aqui: convite só para quem já veio, com teto de custo e incremento medido". H1–H5 ficam para as perguntas |

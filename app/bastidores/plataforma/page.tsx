@@ -37,7 +37,7 @@ export default async function Plataforma() {
           <p className="text-sm text-ink-muted">Divulgando no salão</p>
           <p className="text-3xl font-bold text-ink">{v.divulgandoPct === null ? "—" : `${v.divulgandoPct}%`}</p>
           <p className="text-xs text-ink-muted">
-            ativados com leitura de QR nos últimos 7 dias; {v.divulgandoCriadosPct === null ? "—" : `${v.divulgandoCriadosPct}%`} dos criados. Não é comparável direto com os 20% do briefing (lá, sobre todos os restaurantes com salão).
+            ativados com leitura de QR nos últimos 7 dias; {v.divulgandoCriadosPct === null ? "—" : `${v.divulgandoCriadosPct}%`} dos criados. Não é comparável direto com os 20% do briefing, que são sobre os restaurantes ativos do iFood (número fictício).
           </p>
         </div>
         <div className={card}>
@@ -101,7 +101,7 @@ export default async function Plataforma() {
           Conta de bolso [hipótese]
         </h2>
         <ul className="mt-2 list-disc pl-5 text-sm leading-6 text-ink">
-          <li>Briefing (números fictícios do case): 400 mil restaurantes parceiros, 75% só delivery → ~100 mil com salão [interpretação nossa]; 20% divulgam o Comer Fora no salão (~20 mil).</li>
+          <li>Briefing (números fictícios do case): 400 mil restaurantes parceiros, 75% só delivery → ~100 mil com salão; 20% divulgam o Comer Fora no salão. O briefing diz &quot;20% dos restaurantes ativos&quot;; aplicar os 20% aos ~100 mil com salão (~20 mil) é interpretação nossa [hipótese].</li>
           <li>Hipótese: se a ativação proposta levar a divulgação de 20% para 30% dos restaurantes com salão, são ~10 mil restaurantes a mais divulgando.</li>
           <li>Meta do briefing: 2,5 → 5 milhões de usuários ativos até 2028 (gap de 2,5 mi). Para o salão cobrir metade do gap com esses ~10 mil restaurantes, cada um precisaria trazer ~125 novos usuários por ano (≈ 2–3 por semana). É esse o número que o piloto testa; aqui ele aparece no card &quot;Novos usuários&quot; acima.</li>
           <li>

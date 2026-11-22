@@ -14,7 +14,7 @@ import {
 } from "@/src/modules/beneficios/domain/slots";
 
 const TABLES_HINT =
-  "Com isso calculamos quantos convites entregar: 4 mesas ≈ 16 convites por semana, depois ajustado pelo uso real.";
+  "Com isso calculamos quantos convites entregar. Ex.: 4 mesas ≈ 16 convites por semana; depois o número se ajusta pelo uso real.";
 import { Select } from "../components/Select";
 import { useNumberField } from "../components/use-number-field";
 import { useState, type ReactNode } from "react";

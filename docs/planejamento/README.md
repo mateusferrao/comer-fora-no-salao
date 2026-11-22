@@ -1,5 +1,7 @@
 # Planejamento — índice
 
+> Para uma visão geral rápida, comece pelo [README do repositório](../../README.md) e por [docs/README.md](../README.md) (ordem de leitura e glossário). Este índice é o registro completo do planejamento.
+
 O planejamento inicial fechou em 19/11/2026 e foi replanejado em 20/11 (v2, diferenciação) e em 21/11 (produto real, valor ao dono e IA que opera). Desde então, cada fatia é planejada com a skill `planejar-fatia` na vez dela e revisada com `revisar-fatia` antes do merge. A especificação continua sendo a fonte única; as decisões novas entram em `decisoes-e-tradeoffs.md`.
 
 | Documento | O que tem |

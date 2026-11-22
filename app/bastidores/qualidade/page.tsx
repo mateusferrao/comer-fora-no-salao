@@ -4,6 +4,7 @@ import { getDb } from "@/src/db/client";
 import { getQualityViewCached } from "@/src/modules/analytics/application/quality";
 import { guardNote, REASON, TASK, usd } from "@/src/ui/ia/labels";
 import { getCopilotMetrics } from "@/src/modules/agente/application/metrics";
+import { IaDiagrama, RepoLink } from "@/src/ui/bastidores/Diagramas";
 
 export const dynamic = "force-dynamic";
 /** Nota cega do candidato na T3 (D137): atualizada quando ele responde (eval/relatorio-t3.md). */
@@ -25,8 +26,9 @@ export default async function Qualidade() {
       </p>
       <h1 className="mt-3 text-2xl font-bold text-ink">Qualidade da IA</h1>
       <p className="mt-2 text-sm leading-6 text-ink-muted">
-        Cada chamada de IA passa por contrato (schema), regras fixas (referências, palavras proibidas, tamanho) e aprovação do dono; se falhar, entra o modelo reserva e, por fim, o texto modelo (sem IA). Números agregados, fora as chamadas dos testes automáticos.
+        Cada chamada de IA passa por contrato (schema), regras fixas (referências, palavras proibidas, tamanho) e aprovação do dono; se falhar, entra o modelo reserva e, por fim, o texto modelo (sem IA). Números agregados, fora as chamadas dos testes automáticos. Explicação completa em <RepoLink path="docs/ia-no-produto.md">IA no produto</RepoLink>.
       </p>
+      <IaDiagrama />
       <div
         className="mt-4 overflow-x-auto no-scrollbar rounded-sm border border-border bg-white p-4"
         tabIndex={0}
@@ -106,13 +108,13 @@ export default async function Qualidade() {
           <strong>Hipótese:</strong> a escolha de item × turno pela IA rende mais que a de maior nota; mede-se no piloto, com restaurantes sem a escolha da IA.
         </p>
         <ul className="mt-2 list-disc pl-5 text-sm leading-6 text-ink">
-          <li>T1 (leitura do cardápio): 7 modelos de visão e 3 linhas de base de OCR em 4 cardápios. Venceu google/gemini-3.1-flash-lite (nota 1,000; p50 2,4 s; US$ 0,0017 por cardápio); OCR + regras ficou em 0,42–0,46 e OCR + IA de texto, em 0,73.</li>
+          <li>T1 (leitura do cardápio): 7 modelos de visão e 3 linhas de base de OCR em 4 cardápios. Venceu google/gemini-3.1-flash-lite (nota 1,000; p50 2,4 s; US$ 0,0017 por cardápio); OCR + regras ficou em 0,42–0,46 e OCR + IA de texto, em 0,73. <RepoLink path="eval/relatorio-t1.md">Relatório</RepoLink>.</li>
           <li>
-            T3 (pacote e plano): 6 modelos × 5 cenários fictícios × 2 repetições, com um juiz de IA de um provedor que não concorre. Venceu google/gemini-3.8-flash (regras ok em 90%; p50 2,8 s), com openai/gpt-6-luna de reserva. Contra o texto modelo, o juiz preferiu a IA em 8 de 9 pares; {T3_HUMANO}. O texto modelo é reconhecível pelo formato, e no critério item × turno o vencedor empatou com ele em 3 de 4 cenários: a vantagem medida está no texto. Relatório: eval/relatorio-t3.md.
+            T3 (pacote e plano): 6 modelos × 5 cenários fictícios × 2 repetições, com um juiz de IA de um provedor que não concorre. Venceu google/gemini-3.8-flash (regras ok em 90%; p50 2,8 s), com openai/gpt-6-luna de reserva. Contra o texto modelo, o juiz preferiu a IA em 8 de 9 pares; {T3_HUMANO}. O texto modelo é reconhecível pelo formato, e no critério item × turno o vencedor empatou com ele em 3 de 4 cenários: a vantagem medida está no texto. <RepoLink path="eval/relatorio-t3.md">Relatório</RepoLink> · <RepoLink path="eval/t3-cego.md">pares cegos</RepoLink>.
           </li>
-          <li>T3 do agente (plano da semana): agente com ferramentas × chamada única, 3 rodadas. Na última, os dois passaram nas regras em 10 de 10; o juiz preferiu o agente em 6, empate em 1, chamada única em 3; custo por plano US$ 0,014 × US$ 0,002 e p50 13,8 s × 3,6 s. Relatório: eval/relatorio-t3-agente.md.</li>
-          <li>Revisor (outro provedor, só nos textos que chegam ao cliente): em 10 planos gerados pela IA, 0 bloqueados e 3 com &quot;atenção&quot;. Mede só bloqueio indevido; textos ruins de propósito ainda não foram testados (eval/resultados-revisor.json).</li>
-          <li>T4 (Assistente do salão): 16 pedidos com gabarito; fora da amostra, 6 casos novos × 3 repetições: gemini-3.8-flash acertou 17 de 18 e gpt-6-luna, 14 de 18 (eval/relatorio-t4-validacao.md).</li>
+          <li>T3 do agente (plano da semana): agente com ferramentas × chamada única, 3 rodadas. Na última, os dois passaram nas regras em 10 de 10; o juiz preferiu o agente em 6, empate em 1, chamada única em 3; custo por plano US$ 0,014 × US$ 0,002 e p50 13,8 s × 3,6 s. <RepoLink path="eval/relatorio-t3-agente.md">Relatório</RepoLink>.</li>
+          <li>Revisor (outro provedor, só nos textos que chegam ao cliente): em 10 planos gerados pela IA, 0 bloqueados e 3 com &quot;atenção&quot;. Mede só bloqueio indevido; textos ruins de propósito ainda não foram testados (<RepoLink path="eval/resultados-revisor.json">resultados</RepoLink>).</li>
+          <li>T4 (Assistente do salão): 16 pedidos com gabarito; fora da amostra, 6 casos novos × 3 repetições: gemini-3.8-flash acertou 17 de 18 e gpt-6-luna, 14 de 18 (<RepoLink path="eval/relatorio-t4-validacao.md">relatório</RepoLink>; escopo: <RepoLink path="eval/relatorio-t4-escopo.md">30 de 30</RepoLink>).</li>
         </ul>
       </section>
           <section className="mt-6 rounded-sm border border-border bg-white p-4 text-sm" aria-labelledby="copiloto-metricas">

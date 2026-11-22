@@ -37,11 +37,11 @@ Não procede: "a linha 'você pode ganhar um convite' contraria a §3.5" (a §3.
 - `tsc`, eslint (0 erros), dependency-cruiser: limpos.
 - Unitários 658/658; integração 201/201; E2E completo em banco novo: 105 passaram e 2 falharam por texto antigo nos specs (porta-conta e "Hoje no salão", corrigidos e reexecutados: verdes). Uma corrida antiga no helper `startNewStore` (clicava antes de a cópia do exemplo ficar pronta) também foi corrigida.
 - T4 de escopo com IA real: gemini 30/30, luna 30/30 (15 casos × 2; indicativo) — `eval/relatorio-t4-escopo.md`.
-- Capturas: [landing-390.png](capturas/landing-390.png), [landing-1280.png](capturas/landing-1280.png).
+- Capturas da landing a 390 e 1280 px (guardadas no repositório privado).
 
 ## 4. Produção
 - `/api/health` (22/11 05:03 UTC): `ok: true`, `sha: f8560c7`, `ia.teto: ativo`, chaves pública e demo `ok`, `fakeAi: false`.
-- Landing em produção a 1280 e 390 px: título novo, sem rolagem lateral, recorte do cartão de reais no celular (`visao-geral-topo.webp`), 0 erros de console ([prod-landing-1280.png](capturas/prod-landing-1280.png), [prod-landing-390.png](capturas/prod-landing-390.png)).
+- Landing em produção a 1280 e 390 px: título novo, sem rolagem lateral, recorte do cartão de reais no celular (`visao-geral-topo.webp`), 0 erros de console (capturas a 1280 e 390 px guardadas no repositório privado).
 - Página do QR: a seta Voltar leva a `/app/jornada` (não à landing do dono).
 - Fumaça do CI na `main` (inclui os `*.on.spec.ts`):
   - run 125 (`f8560c7`): 82 passaram; falhou 1 teste por corrida (um push de docs na `main` trocou a versão de produção no meio da fumaça; o SHA esperado ficou velho). Reexecução: falhou o teste do grupo de controle porque a conta fixa de teste esgotou o teto semanal de convites em produção ("sem convite" por teto lido como grupo de controle). Nenhum defeito de produto.

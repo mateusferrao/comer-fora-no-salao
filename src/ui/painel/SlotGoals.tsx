@@ -32,7 +32,8 @@ export function SlotGoals({ goals }: { goals: SlotGoal[] }) {
               </div>
               <p className="text-xs text-ink-muted">
                 {int(g.emitidos)}
-                {g.teto != null ? ` de ${int(g.teto)}` : ""} convites já entregues nesta semana{g.teto != null ? " (teto semanal)" : ""}
+                {g.teto != null ? ` de ${int(g.teto)}` : ""} convites novos entregues nesta semana{g.teto != null ? " (teto semanal)" : ""}
+                {g.usados > g.emitidos ? ". Os usados incluem convites entregues em semanas anteriores." : ""}
               </p>
             </li>
           );

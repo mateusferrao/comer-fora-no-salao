@@ -9,7 +9,7 @@ import {
 
 /** Ajuste de 21/11: a meta explicada com exemplo (o teto de convites sai dela). */
 const TABLES_HINT =
-  "Com isso calculamos quantos convites entregar: 4 mesas ≈ 16 convites por semana, depois ajustado pelo uso real.";
+  "Com isso calculamos quantos convites entregar. Ex.: 4 mesas ≈ 16 convites por semana; depois o número se ajusta pelo uso real.";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "../../components/Button";

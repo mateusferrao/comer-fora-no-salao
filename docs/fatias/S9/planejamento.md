@@ -5,7 +5,7 @@ Status: ✅ aprovado pelo candidato em 22/11/2026 (plano da sessão). Execução
 ## Contexto
 - Pedido 1: sincronizar com a `main` remota (feito: `426ece6`, D256–D258 da outra sessão) e fazer uma revisão completa e criteriosa contra briefing, regras, cultura iFood e especificação.
 - Pedido 2: revisar todas as copies com a skill `copywriting` (coreyhaines31/marketingskills); a landing atual "comunica pouco valor".
-- Prazo: congelamento 23/11 15h; entrevista técnica 17h ([entrevistador], GenAI). Entregáveis: link funcionando + slide do processo (prompts, APIs, riscos).
+- Prazo: congelamento 23/11 15h; apresentação do case às 17h. Entregáveis: link funcionando + slide do processo (prompts, APIs, riscos).
 - Estado conferido: typecheck, lint (0 erros), fronteiras, 464 unit + 182 integração verdes localmente; CI da `main` verde (check, integração, e2e). Produção no ar (conferido pelo conector MCP; o 502 era do proxy desta sessão).
 
 ## Parte A — Landing (skill copywriting)

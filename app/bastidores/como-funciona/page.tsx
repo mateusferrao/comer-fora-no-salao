@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import { VITRINE_SIM } from "@/src/modules/simulacao/domain/generator";
+import { ArquiteturaDiagrama, FluxoDiagrama, IaDiagrama, MaterialDoCaso, MedidaDiagrama, RepoLink } from "@/src/ui/bastidores/Diagramas";
 
 export const metadata: Metadata = { title: "Como funciona · Comer Fora no Salão · protótipo de case" };
 
@@ -13,7 +14,7 @@ const li = "text-sm leading-6 text-ink";
 export default function ComoFunciona() {
   const s = VITRINE_SIM;
   return (
-    <main className="mx-auto max-w-3xl px-4 py-8">
+    <main className="mx-auto max-w-4xl px-4 py-8">
       <p className="text-sm">
         <Link className="text-red-text underline" href="/">
           ← Início
@@ -25,6 +26,22 @@ export default function ComoFunciona() {
         e-mails e IA. O único dado gerado é o histórico do restaurante de exemplo. O salão cheio divulga o horário vazio: o cliente que já está na mesa ganha um
         benefício na hora e um convite para voltar no horário vazio, e o dono vê o retorno medido contra um grupo de controle.
       </p>
+      <ul className="mt-3 grid gap-2 sm:grid-cols-3">
+        {[
+          ["Para quem", "Dono de restaurante com salão e horário sobrando; o cliente na mesa; o garçom, que valida os códigos."],
+          ["O que muda", "O cliente do horário cheio vira, ali na mesa, um convite para o horário vazio, com teto de custo."],
+          ["Como se mede", "1 em 10 clientes não recebe convite. A diferença entre os grupos, em visitas e em R$, é o retorno."],
+        ].map(([t, d]) => (
+          <li key={t} className="rounded-sm border border-border bg-white p-3">
+            <p className="text-xs font-semibold uppercase tracking-wide text-red-text">{t}</p>
+            <p className="mt-1 text-sm leading-5 text-ink">{d}</p>
+          </li>
+        ))}
+      </ul>
+      <MaterialDoCaso />
+
+      <h2 className={h2}>Como funciona, passo a passo</h2>
+      <FluxoDiagrama />
 
       <h2 className={h2}>O que é real e o que é gerado</h2>
       <div className="mt-2 grid gap-4 sm:grid-cols-2">
@@ -51,6 +68,7 @@ export default function ComoFunciona() {
       </div>
 
       <h2 className={h2}>Como medimos (e os limites da medida)</h2>
+      <MedidaDiagrama />
       <ul className="mt-2 list-disc pl-5">
         <li className={li}>Quem poderia receber convite é sorteado: 9 em 10 recebem; 1 em 10 fica no grupo de controle e recebe um convite invisível (intenção de tratar). A comparação conta todas as visitas registradas nos 14 dias depois do sorteio, só com janelas já fechadas.</li>
         <li className={li}>Estimador de Welch com intervalo de 95%. Quatro estados: positivo (intervalo todo acima de zero), negativo (todo abaixo), ainda não dá para afirmar (cruza o zero) e amostra insuficiente (menos de 30 clientes num dos grupos).</li>
@@ -59,6 +77,10 @@ export default function ComoFunciona() {
         <li className={li}>Num restaurante, o grupo de controle é pequeno e o resultado tem intervalo largo. A prova estatística fica para um piloto com vários restaurantes (a especificação propõe cerca de 50, número ainda sem cálculo de poder).</li>
         <li className={li}>O veredito por oferta (manter, trocar, cedo demais) usa indicadores antecipados (uso em uma semana) e não é causal. O incremento só aparece no total do restaurante.</li>
       </ul>
+
+      <h2 className={h2}>Onde está a IA (e onde não está)</h2>
+      <IaDiagrama />
+      <ArquiteturaDiagrama />
 
       <h2 className={h2}>A simulação (baseada em agentes, sem IA)</h2>
       <p className={p}>
@@ -134,7 +156,7 @@ export default function ComoFunciona() {
         <li className={li}>O e-mail do dono fica guardado como código (HMAC), que serve ao login, e criptografado (AES-256-GCM), para enviar o resumo semanal e mostrar a conta no Portal. O AWS SES processa os endereços para entregar os e-mails.</li>
       </ul>
 
-      <h2 className={h2}>IA e automação</h2>
+      <h2 className={h2}>IA e automação, em detalhe</h2>
       <ul className="mt-2 list-disc pl-5">
         <li className={li}>IA só pelo OpenRouter, com saída validada, valores sempre por referência (o código escreve números, preços e nomes), palavras proibidas, aprovação do dono e rastro sem dados pessoais (Langfuse). O rastro do Assistente do salão não grava a conversa.</li>
         <li className={li}>Assistente do salão (copiloto): o pedido do dono vira uma proposta com antes → depois, alcance e custo calculados pelo código; nada muda sem o clique em “Aplicar”, que usa as mesmas regras das Configurações. A IA nunca escreve número: cita fatos por referência. Pelo MCP, um agente conectado com o token do dono pode propor e aplicar as mesmas mudanças.</li>
@@ -142,7 +164,7 @@ export default function ComoFunciona() {
         <li className={li}>O link &quot;Revisar e aprovar&quot; vale uma vez, só para aquele plano, por 7 dias; abrir o link não aprova nada (é preciso tocar em &quot;Aprovar plano&quot;). O dono pode desligar a aprovação pelo e-mail. A página leva o logo do iFood, com o risco de confusão aceito.</li>
         <li className={li}>Tudo é configurável: o dono escolhe dia e hora do resumo, plano automático, aprovação pelo e-mail, quais e-mails vão aos clientes e a antecedência do lembrete; o cliente escolhe por restaurante em &quot;Gerenciar notificações&quot;. Quando o dono desliga e-mails aos clientes, o convite continua no app: a medida segue por intenção de tratar, mas a intensidade do tratamento muda (o motivo fica registrado em cada mensagem pulada).</li>
         <li className={li}>&quot;IA do restaurante&quot; é opcional: sem nada preenchido, a IA usa o padrão com os dados que o sistema já tem. Fatos e termos a evitar passam por validação (sem contato, links, marcação nem frases de comando), entram no prompt só como dado delimitado (nunca como instrução) e a saída continua presa às ofertas do código, aos guardrails, ao revisor e à aprovação do dono. O banco só é acessado com consultas parametrizadas.</li>
-        <li className={li}>Plano como agente: a IA pode consultar ferramentas só de leitura (números, ofertas possíveis, custo da semana e conferência dos textos) antes de responder. Na medida com juiz cego (eval/relatorio-t3-agente.md), depois que o convite passou a exigir o dia e a hora do horário vazio por regra do código, agente e chamada única passaram nas regras em 10 de 10, e o juiz preferiu o agente em 6 de 10 pares (1 empate, 3 para a chamada única); nas 2 rodadas anteriores o juiz tinha preferido a chamada única (2 × 3 e 3 × 4). O agente leva cerca de 14 s e custa 6× mais por plano. Está ligado por decisão do candidato. Se o agente falhar, o plano cai na chamada única e depois no modo sem IA.</li>
+        <li className={li}>Plano como agente: a IA pode consultar ferramentas só de leitura (números, ofertas possíveis, custo da semana e conferência dos textos) antes de responder. Na medida com juiz cego (<RepoLink path="eval/relatorio-t3-agente.md">relatório</RepoLink>), depois que o convite passou a exigir o dia e a hora do horário vazio por regra do código, agente e chamada única passaram nas regras em 10 de 10, e o juiz preferiu o agente em 6 de 10 pares (1 empate, 3 para a chamada única); nas 2 rodadas anteriores o juiz tinha preferido a chamada única (2 × 3 e 3 × 4). O agente leva cerca de 14 s e custa cerca de 6,5× mais por plano. Está ligado por decisão do candidato. Se o agente falhar, o plano cai na chamada única e depois no modo sem IA.</li>
         <li className={li}>&quot;Avançar 1 dia&quot; fica nas Ferramentas do avaliador, fora do produto: recua a visita e o convite de hoje (só de clientes reais) para mostrar a volta com código no mesmo dia, e tira esses check-ins de &quot;Hoje&quot;.</li>
       </ul>
 
