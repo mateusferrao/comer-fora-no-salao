@@ -1564,3 +1564,8 @@ As decisões sobre a preparação pessoal do candidato para a apresentação (D2
 **D321 — `eval/` entra no repositório público, exceto `eval/privado/`** (22/11, candidato; revisa D311) ✅
 - Achado na E1: as páginas públicas do app (Qualidade da IA, Como funciona) citam `eval/relatorio-*.md` e `eval/resultados-*.json` como prova. Sem `eval/`, o avaliador seguiria a referência e não acharia nada.
 - Entram relatórios, resultados e scripts de avaliação. Os erros reais nos textos da IA que os relatórios mostram são explicados na documentação como achados. `eval/privado/` (foto real) continua fora.
+
+**D322 — A revisão da documentação (E6) inclui as páginas públicas do app, com elementos visuais** (22/11, candidato; amplia D318) ✅
+- Páginas: landing, `/sobre`, Bastidores › Como funciona, Qualidade da IA, Visão da plataforma. Elas não podem ser só texto: precisam ser claras e explicativas sem perder profundidade, com diagramas onde ajudam (arquitetura, fluxo cliente → convite → volta, sorteio e grupo de controle, camadas de guardrails, caminho da IA com reservas) e links para os arquivos que citam.
+- Forma [C]: no repositório, diagramas Mermaid (renderizados pelo GitHub); no app, SVG inline acessível (título e descrição), no design system, legível a 390 px. As referências a arquivos viram links para o repositório público.
+- Por ser código de produto, passa pelo CI completo (check, integração, E2E) e pelo deploy antes do congelamento; a revisão da fatia continua só de produto e aderência (D320), com o CI cobrindo a parte técnica.
