@@ -45,6 +45,6 @@ test("check-in de um cliente aparece em 'Hoje no salão' em até 5 s", async ({ 
   expect(ck.ok()).toBe(true);
   await ctx.close();
   await expect(page.getByTestId("hoje-no-salao")).toContainText("Lia Moraes fez check-in", { timeout: 5_000 });
-  await expect(page.getByTestId("hoje-contagens")).toContainText(/Hoje: \d+ leituras? · [1-9]\d* check-ins/);
+  await expect(page.getByTestId("hoje-contagens")).toContainText(/Hoje: \d+ leituras? · [1-9]\d* check-ins?/);
   await axe(page);
 });

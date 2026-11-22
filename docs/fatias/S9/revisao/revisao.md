@@ -35,7 +35,7 @@ Não procede: "a linha 'você pode ganhar um convite' contraria a §3.5" (a §3.
 
 ## 3. Verificação (local)
 - `tsc`, eslint (0 erros), dependency-cruiser: limpos.
-- Unitários, integração e E2E completo (109 testes, 390/768/1280 px + axe): _(resultado da rodada final abaixo)_.
+- Unitários 658/658; integração 201/201; E2E completo em banco novo: 105 passaram e 2 falharam por texto antigo nos specs (porta-conta e "Hoje no salão", corrigidos e reexecutados: verdes). Uma corrida antiga no helper `startNewStore` (clicava antes de a cópia do exemplo ficar pronta) também foi corrigida.
 - T4 de escopo com IA real: gemini 30/30, luna 30/30 (15 casos × 2; indicativo) — `eval/relatorio-t4-escopo.md`.
 - Capturas: [landing-390.png](capturas/landing-390.png), [landing-1280.png](capturas/landing-1280.png).
 

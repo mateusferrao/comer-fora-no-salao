@@ -65,6 +65,9 @@ export async function waitExampleReady(page: Page, timeout = 120_000): Promise<v
  */
 export async function startNewStore(page: Page): Promise<void> {
   const first = page.getByRole("button", { name: "Cadastrar meu restaurante" });
+  const picker = page.getByLabel("Trocar restaurante").and(page.getByRole("button"));
+  // S9: espera uma das duas saídas aparecer (a tela pode ainda estar em "Preparando o restaurante de exemplo…").
+  await expect(first.or(picker).first()).toBeVisible({ timeout: 60_000 });
   if (await first.isVisible()) await first.click();
   else await pickOption(page, "Trocar restaurante", /Novo restaurante/);
 }

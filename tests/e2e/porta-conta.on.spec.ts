@@ -20,7 +20,7 @@ test("porta-conta: adicionar → texto da 1ª visita → imprimir 3 por folha �
   if (await add.isVisible()) await add.click();
   const section = page.getByRole("region", { name: "Porta-conta (⅓ de A4)" });
   await expect(section).toBeVisible();
-  await expect(section.getByTestId("porta-conta-texto")).toContainText("Antes de pagar, faça check-in · Na 1ª visita:");
+  await expect(section.getByTestId("porta-conta-texto")).toContainText("Antes de pagar, faça check-in · Na 1ª visita,");
   await expect(section).not.toContainText(/terça|quarta|quinta|tarde|noite/i);
   await axe(page);
   const qr = await section.getByRole("link", { name: "Abrir o QR do porta-conta" }).getAttribute("href");
