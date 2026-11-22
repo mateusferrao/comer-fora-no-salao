@@ -1581,3 +1581,7 @@ As decisões sobre a preparação pessoal do candidato para a apresentação (D2
 - Decisão: nova regra `nome_repetido`, sobre o texto já renderizado: um nome do cardápio seguido dele mesmo (só espaço ou pontuação entre os dois) reprova o texto da IA e só avisa no texto do dono. Vale para todos os campos que passam por `guardText` (convite, kit, justificativa, chat).
 - Testes: 4 casos novos na tabela de `tests/unit/ia/convite-rules.test.ts`.
 - Limite: convites já aprovados antes da regra continuam com o texto que o dono aprovou.
+
+**D325 — Frase extra do convite não começa com "!" ou "?"** (22/11, IA [C]; achado na recaptura do vídeo, E5) ✅
+- Achado: o cliente via "“! Esperamos você.”" embaixo do convite. A IA escreveu "Volte {horario} e ganhe {oferta}! Esperamos você."; `inviteExtra` (S9) tira a parte que repete a 1ª linha, mas só limpava espaço, dois-pontos, vírgula, ponto e traço no começo do resto.
+- Correção: o "!" e o "?" também saem. Casos novos em `tests/unit/salao/invite-text.test.ts`.

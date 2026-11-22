@@ -11,7 +11,7 @@ export function inviteExtra(message: string | null, gain: string | undefined): s
   if (at < 0) return text;
   const rest = text
     .slice(at + gain.length)
-    .replace(/^[\s:,;.–-]+/, "")
+    .replace(/^[\s:,;.!?–-]+/, "")
     .trim();
   if (rest.replace(/[.!?\s]/g, "").length < 3) return null;
   return rest.charAt(0).toUpperCase() + rest.slice(1);
