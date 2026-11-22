@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { axe, loginCustomer, loginE2E, S5_ON, waitExampleReady } from "./helpers";
+import { axe, loginCustomer, loginE2E, PROD, S5_ON, waitExampleReady } from "./helpers";
 
 /**
  * Volta com convite pelas Ferramentas do avaliador (D153) e grupo de controle visível só ao dono (D172).
@@ -56,7 +56,10 @@ test("Ferramentas do avaliador: página pede login; logado, mostra os restaurant
 
 test("grupo de controle: o cliente não vê nada; o dono vê a marca em 'Últimos check-ins de hoje'", async ({ browser, page }) => {
   test.setTimeout(240_000);
-  await loginE2E(page.request, 8);
+  // S9: em produção, uma conta nova por execução. A conta fixa esgotava o teto semanal de convites depois de vários
+  // deploys no mesmo dia, e "sem convite" por teto era lido como grupo de controle (a tela não distingue os dois, de
+  // propósito). Uma cópia nova tem o teto da semana com folga.
+  await loginE2E(page.request, PROD ? 5000 + (Math.floor(Date.now() / 60_000) % 4000) : 8);
   await page.goto("/parceiro/salao");
   await waitExampleReady(page);
   await page.reload();
