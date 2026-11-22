@@ -4,24 +4,25 @@
 | Você tem… | Leia | O que você leva |
 |---|---|---|
 | **5 minutos** | [README](../README.md) | O problema, a solução, como testar, o que é real e o que é gerado, onde está a IA |
-| **20 minutos** | [Decisões principais](decisoes-principais.md) → [IA no produto](ia-no-produto.md) | As ~20 escolhas que definem o produto, com alternativas e trade-offs; o que foi medido e o que é hipótese |
+| **20 minutos** | [Decisões principais](decisoes-principais.md) → [IA no produto](ia-no-produto.md) | As 18 escolhas que definem o produto, com alternativas e trade-offs; o que foi medido e o que é hipótese |
 | **Perfil de engenharia** | [Arquitetura](arquitetura.md) → código de `src/modules/*/domain` → [testes](../tests) | Módulos, fluxo de dados, métrica, segurança, CI e deploy |
 | **Perfil de produto** | [Especificação §1–§3 e §9](planejamento/especificacao.md) | Diagnóstico, hipóteses, árvore de métricas, cada tela, roadmap |
 | **Como foi feito com IA** | [Processo com IA](processo-com-ia.md) → [log da conversa](planejamento/log-conversa-ia.md) | Método, prompts e como evoluíram, ferramentas e por quê, riscos, onde o candidato mudou o rumo da IA |
-| **Tudo, em ordem** | [Índice do planejamento](planejamento/README.md) | Planejamento e revisão de cada fatia (S0–S9, S7) |
+| **Tudo, em ordem** | [Índice do planejamento](planejamento/README.md) | Planejamento e revisão de cada fatia (S0 a S9) |
 
 ## Mapa dos documentos
 ```
 README.md                      ← comece aqui
 docs/
 ├── README.md                  ← este arquivo: como ler e glossário
-├── decisoes-principais.md     ← as ~20 decisões que importam
+├── decisoes-principais.md     ← as 18 decisões que importam
 ├── arquitetura.md             ← módulos, fluxo, dados, segurança, CI
 ├── ia-no-produto.md           ← tarefas de IA, guardrails, custo, avaliações
 ├── processo-com-ia.md         ← como foi construído com IA (prompts, APIs, riscos)
+├── entrega/                   ← slide do processo e apresentação (PDF e PPTX)
 ├── planejamento/
 │   ├── especificacao.md       ← fonte única do produto e da técnica
-│   ├── decisoes-e-tradeoffs.md← as 322 decisões, uma a uma
+│   ├── decisoes-e-tradeoffs.md← todas as decisões (~320), uma a uma
 │   ├── 00-contexto-problema-recorte.md ← leitura do enunciado, recorte, pesquisa pública
 │   ├── log-conversa-ia.md     ← a conversa com a IA, item por item
 │   ├── notas-ia.md            ← avaliações de modelo, com custo

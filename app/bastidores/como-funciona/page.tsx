@@ -23,7 +23,7 @@ export default function ComoFunciona() {
       <h1 className="mt-3 text-2xl font-bold text-ink">Como este protótipo funciona</h1>
       <p className={p}>
         Protótipo de case para o processo seletivo iFood GenAI 2027. Não é produto oficial do iFood. O produto funciona de verdade: login, check-in, códigos, convites,
-        e-mails e IA. O único dado gerado é o histórico do restaurante de exemplo. O salão cheio divulga o horário vazio: o cliente que já está na mesa ganha um
+        e-mails e IA. O que é gerado: o histórico e os clientes do restaurante de exemplo, a leitura guardada dos 3 cardápios de exemplo e a coordenada. O salão cheio divulga o horário vazio: o cliente que já está na mesa ganha um
         benefício na hora e um convite para voltar no horário vazio, e o dono vê o retorno medido contra um grupo de controle.
       </p>
       <ul className="mt-3 grid gap-2 sm:grid-cols-3">
@@ -71,10 +71,11 @@ export default function ComoFunciona() {
       <MedidaDiagrama />
       <ul className="mt-2 list-disc pl-5">
         <li className={li}>Quem poderia receber convite é sorteado: 9 em 10 recebem; 1 em 10 fica no grupo de controle e recebe um convite invisível (intenção de tratar). A comparação conta todas as visitas registradas nos 14 dias depois do sorteio, só com janelas já fechadas.</li>
-        <li className={li}>Estimador de Welch com intervalo de 95%. Quatro estados: positivo (intervalo todo acima de zero), negativo (todo abaixo), ainda não dá para afirmar (cruza o zero) e amostra insuficiente (menos de 30 clientes num dos grupos).</li>
+        <li className={li}>Diferença de médias com erro padrão de Welch e intervalo de 95% (aproximação normal). Quatro estados: positivo (intervalo todo acima de zero), negativo (todo abaixo), ainda não dá para afirmar (cruza o zero) e amostra insuficiente (menos de 30 clientes num dos grupos).</li>
         <li className={li}>&quot;Visitas registradas&quot; são check-ins: quem volta sem fazer check-in não aparece. Em produção, cruzaríamos com pagamento ou reserva.</li>
         <li className={li}>Proteção contra migração: as visitas fora do horário vazio também são comparadas, para ver se o convite só troca o cliente de horário.</li>
         <li className={li}>Num restaurante, o grupo de controle é pequeno e o resultado tem intervalo largo. A prova estatística fica para um piloto com vários restaurantes (a especificação propõe cerca de 50, número ainda sem cálculo de poder).</li>
+        <li className={li}>Limites da conta: o painel pode ser olhado a qualquer momento, sem correção para leituras repetidas; o sorteio é por cliente, e pessoas da mesma mesa podem cair em grupos diferentes; o intervalo da margem não inclui a incerteza do ticket e da margem informados pelo dono.</li>
         <li className={li}>O veredito por oferta (manter, trocar, cedo demais) usa indicadores antecipados (uso em uma semana) e não é causal. O incremento só aparece no total do restaurante.</li>
       </ul>
 

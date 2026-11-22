@@ -7,7 +7,7 @@ O briefing avisa: "uma conversa com IA, sozinha, não é um produto". Aqui a IA 
 
 - **Referências em vez de valores.** A IA escreve `{prato:p3}`, `{horario:s1}`, `{fato:uso_convites}`, e o código troca pelos valores reais. Um número escrito pela IA, inclusive por extenso ("metade", "dez"), reprova o texto.
 - **Escolha dentro de uma lista.** Na ativação e no plano da semana, o código calcula 2–3 ofertas válidas por horário vazio (item do cardápio, custo dentro do teto, tipo permitido) e a IA devolve o **id** de uma delas. Um id que não existe reprova a resposta.
-- **Nada vai ao cliente sem o dono.** Pacote, plano, kit e mudanças do assistente só valem depois do clique do dono.
+- **Nada vai ao cliente sem o dono.** Pacote, plano, kit e mudanças do assistente só valem depois do clique do dono (ou de um agente externo conectado pelo MCP com o token dele, D269).
 
 ## As tarefas
 
@@ -17,8 +17,8 @@ O briefing avisa: "uma conversa com IA, sozinha, não é um produto". Aqui a IA 
 | Pacote da ativação | Escolhe a oferta de cada horário vazio entre as candidatas, escreve o convite e a justificativa | `gemini-3.8-flash` (`gpt-6-luna`) | `pacote-v3` | T3 mediu a `pacote-v2` |
 | Plano da semana | Igual ao pacote, mais "O que aprendemos" (explica o veredito que o código calculou). Roda como agente com ferramentas só de leitura | `gemini-3.8-flash`; se falhar, chamada única; se falhar, modo sem IA | `plano-agente-v4` (`plano-v3` na chamada única) | T3 do agente mediu a v3 |
 | Kit (peças impressas) | Título, subtítulo e chamada do display e do cartaz | `gemini-3.8-flash` (`gpt-6-luna`) | `kit-v3` | Não (segue a escolha da T3) |
-| Revisor | Confere os textos que chegam ao cliente: `ok`, `atenção` ou `bloquear` | `deepseek-v4.1-flash` (3º provedor, fora do laço dos outros) | `revisor-v2` | Só falso positivo, na v1 |
-| Assistente do salão | Pedido do dono em português → proposta tipada (8 ações) | `gemini-3.8-flash` (`gpt-6-luna`) | `copiloto-v5` | Sim, T4 (nesta versão) |
+| Revisor | Confere os textos que chegam ao cliente: `ok`, `atenção` ou `bloquear` | `deepseek-v4.1-flash` (3º provedor, fora do laço dos outros), **sem reserva**: se falhar, o texto segue sem revisão para a aprovação do dono | `revisor-v2` | Só falso positivo, na v1 |
+| Assistente do salão | Pedido do dono em português → proposta tipada (8 ações) | `gemini-3.8-flash` (`gpt-6-luna`) | `copiloto-v5` | Acerto medido na v3 (T4); escopo medido na v5 |
 | Frase do salão | Preenche "Seu salão" a partir de uma frase do dono | `gemini-3.8-flash` (`gpt-6-luna`), os mesmos do assistente | `salao-frase-v1` | Não |
 
 Configuração dos modelos: [`src/modules/ia/models.ts`](../src/modules/ia/models.ts). As tarefas: [`src/modules/ia/tasks/`](../src/modules/ia/tasks).
@@ -32,10 +32,7 @@ flowchart TD
   K -->|sim| M1[Modelo principal]
   M1 --> V1{schema Zod válido<br/>e guardrails ok?}
   V1 -->|sim| OK[Resposta]
-  V1 -->|não| R1[Nova tentativa]
-  R1 --> V2{válida?}
-  V2 -->|sim| OK
-  V2 -->|não| M2[Modelo reserva<br/>de outro provedor]
+  V1 -->|não| M2[Modelo reserva<br/>de outro provedor]
   M2 --> V3{válida?}
   V3 -->|sim| OK
   V3 -->|não| SEM
@@ -43,7 +40,7 @@ flowchart TD
   REV --> DONO[Aprovação do dono]
 ```
 
-- **O laço de reserva é nosso** ([`run-task.ts`](../src/modules/ia/run-task.ts)): a lista de modelos do OpenRouter só troca de modelo quando o provedor dá erro, não quando o JSON vem inválido ou quebra uma regra (D53).
+- **Cada modelo é tentado uma vez**, em sequência: principal, depois a reserva de outro provedor. **O laço de reserva é nosso** ([`run-task.ts`](../src/modules/ia/run-task.ts)): a lista de modelos do OpenRouter só troca de modelo quando o provedor dá erro, não quando o JSON vem inválido ou quebra uma regra (D53).
 - Cada tentativa tem tempo limite e a tarefa tem um orçamento total. Depois de ~45 s, o produto mostra o texto modelo em vez de esperar.
 - O **modo sem IA** existe em todas as tarefas de geração. Se a chave acabar ou o provedor cair, o produto continua funcionando, com o rótulo "sem IA".
 
@@ -80,7 +77,7 @@ Todas com amostra pequena: servem para escolher o modelo e achar falhas, não pa
 | **T1** · leitura do cardápio | 7 modelos de visão e 3 linhas de base de OCR, em 4 cardápios (3 fictícios com gabarito + 1 foto real manuscrita), 2 repetições | Venceu `gemini-3.1-flash-lite`: nota 1,000; p50 2,4 s; US$ 0,0017 por cardápio. OCR + regras: 0,42–0,46; OCR + IA de texto: 0,73. Os melhores modelos empataram perto de 1,0 (os cardápios fictícios saturaram a nota) | [relatorio-t1.md](../eval/relatorio-t1.md) |
 | **T3** · pacote e plano | 6 modelos × 5 cenários × 2 repetições; juiz de IA cego de um provedor que não concorre; nota cega do candidato | Venceu `gemini-3.8-flash` (regras ok em 90%; p50 2,8 s). Juiz e candidato preferiram a IA ao texto modelo em 8 de 9 pares; concordaram em 7 de 9 (κ 0,55) | [relatorio-t3.md](../eval/relatorio-t3.md), [t3-cego.md](../eval/t3-cego.md) |
 | **T3 do agente** · plano como agente × chamada única | 3 rodadas de prompt, 5 cenários × 2 | Na última: os dois 10/10 nas regras; juiz 6 × 1 empate × 3 para o agente (sem significância); agente ~6,5× mais caro e ~3,8× mais lento | [relatorio-t3-agente.md](../eval/relatorio-t3-agente.md) |
-| **T4** · assistente do salão | 16 pedidos com gabarito + 6 casos novos × 3 fora da amostra | Fora da amostra: `gemini-3.8-flash` 17/18, `gpt-6-luna` 14/18; escopo: 30/30 nos dois | [relatorio-t4-validacao.md](../eval/relatorio-t4-validacao.md), [relatorio-t4-escopo.md](../eval/relatorio-t4-escopo.md) |
+| **T4** · assistente do salão | 16 pedidos com gabarito + 6 casos novos × 3 fora da amostra | Fora da amostra: `gemini-3.8-flash` 17/18, `gpt-6-luna` 14/18 (acerto medido com o prompt v3); escopo: 30/30 nos dois (prompt v5, o de produção) | [relatorio-t4-validacao.md](../eval/relatorio-t4-validacao.md), [relatorio-t4-escopo.md](../eval/relatorio-t4-escopo.md) |
 | **Revisor** | 10 planos bons gerados pela IA | 0 bloqueados indevidamente, 3 com "atenção". Textos ruins de propósito ainda não foram testados | [resultados-revisor.json](../eval/resultados-revisor.json) |
 
 ### O que é ganho medido e o que é hipótese

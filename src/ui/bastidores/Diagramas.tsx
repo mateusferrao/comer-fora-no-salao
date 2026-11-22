@@ -142,7 +142,7 @@ export function IaDiagrama() {
       <Figure
         id="ia-camadas"
         title="Camadas de proteção e caminho de reserva"
-        caption="Se o modelo principal falha no schema ou nas regras, há uma nova tentativa e depois o modelo de reserva, de outro provedor. Sem chave, sem crédito ou depois de ~45 s, o produto segue no modo sem IA (oferta de maior nota e texto modelo, rotulados)."
+        caption="Cada modelo é tentado uma vez: se o principal falha no schema ou nas regras, entra o modelo de reserva, de outro provedor. Sem chave, sem crédito ou depois de ~45 s, o produto segue no modo sem IA (oferta de maior nota e texto modelo, rotulados). O revisor não tem reserva: se falhar, o texto segue sem revisão e o dono aprova."
       >
         <ol className="flex flex-col gap-1">
           {layers.map((l, i) => (
@@ -154,8 +154,6 @@ export function IaDiagrama() {
         </ol>
         <ol className="mt-3 flex flex-col gap-2 md:flex-row md:items-stretch" aria-label="Caminho de reserva">
           <li className={`${box} flex-1`}>Modelo principal</li>
-          <Arrow label="falhou" />
-          <li className={`${box} flex-1`}>Nova tentativa</li>
           <Arrow label="falhou" />
           <li className={`${box} flex-1`}>Reserva de outro provedor</li>
           <Arrow label="falhou" />
@@ -229,10 +227,10 @@ export function MaterialDoCaso() {
   const links: Array<[string, string, string]> = [
     ["Repositório", REPO_URL, "código, testes, avaliações e o histórico da construção"],
     ["Como ler a documentação", repoFile("docs/README.md"), "ordem de leitura e glossário"],
-    ["Decisões principais", repoFile("docs/decisoes-principais.md"), "as ~20 escolhas que definem o produto, com trade-offs"],
+    ["Decisões principais", repoFile("docs/decisoes-principais.md"), "as 18 escolhas que definem o produto, com trade-offs"],
     ["IA no produto", repoFile("docs/ia-no-produto.md"), "tarefas, guardrails, custo e o que foi medido"],
     ["Como foi construído com IA", repoFile("docs/processo-com-ia.md"), "prompts, ferramentas e riscos"],
-    ["Vídeo e slides", `${REPO_URL}#material-do-case`, "no README do repositório"],
+    ["Slide do processo e apresentação", `${REPO_URL}#material-do-case`, "PDF e PPTX; o vídeo também está lá"],
   ];
   return (
     <section aria-labelledby="material" className="mt-4 rounded-sm border border-border bg-white p-4">

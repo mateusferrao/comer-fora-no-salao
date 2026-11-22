@@ -188,12 +188,12 @@ Entrega verificável: link estável, envio pelos dois canais, slide PPTX, materi
 
 ### Tarefa 4.3: Material extra e repositório público
 - [ ] `entregaveis/documento-tecnico.md` (arquitetura, decisões, trade-offs, guardrails, avaliação, roadmap); vídeo da demo de 2–3 min.
-- [ ] Repositório público gerado por cópia filtrada (sem `docs/contexto/`, `docs/pessoal/`, `referencias/`, `eval/privado/`), com varredura de segredos (token do Greenhouse, e-mails, telefones, chaves) antes do push.
+- [ ] Repositório público gerado por cópia filtrada (sem `docs/contexto/`, `docs/pessoal/`, `referencias/`, `eval/privado/`), com varredura de segredos (tokens, e-mails, telefones, chaves) antes do push.
 - [ ] Verify: varredura sem achados; README público explica como rodar e o que é simulado.
 
-### Tarefa 4.4: Envio e preparação da entrevista
+### Tarefa 4.4: Envio e preparação da apresentação
 - [ ] Enviar link + slide respondendo ao e-mail 1 e pelo formulário Greenhouse do e-mail 2.
-- [ ] `docs/pessoal/preparacao-entrevista-tecnica.md`: pitch de 2 min, história do case em 1 min, ~20 perguntas com respostas, dimensionamento, conta de bolso [H], ganchos com projetos reais, desafio de logística; alinhar "semanal × quinzenal" no portfólio.
+- [ ] Preparação da apresentação (registro pessoal do candidato, fora deste repositório).
 - [ ] Ensaio cronometrado de 8 min no modo apresentação; checklist do dia (saldo da chave às 16h, permissão de GPS, Langfuse logado, monitor ligado).
 
 ---

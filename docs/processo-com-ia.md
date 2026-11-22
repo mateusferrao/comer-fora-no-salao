@@ -20,7 +20,7 @@ flowchart LR
   R4 --> M[Merge na main → CI → deploy<br/>→ E2E contra produção]
 ```
 
-O método virou 3 skills do projeto, versionadas em [`.claude/skills/`](../.claude/skills): `planejar-fatia`, `implementar-fatia` e `revisar-fatia`, sobre o pacote aberto *superpowers* (TDD, depuração sistemática, verificação antes de concluir). O projeto foi feito em 10 fatias (S0–S9 e S7), cada uma com o próprio planejamento em [`docs/fatias/`](fatias).
+O método virou 3 skills do projeto, versionadas em [`.claude/skills/`](../.claude/skills): `planejar-fatia`, `implementar-fatia` e `revisar-fatia`, sobre o pacote aberto *superpowers* (TDD, depuração sistemática, verificação antes de concluir). O projeto foi feito em 10 fatias (S0 a S9), cada uma com o próprio planejamento em [`docs/fatias/`](fatias).
 
 ### Como a conversa funcionava
 Pedido do candidato desde o 1º dia: análise crítica, sem inventar nem supor nada fora das fontes. Na prática:
@@ -49,7 +49,7 @@ Cada tarefa de IA tem um prompt versionado (`pacote-v3`, `plano-agente-v4`, `cop
 
 1. **`{horario:FAIXA}` copiado ao pé da letra (T3, `pacote-v1` → `v2`).** Na 1ª rodada da avaliação, 3 modelos escreveram o marcador do exemplo literalmente. O prompt passou a usar `{horario:X}` com um exemplo concreto, e a rodada foi refeita do zero ([relatorio-t3.md](../eval/relatorio-t3.md)).
 2. **Convite sem dia e horário (`plano-agente-v2` → `v3`).** O juiz cego criticou convites vagos. Em vez de só mudar a instrução, virou regra no código (`sem_horario`, `artigo_antes_do_horario`, `oferta_repetida`) com testes determinísticos (D226).
-3. **Revisor bloqueando planos bons (`revisor-v1` → `v2`).** A E2E com IA real mostrou o revisor barrando textos corretos. Ajustado e medido: 0 de 10 planos bons bloqueados (D149).
+3. **Revisor bloqueando planos bons (D149, decisão da IA [C]).** A E2E com IA real mostrou o revisor barrando textos corretos: ele recebia a oferta pelo título genérico e as justificativas ao dono com números escritos pelo código. A correção foi no que se manda ao revisor: o ganho concreto da oferta e só os textos que chegam ao cliente. Remedido: 0 de 10 planos bons bloqueados, 3 com "atenção".
 4. **Assistente fora do escopo (`copiloto-v4` → `v5`).** A revisão de segurança achou 8 pedidos fora do escopo que passavam. Novo prompt com classificação e um portão determinístico na saída; medido em 15 casos × 2 repetições ([relatorio-t4-escopo.md](../eval/relatorio-t4-escopo.md)).
 
 Os relatórios guardam também os erros reais que a IA cometeu nos textos (como "na sua domingo"). Eles foram mantidos de propósito: são a evidência de por que cada regra existe.
@@ -65,7 +65,7 @@ Os relatórios guardam também os erros reais que a IA cometeu nos textos (como 
 | Next.js 16 (monólito modular) | Telas e API num deploy só; fronteiras de domínio conferidas no CI | Microsserviços |
 | AWS SES | Login sem senha por código, e-mails de convite e resumo | Conta demo compartilhada (D118) |
 | Langfuse (EU) | Rastro de cada chamada de IA sem dados pessoais | Auto-hospedado: pediria ~11 CPUs e 25 GB, a VPS tinha 2 núcleos livres |
-| MCP (SDK oficial) | Agentes externos operam o restaurante com o token do dono (AI-operable) | — |
+| MCP (JSON-RPC 2.0 próprio, sem SDK) | Agentes externos operam o restaurante com o token do dono (AI-operable) | — |
 | Geolocation do navegador | Check-in confere a distância no aparelho; só o status vai ao servidor | Guardar a coordenada |
 | Easypanel na própria VPS | Sem custo extra; deploy por webhook só com CI verde | Vercel + banco gerenciado |
 

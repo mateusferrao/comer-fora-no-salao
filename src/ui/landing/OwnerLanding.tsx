@@ -22,7 +22,7 @@ const VALUE: Array<[string, string]> = [
   ],
   [
     "O cliente da mesa deixa de ser anônimo.",
-    "Com o check-in, ele vira um cliente com nome e histórico de visitas. Nove em cada dez recebem ali mesmo um convite para voltar, enquanto houver vaga no teto semanal. Quem aceitar recebe também convites para outras datas.",
+    "Com o check-in, ele vira um cliente com nome e histórico de visitas. Nove em cada dez recebem ali mesmo um convite para voltar, enquanto houver vaga no teto semanal. Quem aceitar receber avisos ganha também convites para outras datas.",
   ],
   [
     "Um plano por semana, aprovado por você.",

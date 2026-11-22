@@ -23,7 +23,7 @@ flowchart LR
     UC[Casos de uso<br/>src/modules/*/application]
     DOM[Domínio puro<br/>src/modules/*/domain]
     IA[Porta de IA<br/>src/modules/ia]
-    AG[Agendador<br/>1x por minuto]
+    AG[Agendador<br/>flag, desligada por padrão]
   end
 
   DB[(Postgres 16<br/>Drizzle)]
@@ -121,6 +121,7 @@ flowchart TD
 - Código: [`src/modules/analytics/domain/incremental.ts`](../src/modules/analytics/domain/incremental.ts). Detalhes e limites na [especificação §2](planejamento/especificacao.md#2-métricas-árvore).
 - **Proteção contra migração:** a mesma conta é feita para as visitas **fora** do horário vazio. Se o convite só troca o cliente de sábado para terça, essa comparação mostra.
 - **"Visitas registradas" são check-ins.** Quem volta sem fazer check-in não aparece; em produção, cruzaríamos com pagamento ou reserva.
+- **Limites estatísticos declarados:** o intervalo usa aproximação normal; o painel é olhado a qualquer momento, sem correção para leituras repetidas; o sorteio é por cliente (pessoas da mesma mesa podem cair em grupos diferentes); o intervalo da margem não inclui a incerteza do ticket e da margem que o dono informou. Por isso a prova fica para um piloto com critério definido antes.
 
 ## Dados (Postgres + Drizzle)
 36 tabelas em [`src/db/schema`](../src/db/schema), em 12 migrações versionadas ([`drizzle/`](../drizzle)). Os grupos:

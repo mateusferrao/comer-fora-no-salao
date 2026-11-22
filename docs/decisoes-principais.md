@@ -1,6 +1,6 @@
 # Decisões principais
 
-O projeto registrou 322 decisões, todas em [planejamento/decisoes-e-tradeoffs.md](planejamento/decisoes-e-tradeoffs.md), cada uma com alternativas, motivo e quem decidiu. Aqui estão as ~20 que definem o produto e a técnica, organizadas para quem tem pouco tempo. Cada uma traz o número (Dxxx) para achar o registro completo.
+O projeto registrou cerca de 320 decisões (D01–D323), todas em [planejamento/decisoes-e-tradeoffs.md](planejamento/decisoes-e-tradeoffs.md), cada uma com alternativas, motivo e quem decidiu. Aqui estão as 18 que definem o produto e a técnica, organizadas para quem tem pouco tempo. Cada uma traz o número (Dxxx) para achar o registro completo.
 
 **Quem decidiu:** "candidato" é o autor do case; "IA [C]" é uma escolha do assistente de IA, aberta a correção, tomada só depois que o planejamento da fatia foi aprovado. Várias decisões abaixo foram tomadas pelo candidato **contra** a recomendação da IA, e outras **mudaram** depois que uma revisão independente achou um problema. As duas coisas estão marcadas.
 
@@ -29,7 +29,7 @@ O projeto registrou 322 decisões, todas em [planejamento/decisoes-e-tradeoffs.m
 
 ### 4. O assistente do salão age por proposta, nunca sozinho (D260, D261, D264)
 - **Contexto:** depois de recusar o chat (D211), o candidato pediu "um agente em formato de chat… seja bem crítico". A IA apontou o conflito com a decisão anterior.
-- **Decisão:** existe um assistente, mas o pedido do dono vira um **cartão "antes → depois"**, com alcance e custo **calculados pelo código**. Nada muda sem o clique em "Aplicar". A IA nunca escreve número, nem no chat.
+- **Decisão:** existe um assistente, mas o pedido do dono vira um **cartão "antes → depois"**, com alcance e custo **calculados pelo código**. No Portal, nada muda sem o clique em "Aplicar". A IA nunca escreve número, nem no chat.
 - **Alternativas:** aplicar direto o que é reversível, com "desfazer"; onboarding inteiro por chat.
 - **Por quê:** resolve a objeção do briefing (não é conversa solta: é uma interface para as mesmas regras das Configurações) e mantém o dono no controle do dinheiro.
 
@@ -59,7 +59,7 @@ O projeto registrou 322 decisões, todas em [planejamento/decisoes-e-tradeoffs.m
 
 ### 9. OCR foi medido, não suposto (D128)
 - **Contexto:** o candidato perguntou "e se tentarmos OCR primeiro, com IA de reserva?".
-- **Decisão:** medir. Três linhas de base de OCR entraram na avaliação T1. Os modelos de visão tiveram nota 0,98–1,00; OCR + regras, 0,42–0,46; OCR + IA de texto, 0,73.
+- **Decisão:** medir. Três linhas de base de OCR entraram na avaliação T1. Os 5 melhores modelos de visão tiveram nota 0,98–1,00 (os 7: 0,83–1,00); OCR + regras, 0,42–0,46; OCR + IA de texto, 0,73.
 - **Por quê:** o difícil num cardápio não é ler as letras, é juntar item, preço e seção em duas colunas, foto torta ou letra de mão.
 
 ### 10. Sem LangChain nem LangGraph (D215)
