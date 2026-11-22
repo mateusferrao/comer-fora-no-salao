@@ -38,6 +38,18 @@ describe("cópia da vitrine por conta (D119, revisão T-B1)", () => {
     expect(toks.every((x) => /^nl-(display-[ab]|cartaz-[ab]|garcom)-[a-z2-9]{6}$/.test(x.t))).toBe(true);
   }, 120_000);
 
+  it("S7: pedidos simultâneos da mesma conta viram 1 cópia só (a tela pede de novo a cada atualização)", async () => {
+    await seedAll(getDb(), fixedClock(NOW.toISOString()), vitrineHistory);
+    const [a] = await getDb().insert(owners).values([{ kind: "teste", via: "link" }]).returning({ id: owners.id });
+    const p1 = copyVitrineFor(a!.id, NOW, getDb());
+    const p2 = copyVitrineFor(a!.id, NOW, getDb());
+    expect(p2).toBe(p1);
+    expect(await Promise.all([p1, p2])).toEqual(["criada", "criada"]);
+    const n = (await getDb().select({ n: sql<number>`count(*)::int` }).from(restaurants).where(eq(restaurants.ownerId, a!.id)))[0]!.n;
+    expect(n).toBe(1);
+    expect(await copyVitrineFor(a!.id, NOW, getDb())).toBe("existente");
+  });
+
   it("limpeza: apaga conta inativa há 7 dias (com a cópia); poupa ativa, seed e protegida", async () => {
     await seedAll(getDb(), fixedClock(NOW.toISOString()), vitrineHistory);
     const old = new Date(NOW.getTime() - 8 * 86_400_000);

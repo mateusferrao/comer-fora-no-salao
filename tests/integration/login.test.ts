@@ -5,7 +5,7 @@ import { loginCodes, owners } from "@/src/db/schema";
 import { clearOutbox, memorySender, outbox } from "@/src/modules/contas/adapters/memory-sender";
 import { requestLoginCode } from "@/src/modules/contas/application/request-code";
 import { verifyLoginCode } from "@/src/modules/contas/application/verify-code";
-import { openEvaluatorLink } from "@/src/modules/contas/application/evaluator-link";
+import { EVALUATOR_DAILY_LIMIT, openEvaluatorLink } from "@/src/modules/contas/application/evaluator-link";
 import { decryptEmail, hmacEmail } from "@/src/shared/crypto";
 import { resetDb } from "./helpers/db";
 
@@ -107,7 +107,7 @@ describe("login do dono por e-mail + código (D118)", () => {
     expect(await requestLoginCode(getDb(), { email: "e2e-dono+1@exemplo.invalid", ip: "x", now: NOW, sender: memorySender, env, e2eToken: "errado" })).toEqual({ ok: false, erro: "email_invalido" });
   });
 
-  it("link do avaliador: token certo cria conta nova a cada abertura; errado → inválido; 20/dia", async () => {
+  it("link do avaliador: token certo cria conta nova a cada abertura; errado → inválido; limite diário", async () => {
     const a = await openEvaluatorLink(getDb(), { token: "link-certo", expected: "link-certo", now: NOW });
     const b = await openEvaluatorLink(getDb(), { token: "link-certo", expected: "link-certo", now: NOW });
     expect(a.ok && b.ok && a.ownerId !== b.ownerId).toBe(true);
@@ -115,7 +115,7 @@ describe("login do dono por e-mail + código (D118)", () => {
     expect(await openEvaluatorLink(getDb(), { token: "x", expected: undefined, now: NOW })).toEqual({ ok: false, erro: "invalido" });
     const os = await getDb().select().from(owners);
     expect(os.every((o) => o.via === "link" && o.emailHint === "acesso por link")).toBe(true);
-    for (let i = 0; i < 18; i++) await openEvaluatorLink(getDb(), { token: "link-certo", expected: "link-certo", now: NOW });
+    for (let i = 0; i < EVALUATOR_DAILY_LIMIT - 2; i++) await openEvaluatorLink(getDb(), { token: "link-certo", expected: "link-certo", now: NOW });
     expect(await openEvaluatorLink(getDb(), { token: "link-certo", expected: "link-certo", now: NOW })).toMatchObject({ ok: false, erro: "limite" });
   });
 });

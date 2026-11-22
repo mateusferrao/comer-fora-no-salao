@@ -19,7 +19,7 @@ import { log } from "@/src/shared/log";
 export const COPY_STALE_MS = 120_000;
 const DAY_MS = 86_400_000;
 
-type G = { __salaoCopyQueue?: Promise<unknown> };
+type G = { __salaoCopyQueue?: Promise<unknown>; __salaoCopyPending?: Map<string, Promise<CopyResult>> };
 const g = globalThis as typeof globalThis & G;
 
 /** Fila no processo: cópias simultâneas de várias contas não disputam a única conexão do pool do seed. */
@@ -31,8 +31,17 @@ function enqueue<T>(task: () => Promise<T>): Promise<T> {
 
 export type CopyResult = "criada" | "existente" | "falhou";
 
+/**
+ * S7: uma cópia pendente por conta. A tela de "Preparando…" pede a cópia de novo a cada atualização enquanto ela não
+ * existe; sem isto, vários avaliadores ao mesmo tempo enchiam a fila de pedidos repetidos da mesma conta.
+ */
 export function copyVitrineFor(ownerId: string, now: Date = new Date(), db: Db = getSeedDb()): Promise<CopyResult> {
-  return enqueue(() => doCopy(db, ownerId, now));
+  const pending = (g.__salaoCopyPending ??= new Map());
+  const existing = pending.get(ownerId);
+  if (existing) return existing;
+  const run = enqueue(() => doCopy(db, ownerId, now)).finally(() => pending.delete(ownerId));
+  pending.set(ownerId, run);
+  return run;
 }
 
 async function doCopy(db: Db, ownerId: string, now: Date): Promise<CopyResult> {

@@ -7,10 +7,12 @@ import { useRouter } from "next/navigation";
 export function DemoStatus({ state }: { state: "criando" | "falhou" | "nenhuma" }) {
   const router = useRouter();
   const [busy, setBusy] = useState(false);
+  // S7: intervalo (não um timeout único). Com o estado igual entre duas atualizações ("criando" → "criando"), o efeito
+  // não roda de novo; com setTimeout a tela congelava em "Preparando…" com a cópia já pronta (vários avaliadores juntos).
   useEffect(() => {
     if (state === "falhou") return;
-    const t = setTimeout(() => router.refresh(), 2500);
-    return () => clearTimeout(t);
+    const t = setInterval(() => router.refresh(), 2500);
+    return () => clearInterval(t);
   }, [state, router]);
   if (state === "falhou")
     return (

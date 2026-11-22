@@ -15,7 +15,7 @@ export function keyKindFor(owner: { emailHmac: string | null; via?: string | nul
   // Um teste que precise de IA liga `E2E_COM_IA=1` no servidor e volta à chave pública.
   if (owner.via === "e2e" && env.E2E_COM_IA !== "1") return "e2e";
   // Conta aberta pelo link privado do avaliador (D126) usa a chave de demo: o teto diário da chave pública
-  // pode ser gasto por terceiros e derrubar a IA justamente de quem avalia (revisão da S2). O link tem 20/dia.
+  // pode ser gasto por terceiros e derrubar a IA justamente de quem avalia (revisão da S2). O link tem um limite diário (EVALUATOR_DAILY_LIMIT).
   if (owner.via === "link") return "demo";
   if (!owner.emailHmac || !env.PRESENTER_EMAILS) return "publica";
   const presenters = env.PRESENTER_EMAILS.split(",").map((e) => normalizeEmail(e)).filter(Boolean);
