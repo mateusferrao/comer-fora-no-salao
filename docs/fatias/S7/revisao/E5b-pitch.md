@@ -27,3 +27,4 @@ Data: 22/11/2026 · Duração: ~1 min 19 s · 1920×1080 · 24 fps
 ## Verificação
 - Quadros-chave conferidos em resolução cheia depois das correções (convite, kit, plano aprovado, painel com o selo, cidade, fecho).
 - A aprovação acontece no tempo da fala, calculado a partir do áudio (`timing.json`).
+- Aprovado pelo candidato (v2, 22/11). Hospedagem: Google Drive (leitura para qualquer pessoa com o link, conferida pela API do Drive: mesmo tamanho do arquivo gerado) e [`docs/entrega/video-pitch.mp4`](../../../entrega/video-pitch.mp4).
