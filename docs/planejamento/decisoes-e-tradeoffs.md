@@ -1615,3 +1615,7 @@ As decisões sobre a preparação pessoal do candidato para a apresentação (D2
   - o slide 4 traz a escala que o piloto testa;
   - novo slide 5, "Muda na hora, sem deploy", para o critério "domínio da solução".
 - Alternativa: manter os 4 slides principais. Trade-off: a abertura e o fecho passam de ~1:30 para ~2:00 de fala, ainda dentro dos 8 min com a demo.
+
+**D331 — E-mail com 1 anexo e 1 vídeo** (22/11, candidato) ✅
+- Anexo: só a apresentação. O texto diz que o slide do processo é o slide 6 e mantém o link do arquivo separado (D329), para o item obrigatório continuar fácil de achar.
+- Vídeo: só o pitch (D327). O vídeo da demo sai do e-mail e fica no repositório como reserva. Motivos: o pitch já mostra telas reais, a demo é ao vivo na sessão e o avaliador tem o link do app; dois vídeos parecidos dividem a atenção.
