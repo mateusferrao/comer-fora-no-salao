@@ -17,6 +17,7 @@ import { GENERATING_STALE_MS } from "@/src/modules/planos/application/generating
 import type { MailSender } from "@/src/modules/contas/adapters/mail-sender";
 import { log } from "@/src/shared/log";
 import { safeErr } from "@/src/shared/safe-err";
+import { sweepProposals } from "@/src/modules/agente/application/proposals";
 import { digestDue, planDue } from "../domain/schedule";
 
 export const DIGEST_WAIT_MS = 15 * 60_000;
@@ -73,6 +74,8 @@ async function generating(db: Db, restaurantId: string, now: Date): Promise<bool
 
 export async function runSchedulerTick(db: Db, now: Date, deps: TickDeps, scope?: { restaurantId: string }): Promise<TickResult> {
   const out: TickResult = { planos: 0, resumos: { enviados: 0, falhas: 0 }, lembretes: 0 };
+  // Faxina das propostas do copiloto/MCP (revisão S8, item 25): todo tique global, independe da flag do agendador.
+  if (!scope) await sweepProposals(db, now).catch((err) => log.error("falha na faxina das propostas", { area: "agendador", err: safeErr(err) }));
   if (!deps.flags.agendador && !scope) return out;
   const rows = await db
     .select({ id: restaurants.id, ownerId: restaurants.ownerId, settings: restaurants.notifySettings, hasEmail: sql<boolean>`${owners.emailEnc} is not null` })

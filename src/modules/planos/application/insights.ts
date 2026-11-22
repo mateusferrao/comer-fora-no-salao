@@ -50,8 +50,9 @@ export type PlanInsights = {
 const WD = ["domingo", "segunda", "terça", "quarta", "quinta", "sexta", "sábado"];
 const TURN: Record<string, string> = { almoco: "almoço", tarde: "tarde", noite: "noite" };
 
-export async function getPlanInsights(ex: Executor, restaurantId: string, now: Date): Promise<PlanInsights | null> {
-  const ctx = await loadContext(ex, restaurantId);
+/** `preloaded`: contexto já carregado no mesmo pedido (turno do copiloto — revisão S8, item 23). */
+export async function getPlanInsights(ex: Executor, restaurantId: string, now: Date, preloaded?: RestaurantContext): Promise<PlanInsights | null> {
+  const ctx = preloaded ?? (await loadContext(ex, restaurantId));
   if (!ctx) return null;
   const today = daySP(now);
   const from30 = addDaysSP(today, -29);

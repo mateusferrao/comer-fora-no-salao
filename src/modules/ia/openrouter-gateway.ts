@@ -68,6 +68,20 @@ export function withPaidUsage(e: unknown, paid: { inTokens: number; outTokens: n
 }
 
 /**
+ * O que vai para o rastro (Langfuse). Arquivos (foto/PDF do cardápio) nunca: "imagem nunca guardada" (espec. 4.4,
+ * D46). `privateTrace` (copiloto — D262): nem entrada nem saída, a conversa do dono e os nomes de clientes não saem
+ * daqui. Função pura para o teste provar isso (revisão S8).
+ */
+export function telemetryFor(req: Pick<AiGenerateRequest, "input" | "privateTrace" | "telemetry">) {
+  return {
+    functionId: req.telemetry?.functionId,
+    recordInputs: !("files" in req.input) && !req.privateTrace,
+    ...(req.privateTrace ? { recordOutputs: false } : {}),
+    includeRuntimeContext: Object.fromEntries(Object.keys(req.telemetry?.metadata ?? {}).map((k) => [k, true])),
+  };
+}
+
+/**
  * Gateway do OpenRouter (D52). Sem retentativa do SDK (o laço é nosso), sem plugin de reparo de JSON
  * (não mascara a taxa de reserva) e com `usage.include` para o custo real.
  */
@@ -130,13 +144,7 @@ export function createOpenRouterGateway(apiKey: string): AiGateway {
           maxOutputTokens: req.maxOutputTokens,
           abortSignal: req.signal,
           runtimeContext: { ...(req.telemetry?.metadata ?? {}) },
-          telemetry: {
-            functionId: req.telemetry?.functionId,
-            // Arquivos (foto/PDF do cardápio) nunca vão para o rastro: "imagem nunca guardada" (espec. 4.4, D46).
-            recordInputs: !("files" in req.input) && !req.privateTrace,
-            ...(req.privateTrace ? { recordOutputs: false } : {}),
-            includeRuntimeContext: Object.fromEntries(Object.keys(req.telemetry?.metadata ?? {}).map((k) => [k, true])),
-          },
+          telemetry: telemetryFor(req),
         });
         // Custo: no agente, a soma de todos os passos (o `providerMetadata` de fora é só do último — revisão I4).
         const costs = (req.tools?.length ? result.steps.map((st) => costOf(st.providerMetadata)) : [costOf(result.providerMetadata)]).filter((c): c is number => typeof c === "number");

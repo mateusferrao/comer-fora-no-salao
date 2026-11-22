@@ -25,6 +25,13 @@ module.exports = {
         ],
       },
     },
+    {
+      name: "no-circular",
+      severity: "error",
+      comment: "Nenhum ciclo de import entre arquivos (dívida da revisão S8, item 22: trava a regressão).",
+      from: {},
+      to: { circular: true },
+    },
   ],
   options: {
     doNotFollow: { path: "node_modules" },

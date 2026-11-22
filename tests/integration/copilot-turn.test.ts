@@ -1,6 +1,6 @@
-import { afterAll, beforeEach, describe, expect, it } from "vitest";
+import { afterAll, beforeEach, describe, expect, it, vi } from "vitest";
 import { eq } from "drizzle-orm";
-import { closeDb, getDb } from "@/src/db/client";
+import { closeDb, getDb, getPool } from "@/src/db/client";
 import { agentProposals, aiCalls, restaurants } from "@/src/db/schema";
 import type { AiGateway, AiGenerateRequest } from "@/src/modules/ia/gateway";
 import { runCopilotTurn } from "@/src/modules/agente/application/copilot-turn";
@@ -48,6 +48,24 @@ describe("turno do copiloto (S8)", () => {
     expect(call!.status).toBe("ok");
     const [prop] = await getDb().select().from(agentProposals);
     expect(prop!.aiCallId).toBe(call!.id);
+  });
+
+  it("orçamento de consultas: turno com proposta reaproveita o retrato (revisão S8, item 23)", async () => {
+    const r = await createRestaurant();
+    const gw = scripted({
+      "*": (req) => ({
+        resposta: "Preparei a proposta abaixo.",
+        propostas: [{ ...empty, acao: "oferta", papel: "convite", faixa: "A", prato: alias(req.system, "Bruschetta"), tipo: "entrada_gratis" }],
+        sugestoes: [],
+      }),
+    });
+    const spy = vi.spyOn(getPool(), "query");
+    const out = await runCopilotTurn(getDb(), { restaurantId: r.restaurantId, ownerId: r.ownerId, turns: [{ role: "user", text: "troca a oferta" }], page: "configuracoes", now: NOW, gateway: gw });
+    const n = spy.mock.calls.length;
+    expect(out.propostas[0]).toMatchObject({ status: "pendente" });
+    spy.mockRestore();
+    // Eram 29 (loadContext 3×); com um só contexto e o retrato reaproveitado, 19.
+    expect(n).toBeLessThanOrEqual(20);
   });
 
   it("1º modelo escreve número cru → guard reprova → 2º modelo responde", async () => {

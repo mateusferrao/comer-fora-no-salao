@@ -8,14 +8,35 @@ import { eq } from "drizzle-orm";
 import type { Db } from "@/src/db/client";
 import { restaurants } from "@/src/db/schema";
 import { slotLabel } from "@/src/modules/beneficios/domain/slot-text";
-import { buildCopilotTools } from "@/src/modules/ia/tasks/copilot";
+import { z } from "zod";
+import { buildCopilotTools, customerSearchInput } from "@/src/modules/ia/tasks/copilot";
 import { proposalPayloadSchema } from "../domain/proposals";
 import { loadAgentContext } from "./context";
 import { createProposals, decideProposal, loadSnapshot } from "./proposals";
 
 export type McpFlags = { clientes: boolean; edicao: boolean };
 type ToolDef = { name: string; description: string; inputSchema: Record<string, unknown>; gate?: keyof McpFlags };
-const noArgs = { type: "object", properties: {}, additionalProperties: false };
+
+/**
+ * JSON Schema do MCP gerado do MESMO Zod que valida a chamada (dívida da revisão S8, item 22): nada escrito à mão
+ * que possa divergir. Sem `$schema` e sem o `pattern` longo que o Zod põe ao lado de `format: "uuid"`.
+ */
+export function mcpInputSchema(s: z.ZodType): Record<string, unknown> {
+  const strip = (v: unknown): unknown => {
+    if (Array.isArray(v)) return v.map(strip);
+    if (!v || typeof v !== "object") return v;
+    const o = { ...(v as Record<string, unknown>) };
+    delete o.$schema;
+    if (o.format === "uuid") delete o.pattern;
+    return Object.fromEntries(Object.entries(o).map(([k, x]) => [k, strip(x)]));
+  };
+  return strip(z.toJSONSchema(s, { io: "input", unrepresentable: "any" })) as Record<string, unknown>;
+}
+
+const noArgs = mcpInputSchema(z.object({}).strict());
+const byId = mcpInputSchema(z.object({ id: z.string() }).strict());
+/** As 8 ações, na ordem do contrato (o agente externo passa a saber de tom, avisos, plano…). */
+export const PROPOSAL_ACTIONS = proposalPayloadSchema.options.map((o) => o.shape.acao.value);
 
 export const CATALOG_TOOLS: ToolDef[] = [
   { name: "ver_configuracao", description: "Configuração atual do restaurante com ids: benefício de 1ª visita, recompensa da cartela, horários vazios (com oferta, teto e texto do convite) e cardápio (disponível, pode entrar em ofertas, em uso).", inputSchema: noArgs },
@@ -23,18 +44,18 @@ export const CATALOG_TOOLS: ToolDef[] = [
   {
     name: "buscar_clientes",
     gate: "clientes",
-    description: "Clientes do restaurante por nome curto e histórico (visitas, selos, última visita, grupos). Nunca contato. Filtros opcionais: segmento (sumiu, perto, convite_ativo, frequente) e parte do nome.",
-    inputSchema: { type: "object", properties: { segmento: { type: ["string", "null"], enum: ["sumiu", "perto", "convite_ativo", "frequente", null] }, nome: { type: ["string", "null"], maxLength: 40 } }, additionalProperties: false },
+    description: "Clientes do restaurante por nome curto e histórico (visitas, selos, última visita, grupos). Nunca contato. Filtros opcionais: segmento e parte do nome.",
+    // No MCP os dois filtros são opcionais (ausente = null).
+    inputSchema: mcpInputSchema(customerSearchInput.partial().strict()),
   },
   {
     name: "propor_mudanca",
     gate: "edicao",
-    description:
-      'Propõe uma mudança (NÃO grava). O código confere as regras e devolve a prévia (antes → depois, custo) e um id; para valer, chame aplicar_proposta. Formatos: {"acao":"oferta","papel":"agora|recompensa|convite","slotId"?,"offer":{"kind","itemId","pct"?},"weeklyCap"?,"inviteText"?} · {"acao":"item","itemId","mudanca":"indisponivel|disponivel|fora_das_ofertas|nas_ofertas|preco","priceCents"?} · {"acao":"faixa","slotId","mudanca":"editar|desativar","days"?,"startMin"?,"endMin"?,"intensity"?,"extraTables"?}. Use os ids de ver_configuracao.',
-    inputSchema: { type: "object", properties: { mudanca: { type: "object" } }, required: ["mudanca"], additionalProperties: false },
+    description: `Propõe uma mudança (NÃO grava). O código confere as regras e devolve a prévia (antes → depois, custo) e um id; para valer, chame aplicar_proposta. Ações (campo "acao"): ${PROPOSAL_ACTIONS.join(", ")} — o formato de cada uma está no schema de "mudanca". Use os ids de ver_configuracao (e o planId de ver_plano).`,
+    inputSchema: { type: "object", properties: { mudanca: mcpInputSchema(proposalPayloadSchema) }, required: ["mudanca"], additionalProperties: false },
   },
-  { name: "aplicar_proposta", gate: "edicao", description: "Aplica uma proposta feita por propor_mudanca (até 30 min; se algo mudou desde a prévia, ela expira). Passa a valer no salão. Registrado como mudança via agente.", inputSchema: { type: "object", properties: { id: { type: "string" } }, required: ["id"], additionalProperties: false } },
-  { name: "descartar_proposta", gate: "edicao", description: "Descarta uma proposta feita por propor_mudanca.", inputSchema: { type: "object", properties: { id: { type: "string" } }, required: ["id"], additionalProperties: false } },
+  { name: "aplicar_proposta", gate: "edicao", description: "Aplica uma proposta feita por propor_mudanca (até 30 min; se algo mudou desde a prévia, ela expira). Passa a valer no salão. Registrado como mudança via agente.", inputSchema: byId },
+  { name: "descartar_proposta", gate: "edicao", description: "Descarta uma proposta feita por propor_mudanca.", inputSchema: byId },
 ];
 
 export function catalogTools(flags: McpFlags): Array<Omit<ToolDef, "gate">> {
