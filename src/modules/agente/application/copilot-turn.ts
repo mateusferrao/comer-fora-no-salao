@@ -78,7 +78,7 @@ export async function runCopilotTurn(
 
   const mapped = res.data.propostas.map((x) => toPayload(cp, x));
   const payloads = mapped.filter((x): x is ProposalPayload => !("erro" in x));
-  const created = payloads.length ? await createProposals(db, { restaurantId: p.restaurantId, origin: "copiloto", payloads, aiCallId, now: p.now }) : [];
+  const created = payloads.length ? await createProposals(db, { restaurantId: p.restaurantId, origin: "copiloto", payloads, aiCallId, now: p.now, snap: input.snap }) : [];
   // Revisão S8 (produto 5): proposta incompleta não some em silêncio; vira cartão com o motivo.
   const incomplete: ProposalCard[] = mapped.filter((x): x is { erro: string } => "erro" in x).map(() => ({ id: null, status: "recusada", motivo: "Faltou informação para montar a mudança (o prato, o horário ou o tipo da oferta). Diga o que trocar e pelo quê.", payload: { acao: "tom", tone: "" } }));
   const propostas = [...created, ...incomplete];

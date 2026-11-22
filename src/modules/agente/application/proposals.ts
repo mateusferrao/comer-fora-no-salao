@@ -19,6 +19,7 @@ import { FORBIDDEN } from "@/src/modules/ia/guardrails";
 import { approvePlan, finalFromStored, latestPlan, type ApproveVia } from "@/src/modules/planos/application/approve-plan";
 import { getPlanView } from "@/src/modules/planos/application/plan-view";
 import { restaurants } from "@/src/db/schema";
+import type { RestaurantContext } from "@/src/modules/salao/application/context";
 import { previewProposal, proposalPayloadSchema, type PreviewOk, type ProposalPayload, type Snapshot } from "../domain/proposals";
 
 export const PROPOSAL_TTL_MS = 30 * 60_000;
@@ -34,8 +35,8 @@ export function stableJson(v: unknown): string {
 }
 export const baseHash = (antes: unknown) => createHash("sha256").update(stableJson(antes)).digest("hex");
 
-export async function loadSnapshot(db: Db, restaurantId: string, opts: { plan?: boolean; now?: Date } = {}): Promise<Snapshot | null> {
-  const v = await getSettingsView(db, restaurantId);
+export async function loadSnapshot(db: Db, restaurantId: string, opts: { plan?: boolean; now?: Date; ctx?: RestaurantContext } = {}): Promise<Snapshot | null> {
+  const v = await getSettingsView(db, restaurantId, opts.ctx);
   if (!v) return null;
   const [r] = await db.select({ notify: restaurants.notifySettings }).from(restaurants).where(eq(restaurants.id, restaurantId));
   // Plano proposto (onda 2): só quando a ação é aprovar (a prévia da reativação custa consultas).
@@ -72,9 +73,15 @@ function inviteTextProblem(snap: Snapshot, p: Extract<ProposalPayload, { acao: "
   return textIssues(g, { maxLen: 160 }).errors[0] ?? "O texto do convite não passou nas regras.";
 }
 
-/** Prévia + gravação (status `pendente`). Recusas do código voltam com o motivo e não são gravadas. */
-export async function createProposals(db: Db, p: { restaurantId: string; origin: Origin; payloads: readonly ProposalPayload[]; aiCallId?: string | null; now: Date }): Promise<ProposalCard[]> {
-  const snap = await loadSnapshot(db, p.restaurantId, { plan: p.payloads.some((x) => x.acao === "plano"), now: p.now });
+/**
+ * Prévia + gravação (status `pendente`). Recusas do código voltam com o motivo e não são gravadas.
+ * `snap`: retrato já carregado no turno (revisão S8, item 23). Seguro: o "antes" da prévia vira o `base_hash`, e a
+ * aplicação confere com o estado do momento — se algo mudou durante o turno, a proposta expira em vez de aplicar.
+ * Aprovar o plano precisa do plano no retrato: aí recarrega.
+ */
+export async function createProposals(db: Db, p: { restaurantId: string; origin: Origin; payloads: readonly ProposalPayload[]; aiCallId?: string | null; now: Date; snap?: Snapshot }): Promise<ProposalCard[]> {
+  const needsPlan = p.payloads.some((x) => x.acao === "plano");
+  const snap = p.snap && !needsPlan ? p.snap : await loadSnapshot(db, p.restaurantId, { plan: needsPlan, now: p.now });
   if (!snap) return p.payloads.map((payload) => ({ id: null, status: "recusada" as const, motivo: "Restaurante não encontrado.", payload }));
   const out: ProposalCard[] = [];
   for (const payload of p.payloads) {

@@ -27,7 +27,7 @@ import { buildCandidates, fallbackChoices, weeklyCapFor } from "@/src/modules/on
 import { declaredFacts } from "@/src/modules/onboarding/domain/facts";
 import { slotLabel, slotPhrase } from "@/src/modules/beneficios/domain/slot-text";
 import { cleanItemName } from "@/src/modules/onboarding/domain/menu-extraction";
-import { loadContext } from "@/src/modules/salao/application/context";
+import { loadContext, type RestaurantContext } from "@/src/modules/salao/application/context";
 import { renderReferences } from "@/src/modules/textos/domain/references";
 import { systemClock } from "@/src/shared/clock";
 import { consume } from "@/src/shared/rate-limit";
@@ -279,8 +279,9 @@ export type SettingsView = {
   }>;
 };
 
-export async function getSettingsView(db: Db, restaurantId: string): Promise<SettingsView | null> {
-  const ctx = await loadContext(db, restaurantId);
+/** `preloaded`: contexto já carregado no mesmo pedido (turno do copiloto — revisão S8, item 23). */
+export async function getSettingsView(db: Db, restaurantId: string, preloaded?: RestaurantContext): Promise<SettingsView | null> {
+  const ctx = preloaded ?? (await loadContext(db, restaurantId));
   if (!ctx) return null;
   // Excluídos (exclusão lógica — D197) não aparecem mais no cardápio.
   const items = await db.select().from(menuItems).where(and(eq(menuItems.restaurantId, restaurantId), isNull(menuItems.deletedAt))).orderBy(menuItems.position);
