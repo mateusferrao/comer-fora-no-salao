@@ -39,7 +39,8 @@ describe("resumo semanal + 'Revisar e aprovar' pelo e-mail (S6.1, D187, D188)", 
   it("e-mail com o plano proposto e o link; GET não muda nada; POST aprova via e-mail e queima o token", async () => {
     const d = await freshToken();
     expect(d.planId).not.toBeNull();
-    expect(d.mail.subject).toContain("seu plano da semana está pronto para aprovar");
+    // Vitrine com margem a mais certa: o valor vai no assunto (S9, auditoria 1.7).
+    expect(d.mail.subject).toMatch(/de margem a mais com os convites · plano para aprovar$/);
     expect(d.mail.text).toContain(`${BASE}/parceiro/aprovar/rv_`);
     const token = d.token!;
     const page = (await digestPage(getDb(), token, NOW))!;
@@ -87,7 +88,7 @@ describe("resumo semanal + 'Revisar e aprovar' pelo e-mail (S6.1, D187, D188)", 
     await getDb().update(restaurants).set({ notifySettings: { ...NOTIFY_DEFAULTS, aprovarEmail: false } }).where(eq(restaurants.id, VITRINE_ID));
     const d = (await buildDigest(getDb(), { restaurantId: VITRINE_ID, now: NOW, baseUrl: BASE, withToken: true }))!;
     expect(d.token).toBeNull();
-    expect(d.mail.subject).toContain("sua semana em números");
+    expect(d.mail.subject).not.toContain("para aprovar");
     expect(await approveByDigest(getDb(), { token: token!, now: NOW })).toEqual({ ok: false, erro: "desligado" });
     expect(await digestPage(getDb(), "rv_naoexiste_naoexiste_naoexiste_naoexiste_00", NOW)).toBeNull();
     expect(await digestPage(getDb(), "lixo", NOW)).toBeNull();
@@ -119,7 +120,7 @@ describe("resumo semanal + 'Revisar e aprovar' pelo e-mail (S6.1, D187, D188)", 
 
     const pv = await previewDigest(getDb(), { restaurantId: VITRINE_ID, now: NOW, baseUrl: BASE });
     expect(pv.ok && pv.approveUrl).toMatch(/\/parceiro\/aprovar\/rv_/);
-    expect(pv.ok && pv.text).toContain("Resultado da semana passada (16/11 a 22/11)");
+    expect(pv.ok && pv.text).toContain("Semana passada (16/11 a 22/11)");
     // A prévia não grava weekly_digests (só a reserva do agendador existe).
     expect(await getDb().select().from(weeklyDigests)).toHaveLength(1);
     expect(tokenOf(pv.ok ? pv.approveUrl : null).startsWith("rv_")).toBe(true);
