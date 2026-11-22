@@ -31,6 +31,7 @@ describe("kit (Postgres)", () => {
   it("gera 3 peças (display e cartaz A/B, cartão do garçom) com textos da IA; 2ª geração não duplica", async () => {
     const r = await createRestaurant({ pieces: [] });
     await getDb().update(restaurants).set({ recado: null }).where(eq(restaurants.id, r.restaurantId));
+    await setFlag(getDb(), "revisor", false); // o revisor tem teste próprio abaixo
     const [a, b] = await Promise.all([generateKit(getDb(), { restaurantId: r.restaurantId, ownerId: r.ownerId, now: NOW, gateway: good }), generateKit(getDb(), { restaurantId: r.restaurantId, ownerId: r.ownerId, now: NOW, gateway: good })]);
     expect([a, b].filter((x) => x.ok && x.created)).toHaveLength(1);
     const k = (await getKit(getDb(), r.restaurantId, NOW))!;
@@ -38,8 +39,16 @@ describe("kit (Postgres)", () => {
     expect(k.origem).toBe("ia");
     expect(k.pieces[0]!.variants[0]!.rendered.titulo).toBe("Check-in vale Panna cotta grátis");
     expect(k.pieces[2]!.variants[0]!.rendered.frase).toBe("Hoje, quem faz check-in ganha Panna cotta grátis. Peça o código ao cliente e valide no Portal.");
-    const [rr] = await getDb().select({ recado: restaurants.recado }).from(restaurants).where(eq(restaurants.id, r.restaurantId));
-    expect(rr!.recado).toBe("Que bom ter você aqui!");
+    // S9 (M4): o recado da IA espera a aprovação da peça; o dono já o vê no kit.
+    const recadoNow = async () => (await getDb().select({ recado: restaurants.recado }).from(restaurants).where(eq(restaurants.id, r.restaurantId)))[0]!.recado;
+    expect(await recadoNow()).toBeNull();
+    expect(k.recado).toBe("Que bom ter você aqui!");
+    expect(k.recadoPendente).toBe(true);
+    expect(await approvePiece(getDb(), { restaurantId: r.restaurantId, pieceId: k.pieces[2]!.id, now: NOW })).toBe(true); // cartão do garçom não publica
+    expect(await recadoNow()).toBeNull();
+    expect(await approvePiece(getDb(), { restaurantId: r.restaurantId, pieceId: k.pieces[0]!.id, now: NOW })).toBe(true);
+    expect(await recadoNow()).toBe("Que bom ter você aqui!");
+    expect((await getKit(getDb(), r.restaurantId, NOW))!.recadoPendente).toBe(false);
     const tokens = (await getDb().select({ t: pieceVariants.qrToken }).from(pieceVariants).where(eq(pieceVariants.restaurantId, r.restaurantId))).map((x) => x.t);
     expect(new Set(tokens).size).toBe(5);
   });
@@ -103,6 +112,7 @@ describe("kit (Postgres)", () => {
     await setFlag(getDb(), "revisor", true);
     const block: AiGateway = { generate: async () => ({ output: { veredito: "bloquear", motivos: ["Promete desconto que não está na oferta."] }, usage: { inTokens: 5, outTokens: 5 }, model: "fake-revisor" }) };
     const r = await createRestaurant({ pieces: [] });
+    await getDb().update(restaurants).set({ recado: null }).where(eq(restaurants.id, r.restaurantId));
     const jobs: Array<() => Promise<void>> = [];
     await generateKit(getDb(), { restaurantId: r.restaurantId, ownerId: r.ownerId, now: NOW, gateway: good, reviewerGateway: block, schedule: (fn) => void jobs.push(fn) });
     const k0 = (await getKit(getDb(), r.restaurantId, NOW))!;
@@ -116,6 +126,9 @@ describe("kit (Postgres)", () => {
     // O dono reescreve as duas versões: assume o texto, a revisão deixa de valer.
     for (const label of ["A", "B"] as const) await editVersionField(getDb(), { restaurantId: r.restaurantId, label, field: "titulo", value: "Faça check-in e ganhe {beneficio}", now: NOW });
     expect(await approvePiece(getDb(), { restaurantId: r.restaurantId, pieceId: display.id, now: NOW })).toBe(true);
+    // S9 (M4): o recado que o revisor bloqueou nunca chega à página pública, nem depois da aprovação.
+    expect((await getDb().select({ recado: restaurants.recado }).from(restaurants).where(eq(restaurants.id, r.restaurantId)))[0]!.recado).toBeNull();
+    expect((await getKit(getDb(), r.restaurantId, NOW))!.recado).toBeNull();
 
     // Revisor indisponível: "não revisado", nada bloqueia.
     const r2 = await createRestaurant({ pieces: [] });

@@ -81,6 +81,29 @@ describe("plano da semana (S3 §4.3–4.4)", () => {
     expect((p.texts as { order: string[] }).order).toEqual([...ins.ctx.slots].sort((a, b) => (a.intensity === "muito" ? -1 : 1) - (b.intensity === "muito" ? -1 : 1)).map((s) => s.id).reverse());
   });
 
+  it("veredito 'trocar' obrigatório (S9, A4): a oferta avaliada sai das candidatas da faixa, com e sem IA", async () => {
+    // A oferta vigente da 1ª faixa passa a ser a 1ª candidata do código; depois, nenhum convite dela foi usado → "trocar".
+    const before = (await getPlanInsights(getDb(), VITRINE_ID, NOW))!;
+    const slotId = before.offers[0]!.slotId;
+    const versionId = before.ctx.convites[slotId]!.versionId;
+    await generateWeeklyPlan(getDb(), { restaurantId: VITRINE_ID, ownerId: VITRINE_OWNER_ID, now: NOW, gateway: fakeGateway });
+    const p0 = (await latestPlan(getDb(), VITRINE_ID))!;
+    const top = (p0.candidates as Array<{ slotId: string; options: Array<{ id: string; offer: { kind: string; itemId: string; pct?: number } }> }>).find((c) => c.slotId === slotId)!.options[0]!;
+    await getDb().update(benefitVersions).set({ kind: top.offer.kind, params: { itemId: top.offer.itemId, ...(top.offer.pct ? { pct: top.offer.pct } : {}) } }).where(eq(benefitVersions.id, versionId));
+    await getDb().update(invites).set({ usedAt: null }).where(and(eq(invites.restaurantId, VITRINE_ID), eq(invites.benefitVersionId, versionId)));
+    const ins = (await getPlanInsights(getDb(), VITRINE_ID, NOW))!;
+    expect(ins.offers.find((o) => o.slotId === slotId)!.verdict).toBe("trocar");
+    for (const gw of [fakeGateway, failing]) {
+      await getDb().delete(weeklyPlans).where(and(eq(weeklyPlans.restaurantId, VITRINE_ID), eq(weeklyPlans.status, "proposto")));
+      await generateWeeklyPlan(getDb(), { restaurantId: VITRINE_ID, ownerId: VITRINE_OWNER_ID, now: NOW, gateway: gw });
+      const p = (await latestPlan(getDb(), VITRINE_ID))!;
+      const opts = (p.candidates as Array<{ slotId: string; options: Array<{ id: string }> }>).find((c) => c.slotId === slotId)!.options.map((o) => o.id);
+      expect(opts.length).toBeGreaterThan(0);
+      expect(opts).not.toContain(top.id);
+      expect((p.choices as Array<{ slotId: string; candidateId: string }>).find((c) => c.slotId === slotId)!.candidateId).not.toBe(top.id);
+    }
+  });
+
   it("IA indisponível → texto modelo (sem IA) com 'o que aprendemos' por modelo; clique duplo → 1 chamada", async () => {
     expect(await generateWeeklyPlan(getDb(), { restaurantId: VITRINE_ID, ownerId: VITRINE_OWNER_ID, now: NOW, gateway: failing })).toMatchObject({ ok: true, generatedBy: "sem_ia" });
     const p = (await latestPlan(getDb(), VITRINE_ID))!;

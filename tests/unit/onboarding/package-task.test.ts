@@ -81,6 +81,16 @@ describe("tarefa 3 — plano da semana: 'o que aprendemos' (D220; S3)", () => {
     const dig = taskL.guard!({ ...ok, aprendemos: [ok.aprendemos[0]!, { ofertaKey: "O2", texto: "Só 3 convites." }] });
     expect(dig.ok === false && dig.reasons).toContain("aprendemos:numero");
   });
+  it("veredito 'trocar' obrigatório (S9, A4): escolher de novo a oferta marcada reprova (manteve_oferta_trocar)", () => {
+    const a1 = cands.find((c) => c.slotId === "uuid-tarde")!.options[0]!;
+    const swap = [{ ...learned[0]!, offerKey: `${a1.offer.kind}:${a1.offer.params.itemId}` }, learned[1]!];
+    const ppS = buildPackagePrompt({ restaurantName: "Cantina", slots: [slotN, slotT], cands, menu, facts: { ...declaredFacts({ ticketCents: 8500 }, [slotN, slotT], menu), uso7d_A_pct: 9 }, learned: swap });
+    const g = buildPackageTask(ppS, []).guard!;
+    const kept = g(ok);
+    expect(kept.ok === false && kept.reasons).toContain("manteve_oferta_trocar:A");
+    expect((g({ ...ok, escolhas: [{ ...ok.escolhas[0]!, candidata: "A2" }, ok.escolhas[1]!] }) as { reasons?: string[] }).reasons ?? []).toEqual([]);
+  });
+
   it("sem ofertas anteriores (1º plano): aprendemos tem de vir vazio", () => {
     expect(task.schema.safeParse({ ...good, aprendemos: [{ ofertaKey: "O1", texto: "x" }] }).success).toBe(false);
   });

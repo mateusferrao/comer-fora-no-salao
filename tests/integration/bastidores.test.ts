@@ -1,7 +1,7 @@
 import { afterAll, beforeEach, describe, expect, it } from "vitest";
 import { eq, sql } from "drizzle-orm";
 import { closeDb, getDb } from "@/src/db/client";
-import { aiCalls, owners, restaurants } from "@/src/db/schema";
+import { aiCalls, ownerEdits, owners, restaurants, weeklyPlans } from "@/src/db/schema";
 import { seedAll } from "@/src/db/seed";
 import { vitrineHistory } from "@/src/db/seed/history";
 import { VITRINE_ID, VITRINE_OWNER_ID } from "@/src/db/seed/vitrine";
@@ -106,6 +106,17 @@ describe("páginas públicas agregadas", () => {
     expect(v.plans).toBe(2);
     expect(v.aiCostAssistantUsd).toBeCloseTo(0.005, 6);
     expect(v.aiCostTotalUsd).toBeCloseTo(0.06, 6);
+  });
+
+  it("aceite sem edição do pacote só conta o pacote escrito pela IA (S9, M10)", async () => {
+    const at = new Date("2026-11-20T15:00:00Z");
+    for (const generatedBy of ["ia", "sem_ia"] as const) {
+      const r = await createRestaurant();
+      await getDb().insert(weeklyPlans).values({ restaurantId: r.restaurantId, weekKey: `x-${generatedBy}`, status: "aprovado", facts: {}, candidates: [], choices: [], texts: { order: [], generatedBy, version: 1 }, learned: [], approvedAt: at });
+      await getDb().insert(ownerEdits).values({ restaurantId: r.restaurantId, kind: "pacote:sem_edicao", at });
+    }
+    const q = await getQualityView(getDb());
+    expect(q.acceptedNoEdit.find((e) => e.what === "pacote")).toEqual({ what: "pacote", accepted: 1, total: 1 });
   });
 
 });

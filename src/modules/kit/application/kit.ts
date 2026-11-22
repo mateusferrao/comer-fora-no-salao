@@ -36,7 +36,17 @@ export const KIT_STALE_MS = 90_000;
 const ALPHA = "abcdefghijkmnpqrstuvwxyz23456789";
 const token = () => Array.from({ length: 12 }, () => ALPHA[secureRandInt(ALPHA.length)]).join("");
 
-export type VariantTexts = { titulo?: string; subtitulo?: string; acao?: string; frase?: string; origem?: "ia" | "sem_ia" | "dono"; gerando?: boolean; sugerido?: Partial<Record<VersionField, string>> };
+export type VariantTexts = {
+  titulo?: string;
+  subtitulo?: string;
+  acao?: string;
+  frase?: string;
+  origem?: "ia" | "sem_ia" | "dono";
+  gerando?: boolean;
+  sugerido?: Partial<Record<VersionField, string>>;
+  /** S9 (M4): recado escrito pela IA (já renderizado), esperando a aprovação de uma peça para ir à página pública. */
+  recado?: string;
+};
 
 function kitCtx(ctx: RestaurantContext): { refCtx: RefContext; inviteItemIds: string[]; beneficio: string; recompensa: string } {
   const beneficio = ctx.agora ? describeOffer(ctx.agora.offer, ctx.menu, "agora").gain : "um benefício";
@@ -103,8 +113,11 @@ export async function generateKit(db: Db, p: { restaurantId: string; ownerId: st
   if (!created) return { ok: true, created: false };
   try {
     const { texts, origem } = await aiTexts(db, ctx, p.ownerId, p.gateway);
-    await writeVersionTexts(db, p.restaurantId, texts, origem);
-    if (!ctx.restaurant.recado) await db.update(restaurants).set({ recado: renderReferences(texts.recado, kitCtx(ctx).refCtx) }).where(eq(restaurants.id, p.restaurantId));
+    const recado = ctx.restaurant.recado ? undefined : renderReferences(texts.recado, kitCtx(ctx).refCtx);
+    // S9 (M4): o recado da IA só vai à página pública quando o dono aprova uma peça (e nunca com "bloquear" do
+    // revisor); o texto modelo (sem IA) é do código e segue publicado na hora.
+    await writeVersionTexts(db, p.restaurantId, texts, origem, origem === "ia" ? recado : undefined);
+    if (recado !== undefined && origem !== "ia") await db.update(restaurants).set({ recado }).where(eq(restaurants.id, p.restaurantId));
     if (origem === "ia") await maybeReview(db, p.restaurantId, p.now, p.schedule ?? inline, p.reviewerGateway);
   } catch (err) {
     log.error("falha na geração", { area: "kit", err: safeErr(err) });
@@ -148,10 +161,26 @@ export async function reviewKit(db: Db, p: { restaurantId: string; now: Date; ga
   const k = ctx ? kitCtx(ctx) : null;
   const r = await runReview(db, { restaurantId: p.restaurantId, offer: k ? `no 1º check-in: ${k.beneficio}; no 6º selo: ${k.recompensa}` : "", texts, now: p.now, gateway: p.gateway });
   await setKitReview(db, p.restaurantId, r, true);
+  // S9 (M4): recado que o revisor bloqueou nunca é publicado (o dono pode escrever o dele).
+  if (r.status === "bloquear") await clearPendingRecado(db, p.restaurantId);
   return r;
 }
 
-async function writeVersionTexts(db: Db, restaurantId: string, texts: KitTexts, origem: "ia" | "sem_ia") {
+/** Recado da IA ainda não publicado (S9, M4): fica nos textos das versões do display e do cartaz. */
+async function pendingRecado(db: Executor, restaurantId: string, pieceId?: string): Promise<string | null> {
+  const rows = await db
+    .select({ texts: pieceVariants.texts })
+    .from(pieceVariants)
+    .innerJoin(kitPieces, eq(kitPieces.id, pieceVariants.pieceId))
+    .where(and(eq(pieceVariants.restaurantId, restaurantId), isNull(pieceVariants.retiredAt), inArray(kitPieces.kind, ["display", "cartaz"]), pieceId ? eq(kitPieces.id, pieceId) : undefined));
+  return rows.map((r) => (r.texts as VariantTexts).recado).find((x): x is string => !!x) ?? null;
+}
+
+async function clearPendingRecado(db: Executor, restaurantId: string) {
+  await db.execute(sql`update piece_variants set texts = texts - 'recado' where restaurant_id = ${restaurantId} and texts ? 'recado'`);
+}
+
+async function writeVersionTexts(db: Db, restaurantId: string, texts: KitTexts, origem: "ia" | "sem_ia", recado?: string) {
   const rows = await db
     .select({ id: pieceVariants.id, label: pieceVariants.label, kind: kitPieces.kind })
     .from(pieceVariants)
@@ -160,7 +189,7 @@ async function writeVersionTexts(db: Db, restaurantId: string, texts: KitTexts, 
   for (const r of rows) {
     if (r.kind === "garcom" || r.kind === "porta_conta") continue;
     const v = texts[r.label === "B" ? "B" : "A"];
-    await db.update(pieceVariants).set({ texts: { ...v, origem, sugerido: v } }).where(eq(pieceVariants.id, r.id));
+    await db.update(pieceVariants).set({ texts: { ...v, origem, sugerido: v, ...(recado ? { recado } : {}) } }).where(eq(pieceVariants.id, r.id));
   }
 }
 
@@ -177,7 +206,8 @@ export async function startKitGeneration(db: Db, restaurantId: string, ownerId: 
 
 export type KitVariantView = { id: string; label: string; token: string; texts: VariantTexts; rendered: Record<string, string>; approvedAt: Date | null; scans: number; locked: boolean; review: StoredReview | null };
 export type KitPieceView = { id: string; kind: "display" | "cartaz" | "garcom" | "porta_conta"; status: string; inSalonAt: Date | null; variants: KitVariantView[] };
-export type KitView = { pieces: KitPieceView[]; generating: boolean; origem: "ia" | "sem_ia" | "dono" | null; recado: string | null; slug: string };
+/** `recado`: o publicado ou, sem ele, o da IA esperando aprovação (`recadoPendente` — S9, M4). */
+export type KitView = { pieces: KitPieceView[]; generating: boolean; origem: "ia" | "sem_ia" | "dono" | null; recado: string | null; recadoPendente: boolean; slug: string };
 
 export async function getKit(db: Db, restaurantId: string, now: Date): Promise<KitView | null> {
   const ctx = await loadContext(db, restaurantId);
@@ -212,7 +242,8 @@ export async function getKit(db: Db, restaurantId: string, now: Date): Promise<K
     }
     out.push({ id: piece.id, kind: piece.kind as KitPieceView["kind"], status: piece.status, inSalonAt: piece.inSalonAt, variants: vs });
   }
-  return { pieces: out, generating, origem, recado: ctx.restaurant.recado, slug: ctx.restaurant.slug };
+  const pending = ctx.restaurant.recado ? null : await pendingRecado(db, restaurantId);
+  return { pieces: out, generating, origem, recado: ctx.restaurant.recado ?? pending, recadoPendente: pending !== null, slug: ctx.restaurant.slug };
 }
 
 // ---------- Edição ----------
@@ -325,6 +356,11 @@ export async function approvePiece(db: Db, p: { restaurantId: string; pieceId: s
   if (await pieceBlocked(db, piece.id, p.now)) return "revisor";
   if (piece.status === "rascunho") await db.update(kitPieces).set({ status: "aprovado" }).where(eq(kitPieces.id, piece.id));
   await db.update(pieceVariants).set({ approvedAt: p.now }).where(and(eq(pieceVariants.pieceId, piece.id), sql`${pieceVariants.approvedAt} is null`));
+  // S9 (M4): aprovar o display ou o cartaz publica o recado da IA que esperava (se o dono ainda não escreveu o dele).
+  if (piece.kind === "display" || piece.kind === "cartaz") {
+    const recado = await pendingRecado(db, p.restaurantId, piece.id);
+    if (recado) await db.update(restaurants).set({ recado }).where(and(eq(restaurants.id, p.restaurantId), isNull(restaurants.recado)));
+  }
   return true;
 }
 

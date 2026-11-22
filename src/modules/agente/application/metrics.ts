@@ -8,6 +8,8 @@ import type { Executor } from "@/src/db/executor";
 export type CopilotMetrics = {
   turns: number;
   turnsNoAiPct: number | null;
+  /** S9 (item 17): turnos recusados por estarem fora do escopo; `byGate` = a IA disse "salão", o portão do código barrou. */
+  outOfScope: { total: number; byGate: number };
   shown: number;
   applied: number;
   discarded: number;
@@ -36,7 +38,13 @@ export async function getCopilotMetrics(ex: Executor): Promise<CopilotMetrics> {
           percentile_cont(0.5) within group (order by extract(epoch from decided_at - created_at)) filter (where status = 'aplicada') p50
         from agent_proposals where restaurant_id not in ${E2E_RESTAURANTS}`,
   );
-  const [t] = await q(ex, sql`select count(*)::int turns, count(*) filter (where status <> 'ok')::int noai from ai_calls where task = 'copiloto' and (restaurant_id is null or restaurant_id not in ${E2E_RESTAURANTS})`);
+  const [t] = await q(
+    ex,
+    sql`select count(*)::int turns, count(*) filter (where status <> 'ok')::int noai,
+          count(*) filter (where attempts @> '[{"notes":["fora_do_escopo"]}]'::jsonb)::int fora,
+          count(*) filter (where attempts @> '[{"notes":["fora_do_escopo"]}]'::jsonb and not attempts @> '[{"notes":["escopo:classificacao"]}]'::jsonb)::int fora_portao
+        from ai_calls where task = 'copiloto' and (restaurant_id is null or restaurant_id not in ${E2E_RESTAURANTS})`,
+  );
   const byAction = await q(ex, sql`select action, count(*)::int shown, count(*) filter (where status = 'aplicada')::int applied from agent_proposals where restaurant_id not in ${E2E_RESTAURANTS} group by action order by shown desc`);
   const byOrigin = await q(ex, sql`select origin, count(*) filter (where status = 'aplicada')::int applied from agent_proposals where restaurant_id not in ${E2E_RESTAURANTS} group by origin order by origin`);
   // Mudanças nas Configurações nos últimos 7 dias (owner_edits) e quantas vieram do copiloto/MCP (propostas aplicadas).
@@ -51,6 +59,7 @@ export async function getCopilotMetrics(ex: Executor): Promise<CopilotMetrics> {
   return {
     turns,
     turnsNoAiPct: turns ? Math.round((100 * Number(t?.noai ?? 0)) / turns) : null,
+    outOfScope: { total: Number(t?.fora ?? 0), byGate: Number(t?.fora_portao ?? 0) },
     shown,
     applied,
     discarded: Number(p?.discarded ?? 0),

@@ -14,7 +14,7 @@ import { examplesBlock } from "../examples";
 import { toneForPrompt } from "@/src/modules/config/domain/tone";
 import { hasOwnerData, OWNER_DATA_SYSTEM, ownerDataLines, type OwnerData } from "../owner-data";
 
-export const KIT_PROMPT_VERSION = "kit-v1";
+export const KIT_PROMPT_VERSION = "kit-v2";
 
 export const KIT_INSTRUCTIONS = `Você escreve as chamadas de um display de mesa e de um cartaz que ficam no salão de um restaurante, para convidar quem já está sentado a ler o QR e fazer check-in no app.
 Tom: caloroso, simples e direto, na voz do restaurante. Português do Brasil.`;
@@ -27,7 +27,13 @@ const RULES = `Escreva 2 versões diferentes (A e B), para testar qual chama mai
 Regras fixas:
 - Nunca escreva números, preços, percentuais, nomes de pratos por extenso, dias da semana ou turnos (manhã, tarde, noite): use só as referências entre chaves.
 - Não fale de convite, volta ou horários: isso é decidido em outra etapa.
-- Não use "grátis", "de graça", "desconto", "metade", "imperdível", "só hoje", "garantido".`;
+- Não use "grátis", "de graça", "desconto", "metade", "imperdível", "só hoje", "garantido", "brinde", "por conta da casa".
+- {beneficio} é o que o cliente ganha na 1ª visita, ao fazer o check-in.
+Escrita (S9):
+- Sem ponto de exclamação e sem travessão (—). Frases curtas, com ponto final ou vírgula.
+- Nada de fórmulas de anúncio: "descubra", "experimente", "não perca", "aproveite já", "venha conferir", "especial para você", "momento único", "sabor inesquecível", "do jeito que você merece".
+- Nada de "não é só X, é Y", de listas do que não tem ("sem X, sem Y") nem de pergunta seguida da resposta ("O melhor? …").
+- Diga o que o cliente faz e o que ganha, com palavras simples.`;
 
 export type KitOut = { A: { titulo: string; subtitulo: string; acao: string }; B: { titulo: string; subtitulo: string; acao: string }; recado: string };
 
@@ -44,7 +50,7 @@ export function buildKitPrompt(p: { restaurantName: string; cuisine?: string | n
   const itemByAlias = new Map(visible.map((m, i) => [`p${i + 1}`, m]));
   const text = [
     `Restaurante: ${clean(p.restaurantName)}${p.cuisine ? ` (${clean(p.cuisine)})` : ""}`,
-    `{beneficio} = ${clean(p.beneficio)} (${p.beneficio.length} caracteres; para quem faz o 1º check-in)`,
+    `{beneficio} = ${clean(p.beneficio)} (${p.beneficio.length} caracteres; o cliente ganha na 1ª visita, ao fazer o check-in)`,
     `{recompensa} = ${clean(p.recompensa)} (${p.recompensa.length} caracteres; no 6º selo da cartela)`,
     "Pratos (cite por referência):",
     ...[...itemByAlias].map(([a, m]) => `  {prato:${a}} = ${clean(m.name)} (${m.name.length} caracteres)`),

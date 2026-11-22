@@ -27,13 +27,13 @@ export function fakeCopilotGateway(): AiGateway {
       const q = norm(last);
       const menu = [...req.system.matchAll(/^- (P\d+): (.+?) \((\w+), [^;)]*(?:; ([^)]*))?\)$/gm)].map((m) => ({ alias: m[1]!, name: m[2]!, cat: m[3]!, flags: m[4] ?? "" }));
       const slotA = /^- A: .*convite: \w+ com (P\d+)/m.exec(req.system);
-      let output: unknown = { resposta: "No último mês foram {fato:checkins_30d}.", propostas: [], sugestoes: ["Trocar a oferta do convite"] };
+      let output: unknown = { escopo: "salao", resposta: "No último mês foram {fato:checkins_30d}.", propostas: [], sugestoes: ["Trocar a oferta do convite"] };
       if (q.includes("oferta") && slotA) {
         const pick = menu.find((m) => m.cat === "sobremesa" && m.alias !== slotA[1] && !m.flags.includes("fora")) ?? menu.find((m) => m.cat === "entrada");
-        if (pick) output = { resposta: "Preparei a proposta abaixo para {horario:A}. Confira e aplique se estiver certo.", propostas: [{ ...EMPTY, acao: "oferta", papel: "convite", faixa: "A", prato: pick.alias, tipo: pick.cat === "sobremesa" ? "doce_gratis" : "entrada_gratis" }], sugestoes: ["Mudar o teto desse horário"] };
+        if (pick) output = { escopo: "salao", resposta: "Preparei a proposta abaixo para {horario:A}. Confira e aplique se estiver certo.", propostas: [{ ...EMPTY, acao: "oferta", papel: "convite", faixa: "A", prato: pick.alias, tipo: pick.cat === "sobremesa" ? "doce_gratis" : "entrada_gratis" }], sugestoes: ["Mudar o teto desse horário"] };
       } else if (q.includes("acabou")) {
         const it = menu.find((m) => q.includes(norm(m.name)));
-        if (it) output = { resposta: "Preparei a proposta abaixo.", propostas: [{ ...EMPTY, acao: "item", prato: it.alias, mudanca: "indisponivel" }], sugestoes: [] };
+        if (it) output = { escopo: "salao", resposta: "Preparei a proposta abaixo.", propostas: [{ ...EMPTY, acao: "item", prato: it.alias, mudanca: "indisponivel" }], sugestoes: [] };
       }
       return { output, usage: { inTokens: 0, outTokens: 0, costUsd: 0 }, model: req.model.id, steps: [] };
     },

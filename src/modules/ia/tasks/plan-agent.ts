@@ -13,13 +13,13 @@ import type { AgentStep, AiTool, ModelRef } from "../gateway";
 import type { TaskDef } from "../run-task";
 import { buildPackageTask, type PackageOut, type PackagePrompt } from "./package";
 
-export const AGENT_PROMPT_VERSION = "plano-agente-v3";
+export const AGENT_PROMPT_VERSION = "plano-agente-v4";
 export const AGENT_MAX_STEPS = 6;
 
 export const AGENT_RULES = `Você trabalha como agente. Antes da resposta final, use as ferramentas:
 - ver_candidatas para cada faixa e ver_fatos para os números do restaurante;
 - custo_semana para conferir o custo máximo da oferta escolhida;
-- checar_texto em CADA textoConvite e justificativa. Ela devolve o texto como o cliente e o dono vão ler ("renderizado"): leia em voz alta; se apontar problema ou soar estranho, reescreva e confira de novo.
+- checar_texto em CADA textoConvite e justificativa, com a faixa e a candidata escolhida. Ela devolve o texto como o cliente e o dono vão ler ("renderizado"): leia em voz alta; se apontar problema ou soar estranho, reescreva e confira de novo.
 Escrita (vale o tom da casa acima):
 - textoConvite é um recado caloroso da casa, curto e natural, como se o dono falasse com o cliente. Nada de linguagem de relatório.
 - {oferta} já diz o benefício inteiro (ex.: "Cannoli grátis"): não repita "grátis", "por nossa conta" nem o nome do prato ao lado dela.
@@ -73,11 +73,13 @@ export function buildPlanAgentTools(pp: PackagePrompt, cands: readonly SlotCandi
     },
     {
       name: "checar_texto",
-      description: "Confere um texto contra as regras fixas antes da resposta final (referências, números, palavras proibidas, termos a evitar, tamanho).",
-      input: z.object({ campo: z.enum(["textoConvite", "justificativa", "aprendemos"]), faixa: z.enum(slotAliases).optional(), texto: z.string().max(600) }),
+      description: "Confere um texto contra as regras fixas antes da resposta final (referências, números, palavras proibidas, termos a evitar, tamanho). Passe a candidata escolhida: {oferta} vira a oferta dela.",
+      input: z.object({ campo: z.enum(["textoConvite", "justificativa", "aprendemos"]), faixa: z.enum(slotAliases).optional(), candidata: z.enum(candAliases).optional(), texto: z.string().max(600) }),
       execute: async (raw) => {
-        const { campo, faixa, texto } = raw as { campo: "textoConvite" | "justificativa" | "aprendemos"; faixa?: string; texto: string };
-        const oferta = faixa ? [...pp.candByAlias.values()].find((c) => c.slotAlias === faixa)?.gain : undefined;
+        const { campo, faixa, candidata, texto } = raw as { campo: "textoConvite" | "justificativa" | "aprendemos"; faixa?: string; candidata?: string; texto: string };
+        // S9 (M3): {oferta} é a da candidata escolhida; sem ela, a 1ª da faixa (como antes).
+        const chosen = candidata ? pp.candByAlias.get(candidata) : undefined;
+        const oferta = chosen?.gain ?? (faixa ? [...pp.candByAlias.values()].find((c) => c.slotAlias === faixa)?.gain : undefined);
         const allowed = campo === "textoConvite" ? (["prato", "horario", "oferta"] as const) : (["fato", "prato", "horario", "oferta"] as const);
         const maxLen = campo === "textoConvite" ? 160 : campo === "justificativa" ? 400 : 300;
         const ctx = { ...pp.ctxBase, oferta: oferta ?? "a oferta" };
