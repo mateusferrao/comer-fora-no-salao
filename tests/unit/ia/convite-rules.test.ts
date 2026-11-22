@@ -25,6 +25,16 @@ describe("convite com dia e horário (D226): tabela de casos", () => {
     expect(reasons(texto)).toEqual(esperado);
   });
 
+  // S7 (D324): achado no vídeo da entrega — "Com um Romeu e Julieta Romeu e Julieta." passou no guard.
+  it.each([
+    ["Volte {horario:A} e ganhe {oferta}. Com um {prato:p1} {prato:p1}.", ["nome_repetido:Cannoli"]],
+    ["Volte {horario:A} e prove o {prato:p1} {oferta}.", ["nome_repetido:Cannoli"]],
+    ["Volte {horario:A}: {prato:p1}, Cannoli e café.", ["nome_repetido:Cannoli"]],
+    ["Volte {horario:A} e ganhe {oferta}: o {prato:p1} da casa.", []],
+  ])("nome repetido seguido: %s → %j", (texto, esperado) => {
+    expect(reasons(texto)).toEqual(esperado);
+  });
+
   it("no texto do dono as 3 regras só avisam", () => {
     expect(reasons("Volte logo e aproveite {oferta} por nossa conta!", "dono")).toEqual(expect.arrayContaining(["sem_horario", "oferta_repetida"]));
     expect(guardText("Volte logo!", ctx, opts("dono")).ok).toBe(true);

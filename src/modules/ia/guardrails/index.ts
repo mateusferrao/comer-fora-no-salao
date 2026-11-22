@@ -109,8 +109,22 @@ export function guardText(text: string, ctx: RefContext, o: GuardOptions): TextG
   }
   const rendered = renderReferences(text, ctx).trim();
   if (!rendered) reasons.push("vazio");
+  // S7 (D324): o mesmo prato duas vezes seguidas no texto já renderizado ("Com um Romeu e Julieta Romeu e Julieta"),
+  // venha de {prato} + {prato}, {prato} + {oferta} ou do nome escrito por extenso ao lado da referência.
+  const repeated = repeatedItemName(rendered, ctx);
+  if (repeated) soft(`nome_repetido:${repeated}`);
   if (rendered.length > o.maxLen) reasons.push(`tamanho:${rendered.length}>${o.maxLen}`);
   return reasons.length ? { ok: false, reasons, warnings } : { ok: true, warnings };
+}
+
+/** Nome de prato repetido em sequência (só pontuação ou espaço entre as duas ocorrências). */
+export function repeatedItemName(rendered: string, ctx: RefContext): string | null {
+  const names = new Set(Object.values(ctx.items ?? {}).map((x) => x.trim()).filter((x) => x.length >= 3));
+  for (const name of names) {
+    const esc = name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    if (new RegExp(`(^|[^\\p{L}])${esc}[\\s,.:;!–-]+${esc}($|[^\\p{L}])`, "iu").test(rendered)) return name;
+  }
+  return null;
 }
 
 /**

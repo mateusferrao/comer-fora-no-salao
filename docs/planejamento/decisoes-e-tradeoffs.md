@@ -1575,3 +1575,9 @@ As decisões sobre a preparação pessoal do candidato para a apresentação (D2
 - Correção: `setInterval` enquanto a cópia não fica pronta; e uma cópia pendente por conta em `copyVitrineFor` (a tela pedia a cópia de novo a cada atualização, enchendo a fila com pedidos repetidos da mesma conta). Medido localmente depois da correção: 4 contas em paralelo prontas em 7–15 s; 8 contas em 6–26 s.
 - Limite diário do link do avaliador: 20 → 60 contas. Só os testes da própria entrega gastaram ~16 num dia; com o envio no mesmo dia, sobrariam poucas aberturas para os avaliadores. O link continua privado e cada abertura continua criando uma conta isolada.
 - Teste novo: pedidos simultâneos da mesma conta viram 1 cópia só (`tests/integration/copy-vitrine.test.ts`).
+
+**D324 — Guard reprova o mesmo prato duas vezes seguidas no texto renderizado** (22/11, IA [C]; achado da revisão do vídeo, E5) ✅
+- Achado: no cliente, o convite aprovado mostrava "Com um Romeu e Julieta Romeu e Julieta. Vamos adorar receber você!". A regra `oferta_repetida` (D226) só olhava `{oferta}` seguido de "grátis" ou de `{prato:…}`, e não pegava `{prato}` + `{prato}`, `{prato}` + `{oferta}`, nem o nome escrito por extenso ao lado da referência.
+- Decisão: nova regra `nome_repetido`, sobre o texto já renderizado: um nome do cardápio seguido dele mesmo (só espaço ou pontuação entre os dois) reprova o texto da IA e só avisa no texto do dono. Vale para todos os campos que passam por `guardText` (convite, kit, justificativa, chat).
+- Testes: 4 casos novos na tabela de `tests/unit/ia/convite-rules.test.ts`.
+- Limite: convites já aprovados antes da regra continuam com o texto que o dono aprovou.
