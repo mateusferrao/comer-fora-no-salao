@@ -1603,3 +1603,7 @@ As decisões sobre a preparação pessoal do candidato para a apresentação (D2
 - Sai do recorte do painel o card "832 clientes que conheceram o Comer Fora" (efeito do histórico gerado, ~80× a conta de bolso). Entram a ativação (a IA lê o cardápio → kit pronto para imprimir, com a tela real do kit) e, no fecho, o contexto dos 20% (número fictício do briefing).
 - Exceção à D297 no vídeo: as telas reais do app (celular, kit, painel) mostram o logo do iFood, que faz parte do clone visual do Portal (D42), sempre com a barra "Protótipo de case". As partes ilustradas não usam logo.
 - Fala "custo e teto vêm do código" → "o sistema calcula o custo e o limite de gasto", para um gestor entender em 60 s. "Nada vale sem a aprovação" → "nada chega ao cliente sem a aprovação"; pelo MCP, quem aplica é um agente com o token da própria dona (D269).
+
+**D329 — Slide do processo também dentro da apresentação** (22/11, candidato) ✅
+- Complementa a D297. O arquivo `slide-processo` continua separado, porque é o item obrigatório do e-mail e precisa ser fácil de achar. Uma cópia idêntica entra como 1º slide do apêndice da apresentação, no lugar de "Como construí com IA", que tratava do mesmo assunto em versão menor.
+- Alternativas: documento único, em que o avaliador precisaria achar a página do item obrigatório; deixar como estava, em que quem abre só a apresentação não vê o processo.

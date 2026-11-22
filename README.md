@@ -62,7 +62,7 @@ flowchart LR
 
 ## Material do case
 - **Slide do processo** (prompts, APIs e ferramentas, riscos): [PDF](docs/entrega/slide-processo.pdf) · [PPTX](docs/entrega/slide-processo.pptx)
-- **Apresentação** (abertura, fecho e apêndice com telas reais, arquitetura, avaliações, métrica, privacidade e conta de bolso): [PDF](docs/entrega/apresentacao.pdf) · [PPTX](docs/entrega/apresentacao.pptx)
+- **Apresentação** (abertura, fecho e apêndice com o slide do processo, telas reais, arquitetura, avaliações, métrica, privacidade e conta de bolso): [PDF](docs/entrega/apresentacao.pdf) · [PPTX](docs/entrega/apresentacao.pptx)
 - **Vídeo-pitch** (1 min 19 s, animação 3D ilustrativa + telas reais; o valor para o dono e para o iFood): [assistir no Google Drive](https://drive.google.com/file/d/18ZEcmRKpVD2wCkSd95usBq3pxeyVt3Fb/view) · [`docs/entrega/video-pitch.mp4`](docs/entrega/video-pitch.mp4)
 - **Vídeo da demo** (2 min, telas reais da produção, voz sintética e legendas): [`docs/entrega/video-demo.mp4`](docs/entrega/video-demo.mp4)
 - **Documentação:** [como ler](docs/README.md) · [decisões principais](docs/decisoes-principais.md) · [arquitetura](docs/arquitetura.md) · [IA no produto](docs/ia-no-produto.md) · [como foi construído com IA](docs/processo-com-ia.md)
