@@ -291,6 +291,10 @@ export function buildCopilotTask(cp: CopilotPrompt, models: ModelRef[], tools: r
   };
 }
 
+/** Filtros de `buscar_clientes`: os mesmos no copiloto e no MCP (D267; o MCP gera o JSON Schema daqui). */
+export const CUSTOMER_SEGMENTS = ["sumiu", "perto", "convite_ativo", "frequente"] as const;
+export const customerSearchInput = z.object({ segmento: z.enum(CUSTOMER_SEGMENTS).nullable(), nome: z.string().max(40).nullable() });
+
 /** Ferramentas de leitura do copiloto (só dados do código; clientes sem contato — D262). */
 export function buildCopilotTools(input: CopilotInput): AiTool[] {
   return [
@@ -303,7 +307,7 @@ export function buildCopilotTools(input: CopilotInput): AiTool[] {
     {
       name: "buscar_clientes",
       description: "Clientes do restaurante (nome curto e histórico, sem contato). Filtre por segmento (sumiu, perto, convite_ativo, frequente) e/ou parte do nome. Cite com {cliente:Cn}.",
-      input: z.object({ segmento: z.enum(["sumiu", "perto", "convite_ativo", "frequente"]).nullable(), nome: z.string().max(40).nullable() }),
+      input: customerSearchInput,
       execute: async (raw) => {
         const { segmento, nome } = raw as { segmento: string | null; nome: string | null };
         const n = (s: string) => s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
