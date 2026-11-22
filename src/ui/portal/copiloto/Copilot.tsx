@@ -1,5 +1,6 @@
 "use client";
 
+import { createPortal } from "react-dom";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useId, useRef, useState, useSyncExternalStore, type FormEvent, type ReactNode } from "react";
 import { Button } from "@/src/ui/components/Button";
@@ -25,6 +26,7 @@ const PREFIX = "copiloto:conversa:";
 const MAX_KEEP = 12;
 const PANEL_W = "400px";
 const PROPOSAL_TTL_MS = 30 * 60_000;
+const noopSubscribe = () => () => {};
 /** Relógio fora do render (o compilador do React acusa `Date.now()` dentro do componente). */
 const clockNow = () => Date.now();
 
@@ -99,6 +101,13 @@ export function Copilot({ chips, scope }: { chips: Chips; scope: string }) {
   const titleId = useId();
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const launcher = useRef<HTMLButtonElement>(null);
+  // Onde fica o botão: na barra lateral (computador) ou no cabeçalho fixo (celular) — nada flutua sobre o conteúdo.
+  const slotId = desktop ? "copiloto-slot-side" : "copiloto-slot-head";
+  const slot = useSyncExternalStore(
+    noopSubscribe,
+    () => document.getElementById(slotId),
+    () => null,
+  );
   const endRef = useRef<HTMLDivElement>(null);
   const close = () => setOpen(false);
   const wasOpen = useRef(false);
@@ -315,21 +324,28 @@ export function Copilot({ chips, scope }: { chips: Chips; scope: string }) {
 
   return (
     <>
-      {/* Sempre montado (escondido com o painel aberto): o foco volta para ele ao fechar. */}
-      <button
-        ref={launcher}
-        hidden={open}
-        type="button"
-        onClick={() => setOpen(true)}
-        aria-expanded={open}
-        aria-haspopup={desktop ? undefined : "dialog"}
-        className="fixed right-4 bottom-4 z-30 inline-flex min-h-11 items-center gap-2 rounded-full bg-red-button px-4 py-2 text-sm font-semibold text-white shadow-high hover:brightness-95"
-      >
-        <svg aria-hidden="true" viewBox="0 0 24 24" className="size-5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z" />
-        </svg>
-        Assistente
-      </button>
+      {/* Sempre montado (no painel aberto, desabilitado): o foco volta para ele ao fechar. */}
+      {slot &&
+        createPortal(
+          <button
+            ref={launcher}
+            type="button"
+            onClick={() => setOpen((o) => !o)}
+            aria-expanded={open}
+            aria-haspopup={desktop ? undefined : "dialog"}
+            className={
+              desktop
+                ? "inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-sm border border-red-text px-3 text-sm font-semibold text-red-text hover:bg-nav-active"
+                : "inline-flex min-h-11 items-center gap-1 rounded-sm px-2 text-sm font-semibold text-red-text hover:bg-surface-muted"
+            }
+          >
+            <svg aria-hidden="true" viewBox="0 0 24 24" className="size-5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z" />
+            </svg>
+            Assistente
+          </button>,
+          slot,
+        )}
       {desktop && open && (
         <aside
           aria-labelledby={titleId}

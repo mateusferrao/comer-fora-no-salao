@@ -31,6 +31,8 @@ export function PortalShell({ nav, children, top, footer, mobileTitle, assistant
         <nav aria-label="Menu principal" className="flex-1 overflow-y-auto px-3 pb-6">
           {nav}
         </nav>
+        {/* S8: lugar do botão do assistente (sem flutuar sobre o conteúdo — revisão S8, E2E). */}
+        {assistant && <div id="copiloto-slot-side" className="px-4 pb-3" />}
         {footer && <div className="border-t border-divider px-4 py-3">{footer}</div>}
       </aside>
 
@@ -49,6 +51,7 @@ export function PortalShell({ nav, children, top, footer, mobileTitle, assistant
         </button>
         <Logo height={24} />
         {mobileTitle && <span className="min-w-0 flex-1 truncate text-sm font-semibold text-ink">{mobileTitle}</span>}
+        {assistant && <div id="copiloto-slot-head" className="ml-auto shrink-0" />}
       </header>
 
       <dialog
@@ -77,8 +80,7 @@ export function PortalShell({ nav, children, top, footer, mobileTitle, assistant
         {footer && <div className="border-t border-divider px-4 py-3">{footer}</div>}
       </dialog>
 
-      {/* S8: espaço sob o botão flutuante do assistente (revisão de produto 9). */}
-      <div id="conteudo" tabIndex={-1} className={`min-w-0 scroll-mt-12 focus:outline-none${assistant ? " pb-20" : ""}`}>
+      <div id="conteudo" tabIndex={-1} className="min-w-0 scroll-mt-12 focus:outline-none">
         {children}
       </div>
       {/* S8: Assistente do salão (painel do computador empurra o conteúdo por --copiloto-w). */}
