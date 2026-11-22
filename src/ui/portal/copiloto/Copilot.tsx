@@ -232,7 +232,7 @@ export function Copilot({ chips, scope }: { chips: Chips; scope: string }) {
           </button>
         </div>
       </header>
-      <div className="flex-1 space-y-3 overflow-y-auto px-4 py-3" role="log" aria-label="Conversa com o assistente" aria-busy={busy}>
+      <div className="flex-1 space-y-3 overflow-y-auto px-4 py-3" role="log" aria-label="Conversa com o assistente" aria-busy={busy} tabIndex={0}>
         {state?.msgs.length === 0 && (
           <p className="text-sm text-ink-muted">
             {onboarding ? "Pergunte o que quiser sobre os passos: o que é horário vazio, teto de convites, margem…" : "Exemplos: trocar a oferta de um convite, tirar um prato das ofertas, mudar o teto de um horário, ou perguntar como foi a semana."}

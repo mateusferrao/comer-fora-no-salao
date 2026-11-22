@@ -1,6 +1,6 @@
 # Revisão da fatia S8 — Copiloto do salão
 
-Data: 22/11/2026 (madrugada) · Base: `main` (sincronizada no merge `8bbd672`) · Revisado: `556128b` · Produção: ver §4
+Data: 22/11/2026 (madrugada) · Base: `main` (sincronizada no merge `8bbd672`) · Revisado: `556128b` · Merge na `main`: `df36504` (CI 114 verde, inclusive a fumaça contra produção) · Produção: `df36504`, depois a correção do foco (§4)
 
 ## 1. Resumo e veredito
 Pronta para merge. 4 revisores independentes (aderência, técnica, produto/UX, segurança/IA) + E2E profunda feita pela IA, local, com IA roteirizada **e** com IA real (chave demo), e passadas de toda a suíte com e sem a flag `copiloto`. Nenhum crítico ficou aberto; todos os altos foram corrigidos e reverificados. Dívidas abertas em §2 ("corrigir depois").
@@ -55,7 +55,19 @@ Não procedem: nenhum.
 | Suíte base com `copiloto=on` | todas | — | nada quebra | 1 achado (botão cobria formulário) → corrigido; demais falhas = limites de login/Bastidores esgotados pelas rodadas | logs | ok |
 
 ## 4. Matriz E2E (produção)
-(preenchida depois do merge e do deploy)
+Flags `copiloto`, `mcp_clientes` e `mcp_edicao` ligadas nos Bastidores depois do deploy (o candidato autorizou ler a senha pelo conector do Easypanel). Contas E2E (fora das métricas), IA real.
+| Cenário | Esperado | Observado | Evidência | Veredito |
+|---|---|---|---|---|
+| `/api/health` | `ok`, SHA do merge, `fakeAi:false` | `df36504`, `fakeAi:false` | curl | ok |
+| Flag desligada | rota do copiloto 404 | `{"erro":"desligado"} 404` antes de ligar | curl | ok |
+| Chip da demo → cartão → Aplicar | cartão com custo antes → depois; aplica; aba + faixa | cartão em 3,9 s; Cannoli → Gelato; R$ 2.618 → R$ 1.904; `&v=` | simulação `prod` | ok |
+| Recusa (Tiramisù) | motivo do código, texto honesto | "Não preparei a mudança: veja o motivo abaixo." + regra | simulação | ok |
+| Clientes / teto / semana | respostas sem número cru; cartão do teto | 3,7–7,3 s | simulação | ok |
+| Frase do salão (ativação) | preenche sem gravar | 3,8 s | simulação | ok |
+| 768 / 390 | axe limpo | 390: `scrollable-region-focusable` no histórico → corrigido (`tabIndex=0`) | simulação | corrigido |
+| MCP pela rota real | 10 ferramentas; clientes sem contato; propor → aplicar → já estava; 70% recusado; sem token 401 | tudo como esperado | `mcp-e2e.js` | ok |
+| Console e rede | sem erros | `ERROS []` | simulação | ok |
+| Ícone da aba | o novo `.ico` | md5 igual ao do repositório | curl | ok |
 
 ## 5. Console, rede, tempos e acessibilidade
 - Console e rede: nenhum erro nas simulações (`ERROS []`).
