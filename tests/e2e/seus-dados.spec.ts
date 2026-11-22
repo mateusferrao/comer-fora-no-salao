@@ -53,7 +53,11 @@ test("cliente: Entrar com e-mail na Jornada, sem check-in, e Seus dados", async 
   await code.getByLabel("Código").fill(codigo);
   await code.getByRole("button", { name: "Entrar" }).click();
   await expect(page.getByRole("heading", { name: "Olá, Cliente" })).toBeVisible();
-  await page.getByRole("button", { name: "Configurações da conta" }).click();
+  // Depois do reload, o clique só vale com a página interativa (em produção, a hidratação demora mais).
+  await expect(async () => {
+    await page.getByRole("button", { name: "Configurações da conta" }).click();
+    await expect(page.getByRole("dialog", { name: "Sua conta" })).toBeVisible({ timeout: 2_000 });
+  }).toPass({ timeout: 20_000 });
   await page.getByRole("button", { name: "Seus dados" }).click();
   await expect(page.getByRole("dialog", { name: "Seus dados" }).getByLabel("Nome")).toHaveValue("Cliente Jornada");
   await axe(page);

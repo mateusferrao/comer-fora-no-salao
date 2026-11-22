@@ -159,6 +159,8 @@ test.describe("check-in no restaurante E2E", () => {
   });
 
   test("holdout: sem 2º card, sem menção a convite, e a Jornada sem convite", async ({ playwright, baseURL, browser }) => {
+    // Até 100 check-ins pela API até cair um cliente do grupo de controle (1 em 10): em produção passa de 30 s.
+    test.setTimeout(120_000);
     let holdoutState: Awaited<ReturnType<APIRequestContext["storageState"]>> | null = null;
     for (let i = 0; i < 100 && !holdoutState; i++) {
       const req = await playwright.request.newContext({ baseURL });
