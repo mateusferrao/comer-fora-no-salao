@@ -68,6 +68,10 @@ Flags `copiloto`, `mcp_clientes` e `mcp_edicao` ligadas nos Bastidores depois do
 | MCP pela rota real | 10 ferramentas; clientes sem contato; propor → aplicar → já estava; 70% recusado; sem token 401 | tudo como esperado | `mcp-e2e.js` | ok |
 | Console e rede | sem erros | `ERROS []` | simulação | ok |
 | Ícone da aba | o novo `.ico` | md5 igual ao do repositório | curl | ok |
+| Dívidas pagas (D275): health | SHA do merge, `fakeAi:false` | `58e90ef`, `fakeAi:false`, `ia.teto: suspenso` (D254) | curl | ok |
+| D275: MCP `tools/list` | `propor_mudanca` com as 8 ações; sem `pattern`/`$schema`; filtros de `buscar_clientes` opcionais | tudo como esperado; "tom" proposto e descartado pela rota real | `mcp-list.js` | ok |
+| D275: copiloto com IA real | chip → cartão → Aplicar; recusa; clientes; teto; semana | ok; 4,2–8,8 s; console e rede `ERROS []` | simulação `prod-d275` | ok |
+| D275: 390 px com pedido em andamento | axe limpo | `scrollable-region-focusable` na fileira de sugestões (chips `disabled` enquanto a resposta não chega) → chips com `aria-disabled`; E2E nova segura a resposta e roda o axe (falha sem a correção) | `axe390c.js`, `copiloto.on.spec.ts` | corrigido |
 
 ## 5. Console, rede, tempos e acessibilidade
 - Console e rede: nenhum erro nas simulações (`ERROS []`).
