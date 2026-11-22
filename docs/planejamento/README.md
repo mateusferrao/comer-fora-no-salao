@@ -27,7 +27,7 @@ Legenda: **[B]** briefing · **[P]** pesquisa pública · **[O]** observado nos 
 | S5 | Valor e conversão | [aprovado em 21/11](../fatias/S5/planejamento.md) | revisão única S4–S6 ✅ (abaixo) |
 | S6 | IA que opera e sistema configurável | [aprovado em 21/11](../fatias/S6/planejamento.md) | [revisão S4–S6](../fatias/S6/revisao/revisao.md) ✅ (merge `959f679`) |
 | S8 | Assistente do salão (copiloto) e MCP sobre o mesmo catálogo | [aprovado em 21/11](../fatias/S8/planejamento.md) | [revisão](../fatias/S8/revisao/revisao.md) ✅ (merge `df36504`) |
-| S9 | Polimento pré-entrega: revisão completa e revisão de copy | [aprovado em 22/11](../fatias/S9/planejamento.md) | em andamento |
-| S7 | Entregáveis: slide, vídeo, cópia pública, preparação (23/11, até 15h) | [no plano de implementação](plano-implementacao.md) | — |
+| S9 | Polimento pré-entrega: revisão completa e revisão de copy | [aprovado em 22/11](../fatias/S9/planejamento.md) | [revisão](../fatias/S9/revisao/revisao.md) ✅ |
+| S7 | Entregáveis do case: slide, apresentação, vídeo, documentação, repositório público, envio | [aprovado em 22/11](../fatias/S7/planejamento.md) | em andamento |
 
 A S7 era a "S4 — Entregáveis" do plano inicial; foi renumerada no replanejamento de 21/11 (D151) e roda por último, depois da S8 e da S9.

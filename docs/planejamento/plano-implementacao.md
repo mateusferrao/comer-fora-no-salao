@@ -173,6 +173,8 @@ Entrega testável: painel com métrica principal (4 estados), indicadores anteci
 ---
 
 ## Fatia S7 — Entregáveis (23/11, até 15h) — era a S4 (renumerada no replanejamento de 21/11, D151)
+
+> **Superado em 22/11 pelo [planejamento da S7](../fatias/S7/planejamento.md)** (D297–D320): fatias E1–E8, envio assim que tudo passar nos testes (D317), documentação revisada antes dos slides (D318), repositório público com histórico filtrado (D298). O texto abaixo fica como registro do plano original.
 Entrega verificável: link estável, envio pelos dois canais, slide PPTX, material extra e preparação.
 
 ### Tarefa 4.1: Congelamento e checagem final

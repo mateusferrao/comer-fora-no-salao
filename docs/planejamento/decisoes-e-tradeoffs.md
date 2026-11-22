@@ -1495,3 +1495,68 @@ Detalhes, perguntas, revisão independente (2 subagentes) e itens [C] em [docs/f
 
 **D294 — Landing: ajustes da revisão** (22/11, IA [C]; mantém o título da D278) ✅
 - Linha acima do título nomeia o produto ("Comer Fora no salão · para restaurantes com horário sobrando"); subtítulo diz "benefício na 1ª visita" e "já descontado o custo dos convites"; "Do cardápio ao kit para imprimir em 5 passos"; "Quando você gera o plano da semana" (o agendador nasce desligado); custo: só os convites têm teto (texto da FAQ "Quanto custa?" da D184 atualizado); legenda dos prints: "histórico gerado, com o efeito do convite fixado em +0,2 visita… Não é resultado medido"; no celular, recorte só do cartão de reais. Termos únicos no produto: "teto semanal de convites", "benefício de 1ª visita", plano "Sugerido · esperando sua aprovação".
+
+---
+
+## P. Fatia S7 — Entregáveis do case (22/11, `planejar-fatia`; planejamento em [../fatias/S7/planejamento.md](../fatias/S7/planejamento.md))
+As decisões sobre a preparação pessoal do candidato para a apresentação (D295, D296, D300–D302, D306–D308, D313–D315) ficam registradas no repositório privado.
+
+**D297 — Slides: 1 slide do processo + apresentação com abertura, fecho e apêndice** (22/11, candidato) ✅
+- PPTX + PDF; identidade visual do produto, **sem o logo do iFood**, com o rodapé "Protótipo de case · não é material oficial do iFood".
+- Alternativas: só a demo, sem slides (diagnóstico e negócio ficariam só na fala); deck completo com demo curta (o case pede demonstração ao vivo).
+
+**D298 — Repositório público com o histórico filtrado** (22/11, candidato, contra a recomendação de um commit único) ✅
+- Lista do que entra aplicada a todos os commits (`git filter-repo`), com auditoria de segredos e de dados pessoais no histórico inteiro.
+- Trade-off: mostra a evolução real do projeto, mas exige auditar todo o histórico; resíduo que não puder ser limpo volta ao candidato antes da publicação.
+
+**D299 — Vídeo de até 3 min: telas reais + voz sintética local + legendas** (22/11, candidato) ✅
+- Voz Piper pt-BR (roda localmente, sem chave); animação ilustrativa "uma semana da Cantina" com rótulo de números fictícios, se houver tempo (D312). Hospedagem: Google Drive e assets de release do repositório público.
+- Alternativas: narração humana; TTS pago (ElevenLabs, OpenAI, Google).
+
+**D303 — No vídeo, IA ao vivo híbrida** (22/11, candidato) ✅
+- Cardápio do exemplo (cache), plano já gerado no restaurante de exemplo, assistente ao vivo. Ritmo garantido sem esconder a IA.
+
+**D304 — Visão de negócio por alavancas, sem inventar tarifa** (22/11, candidato) ✅
+- O resultado para o iFood é expresso nas métricas do briefing (novos usuários do Comer Fora, % de restaurantes divulgando); monetização só como hipótese rotulada [H]. A base "20% sobre os restaurantes com salão" é marcada como interpretação nossa (o briefing diz "restaurantes ativos").
+
+**D305 — Limites honestos declarados** (22/11, candidato) ✅
+- Uma frase na demo e no vídeo ("o histórico deste restaurante é gerado; o que foi medido de verdade foi a IA"); os detalhes ficam na documentação.
+
+**D309 — Identidades de demonstração do apresentador** (22/11, candidato) ✅
+- E-mails do apresentador isentos do teto público (`PRESENTER_EMAILS`); "Recriar vitrine" antes de qualquer gravação, para limpar contatos de quem testou.
+
+**D310 — Publicação do repositório só com OK separado** (22/11, candidato) ✅
+- O OK vem depois do relatório da auditoria, não junto com a aprovação do plano, porque a publicação é irreversível.
+
+**D311 — O que entra no repositório público** (22/11, candidato) ✅
+- Entram:
+  - código, testes, migrações e configurações;
+  - `docs/planejamento`;
+  - os planejamentos das fatias e as revisões em `.md`, sem as capturas;
+  - `.claude/skills`;
+  - as linhas `Claude-Session` dos commits.
+- Ficam fora:
+  - `eval/`;
+  - os materiais recebidos do iFood;
+  - os documentos pessoais;
+  - os prints de referência do app;
+  - as capturas de tela.
+
+**D312 — Vídeo: telas reais primeiro, animação depois** (22/11, candidato) ✅
+- A animação tem prazo de 2 h; se falhar, vira 2D; se faltar tempo, o vídeo sai sem ela. O candidato aprova uma amostra da voz antes do render final.
+
+**D316 — Infra de envio de e-mail citada na D132 fica no público** (22/11, candidato) ✅
+- Usuário IAM, domínio de envio e região não são segredos e mostram a solução real do bloqueio de DNS.
+
+**D317 — Envio assim que os entregáveis passarem nos testes** (22/11, candidato) ✅
+- Na manhã de 23/11 só se recria a demo e o restaurante de exemplo (virada da semana) e se roda a fumaça, sem reenviar.
+
+**D318 — Revisão completa da documentação pública antes dos slides e do repositório** (22/11, candidato) ✅
+- Pede: README reescrito; documentos de entrada (como ler, decisões principais, arquitetura, IA no produto, processo com IA); passada de consistência; textos do app sem contradição.
+- Teste: 2 revisores, no papel de avaliador do iFood, leem a frio e respondem 10 perguntas de compreensão.
+
+**D319 — E-mails mascarados no vídeo e nos prints públicos** (22/11, candidato) ✅
+- Na gravação, o texto exibido é trocado por `dono@exemplo.com` / `cliente@exemplo.com`, com a legenda "e-mails ocultados". O app não muda. Motivo: a regra do case "nada de dados pessoais de ninguém".
+
+**D320 — Revisão por fatia da S7: só produto e aderência ao case** (22/11, candidato) ✅
+- Cada fatia fecha com commit e push e uma revisão independente de produto e aderência ao iFood. A revisão técnica não se aplica, porque a S7 não muda código de produto; as exceções (o `workflow_dispatch` do CI e o texto "Material do case" no app) passam pelo CI completo.
