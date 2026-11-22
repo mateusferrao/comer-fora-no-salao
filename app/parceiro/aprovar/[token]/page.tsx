@@ -19,7 +19,8 @@ const STATE_TEXT: Record<Exclude<DigestPageState, "ok">, string> = {
   revisor: "A conferência automática pediu ajustes nos textos. Ajuste no Portal antes de aprovar.",
   desligado: "Aprovação por e-mail desligada nas suas configurações. Aprove no Portal.",
 };
-const PLAN_STATUS: Record<string, string> = { aprovado: "aprovado", descartado: "descartado", vencido: "substituído", proposto: "esperando sua aprovação", gerando: "sendo gerado" };
+// S9: o mesmo nome do Portal (Visão geral e Plano da semana). `vencido` aqui é o plano trocado por um mais novo.
+const PLAN_STATUS: Record<string, string> = { aprovado: "Aprovado", descartado: "Descartado", vencido: "Substituído por um plano mais novo", proposto: "Sugerido · esperando sua aprovação", gerando: "Gerando…" };
 
 /**
  * "Revisar e aprovar" do resumo semanal (S6.1 — D187, D195): o GET só mostra (robôs de e-mail não aprovam nada);

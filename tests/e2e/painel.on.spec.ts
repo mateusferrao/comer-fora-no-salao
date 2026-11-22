@@ -26,7 +26,7 @@ for (const width of [1280, 390]) {
     await expect(top).toContainText(/R\$\s?[\d.]+ de margem a mais/);
     await expect(top).toContainText("Já descontado o custo dos convites");
     await expect(page.getByRole("heading", { name: "Metas desta semana" })).toBeVisible();
-    await expect(page.getByTestId("metas").getByRole("progressbar").first()).toHaveAttribute("aria-label", /mesas? a mais nesta semana/);
+    await expect(page.getByTestId("metas").getByRole("progressbar").first()).toHaveAttribute("aria-label", /mesas? com convite nesta semana/);
     // A métrica em visitas continua, abaixo.
     await expect(page.getByTestId("metric-state")).toHaveAttribute("data-state", "positivo");
     await axe(page);

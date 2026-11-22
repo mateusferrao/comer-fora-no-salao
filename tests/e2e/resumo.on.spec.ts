@@ -44,7 +44,7 @@ test("resumo semanal: prévia com link → página de confirmação → aprovar 
   const mail = await ctx.newPage();
   await mail.goto(path);
   await expect(mail.getByRole("heading", { name: /^Plano da semana · / })).toBeVisible();
-  await expect(mail.getByText("Situação: esperando sua aprovação")).toBeVisible();
+  await expect(mail.getByText("Situação: Sugerido · esperando sua aprovação")).toBeVisible();
   await axe(mail);
   await mail.getByRole("button", { name: "Aprovar e enviar convites" }).click();
   await expect(mail.getByTestId("aprovado-email")).toContainText("Plano aprovado.");

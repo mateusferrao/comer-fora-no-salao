@@ -169,7 +169,7 @@ export function Step5Resumo({ view, slug, todayPlus30 }: { view: PackageView; sl
       </p>
       <p className="text-sm text-ink">
         Se todos os convites da semana forem usados, o custo {week.isMax ? "máximo" : "estimado"} é{" "}
-        <strong>{week.isMax ? brl(week.cents) : `≈ ${brl(week.cents)}`}</strong> por semana. Você muda o teto de cada horário em Configurações.
+        <strong>{week.isMax ? brl(week.cents) : `≈ ${brl(week.cents)}`}</strong> por semana. Você muda o teto semanal de cada horário em Configurações.
       </p>
       <StickyActions
         justify="between"

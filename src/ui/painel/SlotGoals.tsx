@@ -2,7 +2,10 @@ import type { SlotGoal } from "@/src/modules/analytics/domain/value";
 import { slotLabel } from "@/src/modules/beneficios/domain/slot-text";
 import { int } from "./format";
 
-/** "Metas desta semana" (S5.1): convites usados no horário vazio × mesas a mais que o dono quer (1 convite usado = 1 mesa). */
+/**
+ * "Metas desta semana" (S5.1): convites usados no horário vazio × mesas a mais que o dono quer (1 convite usado = 1 mesa).
+ * S9: "mesas com convite" (conta uso, não prova efeito); "teto semanal" como no resto do Portal.
+ */
 export function SlotGoals({ goals }: { goals: SlotGoal[] }) {
   if (!goals.length) return null;
   return (
@@ -17,7 +20,7 @@ export function SlotGoals({ goals }: { goals: SlotGoal[] }) {
         {goals.map((g) => {
           const label = slotLabel(g);
           const ratio = g.metaMesas > 0 ? Math.min(1, g.usados / g.metaMesas) : 0;
-          const main = `${int(g.usados)} de ${int(g.metaMesas)} ${g.metaMesas === 1 ? "mesa" : "mesas"} a mais nesta semana`;
+          const main = `${int(g.usados)} de ${int(g.metaMesas)} ${g.metaMesas === 1 ? "mesa" : "mesas"} com convite nesta semana`;
           return (
             <li key={g.slotId} className="flex flex-col gap-1 rounded-xs border border-divider p-3">
               <p className="font-semibold text-ink">{label}</p>
@@ -29,7 +32,7 @@ export function SlotGoals({ goals }: { goals: SlotGoal[] }) {
               </div>
               <p className="text-xs text-ink-muted">
                 {int(g.emitidos)}
-                {g.teto != null ? ` de ${int(g.teto)}` : ""} convites já entregues nesta semana{g.teto != null ? " (limite semanal)" : ""}
+                {g.teto != null ? ` de ${int(g.teto)}` : ""} convites já entregues nesta semana{g.teto != null ? " (teto semanal)" : ""}
               </p>
             </li>
           );

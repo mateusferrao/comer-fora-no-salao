@@ -7,6 +7,7 @@ import type { DashboardView } from "@/src/modules/analytics/application/dashboar
 import type { Incremental } from "@/src/modules/analytics/domain/incremental";
 import type { Period } from "@/src/modules/analytics/domain/funnel";
 import { marginState } from "@/src/modules/analytics/domain/value";
+import { crossZeroMoneyText } from "@/src/modules/analytics/domain/value-text";
 import { brl, int, pct, signed, weekLabel } from "./format";
 import { RecentCheckins } from "./RecentCheckins";
 import { SlotGoals } from "./SlotGoals";
@@ -178,7 +179,7 @@ function moneyText(d: DashboardView): string {
   const st = marginState(margin);
   if (st === "positiva") return `≈ ${brl(margin.cents)} de margem a mais, já descontado o custo dos convites (pode ficar ${range}). Conta feita com o ticket e a margem que você informou.`;
   if (st === "negativa") return `Os convites custaram ≈ ${brl(Math.abs(margin.cents))} a mais do que renderam de margem (${range}). Conta feita com o ticket e a margem que você informou.`;
-  return `Em reais, ainda não dá para garantir lucro: pode ficar ${range}, já descontado o custo dos convites. Conta feita com o ticket e a margem que você informou.`;
+  return `${crossZeroMoneyText(brl(margin.lo), brl(margin.hi))} Conta feita com o ticket e a margem que você informou.`;
 }
 
 function MetricHero({ d, showMoney = false }: { d: DashboardView; showMoney?: boolean }) {
@@ -227,7 +228,7 @@ function MetricHero({ d, showMoney = false }: { d: DashboardView; showMoney?: bo
   );
 }
 
-const PLAN_TEXT: Record<string, string> = { proposto: "Proposto · aguardando você", aprovado: "Aprovado nesta semana", vencido: "O plano da semana passada venceu", gerando: "Gerando…" };
+const PLAN_TEXT: Record<string, string> = { proposto: "Sugerido · esperando sua aprovação", aprovado: "Aprovado nesta semana", vencido: "O plano da semana passada venceu", gerando: "Gerando…" };
 /** CTA pelo estado (auditoria do Portal 1.2): diz o que acontece ao clicar. */
 const PLAN_CTA: Record<string, string> = { proposto: "Revisar e aprovar", aprovado: "Ver o plano", vencido: "Gerar o plano da semana", gerando: "Ver o plano" };
 

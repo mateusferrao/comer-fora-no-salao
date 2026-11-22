@@ -58,10 +58,15 @@ describe("e-mail do resumo semanal (S6.1, D188)", () => {
     expect(n.subject).toBe("Cantina Nonna Lucia: seu plano da semana está pronto para aprovar");
   });
 
-  it("intervalo da margem que cruza o zero: diz que ainda não dá para garantir (A5)", () => {
+  it("intervalo da margem que cruza o zero: diz que ainda pode ser acaso (A5; S9, mesmo texto do painel)", () => {
     const z = digestEmail({ ...base, topline: { kind: "causal_cruza_zero", visitas: "positivo", cents: 30_000, lo: -5_000, hi: 65_000, nT: 120 } });
-    expect(z.text).not.toMatch(/de margem a mais/);
-    expect(z.text).toMatch(/Os convites trouxeram visitas a mais\. Em reais, ainda não dá para garantir lucro: pode ficar entre -R\$\s?50 e R\$\s?650, já descontado o custo dos convites\./);
+    expect(z.text).not.toMatch(/de margem a mais|garantir lucro|trocar a oferta/);
+    expect(z.text).toMatch(/Os convites trouxeram visitas a mais\. Em reais, ainda pode ser acaso: o resultado fica entre -R\$\s?50 e R\$\s?650, já descontado o custo dos convites\./);
+  });
+
+  it("cruza o zero com visitas a menos: sugere trocar a oferta, como no negativo (S9)", () => {
+    const z = digestEmail({ ...base, topline: { kind: "causal_cruza_zero", visitas: "negativo", cents: -3_000, lo: -40_000, hi: 20_000, nT: 120 } });
+    expect(z.text).toMatch(/Quem recebeu convite voltou menos do que quem ficou sem\. Em reais, ainda pode ser acaso: .* Vale trocar a oferta no plano da semana\./);
   });
 
   it("escapa HTML e tira quebra de linha do assunto (injeção de cabeçalho)", () => {
