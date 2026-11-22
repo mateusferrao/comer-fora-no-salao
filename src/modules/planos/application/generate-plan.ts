@@ -10,7 +10,7 @@ import type { PackageOut } from "@/src/modules/ia/tasks/package";
 import { and, eq } from "drizzle-orm";
 import type { Db } from "@/src/db/client";
 import { menuItems, owners, weeklyPlans } from "@/src/db/schema";
-import { buildCandidates, fallbackChoices, toPlanCandidate } from "@/src/modules/onboarding/domain/candidates";
+import { buildCandidates, fallbackChoices, offerKeyOf, toPlanCandidate } from "@/src/modules/onboarding/domain/candidates";
 import { slotAliases } from "@/src/modules/beneficios/domain/slot-text";
 import { recordAiCall } from "@/src/modules/ia/ai-calls";
 import type { AiGateway } from "@/src/modules/ia/gateway";
@@ -23,7 +23,7 @@ import { systemClock } from "@/src/shared/clock";
 import { getActivePrompt, promptSuffix } from "@/src/modules/config/application/app-config";
 import { learnedTemplate, justificationTemplate } from "../domain/plan-facts";
 import { startGenerating } from "./generating";
-import { getPlanInsights } from "./insights";
+import { getPlanInsights, versionForKey } from "./insights";
 import { getFlags } from "@/src/modules/config/application/app-config";
 import { ownerExamples } from "@/src/modules/ia/examples";
 import { guardText } from "@/src/modules/ia/guardrails";
@@ -70,7 +70,22 @@ export async function generateWeeklyPlan(
   const agoraItem = ctx.agora ? menu.find((m) => m.id === ctx.agora!.offer.params.itemId) : undefined;
   // Teto recalibrado pelo uso real (espec. 3.3): substitui o teto inicial de cada candidata.
   const capBy = Object.fromEntries(ins.offers.map((o) => [o.slotId, o.recalibratedCap]));
-  const cands = buildCandidates(ctx.slots, menu, { ticketCents: ctx.restaurant.ticketCents, marginPct: ctx.restaurant.marginPct, exclude, minValueCents: agoraItem?.priceCents }).map((c) => ({
+  // Veredito "trocar" obrigatório (S9, A4): a oferta avaliada (tipo + item) sai das candidatas da faixa, entra no guard
+  // e o modo sem IA também a pula.
+  const offerKeyByLearned = new Map<string, string>();
+  for (const o of ins.offers) {
+    if (o.verdict !== "trocar") continue;
+    const v = await versionForKey(db, p.restaurantId, o.key);
+    const itemId = (v?.params as { itemId?: string } | undefined)?.itemId;
+    if (v && itemId) offerKeyByLearned.set(o.key, offerKeyOf({ kind: v.kind, params: { itemId } }));
+  }
+  const avoidBySlot: Record<string, string[]> = {};
+  for (const o of ins.offers) {
+    const k = offerKeyByLearned.get(o.key);
+    if (k) (avoidBySlot[o.slotId] ??= []).push(k);
+  }
+  const learnedIn = ins.learned.map((l) => (offerKeyByLearned.has(l.key) ? { ...l, offerKey: offerKeyByLearned.get(l.key)! } : l));
+  const cands = buildCandidates(ctx.slots, menu, { ticketCents: ctx.restaurant.ticketCents, marginPct: ctx.restaurant.marginPct, exclude, minValueCents: agoraItem?.priceCents, avoidBySlot }).map((c) => ({
     ...c,
     options: c.options.map((o) => ({ ...o, weeklyCap: capBy[c.slotId] ?? o.weeklyCap })),
   }));
@@ -81,7 +96,7 @@ export async function generateWeeklyPlan(
         guardText(raw, { items: Object.fromEntries(ctx.menu.map((m) => [m.id, m.name])), slots: Object.fromEntries(ctx.slots.map((s) => [s.id, slotPhrase(s)])), oferta: "a oferta" }, { allowed: ["prato", "horario", "oferta"], maxLen: 160, field: "textoConvite", mode: "ia", avoid: ownerDataOf(ctx.restaurant).avoid }).ok,
       )
     : [];
-  const pp = buildPackagePrompt({ restaurantName: ctx.restaurant.name, cuisine: ctx.restaurant.cuisine, slots: ctx.slots, cands, menu, facts: ins.facts, learned: ins.learned, instructions: prompt.instructions, tone: ctx.restaurant.aiTone, examples, owner: ownerDataOf(ctx.restaurant) });
+  const pp = buildPackagePrompt({ restaurantName: ctx.restaurant.name, cuisine: ctx.restaurant.cuisine, slots: ctx.slots, cands, menu, facts: ins.facts, learned: learnedIn, instructions: prompt.instructions, tone: ctx.restaurant.aiTone, examples, owner: ownerDataOf(ctx.restaurant) });
 
   let choices: Array<{ slotId: string; candidateId: string; textoConvite: string; justificativa: string }> | null = null;
   let learned: Array<{ ofertaKey: string; verdict: "manter" | "trocar" | "cedo_demais"; texto: string }> | null = null;
@@ -128,7 +143,7 @@ export async function generateWeeklyPlan(
 
   const alias = new Map(slotAliases(ctx.slots).map((a) => [a.slot.id, a.alias]));
   if (!choices) {
-    choices = fallbackChoices(ctx.slots, cands).map((c) => ({
+    choices = fallbackChoices(ctx.slots, cands, avoidBySlot).map((c) => ({
       ...c,
       textoConvite: PLAN_FALLBACK_INVITE.replace("{horario}", `{horario:${c.slotId}}`),
       justificativa: justificationTemplate(alias.get(c.slotId) ?? "A", c.slotId, ins.facts),

@@ -47,7 +47,15 @@ export type PackageOut = {
 };
 
 /** Oferta da semana anterior com o veredito do código (D220). `key` = `<slotId>:v<n>`. */
-export type LearnedInput = { key: string; slotId: string; verdict: "manter" | "trocar" | "cedo_demais"; gain: string; title: string };
+export type LearnedInput = {
+  key: string;
+  slotId: string;
+  verdict: "manter" | "trocar" | "cedo_demais";
+  gain: string;
+  title: string;
+  /** Oferta avaliada, `tipo:item` (S9, A4): com "trocar", a mesma oferta não pode ser escolhida de novo na faixa. */
+  offerKey?: string;
+};
 
 export type PackagePrompt = {
   system: string;
@@ -59,6 +67,8 @@ export type PackagePrompt = {
   learnedByAlias: Map<string, LearnedInput>;
   /** "O que evitar" do dono (D197): vai para o guard. */
   avoid: readonly string[];
+  /** S9 (A4): candidatas iguais a uma oferta com veredito "trocar" na mesma faixa (apelido → faixa). */
+  swapped: ReadonlyMap<string, string>;
 };
 
 const clean = (s: string) => s.replace(/[{}<>\n\r]/g, "").slice(0, 60);
@@ -133,9 +143,12 @@ export function buildPackagePrompt(p: {
     items: Object.fromEntries([...itemByAlias].map(([a, m]) => [a, m.name])),
     slots: Object.fromEntries(aliases.map((a) => [a.alias, slotPhrase(a.slot)])),
   };
+  // S9 (A4): a candidata igual (tipo + item, mesma faixa) a uma oferta que o código mandou trocar.
+  const swapIds = new Set((p.learned ?? []).filter((l) => l.verdict === "trocar" && l.offerKey).map((l) => `${l.slotId}:${l.offerKey}`));
+  const swapped = new Map([...candByAlias].filter(([, c]) => swapIds.has(c.id)).map(([a, c]) => [a, c.slotAlias] as const));
   const rules = `${RULES}\n${learnedByAlias.size ? RULE_LEARNED : RULE_FIRST}`;
   const system = `${p.instructions ?? PACKAGE_INSTRUCTIONS}\n\n${rules}${hasOwnerData(p.owner) ? `\n\n${OWNER_DATA_SYSTEM}` : ""}`;
-  return { system, text, slotByAlias, candByAlias, itemByAlias, ctxBase, learnedByAlias, avoid: p.owner?.avoid ?? [] };
+  return { system, text, slotByAlias, candByAlias, itemByAlias, ctxBase, learnedByAlias, avoid: p.owner?.avoid ?? [], swapped };
 }
 
 /** Confere a saída contra as candidatas e os textos contra as regras fixas (guard da camada 2). */
@@ -149,6 +162,9 @@ export function packageGuard(pp: PackagePrompt): (d: PackageOut) => GuardResult 
       seen.add(e.faixa);
       const c = pp.candByAlias.get(e.candidata);
       if (!c || c.slotAlias !== e.faixa) reasons.push(`candidata_fora_da_faixa:${e.candidata}`);
+      // S9 (A4): veredito "trocar" é obrigatório quando a faixa tem outra candidata.
+      const others = [...pp.candByAlias.values()].filter((x) => x.slotAlias === e.faixa).length > 1;
+      if (pp.swapped.get(e.candidata) === e.faixa && others) reasons.push(`manteve_oferta_trocar:${e.faixa}`);
       const ctx = { ...pp.ctxBase, oferta: c?.gain };
       // D226: o convite cita o {horario:X} da própria faixa, sem artigo antes e sem repetir a oferta (determinístico).
       const g1 = guardText(e.textoConvite, ctx, { allowed: ["prato", "horario", "oferta"], maxLen: 160, field: "textoConvite", mode: "ia", avoid: pp.avoid, requireSlot: e.faixa });

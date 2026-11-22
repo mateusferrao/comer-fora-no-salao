@@ -54,6 +54,25 @@ describe("candidatas (código decide dinheiro; nota só econômica — D121)", (
     ]);
   });
 
+  it("veredito 'trocar' (S9, A4): a oferta (tipo + item) sai das candidatas só daquela faixa; outro item da família entra", () => {
+    const decl = { ticketCents: 8500, marginPct: 65, exclude: ["panna", "tiramisu"] };
+    const [a, b] = buildCandidates([A, B], MENU, { ...decl, avoidBySlot: { A: ["cortesia:limonada"] } });
+    expect(a!.options.map((o) => o.id)).not.toContain("A:cortesia:limonada");
+    expect(a!.options.map((o) => o.id)).toContain("A:cortesia:soda");
+    expect(b!.options.map((o) => o.id)).toContain("B:cortesia:limonada");
+  });
+
+  it("veredito 'trocar' sem outra opção: a oferta fica (a faixa não fica sem candidata)", () => {
+    const one = [M("bolo", "sobremesa", 1800)];
+    const [a] = buildCandidates([A], one, { ticketCents: 8500, marginPct: 65, exclude: [], avoidBySlot: { A: ["doce_gratis:bolo"] } });
+    expect(a!.options.map((o) => o.id)).toContain("A:doce_gratis:bolo");
+  });
+
+  it("veredito 'trocar' no modo sem IA: pula a oferta quando há outra", () => {
+    const cs = buildCandidates([A, B], MENU, { ticketCents: 8500, marginPct: 65, exclude: ["panna", "tiramisu"] });
+    expect(fallbackChoices([A, B], cs, { A: ["cortesia:limonada"] })[0]).toEqual({ slotId: "A", candidateId: "A:doce_gratis:gelato" });
+  });
+
   it("formato do plano (planContentSchema): offer plano {kind,itemId,pct}", () => {
     const [a] = buildCandidates([A], MENU, { ticketCents: 8500, marginPct: 65, exclude: [] });
     expect(toPlanCandidate(a!.options.find((o) => o.offer.kind === "desconto")!)).toEqual({ id: "A:desconto:nhoque", offer: { kind: "desconto", itemId: "nhoque", pct: 15 }, score: expect.any(Number), unitCostCents: 780, weeklyCap: 40 });

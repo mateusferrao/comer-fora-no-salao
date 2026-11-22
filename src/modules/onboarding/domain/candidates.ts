@@ -27,7 +27,15 @@ export type Declared = {
    * exclusão: sem item que alcance o piso, vale o mais barato da família.
    */
   minValueCents?: number;
+  /**
+   * Veredito "trocar" (S9, A4): por faixa, as ofertas `tipo:item` que o "o que aprendemos" mandou trocar. Saem das
+   * candidatas daquela faixa (outro item da mesma família pode entrar); se não sobrar nenhuma, ficam.
+   */
+  avoidBySlot?: Readonly<Record<string, readonly string[]>>;
 }
+
+/** Chave da oferta para o veredito "trocar": tipo + item (S9, A4). */
+export const offerKeyOf = (o: { kind: string; params: { itemId: string } }) => `${o.kind}:${o.params.itemId}`;
 
 type Family = { kind: OfferKind; categories: MenuCategory[]; pct?: number };
 const FAMILIES: Family[] = [
@@ -50,16 +58,20 @@ export function weeklyCapFor(slot: Slot): number {
   return Math.max(1, slot.extraTables * INVITES_PER_TABLE);
 }
 
-export function buildCandidates(slots: readonly Slot[], menu: readonly MenuItem[], decl: Declared): SlotCandidates[] {
+type PoolEntry = Omit<Candidate, "id" | "weeklyCap"> & { reaches: boolean };
+
+/** As 3 melhores, uma por família, sem as ofertas `avoid` (`tipo:item`). */
+function topOffers(menu: readonly MenuItem[], decl: Declared, avoid: readonly string[]): PoolEntry[] {
   const ref = ticketRef(menu, decl.ticketCents);
   const margin = decl.marginPct ?? undefined;
   const floor = decl.minValueCents ?? 0;
-  const pool: Array<Omit<Candidate, "id" | "weeklyCap"> & { reaches: boolean }> = [];
+  const pool: PoolEntry[] = [];
   for (const f of FAMILIES) {
     let best: Omit<Candidate, "id" | "weeklyCap"> | null = null;
     let bestReaches = false;
     for (const item of menu) {
       if (!f.categories.includes(item.category) || decl.exclude.includes(item.id)) continue;
+      if (avoid.includes(`${f.kind}:${item.id}`)) continue;
       if (item.priceCents < MIN_PRICE_SHARE * ref) continue;
       if (f.kind !== "desconto" && item.priceCents > MAX_FREE_PRICE_SHARE * ref) continue;
       const offer: Offer = { kind: f.kind, params: f.pct ? { itemId: item.id, pct: f.pct } : { itemId: item.id } };
@@ -76,23 +88,37 @@ export function buildCandidates(slots: readonly Slot[], menu: readonly MenuItem[
   }
   // Primeiro as que alcançam o valor do "agora"; dentro de cada grupo, a nota (só econômica — D121).
   pool.sort((a, b) => Number(b.reaches) - Number(a.reaches) || b.score - a.score);
-  const top = pool.slice(0, 3);
-  return slots.map((s) => ({
-    slotId: s.id,
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars -- tira o campo interno
-    options: top.map(({ reaches: _r, ...c }) => ({ ...c, id: `${s.id}:${c.offer.kind}:${c.offer.params.itemId}`, weeklyCap: weeklyCapFor(s) })),
-  }));
+  return pool.slice(0, 3);
 }
 
-/** Modo sem IA: por prioridade das faixas, a maior nota ainda não usada por outra faixa [C]. */
-export function fallbackChoices(slots: readonly Slot[], cands: readonly SlotCandidates[]): Array<{ slotId: string; candidateId: string }> {
+export function buildCandidates(slots: readonly Slot[], menu: readonly MenuItem[], decl: Declared): SlotCandidates[] {
+  const base = topOffers(menu, decl, []);
+  return slots.map((s) => {
+    const avoid = decl.avoidBySlot?.[s.id] ?? [];
+    const own = avoid.length ? topOffers(menu, decl, avoid) : base;
+    const top = own.length ? own : base;
+    return {
+      slotId: s.id,
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars -- tira o campo interno
+      options: top.map(({ reaches: _r, ...c }) => ({ ...c, id: `${s.id}:${c.offer.kind}:${c.offer.params.itemId}`, weeklyCap: weeklyCapFor(s) })),
+    };
+  });
+}
+
+/**
+ * Modo sem IA: por prioridade das faixas, a maior nota ainda não usada por outra faixa [C]. `avoidBySlot`: ofertas
+ * com veredito "trocar" (S9, A4), puladas enquanto houver outra.
+ */
+export function fallbackChoices(slots: readonly Slot[], cands: readonly SlotCandidates[], avoidBySlot: Readonly<Record<string, readonly string[]>> = {}): Array<{ slotId: string; candidateId: string }> {
   const used = new Set<string>();
   const out: Array<{ slotId: string; candidateId: string }> = [];
   for (const s of sortByPriority([...slots])) {
-    const opts = cands.find((c) => c.slotId === s.id)?.options ?? [];
-    const pick = opts.find((o) => !used.has(`${o.offer.kind}:${o.offer.params.itemId}`)) ?? opts[0];
+    const all = cands.find((c) => c.slotId === s.id)?.options ?? [];
+    const allowed = all.filter((o) => !(avoidBySlot[s.id] ?? []).includes(offerKeyOf(o.offer)));
+    const opts = allowed.length ? allowed : all;
+    const pick = opts.find((o) => !used.has(offerKeyOf(o.offer))) ?? opts[0];
     if (!pick) continue;
-    used.add(`${pick.offer.kind}:${pick.offer.params.itemId}`);
+    used.add(offerKeyOf(pick.offer));
     out.push({ slotId: s.id, candidateId: pick.id });
   }
   return out;
