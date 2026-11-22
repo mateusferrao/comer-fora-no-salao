@@ -24,6 +24,11 @@ export type GuardOptions = {
   requireSlot?: string;
   /** S8: lista de palavras proibidas do campo (padrão: `FORBIDDEN`, feita para textos de marketing). */
   forbidden?: readonly string[];
+  /**
+   * S9 (revisão): nome do restaurante e culinária saem do texto antes das checagens de número e palavra, como as
+   * referências ("Bar Dois Irmãos", "Mil Sabores" e "Cantina 1900" são nomes, não promessas).
+   */
+  ownNames?: readonly (string | null | undefined)[];
 };
 export type TextGuard = { ok: true; warnings: string[] } | { ok: false; reasons: string[]; warnings: string[] };
 
@@ -37,9 +42,19 @@ export const FORBIDDEN = ["gratis", "de graca", "metade", "dobro", "garantid", "
  */
 export const CHAT_FORBIDDEN = ["metade", "dobro", "garantid", "ifood paga", "reais", "r$"];
 /** Números por extenso (S8): a IA não escreve número, nem em palavras ("um/uma" ficam de fora: são artigos). */
-const NUMBER_WORDS = ["dois", "duas", "tres", "quatro", "cinco", "seis", "sete", "oito", "nove", "dez", "onze", "doze", "treze", "catorze", "quatorze", "quinze", "dezesseis", "dezessete", "dezoito", "dezenove", "vinte", "trinta", "quarenta", "cinquenta", "sessenta", "setenta", "oitenta", "noventa", "cem", "cento", "duzentos", "trezentos", "quinhentos", "mil", "milhao", "milhoes", "dezena", "duzia"];
+const NUMBER_WORDS = ["zero", "dois", "duas", "tres", "quatro", "cinco", "seis", "sete", "oito", "nove", "dez", "onze", "doze", "treze", "catorze", "quatorze", "quinze", "dezesseis", "dezessete", "dezoito", "dezenove", "vinte", "trinta", "quarenta", "cinquenta", "sessenta", "setenta", "oitenta", "noventa", "cem", "cento", "duzentos", "trezentos", "quinhentos", "mil", "milhao", "milhoes", "dezena", "duzia"];
 /** Multiplicadores (S9, A1): "dobrar", "triplicar"… são número disfarçado; casam pelo começo da palavra. */
 const MULTIPLIERS = ["dobrar", "duplic", "triplic", "quadruplic", "quintuplic", "triplo", "quadruplo"];
+/**
+ * Ordinal que inventa meta (S9, revisão): "segunda visita", "quinto selo", "décima vez". "Primeira visita" é o
+ * benefício do produto e fica livre; "segunda-feira" ou "na segunda" sozinhos também (sem o substantivo depois).
+ */
+const ORDINAL_GOAL = /(^|[^a-z0-9])(segund|terceir|quart|quint|sext|setim|oitav|non|decim)[oa]s? (visita|vez|vezes|selo|check-?in)/;
+const escRe = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+/** Tira do texto os nomes da casa (com 3+ letras), sem diferenciar caixa. */
+function withoutOwnNames(text: string, names: readonly string[]): string {
+  return names.reduce((t, name) => (name.length >= 3 ? t.replace(new RegExp(escRe(name), "gi"), " ") : t), text);
+}
 /**
  * Promessa extra que o código não controla (S9, A1), só no convite e no kit: "de brinde", "por conta da casa".
  * "cortesia" fica de fora: é o nome de um tipo de oferta.
@@ -67,8 +82,11 @@ export function guardText(text: string, ctx: RefContext, o: GuardOptions): TextG
   const bare = stripReferences(text);
   if (/[<>]|[{}]/.test(bare)) reasons.push("formato");
   if (EMAIL.test(bare) || PHONE.test(bare) || CPF.test(bare)) reasons.push("pii");
-  if (/\d/.test(bare) || bare.includes("%")) soft("numero");
-  const n = norm(bare);
+  // S9 (revisão): sem o nome da casa e a culinária (contato e marca já foram barrados no nome, ao gravar).
+  const names = (o.ownNames ?? []).map((x) => (x ?? "").trim()).filter(Boolean);
+  const plain = withoutOwnNames(bare, names);
+  if (/\d/.test(plain) || plain.includes("%")) soft("numero");
+  const n = withoutOwnNames(norm(bare), names.map(norm));
   for (const w of o.forbidden ?? FORBIDDEN) if (hasWord(n, w)) soft(`proibida:${w}`);
   // S9 (A1): número por extenso vale em todo texto da IA (convite, kit, justificativa, aprendemos, chat); as
   // referências já saíram (`bare`), então o nome de um prato citado por {prato:…} não conta.
@@ -76,6 +94,7 @@ export function guardText(text: string, ctx: RefContext, o: GuardOptions): TextG
     for (const w of NUMBER_WORDS) if (new RegExp(`(^|[^a-z0-9])${w}([^a-z0-9]|$)`).test(n)) soft(`numero_extenso:${w}`);
     if (/(^|[^a-z0-9])por cento([^a-z0-9]|$)/.test(n)) soft("numero_extenso:por cento");
     for (const w of MULTIPLIERS) if (hasWord(n, w)) soft(`numero_extenso:${w}`);
+    if (ORDINAL_GOAL.test(n)) soft("numero_extenso:ordinal");
   }
   if (o.field === "chat" && URL_RE.test(bare)) reasons.push("url");
   if (o.field === "textoConvite" || o.field === "kit") for (const w of EXTRA_PROMISE) if (hasWord(n, w)) soft(`proibida:${w}`);
