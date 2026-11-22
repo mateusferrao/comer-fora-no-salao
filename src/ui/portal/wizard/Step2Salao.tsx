@@ -9,7 +9,7 @@ import {
 
 /** Ajuste de 21/11: a meta explicada com exemplo (o teto de convites sai dela). */
 const TABLES_HINT =
-  "Com isso calculamos quantos convites mandar: 4 mesas ≈ 16 convites por semana, depois ajustado pelo uso real.";
+  "Com isso calculamos quantos convites entregar: 4 mesas ≈ 16 convites por semana, depois ajustado pelo uso real.";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "../../components/Button";
@@ -50,7 +50,7 @@ const fromReais = (s: string) => {
   return s.trim() === "" || !Number.isFinite(v) ? null : Math.round(v * 100);
 };
 
-/** Passo 2 (espec. 3.2): salão, funcionamento e horários vazios (obrigatório), enquanto a IA lê. */
+/** Passo 2 (espec. 3.2): salão, funcionamento e horários vazios (obrigatório), enquanto a IA lê (no modo manual, sem a IA). */
 export function Step2Salao({ initial, extractionId, extraction, manual = false, assistente = false }: { initial: SalonForm; extractionId: string | null; extraction: ExtractionState | null; manual?: boolean; assistente?: boolean }) {
   const router = useRouter();
   const [f, setF] = useState<SalonForm>(initial);
@@ -89,7 +89,7 @@ export function Step2Salao({ initial, extractionId, extraction, manual = false, 
       else if (!(s.extraTables >= 1)) e[`slot${i}`] = "Informe quantas mesas a mais por semana.";
     });
     f.opening.forEach((b, i) => {
-      if (!b.days.length && f.opening.length > 1) e.opening = `Escolha os dias do turno ${i + 1} ou remova-o.`;
+      if (!b.days.length && f.opening.length > 1) e.opening = `Escolha os dias do período ${i + 1} ou remova-o.`;
     });
     const ticketCents = fromReais(ticket);
     if (ticket.trim() && ticketCents === null) e.ticket = "Use um valor como 85,00.";
@@ -133,7 +133,7 @@ export function Step2Salao({ initial, extractionId, extraction, manual = false, 
     >
       <div>
         <h2 className="text-xl font-bold text-ink">Seu salão</h2>
-        <p className="mt-1 text-sm text-ink-muted">Enquanto a IA lê o cardápio, conte como é o seu salão e quais horários ficam vazios.</p>
+        <p className="mt-1 text-sm text-ink-muted">{manual || !extractionId ? "Conte como é o seu salão e quais horários ficam vazios." : "Enquanto a IA lê o cardápio, conte como é o seu salão e quais horários ficam vazios."}</p>
       </div>
       <ExtractionStatus state={ext} />
       {assistente && <SalonSentence onFill={applyFill} />}
@@ -156,12 +156,12 @@ export function Step2Salao({ initial, extractionId, extraction, manual = false, 
         <legend className="px-1 font-semibold text-ink">Horário de funcionamento</legend>
         {f.opening.map((b, i) => (
           <div key={i} className="flex flex-col gap-2 border-b border-divider pb-3 last:border-0 last:pb-0">
-            <DaySelector label={`Dias do turno ${i + 1} de funcionamento`} value={b.days} onChange={(days) => set("opening", f.opening.map((x, k) => (k === i ? { ...x, days } : x)))} />
+            <DaySelector label={`Dias do período ${i + 1} de funcionamento`} value={b.days} onChange={(days) => set("opening", f.opening.map((x, k) => (k === i ? { ...x, days } : x)))} />
             <div className="flex flex-wrap items-center gap-3">
-              <TimeRange label={`Horário do turno ${i + 1}`} start={b.startMin} end={b.endMin} onChange={(startMin, endMin) => set("opening", f.opening.map((x, k) => (k === i ? { ...x, startMin, endMin } : x)))} />
+              <TimeRange label={`Horário do período ${i + 1}`} start={b.startMin} end={b.endMin} onChange={(startMin, endMin) => set("opening", f.opening.map((x, k) => (k === i ? { ...x, startMin, endMin } : x)))} />
               {f.opening.length > 1 && (
                 <button type="button" className="min-h-11 text-sm font-semibold text-red-text underline" onClick={() => set("opening", f.opening.filter((_, k) => k !== i))}>
-                  Remover turno
+                  Remover período
                 </button>
               )}
             </div>
@@ -169,13 +169,13 @@ export function Step2Salao({ initial, extractionId, extraction, manual = false, 
         ))}
         {errors.opening && <p className="text-sm font-medium text-red-text">{errors.opening}</p>}
         <button type="button" className="min-h-11 self-start text-sm font-semibold text-red-text underline" onClick={() => set("opening", [...f.opening, { days: [], startMin: 18 * 60, endMin: 23 * 60 }])}>
-          + Adicionar turno
+          + Adicionar outro período
         </button>
       </fieldset>
 
       <fieldset className="flex flex-col gap-3">
         <legend className="font-semibold text-ink">Horários vazios</legend>
-        <p className="text-sm text-ink-muted">Faixas em que sobra mesa. O convite de volta vai trazer clientes para elas.</p>
+        <p className="text-sm text-ink-muted">Horários em que sobra mesa. O convite de volta chama clientes para esses horários.</p>
         {f.slots.map((s, i) => (
           <div key={s.id ?? i} className="flex flex-col gap-3 rounded-sm border border-border p-4">
             <p className="text-sm font-semibold text-ink">Horário vazio {i + 1}</p>
@@ -236,8 +236,8 @@ export function Step2Salao({ initial, extractionId, extraction, manual = false, 
       </fieldset>
 
       <fieldset className="grid gap-4 sm:grid-cols-2">
-        <legend className="mb-2 font-semibold text-ink">Retorno (opcional)</legend>
-        <Field label="Ticket médio por pessoa (R$)" inputMode="decimal" value={ticket} onChange={(e) => setTicket(e.target.value)} error={errors.ticket} hint="Estimativa sua; usada só para calcular retorno." />
+        <legend className="mb-2 font-semibold text-ink">Para ver o resultado em reais (opcional)</legend>
+        <Field label="Ticket médio por pessoa (R$)" inputMode="decimal" value={ticket} onChange={(e) => setTicket(e.target.value)} error={errors.ticket} hint="Sem ticket e margem, o painel mostra visitas, mas não reais." />
         <Field
           label="Margem aproximada (%)"
           type="number"
@@ -246,7 +246,7 @@ export function Step2Salao({ initial, extractionId, extraction, manual = false, 
           max={95}
           value={f.marginPct ?? ""}
           onChange={(e) => set("marginPct", e.target.value === "" ? null : Number(e.target.value))}
-          hint="Estimativa sua; usada só para calcular retorno."
+          hint="Estimativa sua. Sem ela, o painel não mostra o resultado em reais."
         />
       </fieldset>
 

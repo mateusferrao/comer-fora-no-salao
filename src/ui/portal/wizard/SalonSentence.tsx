@@ -10,7 +10,7 @@ const BRL = (c: number) => new Intl.NumberFormat("pt-BR", { style: "currency", c
 
 /**
  * "Descreva seu salão em uma frase" (S8 — D265): a IA lê, o código confere os números contra o texto e mostra o que vai
- * preencher. "Preencher o formulário" só muda os campos abaixo (nada é gravado); o dono revisa e clica "Continuar".
+ * preencher. "Usar estes dados" só muda os campos abaixo (nada é gravado); o dono revisa e clica "Continuar".
  */
 export function SalonSentence({ onFill }: { onFill: (f: SalonFill) => void }) {
   const [text, setText] = useState("");
@@ -61,7 +61,7 @@ export function SalonSentence({ onFill }: { onFill: (f: SalonFill) => void }) {
         className="min-h-11 rounded-sm border border-border bg-surface px-3 py-2 text-sm text-ink"
       />
       <Button variant="outline-portal" className="self-start" loading={busy} disabled={text.trim().length < 10} onClick={() => void read()}>
-        Ler a frase
+        Preencher com a frase
       </Button>
       {msg && (
         <p role="status" className="text-sm text-ink">
@@ -80,7 +80,7 @@ export function SalonSentence({ onFill }: { onFill: (f: SalonFill) => void }) {
           {fill.naoInformado.length > 0 && <p className="text-ink-muted">Não informado (fica como está no formulário): {fill.naoInformado.join(", ")}.</p>}
           <div className="flex flex-wrap gap-2">
             <Button variant="primary-portal" onClick={() => (onFill(fill), setFill(null), setMsg("Pronto. Revise os campos abaixo e clique em Continuar."))}>
-              Preencher o formulário
+              Usar estes dados
             </Button>
             <button type="button" className="min-h-11 px-2 text-sm text-ink-muted underline" onClick={() => setFill(null)}>
               Descartar

@@ -162,7 +162,7 @@ test("assistente completo com exemplo: salão pré-preenchido → revisão → p
   await expect(page.getByRole("region", { name: /Prévia do convite · / }).first().getByTestId("invite-message")).toBeVisible();
   await axe(page);
   await page.getByRole("button", { name: "Ativar Comer Fora no salão" }).click();
-  await expect(page.getByRole("heading", { name: "Comer Fora no salão ativo!" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Comer Fora no salão ativado" })).toBeVisible();
   const slug = (await page.getByRole("link", { name: "Ver minha página" }).getAttribute("href"))!.replace("/r/", "");
 
   // Kit: gerado depois da ativação (sem IA no CI/local), aprovar, "no salão", impressão com QR.
