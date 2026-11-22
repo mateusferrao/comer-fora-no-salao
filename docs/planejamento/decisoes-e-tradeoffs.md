@@ -1590,3 +1590,9 @@ As decisões sobre a preparação pessoal do candidato para a apresentação (D2
 - Muda a D299 só na hospedagem do GitHub: o vídeo (14 MB) fica em `docs/entrega/video-demo.mp4`, e o README aponta para ele. O Google Drive continua como 2º link.
 - Alternativa: asset de uma release `entrega`. Trade-off: com a release, o repositório fica mais leve, mas criar a release seria passo manual do candidato (não há ferramenta para isso nesta sessão) e o link do README ficaria quebrado até lá. No repositório, o vídeo entra no histórico para sempre (+14 MB), mas o link funciona desde o primeiro push.
 - Também decidido na auditoria do repositório público (E7): as citações à infra de envio (domínio e usuário IAM de outro projeto, D132/D135) ficam, porque não são segredo e fazem parte do raciocínio documentado.
+
+**D327 — Vídeo-pitch animado, além do vídeo da demo** (22/11, candidato) ✅
+- Muda a D312, que tratava a animação como opcional: passa a existir um 2º vídeo, curto (~60–90 s). Ele abre com uma historinha 3D da dona da Cantina (sábado lotado × terça vazia) e segue para o valor ao dono e ao iFood, como um pitch. O vídeo atual (D299, telas reais) continua como "demo das telas".
+- Ferramenta: 3D feito em código (Three.js, low-poly), renderizado quadro a quadro no navegador sem tela, com a mesma voz local (Piper *faber*). Alternativas: vídeo gerado por IA no Canva (máx. 30 s, 720p, gasta o limite de IA, pouco controle de rosto, texto e continuidade); animação feita pelo candidato numa ferramenta externa. Trade-off: visual mais simples que o de uma ferramenta dedicada, em troca de controle total do texto e dos números, custo zero e a mesma voz do resto.
+- Regras: nenhum número sem fonte; números do briefing marcados como fictícios; rótulo "ilustração"; sem logo do iFood (D297).
+- Envio: hoje à noite, com o pitch. Se às 21h ele não estiver aprovado, sai com o vídeo atual.
