@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import type { KitView } from "@/src/modules/kit/application/kit";
 import { FIELD_MAX, PIECE_LABEL, VERSION_FIELDS, type VersionField } from "@/src/modules/kit/domain/templates";
+import { reasonMessage } from "@/src/modules/ia/guardrails/messages";
 import { Badge } from "../components/Badge";
 import { Button } from "../components/Button";
 import { SidePanel } from "../components/SidePanel";
@@ -89,7 +90,7 @@ export function KitManager({ initial, restaurantName, qrs, billHolder = false }:
   if (kit.generating) {
     return (
       <div role="status" aria-busy="true" className="flex flex-col gap-3">
-        <p className="text-sm text-ink">Gerando seu kit: a IA escreve as chamadas das 2 versões; o código confere as regras…</p>
+        <p className="text-sm text-ink">Gerando seu kit: a IA escreve as chamadas das 2 versões; o sistema confere os textos…</p>
         <div className="grid gap-4 sm:grid-cols-2">
           <div className="h-64 animate-pulse rounded-sm bg-surface-muted" />
           <div className="h-64 animate-pulse rounded-sm bg-surface-muted" />
@@ -189,7 +190,7 @@ export function KitManager({ initial, restaurantName, qrs, billHolder = false }:
                       Imprimir versão {v.label}
                     </a>
                     <a className="inline-flex min-h-11 items-center font-semibold text-red-text underline" href={`/r/${kit.slug}?p=${v.token}`} target="_blank" rel="noreferrer">
-                      Abrir este QR
+                      Testar este QR como cliente
                     </a>
                   </div>
                 </li>
@@ -216,7 +217,7 @@ export function KitManager({ initial, restaurantName, qrs, billHolder = false }:
             </h2>
             <Badge tone="neutral">{waiter.status === "rascunho" ? "Rascunho" : "Aprovado"}</Badge>
           </div>
-          <p className="text-sm text-ink-muted">Roteiro fixo, só sobre o benefício de 1ª visita (não fala do convite, para não contaminar o grupo de controle).</p>
+          <p className="text-sm text-ink-muted">Roteiro fixo, só sobre o benefício de 1ª visita. O convite não aparece para não atrapalhar a comparação com quem fica sem convite.</p>
           <div aria-hidden="true" className="self-center overflow-hidden rounded-sm border border-border" style={{ width: `${105 * 0.5}mm`, height: `${148.5 * 0.5}mm` }}>
             <div style={{ transform: "scale(0.5)", transformOrigin: "top left" }}>
               <WaiterCard restaurantName={restaurantName} frase={waiter.variants[0]?.rendered.frase ?? ""} />
@@ -321,14 +322,14 @@ function VersionEditor({ label, texts, onClose, onSaved }: { label: "A" | "B"; t
       if (vals[f] === (texts[f] ?? "")) continue;
       const r = await call("/api/parceiro/kit/campo", "PUT", { label, field: f, value: vals[f] });
       if (r.status === 409) n[f] = "Esta versão já tem leituras do QR: crie uma nova versão para mudar o texto.";
-      else if (!r.ok) n[f] = "Não dá para usar este texto (dados pessoais, HTML, referência desconhecida ou longo demais).";
+      else if (!r.ok) n[f] = reasonMessage(((r.data.motivos as string[] | undefined) ?? [])[0] ?? "", { maxLen: FIELD_MAX[f], label: "o texto" });
       else if ((r.data.warnings as string[] | undefined)?.includes("convite")) n[f] = "Salvo. Atenção: dia, horário ou item do convite aparecem para todos os clientes e atrapalham a comparação com quem não recebe convite.";
-      else if ((r.data.warnings as string[] | undefined)?.length) n[f] = "Salvo. Atenção: cita número ou promessa — o benefício que vale é o da regra.";
+      else if ((r.data.warnings as string[] | undefined)?.length) n[f] = "Salvo. Atenção: o texto cita número ou promessa. O cliente ganha o benefício configurado, não o do texto.";
     }
     setNotes(n);
     setBusy(null);
     await onSaved();
-    if (!Object.values(n).some((x) => x?.startsWith("Não"))) onClose();
+    if (!Object.values(n).some((x) => x && !x.startsWith("Salvo"))) onClose();
   }
 
   async function regen(f: VersionField) {
@@ -414,7 +415,7 @@ function RecadoEditor({ initial }: { initial: string }) {
   );
 }
 
-const REVIEW_LABEL: Record<string, string> = { revisando: "Revisor: conferindo…", ok: "Revisor: ok", atencao: "Revisor: atenção", bloquear: "Revisor: ajustar antes de imprimir", nao_revisado: "Revisor: não revisado" };
+const REVIEW_LABEL: Record<string, string> = { revisando: "Conferência: em andamento…", ok: "Conferência: ok", atencao: "Conferência: vale revisar", bloquear: "Conferência: ajuste o texto antes de imprimir", nao_revisado: "Conferência: não feita" };
 
 /** Selo do revisor (flag): estado não depende só de cor; motivos em lista. */
 function ReviewNote({ review }: { review: NonNullable<KitView["pieces"][number]["variants"][number]["review"]> }) {

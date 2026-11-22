@@ -14,7 +14,7 @@ test("link do garçom: criar → validar sem login → revogar corta na hora", a
   await page.goto("/parceiro/salao");
   await waitExampleReady(page);
   await page.goto("/parceiro/salao/kit");
-  const href = await page.getByRole("link", { name: "Abrir este QR" }).first().getAttribute("href");
+  const href = await page.getByRole("link", { name: "Testar este QR como cliente" }).first().getAttribute("href");
   const slug = /\/r\/([^/?#]+)/.exec(href ?? "")![1]!;
 
   // Um código real de 1ª visita na loja do dono.

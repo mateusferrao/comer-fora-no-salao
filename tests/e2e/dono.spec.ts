@@ -174,7 +174,7 @@ test("assistente completo com exemplo: salão pré-preenchido → revisão → p
   await display.getByRole("button", { name: "Aprovar peça" }).click();
   await display.getByRole("switch", { name: "Está no salão" }).click();
   await expect(display.getByText("No salão")).toBeVisible();
-  const qrHref = await display.getByRole("link", { name: "Abrir este QR" }).first().getAttribute("href");
+  const qrHref = await display.getByRole("link", { name: "Testar este QR como cliente" }).first().getAttribute("href");
   expect(qrHref).toMatch(new RegExp(`^/r/${slug}\\?p=`));
   await display.getByRole("link", { name: "Imprimir versão A" }).click();
   await expect(page.getByRole("img", { name: "QR da versão A" })).toBeVisible();
