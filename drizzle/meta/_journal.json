@@ -78,6 +78,13 @@
       "when": 1795300894091,
       "tag": "0010_s8_copiloto",
       "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1795315705754,
+      "tag": "0011_login_cliente_sem_restaurante",
+      "breakpoints": true
     }
   ]
 }

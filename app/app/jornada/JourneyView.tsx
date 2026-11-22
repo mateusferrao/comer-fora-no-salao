@@ -11,6 +11,7 @@ import { CodeDisplay } from "@/src/ui/components/CodeDisplay";
 import { InviteCard } from "@/src/ui/cliente/InviteCard";
 import { NotificationPrefs, type PrefsItem } from "@/src/ui/cliente/NotificationPrefs";
 import { MyData, type MyDataView } from "@/src/ui/cliente/MyData";
+import { JourneyLogin } from "@/src/ui/cliente/JourneyLogin";
 import { TXT } from "@/src/ui/cliente/textos";
 
 /** Jornada (app/13; S4 — D156, D171): "Sair" e "Apagar meus dados" atrás da engrenagem, como no app. */
@@ -34,6 +35,7 @@ export function JourneyView({
   const [settings, setSettings] = useState(false);
   const [showPrefs, setShowPrefs] = useState(false);
   const [showData, setShowData] = useState(false);
+  const [login, setLogin] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [busy, setBusy] = useState(false);
   const leave = async (path: "sair" | "apagar") => {
@@ -60,6 +62,15 @@ export function JourneyView({
           )}
         </div>
         <h1 className="mt-6 text-center text-3xl font-semibold">Olá, {journey.firstName ?? "Visitante"}</h1>
+        {/* D257: quem já é cliente entra aqui, sem check-in, para ver e corrigir os próprios dados. */}
+        {journey.firstName === null && (
+          <div className="mt-4 flex flex-col items-center gap-1 text-center">
+            <Button variant="outline-app" onClick={() => setLogin(true)}>
+              Entrar com e-mail
+            </Button>
+            <p className="text-xs text-ink-muted">Já fez check-in em algum restaurante? Entre para ver seus convites e seus dados.</p>
+          </div>
+        )}
         {generated && (
           <p className="mt-3 rounded-md border border-border bg-white p-3 text-center text-sm text-ink">
             Cliente do histórico gerado (Ferramentas do avaliador).{" "}
@@ -165,6 +176,7 @@ export function JourneyView({
           </ul>
         )}
       </main>
+      <JourneyLogin open={login} onClose={() => setLogin(false)} onDone={() => window.location.reload()} />
       <BottomSheet open={settings} onClose={() => (setSettings(false), setConfirmDelete(false), setShowPrefs(false), setShowData(false))} title={showPrefs ? "Gerenciar notificações" : showData ? "Seus dados" : "Sua conta"}>
         {showData && myData ? (
           <MyData initial={myData} onBack={() => setShowData(false)} />

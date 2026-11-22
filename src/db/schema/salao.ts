@@ -231,7 +231,8 @@ export const customerLoginCodes = pgTable(
     id: uuid("id").primaryKey().defaultRandom(),
     emailHmac: text("email_hmac").notNull(),
     codeHmac: text("code_hmac").notNull(),
-    restaurantId: restaurantFk(),
+    /** D257: sem restaurante quando o cliente entra pela Jornada (sem check-in). */
+    restaurantId: uuid("restaurant_id").references(() => restaurants.id, { onDelete: "cascade" }),
     /** { name, phoneHmac, phoneLast4, emailEnc, emailHint, optEmail, optApp } — sem PII em claro. */
     payload: jsonb("payload").notNull(),
     attempts: integer("attempts").notNull().default(0),

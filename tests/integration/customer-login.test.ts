@@ -200,4 +200,24 @@ describe("login do cliente por e-mail + código (S4, D154, D173)", () => {
     expect(await updateMyContact(getDb(), { customerId: v.customerId, name: "Ana", phone: "1234", now: NOW })).toEqual({ ok: false, erro: "dados_invalidos", campos: ["phone"] });
     expect(await updateMyContact(getDb(), { customerId: v.customerId, name: "A", phone: null, now: NOW })).toEqual({ ok: false, erro: "dados_invalidos", campos: ["name"] });
   });
+
+  it("Entrar pela Jornada (D257): sem restaurante; só quem já é cliente; código de uso único; nada de cliente novo", async () => {
+    const r = await createRestaurant();
+    const v = await loginNew(r.restaurantId, "ana@exemplo.com");
+    const jornada = (email: string) =>
+      requestCustomerCode(getDb(), { restaurantId: null, restaurantName: null, email, ip: "10.0.0.2", now: NOW, sender: memorySender, env, e2eToken: null, emailLogin: true });
+    expect(await jornada("ana@exemplo.com")).toMatchObject({ ok: true });
+    expect(outbox().at(-1)!.subject).toMatch(/· Comer Fora no Salão$/);
+    expect(outbox().at(-1)!.text).not.toMatch(/check-in/);
+    const code = lastCode();
+    expect(await confirmCustomerCode(getDb(), { restaurantId: null, email: "ana@exemplo.com", code, ip: "10.0.0.2", now: NOW, createIfMissing: false })).toMatchObject({ ok: true, customerId: v.customerId, created: false });
+    expect(await confirmCustomerCode(getDb(), { restaurantId: null, email: "ana@exemplo.com", code, ip: "10.0.0.2", now: NOW, createIfMissing: false })).toMatchObject({ ok: false, erro: "sem_codigo" });
+    // E-mail sem cadastro: recebe o código, mas não vira cliente.
+    const before = (await getDb().select().from(customers)).length;
+    await jornada("novo@exemplo.com");
+    expect(await confirmCustomerCode(getDb(), { restaurantId: null, email: "novo@exemplo.com", code: lastCode(), ip: "10.0.0.2", now: NOW, createIfMissing: false })).toEqual({ ok: false, erro: "sem_cadastro" });
+    expect((await getDb().select().from(customers)).length).toBe(before);
+    // Login de emergência sem código (flag desligada) não vale pela Jornada.
+    expect(await requestCustomerCode(getDb(), { restaurantId: null, restaurantName: null, email: "ana@exemplo.com", ip: "10.0.0.2", now: NOW, sender: memorySender, env, emailLogin: false })).toEqual({ ok: false, erro: "envio_indisponivel" });
+  });
 });

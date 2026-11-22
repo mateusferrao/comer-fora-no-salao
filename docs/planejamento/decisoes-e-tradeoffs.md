@@ -1395,3 +1395,16 @@ Detalhes, perguntas, revisão independente (2 subagentes) e itens [C] em [docs/f
 - Correção: helper `waitExampleReady` espera a tela real ("Visão geral") antes de conferir o aviso; aplicado nas 15 specs.
 - Defeito do produto achado junto: a tela do Kit só se atualizava sozinha com o kit "gerando"; aberta logo depois de ativar (antes de a geração começar, em segundo plano), ficava parada em "Seu kit ainda não foi gerado". Agora, sem kit, ela consulta de novo por até ~30 s.
 - Prova: 3 rodadas completas seguidas, cada uma logo após um build novo, 102 testes verdes em todas.
+
+**D256 — "+ Nova loja" no seletor, Kit padronizado, rodapé do menu e logo que leva à Visão geral** (22/11, candidato; forma [C]) ✅
+- O card "Cadastre outro restaurante" sai da Visão geral; com restaurante já cadastrado, cadastrar outro é a última opção do seletor "Trocar loja" ("+ Nova loja"), que agora aparece com 1 loja só. O card continua só para o 1º cadastro ("Cadastre o seu restaurante").
+- Porta-conta: "Aprovar" ou "Está no salão" numa linha própria embaixo, como display e cartaz.
+- Gaveta do celular: a navegação rola e o rodapé (usuário logado, e-mail e Sair) fica preso embaixo, como na barra lateral do computador.
+- O logo do iFood (barra lateral, cabeçalho e gaveta) leva à Visão geral.
+
+**D257 — "Entrar com e-mail" na Jornada, sem check-in** (22/11, candidato: "como faço pra editar dado do cliente agora entrando como cliente?"; escolheu "Botão Entrar na Jornada") ✅
+- A Jornada sem login mostra "Entrar com e-mail": o mesmo código de 6 números do check-in, sem restaurante, sem aceite e sem visita (migração 0011: o código de login pode não ter restaurante). Só quem já é cliente entra; e-mail sem cadastro recebe "Faça o check-in num restaurante para se cadastrar" (o cadastro nasce no check-in, com o aceite do restaurante). O login de emergência sem código não vale por aqui.
+- Dono e cliente são logins separados; o mesmo e-mail pode ser os dois.
+
+**D258 — Avisos dentro da moldura do celular** (22/11, candidato: "os avisos devem aparecer na tela do telefone, e não sobrepor assim; vale pra toda tela na moldura") ✅
+- Com a moldura visível (app do cliente a partir de 768 px e prévias), o `BottomSheet` abre dentro da tela do celular: não modal (`show()`), na camada da tela, com fundo escurecido só nela, conteúdo do celular inerte, Esc e foco preso pelo teclado. No celular de verdade, igual a antes (modal, por cima de tudo, com a barra de protótipo repetida).

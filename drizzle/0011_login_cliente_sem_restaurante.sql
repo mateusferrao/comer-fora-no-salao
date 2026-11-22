@@ -1,0 +1,1 @@
+ALTER TABLE "customer_login_codes" ALTER COLUMN "restaurant_id" DROP NOT NULL;

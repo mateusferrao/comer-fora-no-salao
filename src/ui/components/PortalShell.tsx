@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState, type MouseEvent, type ReactNode } from "react";
 import { Logo } from "./Logo";
 import { useModalDialog } from "./useModalDialog";
@@ -25,7 +26,7 @@ export function PortalShell({ nav, children, top, footer, mobileTitle, assistant
       {/* "Pular para o conteúdo" fica na barra de protótipo, antes dos links dela (1º foco da página). */}
       <aside className="hidden border-r border-divider lg:sticky lg:top-[var(--proto-h,24px)] lg:flex lg:h-[calc(100dvh-var(--proto-h,24px))] lg:flex-col">
         <div className="px-6 py-5">
-          <Logo height={28} />
+          <HomeLogo height={28} />
         </div>
         {top && <div className="px-4 pb-3">{top}</div>}
         <nav aria-label="Menu principal" className="flex-1 overflow-y-auto px-3 pb-6">
@@ -49,7 +50,7 @@ export function PortalShell({ nav, children, top, footer, mobileTitle, assistant
             <path d="M4 6h16M4 12h16M4 18h16" />
           </svg>
         </button>
-        <Logo height={24} />
+        <HomeLogo height={24} />
         {mobileTitle && <span className="min-w-0 flex-1 truncate text-sm font-semibold text-ink">{mobileTitle}</span>}
         {assistant && <div id="copiloto-slot-head" className="ml-auto shrink-0" />}
       </header>
@@ -58,10 +59,10 @@ export function PortalShell({ nav, children, top, footer, mobileTitle, assistant
         ref={ref}
         aria-label="Menu"
         {...dialogProps}
-        className="fixed inset-y-0 left-0 m-0 h-dvh max-h-none w-[min(320px,85vw)] bg-surface p-0 shadow-highest backdrop:bg-black/50 lg:hidden"
+        className="fixed inset-y-0 left-0 m-0 h-dvh max-h-none w-[min(320px,85vw)] flex-col bg-surface p-0 shadow-highest backdrop:bg-black/50 open:flex lg:hidden"
       >
-        <div className="flex items-center justify-between px-4 py-3">
-          <Logo height={24} />
+        <div className="flex shrink-0 items-center justify-between px-4 py-3">
+          <HomeLogo height={24} onClick={close} />
           <button
             type="button"
             aria-label="Fechar menu"
@@ -73,11 +74,12 @@ export function PortalShell({ nav, children, top, footer, mobileTitle, assistant
             </svg>
           </button>
         </div>
-        {top && <div className="px-4 pb-3">{top}</div>}
-        <nav aria-label="Menu principal" className="px-3 pb-6" onClick={onNavClick}>
+        {top && <div className="shrink-0 px-4 pb-3">{top}</div>}
+        {/* D256: a navegação rola e o rodapé (usuário logado, e-mail e Sair) fica preso embaixo, como no computador. */}
+        <nav aria-label="Menu principal" className="min-h-0 flex-1 overflow-y-auto px-3 pb-6" onClick={onNavClick}>
           {nav}
         </nav>
-        {footer && <div className="border-t border-divider px-4 py-3">{footer}</div>}
+        {footer && <div className="shrink-0 border-t border-divider px-4 py-3">{footer}</div>}
       </dialog>
 
       <div id="conteudo" tabIndex={-1} className="min-w-0 scroll-mt-12 focus:outline-none">
@@ -86,5 +88,14 @@ export function PortalShell({ nav, children, top, footer, mobileTitle, assistant
       {/* S8: Assistente do salão (painel do computador empurra o conteúdo por --copiloto-w). */}
       {assistant}
     </div>
+  );
+}
+
+/** D256: o logo do iFood leva à Visão geral (cabeçalho, barra lateral e gaveta). */
+function HomeLogo({ height, onClick }: { height: number; onClick?: () => void }) {
+  return (
+    <Link href="/parceiro/salao" aria-label="iFood · ir para a Visão geral" onClick={onClick} className="inline-flex min-h-11 items-center rounded-sm focus-visible:outline-2 focus-visible:outline-ink">
+      <Logo height={height} />
+    </Link>
   );
 }

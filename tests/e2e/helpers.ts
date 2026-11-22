@@ -59,6 +59,16 @@ export async function waitExampleReady(page: Page, timeout = 120_000): Promise<v
   await expect(page.getByText(/Preparando o restaurante de exemplo/)).toBeHidden({ timeout });
 }
 
+/**
+ * Cadastra um restaurante pela Visão geral (D256): no 1º cadastro, o botão "Cadastrar meu restaurante"; com loja já
+ * cadastrada, a opção "+ Nova loja" do seletor "Trocar loja" (o card "Cadastre outro restaurante" saiu).
+ */
+export async function startNewStore(page: Page): Promise<void> {
+  const first = page.getByRole("button", { name: "Cadastrar meu restaurante" });
+  if (await first.isVisible()) await first.click();
+  else await pickOption(page, "Trocar loja", /Nova loja/);
+}
+
 /** Login de teste (D123): pede o código com o token e confere — o cookie fica no contexto da página. */
 export async function loginE2E(request: APIRequestContext, n: number): Promise<void> {
   // O secret colado no GitHub pode vir com quebra de linha ou aspas em volta (revisão da S2: "Invalid character
@@ -144,5 +154,6 @@ export async function optionValues(scope: Page | Locator, label: string | RegExp
 export async function storeIds(page: Page): Promise<string[]> {
   const picker = page.getByLabel("Trocar loja").and(page.getByRole("button"));
   if (!(await picker.count())) return [];
-  return (await optionValues(page, "Trocar loja")).filter((o) => !o.text.includes("exemplo")).map((o) => o.value);
+  // D256: "+ Nova loja" é uma opção do seletor, não uma loja.
+  return (await optionValues(page, "Trocar loja")).filter((o) => !o.text.includes("exemplo") && o.value !== "__nova_loja__").map((o) => o.value);
 }

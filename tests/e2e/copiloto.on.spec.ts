@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { axe, loginE2E, PROD, storeIds, waitExampleReady } from "./helpers";
+import { axe, loginE2E, PROD, startNewStore, storeIds, waitExampleReady } from "./helpers";
 
 /**
  * S8 — Assistente do salão (D260–D264). Local: IA roteirizada (só com chaves vazias + token local — `fakeAi` no
@@ -80,7 +80,7 @@ test.describe("copiloto (local, IA roteirizada)", () => {
       for (const id of ids) await page.request.delete("/api/parceiro/restaurantes", { data: { restaurantId: id } });
       await page.reload();
     }
-    await page.getByRole("button", { name: /Cadastrar (meu|outro) restaurante/ }).click();
+    await startNewStore(page);
     await page.getByRole("listitem").filter({ hasText: "Boteco do Seu Zé" }).getByRole("button", { name: "Usar este exemplo" }).click();
     await expect(page.getByRole("heading", { name: "Seu salão" })).toBeVisible();
     await page.getByLabel("Descrição do salão").fill("12 mesas, abro de terça a domingo das 11h às 23h; terça e quarta à tarde, das 15h às 18h, fica muito vazio e quero 4 mesas a mais. Ticket de 85 reais.");

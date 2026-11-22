@@ -217,6 +217,8 @@ test.describe("check-in no restaurante E2E", () => {
   });
 
   test("sheets: a barra de protótipo continua visível com o sheet aberto (revisão S1)", async ({ page }) => {
+    // Celular de verdade (sem moldura): o sheet cobre a tela e repete a barra no topo.
+    await page.setViewportSize({ width: 390, height: 844 });
     await page.goto(`/r/${E2E}/checkin`);
     await page.getByRole("button", { name: "Fazer check-in" }).click();
     await page.getByRole("button", { name: "Confirmar localização" }).click();
@@ -225,6 +227,23 @@ test.describe("check-in no restaurante E2E", () => {
     await expect(id.getByTestId("prototype-bar-sheet")).toBeInViewport();
     await expect(id.getByRole("button", { name: "Enviar código" })).toBeInViewport();
     await expect(id.getByText(/Ao continuar, você ativa: Doce grátis · Panna cotta/)).toBeVisible();
+  });
+
+  test("na moldura do celular (1280 px), o aviso abre dentro da tela do celular e Esc fecha (D258)", async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 900 });
+    await page.goto(`/r/${E2E}`);
+    await page.getByRole("button", { name: /Junte Selos e Ganhe/ }).click();
+    const sheet = page.getByRole("dialog", { name: "Detalhes e regras" });
+    await expect(sheet).toBeVisible();
+    const screen = (await page.locator("[data-camada-celular]").boundingBox())!;
+    const box = (await sheet.boundingBox())!;
+    expect(box.x).toBeGreaterThanOrEqual(screen.x - 1);
+    expect(box.x + box.width).toBeLessThanOrEqual(screen.x + screen.width + 1);
+    expect(box.y + box.height).toBeLessThanOrEqual(screen.y + screen.height + 1);
+    await expect(page.getByLabel("Aviso de protótipo").first()).toBeInViewport();
+    await axe(page);
+    await page.keyboard.press("Escape");
+    await expect(sheet).toBeHidden();
   });
 
   test("login: e-mail inválido e aceite ausente mostram erro", async ({ page }) => {

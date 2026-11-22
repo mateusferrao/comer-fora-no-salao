@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { axe, BARRA, loginCustomer, loginE2E, pickOption, PROD, storeIds, waitExampleReady } from "./helpers";
+import { axe, BARRA, loginCustomer, loginE2E, pickOption, PROD, startNewStore, storeIds, waitExampleReady } from "./helpers";
 
 /**
  * Fluxo do dono (planejamento S2 §7). Serial: as contas de teste são compartilhadas entre os testes do arquivo.
@@ -77,7 +77,7 @@ test("conta entra, vê a Visão geral com 'Cadastre o seu restaurante' e sai", a
   await page.goto("/parceiro/salao");
   await expect(page.getByRole("heading", { name: "Visão geral", level: 1 })).toBeVisible();
   await expect(page.getByRole("heading", { name: "Cadastre o seu restaurante" })).toBeVisible();
-  await expect(page.getByRole("link", { name: "Visão geral" }).first()).toHaveAttribute("aria-current", "page");
+  await expect(page.getByRole("link", { name: "Visão geral", exact: true }).first()).toHaveAttribute("aria-current", "page");
   await axe(page);
   await page.getByRole("button", { name: "Sair" }).first().click();
   await expect(page).toHaveURL(/\/parceiro\/entrar$/);
@@ -113,7 +113,7 @@ test("assistente completo com exemplo: salão pré-preenchido → revisão → p
     for (const id of ids) await page.request.delete("/api/parceiro/restaurantes", { data: { restaurantId: id } });
     await page.reload();
   }
-  await page.getByRole("button", { name: /Cadastrar (meu|outro) restaurante/ }).click();
+  await startNewStore(page);
   await expect(page).toHaveURL(/\/parceiro\/salao\/ativar$|\/ativar\/1$/);
   await expect(page.getByRole("heading", { name: "Cardápio do salão" })).toBeVisible();
   await axe(page);
@@ -254,3 +254,39 @@ test("restaurante cadastrado: Primeiros passos no lugar do roteiro de teste; nad
   await expect(page.locator("main")).not.toContainText(/simulad|de teste|demonstração/i);
   await axe(page);
 });
+
+/**
+ * D256: "+ Nova loja" no seletor (o card "Cadastre outro restaurante" saiu da Visão geral), logo do iFood leva à Visão
+ * geral e, no celular, o rodapé da gaveta (usuário logado e Sair) fica preso embaixo. Conta própria (e2e-dono+37).
+ */
+test("Portal: + Nova loja no seletor, logo leva à Visão geral e rodapé da gaveta no celular", async ({ page }) => {
+  test.setTimeout(180_000);
+  await loginE2E(page.request, 37);
+  await page.goto("/parceiro/salao");
+  await waitExampleReady(page);
+  for (const id of await storeIds(page)) await page.request.delete("/api/parceiro/restaurantes", { data: { restaurantId: id } });
+  await page.reload();
+  await waitExampleReady(page);
+  // 1º cadastro: botão na Visão geral. Depois, só "+ Nova loja" no seletor.
+  await page.getByRole("button", { name: "Cadastrar meu restaurante" }).click();
+  await expect(page).toHaveURL(/\/parceiro\/salao\/ativar/);
+  await page.getByRole("link", { name: "iFood · ir para a Visão geral" }).first().click();
+  await expect(page.getByRole("heading", { name: "Visão geral", level: 1 })).toBeVisible();
+  await expect(page.getByRole("heading", { name: /Cadastre (o seu|outro) restaurante/ })).toHaveCount(0);
+  await pickOption(page, "Trocar loja", /Nova loja/);
+  await expect(page).toHaveURL(/\/parceiro\/salao\/ativar/);
+  // Celular: gaveta com o rodapé visível embaixo.
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/parceiro/salao");
+  await page.getByRole("button", { name: "Abrir menu" }).click();
+  const menu = page.getByRole("dialog", { name: "Menu" });
+  const sair = menu.getByRole("button", { name: "Sair" });
+  await expect(sair).toBeInViewport();
+  const box = (await sair.boundingBox())!;
+  expect(box.y + box.height).toBeGreaterThan(844 - 120);
+  await axe(page);
+  // Limpeza: os restaurantes cadastrados aqui.
+  await page.keyboard.press("Escape");
+  for (const id of await storeIds(page)) await page.request.delete("/api/parceiro/restaurantes", { data: { restaurantId: id } });
+});
+

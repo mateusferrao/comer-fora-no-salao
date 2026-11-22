@@ -4,8 +4,8 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "../components/Button";
 
-/** Ação principal do Início: "Cadastrar meu restaurante" (S4: sem "teste"). */
-export function CreateRestaurantButton({ label = "Cadastrar meu restaurante" }: { label?: string }) {
+/** Cria um restaurante e vai para a ativação (botão do 1º acesso e "+ Nova loja" do seletor — D256). */
+export function useCreateRestaurant() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -13,24 +13,32 @@ export function CreateRestaurantButton({ label = "Cadastrar meu restaurante" }: 
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch("/api/parceiro/restaurantes", { method: "POST" });
-      const j = (await res.json().catch(() => ({}))) as { erro?: string };
-      if (res.ok) {
+      const res = await fetch("/api/parceiro/restaurantes", { method: "POST" }).catch(() => null);
+      const j = ((await res?.json().catch(() => ({}))) ?? {}) as { erro?: string };
+      if (res?.ok) {
         router.push("/parceiro/salao/ativar");
         router.refresh();
         return;
       }
       setError(
-        j.erro === "limite_conta"
-          ? "Sua conta já tem 3 restaurantes cadastrados. Exclua um em Configurações para cadastrar outro."
-          : res.status === 429
-            ? "Muitos restaurantes criados hoje a partir desta rede. Tente amanhã."
-            : "Não conseguimos criar agora. Tente de novo.",
+        !res
+          ? "Sem conexão com o servidor. Verifique a internet e tente de novo."
+          : j.erro === "limite_conta"
+            ? "Sua conta já tem 3 restaurantes cadastrados. Exclua um em Configurações para cadastrar outro."
+            : res.status === 429
+              ? "Muitos restaurantes criados hoje a partir desta rede. Tente amanhã."
+              : "Não conseguimos criar agora. Tente de novo.",
       );
     } finally {
       setLoading(false);
     }
   }
+  return { create, loading, error };
+}
+
+/** Ação principal do Início: "Cadastrar meu restaurante" (S4: sem "teste"). */
+export function CreateRestaurantButton({ label = "Cadastrar meu restaurante" }: { label?: string }) {
+  const { create, loading, error } = useCreateRestaurant();
   return (
     <div className="flex flex-col gap-2">
       <Button variant="primary-portal" loading={loading} onClick={create}>

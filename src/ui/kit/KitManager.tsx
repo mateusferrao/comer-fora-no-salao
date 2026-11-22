@@ -269,6 +269,9 @@ export function KitManager({ initial, restaurantName, qrs, billHolder = false }:
                 Abrir o QR do porta-conta
               </a>
             )}
+          </div>
+          {/* D256: aprovar ou "Está no salão" numa linha própria embaixo, como no display e no cartaz. */}
+          <div className="flex flex-wrap items-center gap-4 border-t border-divider pt-3">
             {bill.status === "rascunho" ? (
               <Button variant="outline-portal" loading={busy === `${bill.id}:aprovar`} onClick={() => pieceAction(bill.id, "aprovar")}>
                 Aprovar porta-conta

@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { axe, loginCustomer } from "./helpers";
+import { axe, e2eCustomerEmail, e2eToken, loginCustomer } from "./helpers";
 
 const E2E = "e2e-salao-teste";
 
@@ -30,4 +30,46 @@ test("cliente: Seus dados na Jornada (nome e telefone, validação no campo, per
   const again = page.getByRole("dialog", { name: "Seus dados" });
   await expect(again.getByLabel("Nome")).toHaveValue("Dados Corrigidos");
   await expect(again.getByLabel("Telefone (opcional)")).toHaveValue("(00) 91234-1420");
+});
+
+/**
+ * D257: "Entrar com e-mail" na Jornada — quem já é cliente entra sem check-in (código por e-mail) e chega a "Seus
+ * dados". E-mail sem cadastro de cliente não entra. Código lido da resposta com o token de E2E (padrão D123).
+ */
+test("cliente: Entrar com e-mail na Jornada, sem check-in, e Seus dados", async ({ page, browser }) => {
+  const api = await browser.newContext();
+  const email = await loginCustomer(api.request, `/api/r/${E2E}`, "Cliente Jornada");
+  await api.close();
+  await page.route("**/api/cliente/entrar", (route) => route.continue({ headers: { ...route.request().headers(), "x-e2e-token": e2eToken() } }));
+  await page.goto("/app/jornada");
+  await expect(page.getByRole("heading", { name: "Olá, Visitante" })).toBeVisible();
+  await page.getByRole("button", { name: "Entrar com e-mail" }).click();
+  const sheet = page.getByRole("dialog", { name: "Entrar com e-mail" });
+  await sheet.getByLabel("E-mail").fill(email);
+  const sent = page.waitForResponse((r) => r.url().endsWith("/api/cliente/entrar") && r.request().method() === "POST");
+  await sheet.getByRole("button", { name: "Enviar código" }).click();
+  const { codigo } = (await (await sent).json()) as { codigo: string };
+  const code = page.getByRole("dialog", { name: "Digite o código" });
+  await code.getByLabel("Código").fill(codigo);
+  await code.getByRole("button", { name: "Entrar" }).click();
+  await expect(page.getByRole("heading", { name: "Olá, Cliente" })).toBeVisible();
+  await page.getByRole("button", { name: "Configurações da conta" }).click();
+  await page.getByRole("button", { name: "Seus dados" }).click();
+  await expect(page.getByRole("dialog", { name: "Seus dados" }).getByLabel("Nome")).toHaveValue("Cliente Jornada");
+  await axe(page);
+});
+
+test("cliente: e-mail sem cadastro não entra pela Jornada", async ({ page }) => {
+  await page.route("**/api/cliente/entrar", (route) => route.continue({ headers: { ...route.request().headers(), "x-e2e-token": e2eToken() } }));
+  await page.goto("/app/jornada");
+  await page.getByRole("button", { name: "Entrar com e-mail" }).click();
+  const sheet = page.getByRole("dialog", { name: "Entrar com e-mail" });
+  await sheet.getByLabel("E-mail").fill(e2eCustomerEmail());
+  const sent = page.waitForResponse((r) => r.url().endsWith("/api/cliente/entrar") && r.request().method() === "POST");
+  await sheet.getByRole("button", { name: "Enviar código" }).click();
+  const { codigo } = (await (await sent).json()) as { codigo: string };
+  const code = page.getByRole("dialog", { name: "Digite o código" });
+  await code.getByLabel("Código").fill(codigo);
+  await code.getByRole("button", { name: "Entrar" }).click();
+  await expect(code.getByText("Ainda não há cadastro de cliente com este e-mail. Faça o check-in num restaurante para se cadastrar.")).toBeVisible();
 });

@@ -1,7 +1,9 @@
 "use client";
 
-import { useId, useRef, type ReactNode } from "react";
+import { useEffect, useId, useRef, type ReactNode } from "react";
+import { createPortal } from "react-dom";
 import { PROTOTYPE_BAR_TEXT } from "./PrototypeBar";
+import { usePhoneFrame } from "./PhoneFrame";
 import { useModalDialog } from "./useModalDialog";
 
 type Props = {
@@ -21,18 +23,34 @@ type Props = {
 export function BottomSheet({ open, onClose, title, description, children, actions, dismissible = true }: Props) {
   const titleId = useId();
   const titleRef = useRef<HTMLHeadingElement>(null);
-  const { ref, dialogProps } = useModalDialog(open, onClose, dismissible, titleRef);
-  return (
+  // D258: com a moldura do celular visível, o aviso abre dentro da tela do celular (não modal, preso na moldura).
+  const frame = usePhoneFrame();
+  const contained = frame.active && !!frame.slot;
+  const { ref, dialogProps } = useModalDialog(open, onClose, dismissible, titleRef, { modal: !contained });
+  useEffect(() => {
+    if (!contained || !open || !frame.screen) return;
+    const screen = frame.screen;
+    screen.toggleAttribute("inert", true);
+    return () => void screen.toggleAttribute("inert", false);
+  }, [contained, open, frame.screen]);
+  const dialog = (
     <dialog
       ref={ref}
       aria-labelledby={titleId}
       {...dialogProps}
-      className="fixed inset-x-0 bottom-0 top-auto m-0 mx-auto max-h-[90dvh] w-full max-w-[420px] overflow-y-auto overscroll-contain rounded-t-sheet bg-sheet px-5 pb-[calc(2rem+env(safe-area-inset-bottom))] pt-2.5 text-ink shadow-high backdrop:bg-black/50 backdrop:backdrop-blur-sm"
+      className={
+        contained
+          ? "pointer-events-auto absolute inset-x-0 bottom-0 top-auto m-0 max-h-[90%] w-full overflow-y-auto overscroll-contain rounded-t-sheet bg-sheet px-5 pb-8 pt-2.5 text-ink shadow-high"
+          : "fixed inset-x-0 bottom-0 top-auto m-0 mx-auto max-h-[90dvh] w-full max-w-[420px] overflow-y-auto overscroll-contain rounded-t-sheet bg-sheet px-5 pb-[calc(2rem+env(safe-area-inset-bottom))] pt-2.5 text-ink shadow-high backdrop:bg-black/50 backdrop:backdrop-blur-sm"
+      }
     >
-      {/* A barra da página fica atrás do fundo do modal: repete o aviso no topo enquanto o sheet está aberto. */}
-      <p data-testid="prototype-bar-sheet" className="fixed inset-x-0 top-0 z-10 bg-proto-bg px-4 py-1 text-center text-xs leading-4 text-proto-fg">
-        {PROTOTYPE_BAR_TEXT}
-      </p>
+      {/* A barra da página fica atrás do fundo do modal: repete o aviso no topo enquanto o sheet está aberto. Na
+          moldura, a barra de verdade continua visível fora do celular. */}
+      {!contained && (
+        <p data-testid="prototype-bar-sheet" className="fixed inset-x-0 top-0 z-10 bg-proto-bg px-4 py-1 text-center text-xs leading-4 text-proto-fg">
+          {PROTOTYPE_BAR_TEXT}
+        </p>
+      )}
       <div aria-hidden="true" className="mx-auto h-1 w-10 rounded-full bg-handle" />
       <h2 ref={titleRef} tabIndex={-1} id={titleId} className={`${children ? "mt-6" : "mt-12"} text-center text-lg font-semibold leading-6 outline-none`}>
         {title}
@@ -43,5 +61,13 @@ export function BottomSheet({ open, onClose, title, description, children, actio
         <div className="sticky bottom-0 -mx-5 mt-6 flex gap-3 bg-sheet px-5 pb-1 pt-3 [&>*]:min-w-max [&>*]:flex-1 [&>*]:basis-0 [&>*]:whitespace-nowrap [&>*]:px-4">{actions}</div>
       )}
     </dialog>
+  );
+  if (!contained) return dialog;
+  return createPortal(
+    <>
+      {open && <div aria-hidden="true" data-testid="fundo-aviso" className="pointer-events-auto absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={dismissible ? onClose : undefined} />}
+      {dialog}
+    </>,
+    frame.slot!,
   );
 }

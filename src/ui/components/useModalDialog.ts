@@ -9,7 +9,10 @@ const FOCUSABLE =
  * `<dialog>` modal controlado: `showModal()` (fundo inerte), Tab circula dentro, Esc fecha,
  * clique no fundo fecha (se `dismissible`) e o foco volta para quem abriu.
  */
-export function useModalDialog(open: boolean, onClose: () => void, dismissible = true, initialFocus?: RefObject<HTMLElement | null>) {
+export function useModalDialog(open: boolean, onClose: () => void, dismissible = true, initialFocus?: RefObject<HTMLElement | null>, opts: { modal?: boolean } = {}) {
+  // D258: `modal: false` abre com `show()` (não vai para a camada superior): o painel fica preso dentro da moldura
+  // do celular. Esc e o foco preso continuam pelo teclado; o fundo escurecido é de quem chama.
+  const modal = opts.modal ?? true;
   const ref = useRef<HTMLDialogElement>(null);
   const returnTo = useRef<HTMLElement | null>(null);
 
@@ -18,7 +21,8 @@ export function useModalDialog(open: boolean, onClose: () => void, dismissible =
     if (!dialog) return;
     if (open && !dialog.open) {
       returnTo.current = document.activeElement as HTMLElement | null;
-      dialog.showModal();
+      if (modal) dialog.showModal();
+      else dialog.show();
       // Foco inicial no título (não no 1º campo): no celular, o teclado não sobe sozinho e o leitor de tela lê o título.
       initialFocus?.current?.focus();
     } else if (!open && dialog.open) {
@@ -26,7 +30,7 @@ export function useModalDialog(open: boolean, onClose: () => void, dismissible =
       returnTo.current?.focus();
       returnTo.current = null;
     }
-  }, [open, initialFocus]);
+  }, [open, initialFocus, modal]);
 
   const onCancel = (e: SyntheticEvent<HTMLDialogElement>) => {
     e.preventDefault(); // o estado é controlado: quem fecha é o pai
@@ -34,6 +38,11 @@ export function useModalDialog(open: boolean, onClose: () => void, dismissible =
   };
 
   const onKeyDown = (e: KeyboardEvent<HTMLDialogElement>) => {
+    if (!modal && e.key === "Escape") {
+      e.preventDefault();
+      onClose();
+      return;
+    }
     if (e.key !== "Tab") return;
     const items = Array.from(e.currentTarget.querySelectorAll<HTMLElement>(FOCUSABLE)).filter(
       (el) => el.offsetParent !== null || el === document.activeElement,

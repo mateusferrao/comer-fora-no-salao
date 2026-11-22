@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { axe, loginE2E, pickOption, storeIds } from "./helpers";
+import { axe, loginE2E, pickOption, startNewStore, storeIds } from "./helpers";
 
 /**
  * S6.3a (D197, sem flag): "Digitar o cardápio" no cadastro — passa pelo "Seu salão" (modo manual), abre o passo 3
@@ -16,7 +16,7 @@ test("cardápio manual: digitar → seu salão → seu cardápio vazio → inclu
     for (const id of ids) await page.request.delete("/api/parceiro/restaurantes", { data: { restaurantId: id } });
     await page.reload();
   }
-  await page.getByRole("button", { name: /Cadastrar (meu|outro) restaurante/ }).click();
+  await startNewStore(page);
   await expect(page.getByRole("heading", { name: "Cardápio do salão" })).toBeVisible();
   await page.getByRole("link", { name: "Digitar o cardápio" }).click();
 

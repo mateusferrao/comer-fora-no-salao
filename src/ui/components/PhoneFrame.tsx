@@ -1,5 +1,22 @@
-import type { ReactNode } from "react";
+"use client";
+
+import { createContext, useContext, useState, useSyncExternalStore, type ReactNode } from "react";
 import { cn } from "../cn";
+
+/**
+ * D258: avisos (BottomSheet) dentro da tela do celular quando a moldura está visível. O contexto diz se ela está
+ * visível e onde encaixar: `slot` (camada sobre a tela) e `screen` (conteúdo que fica inerte com o aviso aberto).
+ */
+type FrameCtx = { active: boolean; slot: HTMLDivElement | null; screen: HTMLDivElement | null };
+const PhoneFrameContext = createContext<FrameCtx>({ active: false, slot: null, screen: null });
+export const usePhoneFrame = () => useContext(PhoneFrameContext);
+
+const MD = "(min-width: 768px)";
+const subscribeMd = (cb: () => void) => {
+  const m = window.matchMedia(MD);
+  m.addEventListener("change", cb);
+  return () => m.removeEventListener("change", cb);
+};
 
 /*
  * Classes literais nos 2 modos: o Tailwind só gera o que está escrito no código (montar "md:" em tempo de execução
@@ -36,7 +53,12 @@ const SCROLLER = {
  */
 export function PhoneFrame({ children, responsive = false, className, screenClassName, height = "tall" }: { children: ReactNode; responsive?: boolean; className?: string; screenClassName?: string; height?: "tall" | "auto" }) {
   const m = responsive ? "responsiva" : "sempre";
+  const md = useSyncExternalStore(subscribeMd, () => window.matchMedia(MD).matches, () => false);
+  const [slot, setSlot] = useState<HTMLDivElement | null>(null);
+  const [screen, setScreen] = useState<HTMLDivElement | null>(null);
+  const active = !responsive || md;
   return (
+    <PhoneFrameContext.Provider value={{ active, slot, screen }}>
     <div data-moldura={m} className={cn(FRAME[m], className)}>
       <div aria-hidden="true" className={ISLAND[m]} />
       <div className={cn(SCREEN[m], height === "tall" && TALL[m], screenClassName)}>
@@ -56,8 +78,13 @@ export function PhoneFrame({ children, responsive = false, className, screenClas
             </svg>
           </span>
         </div>
-        <div className={SCROLLER[m]}>{children}</div>
+        <div ref={setScreen} className={SCROLLER[m]}>
+          {children}
+        </div>
+        {/* Camada dos avisos dentro da tela do celular (D258); vazia, não captura toques. */}
+        <div ref={setSlot} data-camada-celular className={cn("pointer-events-none absolute inset-0 z-50 overflow-hidden", active ? "" : "hidden")} />
       </div>
     </div>
+    </PhoneFrameContext.Provider>
   );
 }

@@ -36,10 +36,12 @@ function isPresenter(email: string, env: CustomerLoginEnv): boolean {
     .includes(email);
 }
 
-export function customerCodeEmail(code: string, restaurantName: string): { subject: string; text: string; html: string } {
-  const subject = `Seu código: ${code} · ${restaurantName}`;
+export function customerCodeEmail(code: string, restaurantName: string | null): { subject: string; text: string; html: string } {
+  // D257: sem restaurante, é o login pela Jornada (ver e corrigir os próprios dados), sem check-in.
+  const what = restaurantName ? `entrar no Comer Fora no Salão e fazer check-in em ${restaurantName}` : "entrar no Comer Fora no Salão";
+  const subject = restaurantName ? `Seu código: ${code} · ${restaurantName}` : `Seu código: ${code} · Comer Fora no Salão`;
   const lines = [
-    `Seu código para entrar no Comer Fora no Salão e fazer check-in em ${restaurantName} é: ${code}`,
+    `Seu código para ${what} é: ${code}`,
     "",
     `Ele vale por ${LOGIN_CODE_TTL_MIN} minutos e só pode ser usado uma vez. Se não foi você que pediu, ignore este e-mail.`,
     "",
@@ -47,7 +49,7 @@ export function customerCodeEmail(code: string, restaurantName: string): { subje
   ];
   const esc = (s: string) => s.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]!);
   const html = `<div style="font-family:Arial,sans-serif;font-size:15px;color:#151515">
-<p>Seu código para entrar no Comer Fora no Salão e fazer check-in em ${esc(restaurantName)} é:</p>
+<p>Seu código para ${esc(what)} é:</p>
 <p style="font-size:28px;font-weight:bold;letter-spacing:6px">${code}</p>
 <p>Ele vale por ${LOGIN_CODE_TTL_MIN} minutos e só pode ser usado uma vez. Se não foi você que pediu, ignore este e-mail.</p>
 <p style="color:#666;font-size:12px">${PROTOTYPE_FOOTER}</p>
@@ -63,8 +65,9 @@ export function customerCodeEmail(code: string, restaurantName: string): { subje
 export async function requestCustomerCode(
   db: Db,
   p: {
-    restaurantId: string;
-    restaurantName: string;
+    /** `null` = login pela Jornada (D257): só para quem já é cliente; nada de cliente novo sem código. */
+    restaurantId: string | null;
+    restaurantName: string | null;
     email: string;
     ip: string;
     now: Date;
@@ -82,6 +85,7 @@ export async function requestCustomerCode(
   if (isE2eAddress && !e2e) return { ok: false, erro: "email_invalido" };
 
   if (!p.emailLogin) {
+    if (p.restaurantId === null) return { ok: false, erro: "envio_indisponivel" };
     const [c] = await db.insert(customers).values({}).returning({ id: customers.id });
     await db.insert(customerContacts).values({ customerId: c!.id, lastSeenAt: p.now });
     return { ok: true, email, semCodigo: true, customerId: c!.id, needsProfile: true };
@@ -131,10 +135,10 @@ export async function requestCustomerCode(
 
 export type ConfirmCustomerCodeResult =
   | { ok: true; customerId: string; created: boolean; needsProfile: boolean }
-  | { ok: false; erro: "email_invalido" | "formato" | "incorreto" | "expirado" | "bloqueado" | "sem_codigo" | "limite"; restantes?: number; retryAfterSec?: number };
+  | { ok: false; erro: "email_invalido" | "formato" | "incorreto" | "expirado" | "bloqueado" | "sem_codigo" | "limite" | "sem_cadastro"; restantes?: number; retryAfterSec?: number };
 
 /** Passo 1b: confere o código (10 min, 5 tentativas, uso único) e cria ou reconhece o cliente pelo e-mail. */
-export async function confirmCustomerCode(db: Db, p: { restaurantId: string; email: string; code: string; ip: string; now: Date }): Promise<ConfirmCustomerCodeResult> {
+export async function confirmCustomerCode(db: Db, p: { restaurantId: string | null; email: string; code: string; ip: string; now: Date; createIfMissing?: boolean }): Promise<ConfirmCustomerCodeResult> {
   const email = parseCustomerEmail(p.email);
   if (!email) return { ok: false, erro: "email_invalido" };
   const code = p.code.replace(/\s/g, "");
@@ -167,6 +171,8 @@ export async function confirmCustomerCode(db: Db, p: { restaurantId: string; ema
       await tx.update(customerContacts).set({ lastSeenAt: p.now }).where(eq(customerContacts.customerId, existing.id));
       return { ok: true as const, customerId: existing.id, created: false, needsProfile: existing.name === null };
     }
+    // D257: pela Jornada só entra quem já é cliente (o cadastro nasce no check-in, com o aceite do restaurante).
+    if (p.createIfMissing === false) return { ok: false as const, erro: "sem_cadastro" as const };
     const [c] = await tx.insert(customers).values({}).returning({ id: customers.id });
     const inserted = await tx
       .insert(customerContacts)

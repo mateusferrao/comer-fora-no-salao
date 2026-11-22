@@ -84,17 +84,20 @@ export default async function VisaoGeralPage() {
       {dash && <Dashboard key={`${cur?.id}:${dash.restaurant.simulated}`} initial={dash} />}
       {ops && flags && <Operations view={ops} showAb={flags.ab} showAlerts={flags.insight_operacao} />}
 
+      {/* D256: com restaurante já cadastrado, "+ Nova loja" fica no seletor "Trocar loja"; aqui só o 1º cadastro. */}
+      {!hasTest && (
       <section aria-labelledby="crie" className="flex flex-col gap-3 rounded-sm border border-red-text/40 bg-nav-active p-5">
         <h2 id="crie" className="text-lg font-bold text-ink">
-          {hasTest ? "Cadastre outro restaurante" : "Cadastre o seu restaurante"}
+          Cadastre o seu restaurante
         </h2>
         <p className="text-sm text-ink">
           Envie a foto do cardápio, diga quais horários ficam vazios e receba um pacote pronto: benefício na hora, convite de volta para o horário vazio e kit para imprimir.
         </p>
         <div className="max-w-xs">
-          <CreateRestaurantButton label={hasTest ? "Cadastrar outro restaurante" : "Cadastrar meu restaurante"} />
+          <CreateRestaurantButton label="Cadastrar meu restaurante" />
         </div>
       </section>
+      )}
     </main>
   );
 }
