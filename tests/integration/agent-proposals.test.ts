@@ -40,7 +40,9 @@ describe("propostas do copiloto (S8 — D261, D269)", () => {
     const r = await createRestaurant();
     const [card] = await createProposals(getDb(), { restaurantId: r.restaurantId, origin: "copiloto", payloads: [{ acao: "oferta", papel: "convite", slotId: r.slots.A!, offer: { kind: "entrada_gratis", itemId: r.items.bruschetta! } }], now: NOW });
     const res = await Promise.all([1, 2, 3].map(() => decideProposal(getDb(), { restaurantId: r.restaurantId, proposalId: card!.id!, origin: "copiloto", acao: "aplicar", now: later(1000) })));
-    expect(res.every((x) => x.ok)).toBe(true);
+    // Revisão S8 (técnica A2): só um aplica; os outros dizem "em andamento" ou "já estava", nunca um 2º efeito.
+    expect(res.filter((x) => x.ok && !x.already)).toHaveLength(1);
+    expect(res.every((x) => x.ok || x.status === "em_andamento")).toBe(true);
     const vs = await getDb().select().from(benefitVersions).where(and(eq(benefitVersions.restaurantId, r.restaurantId), eq(benefitVersions.kind, "entrada_gratis")));
     expect(vs).toHaveLength(1);
   });
@@ -124,6 +126,16 @@ describe("propostas do copiloto (S8 — D261, D269)", () => {
     expect((rest!.notifySettings as { resumo: { on: boolean } }).resumo.on).toBe(false);
     const items = await getDb().select().from(menuItems).where(eq(menuItems.restaurantId, r.restaurantId));
     expect(items.some((i) => i.name === "Torta de limão" && i.priceCents === 2100)).toBe(true);
+  });
+
+  it("revisão S8: limites valem no copiloto (margem 150%, resumo 02:00) e reserva presa vira 'falhou'", async () => {
+    const r = await createRestaurant();
+    const cards = await createProposals(getDb(), { restaurantId: r.restaurantId, origin: "copiloto", payloads: [{ acao: "restaurante", marginPct: 150 }, { acao: "avisos", minute: 120 }], now: NOW });
+    expect(cards.map((c) => c.status)).toEqual(["recusada", "recusada"]);
+    const [ok] = await createProposals(getDb(), { restaurantId: r.restaurantId, origin: "copiloto", payloads: [{ acao: "item", itemId: r.items.bruschetta!, mudanca: "preco", priceCents: 2900 }], now: NOW });
+    await getDb().update(agentProposals).set({ status: "aplicando" }).where(eq(agentProposals.id, ok!.id!));
+    expect(await decideProposal(getDb(), { restaurantId: r.restaurantId, proposalId: ok!.id!, origin: "copiloto", acao: "aplicar", now: later(60_000) })).toMatchObject({ ok: false, status: "em_andamento" });
+    expect(await decideProposal(getDb(), { restaurantId: r.restaurantId, proposalId: ok!.id!, origin: "copiloto", acao: "aplicar", now: later(PROPOSAL_TTL_MS + 3 * 60_000) })).toMatchObject({ ok: false, status: "falhou" });
   });
 });
 

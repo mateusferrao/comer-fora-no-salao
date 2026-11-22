@@ -31,7 +31,10 @@ export async function POST(req: Request) {
   const now = new Date();
   const o = auth.s.owner;
   // Limites por restaurante (D271); E2E e apresentadores (chave demo) não travam no ensaio + demo (revisão de produto M3).
-  if (o.via !== "e2e" && keyKindFor({ emailHmac: o.emailHmac ?? null, via: o.via ?? null }) !== "demo") {
+  // Revisão S8 (segurança 3): só E2E e apresentador ficam fora; quem entra pelo link do avaliador usa a chave demo
+  // e também tem limite (o link abre contas novas).
+  const presenter = o.via !== "link" && keyKindFor({ emailHmac: o.emailHmac ?? null, via: o.via ?? null }) === "demo";
+  if (o.via !== "e2e" && !presenter) {
     const day = await consume(db, `copiloto:${auth.r.id}`, 60, 86_400, now);
     if (!day.ok) return tooMany(day.retryAfterSec);
     const burst = await consume(db, `copiloto:min:${auth.r.id}`, 10, 600, now);

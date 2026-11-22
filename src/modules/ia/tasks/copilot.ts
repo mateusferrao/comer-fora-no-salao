@@ -198,7 +198,7 @@ export function toPayload(cp: Pick<CopilotPrompt, "itemByAlias" | "slotByAlias" 
   switch (r.acao) {
     case "plano":
       if (!cp.planId) return { erro: "sem_plano_proposto" };
-      return { acao: "plano", planId: cp.planId, ...(slot ? { slotId: slot } : {}), ...(slot && item && r.tipo ? { offer: { kind: r.tipo as OfferKind, itemId: item, ...(r.tipo === "desconto" ? { pct: r.pct ?? 10 } : {}) } } : {}), ...(slot && r.teto ? { weeklyCap: r.teto } : {}) };
+      return { acao: "plano", planId: cp.planId, ...(slot ? { slotId: slot } : {}), ...(slot && item && r.tipo ? { offer: { kind: r.tipo as OfferKind, itemId: item, ...(r.tipo === "desconto" && r.pct ? { pct: r.pct } : {}) } } : {}), ...(slot && r.teto ? { weeklyCap: r.teto } : {}) };
     case "tom":
       return r.tom !== null ? { acao: "tom", tone: r.tom } : { erro: "tom_faltando" };
     case "item_novo":
@@ -218,12 +218,14 @@ export function toPayload(cp: Pick<CopilotPrompt, "itemByAlias" | "slotByAlias" 
       const cur = r.papel === "convite" && r.faixa && (!item || !r.tipo) && (r.teto || r.texto) ? cp.slotOffer?.get(r.faixa) : undefined;
       if (cur && slot) return { acao: "oferta", papel: "convite", slotId: slot, offer: cur, ...(r.teto ? { weeklyCap: r.teto } : {}), ...(text?.trim() ? { inviteText: text } : {}) };
       if (!r.papel || !item || !r.tipo) return { erro: "oferta_incompleta" };
+      // Revisão S8 (técnica M3): desconto sem % não vira "10%" inventado pelo código.
+      if (r.tipo === "desconto" && !r.pct) return { erro: "pct_faltando" };
       if (r.papel === "convite" && !slot) return { erro: "faixa_faltando" };
       return {
         acao: "oferta",
         papel: r.papel,
         ...(r.papel === "convite" ? { slotId: slot } : {}),
-        offer: { kind: r.tipo as OfferKind, itemId: item, ...(r.tipo === "desconto" ? { pct: r.pct ?? 10 } : {}) },
+        offer: { kind: r.tipo as OfferKind, itemId: item, ...(r.tipo === "desconto" && r.pct ? { pct: r.pct } : {}) },
         ...(r.papel === "convite" && r.teto ? { weeklyCap: r.teto } : {}),
         ...(r.papel === "convite" && text?.trim() ? { inviteText: text } : {}),
       };
@@ -268,10 +270,7 @@ export function copilotGuard(cp: CopilotPrompt) {
       const gs = guardChat(s, cp.ctx, 80);
       if (!gs.ok) reasons.push(...gs.reasons.map((r) => `sugestao${i + 1}:${r}`));
     });
-    d.propostas.forEach((p, i) => {
-      const x = toPayload(cp, p);
-      if ("erro" in x) reasons.push(`proposta${i + 1}:${x.erro}`);
-    });
+    // Proposta incompleta não reprova o turno (revisão S8, técnica B1): vira cartão "faltou informação".
     return reasons.length ? { ok: false, reasons } : { ok: true };
   };
 }

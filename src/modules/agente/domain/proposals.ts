@@ -50,10 +50,11 @@ export const proposalPayloadSchema = z.discriminatedUnion("acao", [
   z.object({ acao: z.literal("oferta"), papel: z.enum(["agora", "recompensa", "convite"]), slotId: uuid.optional(), offer: z.object({ kind: z.enum(OFFER_KINDS), itemId: uuid, pct: z.number().int().min(1).max(100).optional() }), weeklyCap: z.number().int().min(1).max(999).optional(), inviteText: z.string().max(300).optional() }),
   z.object({ acao: z.literal("item"), itemId: uuid, mudanca: z.enum(ITEM_CHANGES), priceCents: z.number().int().min(0).max(1_000_000).optional() }),
   z.object({ acao: z.literal("faixa"), slotId: uuid, mudanca: z.enum(["editar", "desativar"]), days: z.array(z.number().int().min(0).max(6)).min(1).max(7).optional(), startMin: minutes.optional(), endMin: minutes.optional(), intensity: z.enum(INTENSITIES).optional(), extraTables: z.number().int().min(1).max(200).optional() }),
+  z.object({ acao: z.literal("plano"), planId: uuid, slotId: uuid.optional(), offer: z.object({ kind: z.enum(OFFER_KINDS), itemId: uuid, pct: z.number().int().min(1).max(100).optional() }).optional(), weeklyCap: z.number().int().min(1).max(999).optional() }),
   z.object({ acao: z.literal("tom"), tone: z.string().max(200) }),
   z.object({ acao: z.literal("item_novo"), name: z.string().min(2).max(120), category: z.enum(MENU_CATEGORIES), priceCents: z.number().int().min(0).max(1_000_000) }),
   z.object({ acao: z.literal("restaurante"), ticketCents: z.number().int().min(100).max(1_000_000).nullable().optional(), marginPct: z.number().int().min(1).max(95).nullable().optional() }),
-  z.object({ acao: z.literal("avisos"), resumoOn: z.boolean().optional(), weekday: z.number().int().min(0).max(6).optional(), minute: z.number().int().min(360).max(1320).optional() }),
+  z.object({ acao: z.literal("avisos"), resumoOn: z.boolean().optional(), weekday: z.number().int().min(0).max(6).optional(), minute: z.number().int().min(360).max(1320).refine((m) => m % 30 === 0).optional() }),
 ]);
 
 export type PreviewLine = { campo: string; antes: string; depois: string };
@@ -143,6 +144,9 @@ function previewOffer(snap: Snapshot, p: Extract<ProposalPayload, { acao: "ofert
   if (!sameOffer(slot.offer, p.offer)) linhas.push({ campo: "Oferta", antes: slot.offer ? describeOffer(offerFromInput(slot.offer), menu, "convite").gain : "—", depois: gain });
   if (cap !== capBefore) linhas.push({ campo: "Teto semanal", antes: `${capBefore} convites`, depois: `${cap} convites` });
   if (newText) linhas.push({ campo: "Texto do convite", antes: slot.inviteText ? "texto atual" : "—", depois: "texto novo (veja abaixo)" });
+  // Revisão S8 (produto 12, H4): o custo máximo antes → depois, calculado pelo código.
+  const costBefore = slot.offer ? unitCost(offerFromInput(slot.offer), menu, snap.marginPct ?? undefined).cents * capBefore : null;
+  if (costBefore !== null && costBefore !== cost.cents * cap) linhas.push({ campo: "Custo máximo por semana", antes: money(costBefore), depois: money(cost.cents * cap) });
   if (!sameOffer(slot.offer, p.offer)) avisos.unshift("Convites já emitidos continuam com a oferta antiga.");
   return {
     ok: true,

@@ -19,7 +19,7 @@ import { FORBIDDEN } from "@/src/modules/ia/guardrails";
 import { approvePlan, finalFromStored, latestPlan, type ApproveVia } from "@/src/modules/planos/application/approve-plan";
 import { getPlanView } from "@/src/modules/planos/application/plan-view";
 import { restaurants } from "@/src/db/schema";
-import { previewProposal, type PreviewOk, type ProposalPayload, type Snapshot } from "../domain/proposals";
+import { previewProposal, proposalPayloadSchema, type PreviewOk, type ProposalPayload, type Snapshot } from "../domain/proposals";
 
 export const PROPOSAL_TTL_MS = 30 * 60_000;
 export type Origin = "copiloto" | "mcp";
@@ -78,6 +78,11 @@ export async function createProposals(db: Db, p: { restaurantId: string; origin:
   if (!snap) return p.payloads.map((payload) => ({ id: null, status: "recusada" as const, motivo: "Restaurante não encontrado.", payload }));
   const out: ProposalCard[] = [];
   for (const payload of p.payloads) {
+    // Revisão S8 (técnica A1): os limites valem para as duas portas (o copiloto passava sem o Zod do MCP).
+    if (!proposalPayloadSchema.safeParse(payload).success) {
+      out.push({ id: null, status: "recusada", motivo: "Algum valor está fora dos limites (ex.: margem até 95%, resumo entre 06:00 e 22:00 em hora cheia ou meia hora, teto até 999).", payload });
+      continue;
+    }
     const pv = previewProposal(snap, payload);
     if (!pv.ok) {
       out.push({ id: null, status: "recusada", motivo: pv.motivo, payload });
@@ -116,7 +121,10 @@ const TONE_ERR: Record<string, string> = {
 
 export type DecideResult =
   | { ok: true; status: "aplicada" | "descartada"; already?: boolean; aba?: PreviewOk["aba"]; warnings?: string[] }
-  | { ok: false; status: "expirada" | "falhou" | "nao_encontrada" | "descartada"; motivo: string };
+  | { ok: false; status: "expirada" | "falhou" | "nao_encontrada" | "descartada" | "em_andamento"; motivo: string };
+
+/** Reserva presa em `aplicando` (processo caiu no meio) vira `falhou` depois deste tempo (revisão S8, técnica A2). */
+export const APPLYING_STALE_MS = 2 * 60_000;
 
 const APPLY_ERR: Record<string, string> = {
   em_uso: "O prato está numa oferta em vigor. Troque a oferta antes.",
@@ -196,7 +204,7 @@ export async function decideProposal(db: Db, p: { restaurantId: string; proposal
   if (p.acao === "descartar") {
     const upd = await db.update(agentProposals).set({ status: "descartada", decidedAt: p.now }).where(and(where, eq(agentProposals.status, "pendente"))).returning({ id: agentProposals.id });
     if (upd.length) return { ok: true, status: "descartada" };
-    return explain(db, where);
+    return explain(db, where, p.now);
   }
   const fresh = new Date(p.now.getTime() - PROPOSAL_TTL_MS);
   const [row] = await db
@@ -207,7 +215,7 @@ export async function decideProposal(db: Db, p: { restaurantId: string; proposal
   if (!row) {
     // Vencida: marca como expirada (se ainda estiver pendente) e explica.
     await db.update(agentProposals).set({ status: "expirada", decidedAt: p.now }).where(and(where, eq(agentProposals.status, "pendente"), sql`${agentProposals.createdAt} <= ${fresh}`));
-    return explain(db, where);
+    return explain(db, where, p.now);
   }
   const finish = (status: "aplicada" | "expirada" | "falhou", error?: string) => db.update(agentProposals).set({ status, error: error ?? null, decidedAt: p.now }).where(eq(agentProposals.id, row.id));
   const payload = row.payload as ProposalPayload;
@@ -217,24 +225,35 @@ export async function decideProposal(db: Db, p: { restaurantId: string; proposal
     await finish("expirada", "antes_mudou");
     return { ok: false, status: "expirada", motivo: "Algo mudou desde a proposta. Peça de novo para ver a versão atual." };
   }
+  let done: "aplicada" | "falhou" = "falhou";
+  let error: string | undefined = "erro_interno";
   try {
     const res = await run(db, p.restaurantId, payload, snap, pv, p.now, { via: p.origin === "mcp" ? "agente" : "copiloto", onApproved: p.onApproved });
     if (!res.ok) {
-      await finish("falhou", res.erro);
+      error = res.erro;
       return { ok: false, status: "falhou", motivo: APPLY_ERR[res.erro] ?? "Não deu para aplicar." };
     }
-    await finish("aplicada");
+    done = "aplicada";
+    error = undefined;
     return { ok: true, status: "aplicada", aba: pv.aba, ...(res.warnings?.length ? { warnings: res.warnings } : {}) };
-  } catch (e) {
-    await finish("falhou", "erro_interno");
-    throw e;
+  } finally {
+    // Sempre fecha a reserva (revisão S8, técnica A2): nada fica em `aplicando` por exceção.
+    await finish(done, error).catch(() => undefined);
   }
 }
 
-async function explain(db: Db, where: ReturnType<typeof and>): Promise<DecideResult> {
-  const [r] = await db.select({ status: agentProposals.status }).from(agentProposals).where(where);
+async function explain(db: Db, where: ReturnType<typeof and>, now: Date = new Date()): Promise<DecideResult> {
+  const [r] = await db.select({ id: agentProposals.id, status: agentProposals.status, createdAt: agentProposals.createdAt }).from(agentProposals).where(where);
   if (!r) return { ok: false, status: "nao_encontrada", motivo: "Proposta não encontrada." };
-  if (r.status === "aplicada" || r.status === "aplicando") return { ok: true, status: "aplicada", already: true };
+  if (r.status === "aplicada") return { ok: true, status: "aplicada", already: true };
+  if (r.status === "aplicando") {
+    // Ainda gravando (outro clique ou o agente): não diz "aplicada" antes da hora. Presa há muito tempo → falhou.
+    if (now.getTime() - r.createdAt.getTime() > PROPOSAL_TTL_MS + APPLYING_STALE_MS) {
+      await db.update(agentProposals).set({ status: "falhou", error: "reserva_presa", decidedAt: now }).where(and(eq(agentProposals.id, r.id), eq(agentProposals.status, "aplicando")));
+      return { ok: false, status: "falhou", motivo: "Essa proposta não pôde ser aplicada. Confira a tela e peça de novo." };
+    }
+    return { ok: false, status: "em_andamento", motivo: "Essa proposta está sendo aplicada agora. Confira a tela em instantes." };
+  }
   if (r.status === "descartada") return { ok: false, status: "descartada", motivo: "Essa proposta foi descartada." };
   if (r.status === "falhou") return { ok: false, status: "falhou", motivo: "Essa proposta não pôde ser aplicada." };
   return { ok: false, status: "expirada", motivo: "A proposta venceu (30 minutos). Peça de novo para ver a versão atual." };

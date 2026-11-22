@@ -69,7 +69,9 @@ export async function callCatalogTool(db: Db, restaurantId: string, name: string
     const parsed = tool.input.safeParse(name === "buscar_clientes" ? { segmento: args.segmento ?? null, nome: args.nome ?? null } : {});
     if (!parsed.success) return { data: { erro: "argumentos_invalidos" }, isError: true };
     const { execute } = tool;
-    return { data: await execute(parsed.data) };
+    const data = await execute(parsed.data);
+    // No MCP, o apelido vai simples ("C8"): `{cliente:…}` é a referência interna dos textos do copiloto.
+    return { data: JSON.parse(JSON.stringify(data).replace(/\{cliente:(C\d+)\}/g, "$1")) };
   }
   if (name === "propor_mudanca") {
     const parsed = proposalPayloadSchema.safeParse(args.mudanca);

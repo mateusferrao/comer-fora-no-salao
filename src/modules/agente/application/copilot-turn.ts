@@ -8,7 +8,7 @@ import type { Db } from "@/src/db/client";
 import { owners, restaurants } from "@/src/db/schema";
 import type { AiGateway, ChatTurn } from "@/src/modules/ia/gateway";
 import { gatewayFor, keyKindFor } from "@/src/modules/ia/gateway-factory";
-import { COPILOT_PUBLIC_DAILY_CAP_USD, recordAiCall, spentToday } from "@/src/modules/ia/ai-calls";
+import { COPILOT_PUBLIC_DAILY_CAP_USD, copilotSpentToday, recordAiCall } from "@/src/modules/ia/ai-calls";
 import { MODELS } from "@/src/modules/ia/models";
 import { runTask } from "@/src/modules/ia/run-task";
 import { langfuseTracer } from "@/src/modules/ia/tracing";
@@ -55,7 +55,7 @@ export async function runCopilotTurn(
     gateway = choice.gateway;
   }
   if (!gateway) return noAi("sem_chave");
-  if (keyKind === "publica" && (await spentToday(db, "publica", p.now, "copiloto")) >= COPILOT_PUBLIC_DAILY_CAP_USD) return noAi("teto_diario");
+  if (keyKind === "publica" && (await copilotSpentToday(db, "publica", p.now)) >= COPILOT_PUBLIC_DAILY_CAP_USD) return noAi("teto_diario");
 
   // Ativação (D265): só dúvidas, com o guia do produto (sem dados nem propostas).
   if (onboarding) {
@@ -74,10 +74,19 @@ export async function runCopilotTurn(
   const aiCallId = await recordAiCall(db, { task: "copiloto", promptVersion: COPILOT_PROMPT_VERSION, restaurantId: p.restaurantId, result: res, keyKind });
   if (res.status !== "ok") return noAi("falha");
 
-  const payloads = res.data.propostas.map((x) => toPayload(cp, x)).filter((x): x is ProposalPayload => !("erro" in x));
-  const propostas = payloads.length ? await createProposals(db, { restaurantId: p.restaurantId, origin: "copiloto", payloads, aiCallId, now: p.now }) : [];
+  const mapped = res.data.propostas.map((x) => toPayload(cp, x));
+  const payloads = mapped.filter((x): x is ProposalPayload => !("erro" in x));
+  const created = payloads.length ? await createProposals(db, { restaurantId: p.restaurantId, origin: "copiloto", payloads, aiCallId, now: p.now }) : [];
+  // Revisão S8 (produto 5): proposta incompleta não some em silêncio; vira cartão com o motivo.
+  const incomplete: ProposalCard[] = mapped.filter((x): x is { erro: string } => "erro" in x).map(() => ({ id: null, status: "recusada", motivo: "Faltou informação para montar a mudança (o prato, o horário ou o tipo da oferta). Diga o que trocar e pelo quê.", payload: { acao: "tom", tone: "" } }));
+  const propostas = [...created, ...incomplete];
+  let resposta = renderAnswer(res.data.resposta, cp.ctx);
+  // O texto da IA não pode prometer um cartão que não há (revisão S8, produto 5).
+  if (!propostas.some((c) => c.status === "pendente") && /proposta abaixo|preparei (a|uma) proposta/i.test(resposta)) {
+    resposta = propostas.length ? "Não preparei a mudança: veja o motivo abaixo." : "Não consegui montar essa mudança. Diga o prato e o horário, ou faça pelo formulário.";
+  }
   return {
-    resposta: renderAnswer(res.data.resposta, cp.ctx),
+    resposta,
     propostas,
     sugestoes: res.data.sugestoes.map((s) => renderAnswer(s, cp.ctx)),
     generatedBy: "ia",

@@ -50,3 +50,8 @@ export async function spentToday(ex: Executor, keyKind: KeyKind, now: Date, task
     .where(and(eq(aiCalls.keyKind, keyKind), gte(aiCalls.at, start), ...(task ? [eq(aiCalls.task, task)] : [])));
   return Number(r?.total ?? 0);
 }
+
+/** Gasto do dia do copiloto (turnos + frase do salão) na chave: um teto só (revisão S8, segurança 6). */
+export async function copilotSpentToday(ex: Executor, keyKind: KeyKind, now: Date): Promise<number> {
+  return (await spentToday(ex, keyKind, now, "copiloto")) + (await spentToday(ex, keyKind, now, "salao_frase"));
+}
