@@ -1607,3 +1607,11 @@ As decisões sobre a preparação pessoal do candidato para a apresentação (D2
 **D329 — Slide do processo também dentro da apresentação** (22/11, candidato) ✅
 - Complementa a D297. O arquivo `slide-processo` continua separado, porque é o item obrigatório do e-mail e precisa ser fácil de achar. Uma cópia idêntica entra como 1º slide do apêndice da apresentação, no lugar de "Como construí com IA", que tratava do mesmo assunto em versão menor.
 - Alternativas: documento único, em que o avaliador precisaria achar a página do item obrigatório; deixar como estava, em que quem abre só a apresentação não vê o processo.
+
+**D330 — Apresentação reavaliada contra os 5 critérios do case** (22/11, candidato) ✅
+- Pedido do candidato: reavaliar de forma crítica com base no PDF do case. Lacunas corrigidas:
+  - slide 2 ganha "para quem" e perde a afirmação sem fonte ("sem teto de custo");
+  - o passo 1 do slide 3 responde ao "entrar";
+  - o slide 4 traz a escala que o piloto testa;
+  - novo slide 5, "Muda na hora, sem deploy", para o critério "domínio da solução".
+- Alternativa: manter os 4 slides principais. Trade-off: a abertura e o fecho passam de ~1:30 para ~2:00 de fala, ainda dentro dos 8 min com a demo.
