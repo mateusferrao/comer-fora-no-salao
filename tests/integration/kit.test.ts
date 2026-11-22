@@ -19,7 +19,13 @@ const good: AiGateway = {
 };
 
 describe("kit (Postgres)", () => {
-  beforeEach(resetDb);
+  // O kit da S3: 3 peças e o cartão do garçom apontando para o Portal. Porta-conta e link do garçom (ligados por
+  // padrão desde a S9) ficam desligados aqui; o porta-conta tem o teste próprio em porta-conta.test.ts.
+  beforeEach(async () => {
+    await resetDb();
+    await setFlag(getDb(), "porta_conta", false);
+    await setFlag(getDb(), "modo_garcom", false);
+  });
   afterAll(closeDb);
 
   it("gera 3 peças (display e cartaz A/B, cartão do garçom) com textos da IA; 2ª geração não duplica", async () => {
