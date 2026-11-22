@@ -75,5 +75,5 @@ test("grupo de controle: o cliente não vê nada; o dono vê a marca em 'Último
   await page.reload();
   // Com `painel_valor` (S5.1), a lista vira "Hoje no salão", com a mesma marca.
   // S9: "Hoje no salão" usa o rótulo "grupo sem convite"; a lista antiga mantém o texto dela.
-  await expect(page.getByTestId(S5_ON ? "hoje-no-salao" : "ultimos-checkins")).toContainText(S5_ON ? "grupo sem convite · sorteado para comparar" : "grupo de controle · sem convite (mede o efeito)", { timeout: 10_000 });
+  await expect(page.getByTestId(S5_ON ? "hoje-no-salao" : "ultimos-checkins")).toContainText(S5_ON ? "grupo sem convite · sorteado para comparar" : "grupo sem convite (para comparar)", { timeout: 10_000 });
 });

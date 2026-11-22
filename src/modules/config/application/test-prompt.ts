@@ -13,7 +13,7 @@ import { gatewayFor } from "@/src/modules/ia/gateway-factory";
 import { MODELS } from "@/src/modules/ia/models";
 import { runTask } from "@/src/modules/ia/run-task";
 import { langfuseTracer } from "@/src/modules/ia/tracing";
-import { buildKitPrompt, buildKitTask, resolveKit } from "@/src/modules/ia/tasks/kit";
+import { buildKitPrompt, buildKitTask, KIT_PROMPT_VERSION, resolveKit } from "@/src/modules/ia/tasks/kit";
 import { buildPackagePrompt, buildPackageTask, resolveLearned, resolvePackage } from "@/src/modules/ia/tasks/package";
 import { buildCandidates } from "@/src/modules/onboarding/domain/candidates";
 import { declaredFacts } from "@/src/modules/onboarding/domain/facts";
@@ -47,7 +47,7 @@ export async function testPrompt(db: Db, p: { task: PromptTask; instructions: st
   if (p.task === "kit") {
     const kp = buildKitPrompt({ restaurantName: "Cantina de Exemplo", cuisine: "Italiana", beneficio: "Panna cotta grátis", recompensa: "Cannoli grátis", menu: MENU, inviteItemIds: ["x-fritto"], instructions: p.instructions });
     const r = await runTask(buildKitTask(kp, MODELS.kit), kp.system, { text: kp.text }, { gateway: gw.gateway, clock: systemClock, trace: langfuseTracer });
-    await recordAiCall(db, { task: "teste:kit", promptVersion: "kit-v1@teste", restaurantId: null, result: r, keyKind: gw.keyKind });
+    await recordAiCall(db, { task: "teste:kit", promptVersion: `${KIT_PROMPT_VERSION}@teste`, restaurantId: null, result: r, keyKind: gw.keyKind });
     if (r.status !== "ok") return { ok: true, status: "sem_ia", reasons: reasonsOf(r), texts: [], model: null };
     const t = resolveKit(kp, r.data);
     const ctx = { ...kp.ctx, items };

@@ -178,7 +178,7 @@ export function RestaurantView({ page, token, copyV2 = false, recentCheckins = n
               </div>
               {page.recado && (
                 <>
-                  <p className="mt-4 text-sm font-semibold">Recado do {page.name}</p>
+                  <p className="mt-4 text-sm font-semibold">Recado da casa</p>
                   <p className="mt-1 text-sm text-ink-muted">{page.recado}</p>
                 </>
               )}

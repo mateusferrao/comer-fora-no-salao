@@ -96,7 +96,7 @@ test.describe("vitrine (só leitura)", () => {
     await page.getByRole("button", { name: /Panna cotta grátis/ }).click();
     const sheet = page.getByRole("dialog", { name: "O que você ganha aqui" });
     await expect(sheet).toContainText("Na 1ª visita, faça check-in e mostre o código ao garçom para ganhar Panna cotta grátis.");
-    await expect(sheet).toContainText("Recado do Cantina Nonna Lúcia");
+    await expect(sheet).toContainText("Recado da casa");
     await axe(page);
     await page.keyboard.press("Escape");
     await expect(sheet).toBeHidden();

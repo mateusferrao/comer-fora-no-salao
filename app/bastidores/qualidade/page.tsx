@@ -121,9 +121,10 @@ export default async function Qualidade() {
         <ul className="mt-2 list-disc pl-5">
           <li>Pedidos ao copiloto: {cm.turns}{cm.turnsNoAiPct !== null ? ` · sem IA em ${cm.turnsNoAiPct}%` : ""}</li>
           <li>Propostas mostradas: {cm.shown} · aplicadas: {cm.applied}{cm.appliedPct !== null ? ` (${cm.appliedPct}%)` : ""} · descartadas: {cm.discarded} · vencidas: {cm.expired} · com falha: {cm.failed}</li>
+          <li>Pedidos fora do escopo do restaurante (D277): {cm.outOfScope.total}{cm.outOfScope.total > 0 ? ` · barrados pelo portão do sistema, mesmo marcados como do restaurante: ${cm.outOfScope.byGate}` : ""}. O dono vê uma recusa fixa e nenhuma proposta.</li>
           <li>Tempo até aplicar (mediana): {cm.p50SecToApply === null ? "—" : `${cm.p50SecToApply} s`}</li>
           <li>Mudanças nas Configurações nos últimos 7 dias: {cm.editsLast7.total}, das quais {cm.editsLast7.copilot} pelo assistente ou por agente</li>
-          {cm.byOrigin.length > 0 && <li>Aplicadas por canal: {cm.byOrigin.map((o) => `${o.origin === "mcp" ? "agente (MCP)" : "copiloto"} ${o.applied}`).join(" · ")}</li>}
+          {cm.byOrigin.length > 0 && <li>Aplicadas por canal: {cm.byOrigin.map((o) => `${o.origin === "mcp" ? "app de IA conectado (MCP)" : "Assistente do salão"} ${o.applied}`).join(" · ")}</li>}
         </ul>
         {cm.byAction.length > 0 && (
           <table className="mt-3 w-full text-sm">
