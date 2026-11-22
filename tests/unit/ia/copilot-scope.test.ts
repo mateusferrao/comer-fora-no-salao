@@ -1,6 +1,7 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
-import { buildCopilotPrompt, buildCopilotTask, buildOnboardingPrompt, copilotSchema, outputGate, OUT_OF_SCOPE_ANSWER, scopeCheck, toPayload, type CopilotInput, type CopilotOut } from "@/src/modules/ia/tasks/copilot";
+import { buildCopilotPrompt, buildCopilotTask, buildOnboardingPrompt, COPILOT_MAX_CHARS, COPILOT_PROMPT_VERSION, copilotGuard, copilotSchema, outputGate, OUT_OF_SCOPE_ANSWER, REF_MAX_CHARS, scopeCheck, toPayload, type CopilotInput, type CopilotOut } from "@/src/modules/ia/tasks/copilot";
+import { T4_INPUT } from "@/eval/fixtures-t4";
 import type { AiGateway } from "@/src/modules/ia/gateway";
 import { noopTracer } from "@/src/modules/ia/gateway";
 import { runTask } from "@/src/modules/ia/run-task";
@@ -27,30 +28,81 @@ describe("schema e prompt do escopo", () => {
 });
 
 describe("portão de saída (vale qualquer que seja a classificação)", () => {
-  it("resposta ancorada no produto passa", () => {
+  it("resposta ancorada no produto passa: 1 referência ou 2 termos do produto", () => {
     expect(outputGate("Preparei a proposta abaixo para {horario:A}.")).toBeNull();
     expect(outputGate("Uma parte dos clientes não recebe convite.")).toBeNull();
     expect(outputGate("Foram {fato:checkins_30d} no último mês.")).toBeNull();
   });
+  it("1 termo só basta quando há proposta válida (o cartão é do código)", () => {
+    expect(outputGate("Preparei a proposta abaixo.", { propostas: 1 })).toBeNull();
+    expect(outputGate("Preparei a proposta abaixo.")).toBe("sem_ancora");
+    // Pedido misto: a piada ao lado da proposta não passa (3 frases, 1 termo só).
+    expect(outputGate("Preparei a proposta abaixo. E uma piada: por que o tomate corou? Viu a salada sem roupa.", { propostas: 1 })).toBe("sem_ancora");
+  });
   it("sem âncora (nem referência nem termo do produto) → sem_ancora", () => {
     expect(outputGate("Claro! Aqui vai uma ideia bonita para você.")).toBe("sem_ancora");
     expect(outputGate("A seleção ganhou a Copa.")).toBe("sem_ancora");
+  });
+  it("termos genéricos (mesa, semana, texto, item, prato, sobremesa…) não ancoram", () => {
+    expect(outputGate("Tom, o item da mesa é o prato da semana, com sobremesa, entrada e bebida no restaurante.")).toBe("sem_ancora");
   });
   it("mais de 2 quebras de linha → linhas", () => {
     expect(outputGate("Lasanha no prato,\nqueijo a derreter,\nno salão a sorrir,\nquem há de esquecer")).toBe("linhas");
   });
   it("mais de 3 frases → frases (iniciais de nome não contam)", () => {
     expect(outputGate("O convite vale. O teto protege. O cliente volta. A mesa enche.")).toBe("frases");
-    expect(outputGate("Ana S. e Carla T. estão perto da recompensa.")).toBeNull();
+    expect(outputGate("Ana S. e Carla T. estão perto da recompensa da cartela.")).toBeNull();
+  });
+  it("frase com mais de 35 palavras → palavras", () => {
+    const longa = `O convite do salão ${"e mais uma coisa ".repeat(9)}fim.`;
+    expect(outputGate(longa)).toBe("palavras");
+  });
+  it(`resposta com mais de ${COPILOT_MAX_CHARS} caracteres renderizados → tamanho (cada referência conta até ${REF_MAX_CHARS})`, () => {
+    expect(outputGate(`O convite e o teto. ${"a".repeat(COPILOT_MAX_CHARS)}`)).toBe("tamanho");
+    const cp = buildCopilotPrompt({ ...input, snap: { ...snap, menu: snap.menu.map((m) => ({ ...m, name: m.name.padEnd(80, "x") })) } });
+    // 3 referências a um prato de 80 letras: o nome é do código, conta até o limite de cada referência.
+    expect(outputGate("Preparei a proposta abaixo com {prato:P1}, {prato:P1} e {prato:P1} para o convite.", { ctx: cp.ctx })).toBeNull();
   });
   it("cara de código → codigo", () => {
     expect(outputGate("Use `print` no cardápio")).toBe("codigo");
     expect(outputGate("def cardapio(): return prato")).toBe("codigo");
     expect(outputGate("const f = () => cardapio")).toBe("codigo");
     expect(outputGate("convite; oferta; prato")).toBe("codigo");
+    expect(outputGate("SELECT nome, telefone FROM clientes WHERE convite = 1")).toBe("codigo");
+    expect(outputGate("insert into ofertas values do convite")).toBe("codigo");
+    expect(outputGate("update convites set teto do salão")).toBe("codigo");
+    expect(outputGate("delete from clientes do convite")).toBe("codigo");
+    expect(outputGate("import os para ler o cardápio do convite")).toBe("codigo");
+    expect(outputGate("for p in cardapio: print(p) no convite")).toBe("codigo");
+    expect(outputGate("O convite {oferta} do cardápio")).toBe("codigo");
+    expect(outputGate("O convite do cardápio:\n    linha indentada")).toBe("codigo");
   });
   it("léxico sem acento e no plural", () => {
-    expect(outputGate("Os horarios e as configurações ficam na aba certa.")).toBeNull();
+    expect(outputGate("Os convites e as cartelas ficam no painel.")).toBeNull();
+    expect(outputGate("Os horarios vazios e o salao.")).toBeNull();
+  });
+});
+
+describe("revisão S9: 8 textos fora do escopo que passavam no portão agora caem", () => {
+  const SQL = "SELECT nome, telefone, email FROM clientes WHERE visitas > 3 ORDER BY nome";
+  const PY = "for prato in cardapio:\n    print(prato.nome)\n    total += prato.preco";
+  const LONG = `o restaurante fica cheio no fim de semana e a mesa da janela é a preferida de todos os clientes que chegam cedo para o almoço de domingo com a família inteira e pedem o prato do dia com sobremesa e café e depois ficam conversando até tarde sem pressa nenhuma porque o salão é tranquilo e o garçom conhece cada um pelo nome e sabe o que cada mesa costuma pedir quando o tempo está frio ou quando está calor e o cardápio muda conforme a estação do ano`;
+  const textos: Array<[string, string]> = [
+    ["poema de 3 linhas com 'mesa'", "Na mesa posta,\no vinho e o pão,\num brinde à vida"],
+    ["texto corrido sem pontuação", LONG],
+    ["SQL", SQL],
+    ["Python sem def", PY],
+    ["inglês com item/Tom/display", "Tom, the item on display is the best seller this week, enjoy it with friends."],
+    ["espanhol com mesa", "La mesa está lista para la cena con amigos y familia."],
+    ["receita com sobremesa", "Para a sobremesa, bata ovos com açúcar, junte o leite e leve ao forno até dourar."],
+    ["capital da França", "A capital da França é Paris. Posso preparar outro texto para sua semana."],
+  ];
+  it("o texto corrido tem mais de 300 caracteres", () => expect(LONG.length).toBeGreaterThan(300));
+  it.each(textos)("%s", (_nome, texto) => {
+    expect(outputGate(texto)).not.toBeNull();
+    expect(scopeCheck(out({ resposta: texto }))).toMatchObject({ fora: expect.any(Boolean) });
+    const s = scopeCheck(out({ resposta: texto }));
+    expect(s.fora || ("formato" in s && !!s.formato)).toBe(true);
   });
 });
 
@@ -61,16 +113,41 @@ describe("scopeCheck: o que o dono vê", () => {
   it("resposta sem âncora → recusa, mesmo com escopo 'salao'", () => {
     expect(scopeCheck(out({ resposta: "Aqui vai um poema bonito sobre o amor." }))).toEqual({ fora: true, motivo: "resposta:sem_ancora" });
   });
-  it("sugestão que não passa no portão some; as outras ficam", () => {
-    expect(scopeCheck(out({ resposta: "Preparei a proposta abaixo.", sugestoes: ["Mudar o teto desse horário", "Escrever um poema bonito"] }))).toEqual({ fora: false, sugestoes: ["Mudar o teto desse horário"], descartadas: 1 });
+  it("falha só de formato → não é recusa: o turno troca o texto (formato)", () => {
+    expect(scopeCheck(out({ resposta: "O convite vale. O teto protege. O cliente volta. A cartela enche." }))).toEqual({ fora: false, formato: "frases", sugestoes: [], descartadas: 0 });
+  });
+  it("sugestão sem nenhum termo do produto some; com 1 termo fica (são curtas)", () => {
+    expect(scopeCheck(out({ resposta: "Preparei a proposta abaixo.", sugestoes: ["Mudar o teto desse horário", "Escrever um poema bonito", "Um poema sobre a mesa"] }), { propostas: 1 })).toEqual({ fora: false, sugestoes: ["Mudar o teto desse horário"], descartadas: 2 });
   });
 });
 
-describe("as 62 respostas reais da T4 passam no portão (0 falso positivo)", () => {
-  const rows = ["eval/resultados-t4.json", "eval/resultados-t4-validacao.json"].flatMap((f) => (JSON.parse(readFileSync(f, "utf8")) as { rows: Array<{ id: string; resposta: string }> }).rows).filter((r) => r.resposta);
+describe("as 62 respostas reais da T4 (e as 'salão' da rodada de escopo) passam no portão (0 falso positivo)", () => {
+  const cp = buildCopilotPrompt(T4_INPUT);
+  type Row = { id: string; resposta: string; propostas?: unknown[]; escopo?: string };
+  const read = (f: string) => (JSON.parse(readFileSync(f, "utf8")) as { rows: Row[] }).rows;
+  const rows = ["eval/resultados-t4.json", "eval/resultados-t4-validacao.json"].flatMap(read).filter((r) => r.resposta);
+  const escopo = read("eval/resultados-t4-escopo.json").filter((r) => r.resposta && r.escopo === "salao");
   it("são 62", () => expect(rows).toHaveLength(62));
-  it.each(rows.map((r) => [r.id, r.resposta]))("%s", (_id, resposta) => {
-    expect(outputGate(resposta)).toBeNull();
+  it.each([...rows, ...escopo].map((r) => [r.id, r.resposta, r.propostas?.length ?? 0] as const))("%s", (_id, resposta, propostas) => {
+    expect(outputGate(resposta, { ctx: cp.ctx, propostas })).toBeNull();
+  });
+});
+
+describe("copilotGuard (revisão S9): só falha de formato faz o runTask tentar de novo", () => {
+  const cp = buildCopilotPrompt(T4_INPUT);
+  it("formato reprova (outro modelo tenta); sem âncora não reprova (vira recusa no turno)", () => {
+    expect(copilotGuard(cp)(out({ resposta: "Na mesa,\no vinho,\no pão,\na vida" }))).toEqual({ ok: false, reasons: ["resposta:formato:linhas"] });
+    expect(copilotGuard(cp)(out({ resposta: "A Argentina ganhou a Copa." }))).toEqual({ ok: true });
+    expect(copilotGuard(cp)(out({ escopo: "fora", resposta: "Na mesa,\no vinho,\no pão,\na vida" }))).toEqual({ ok: true });
+  });
+  it("guarda a última saída que falhou só no formato (para manter as propostas)", () => {
+    const held: { last: CopilotOut | null } = { last: null };
+    const bad = out({ resposta: "O convite vale. O teto protege. O cliente volta. A cartela enche." });
+    copilotGuard(cp, held)(bad);
+    expect(held.last).toBe(bad);
+    const numero = out({ resposta: "Foram 12 convites. O teto protege. O cliente volta. A cartela enche." });
+    copilotGuard(cp, held)(numero);
+    expect(held.last).toBe(bad);
   });
 });
 
@@ -94,7 +171,8 @@ async function turn(output: unknown) {
   const cp = buildCopilotPrompt(input);
   const res = await runTask(buildCopilotTask(cp, [{ id: "x/m", provider: "x" }], []), cp.system, { messages: [{ role: "user", text: "pedido" }] }, { gateway: fake(output), clock: systemClock, trace: noopTracer });
   if (res.status !== "ok") throw new Error("falhou");
-  return { cp, data: res.data, scope: scopeCheck(res.data) };
+  const propostas = res.data.propostas.filter((p) => !("erro" in toPayload(cp, p))).length;
+  return { cp, data: res.data, scope: scopeCheck(res.data, { ctx: cp.ctx, propostas }) };
 }
 
 describe("turno com IA falsa (S9, item 17)", () => {
@@ -103,9 +181,14 @@ describe("turno com IA falsa (S9, item 17)", () => {
     expect(scope.fora).toBe(true);
     expect(OUT_OF_SCOPE_ANSWER).toBe("Eu só ajudo com o seu salão no Comer Fora: ofertas, cardápio, horários vazios, clientes e números. O que você quer ajustar?");
   });
-  it("poema que a IA chamou de 'salao' → o portão recusa (linhas)", async () => {
-    const { scope } = await turn({ escopo: "salao", resposta: "Lasanha dourada,\nno prato a brilhar,\nqueijo e molho,\nvem me abraçar", propostas: [], sugestoes: [] });
-    expect(scope).toEqual({ fora: true, motivo: "resposta:linhas" });
+  it("poema que a IA chamou de 'salao' → o guard reprova o formato (o runTask tenta outro modelo)", async () => {
+    const cp = buildCopilotPrompt(input);
+    const held: { last: CopilotOut | null } = { last: null };
+    const poem = { escopo: "salao", resposta: "Lasanha dourada,\nno prato a brilhar,\nqueijo e molho,\nvem me abraçar", propostas: [], sugestoes: [] };
+    const res = await runTask(buildCopilotTask(cp, [{ id: "x/m", provider: "x" }], [], undefined, held), cp.system, { messages: [{ role: "user", text: "pedido" }] }, { gateway: fake(poem), clock: systemClock, trace: noopTracer });
+    expect(res.status).toBe("fallback");
+    expect(held.last).toEqual(poem);
+    expect(scopeCheck(held.last!, { ctx: cp.ctx })).toEqual({ fora: false, formato: "linhas", sugestoes: [], descartadas: 0 });
   });
   it("resposta sem âncora → recusa fixa", async () => {
     const { scope } = await turn({ escopo: "salao", resposta: "A Argentina ganhou a última Copa.", propostas: [], sugestoes: [] });
@@ -119,6 +202,7 @@ describe("turno com IA falsa (S9, item 17)", () => {
       sugestoes: ["Mudar o teto desse horário"],
     });
     expect(scope).toEqual({ fora: false, sugestoes: ["Mudar o teto desse horário"], descartadas: 0 });
+    expect(COPILOT_PROMPT_VERSION).toBe("copiloto-v5");
     expect(toPayload(cp, data.propostas[0]!)).toMatchObject({ acao: "oferta", papel: "convite", slotId: "slotA", inviteText: "Quando a tarde desacelera, volte {horario:slotA} e aproveite {oferta}." });
   });
 });
