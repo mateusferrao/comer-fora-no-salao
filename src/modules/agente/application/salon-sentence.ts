@@ -4,10 +4,9 @@
  */
 import { eq } from "drizzle-orm";
 import type { Db } from "@/src/db/client";
-import { getFlags } from "@/src/modules/config/application/app-config";
 import { owners } from "@/src/db/schema";
 import type { AiGateway } from "@/src/modules/ia/gateway";
-import { gatewayFor, keyKindFor } from "@/src/modules/ia/gateway-factory";
+import { dailyCapOff, gatewayFor, keyKindFor } from "@/src/modules/ia/gateway-factory";
 import { COPILOT_PUBLIC_DAILY_CAP_USD, copilotSpentToday, recordAiCall } from "@/src/modules/ia/ai-calls";
 import { MODELS } from "@/src/modules/ia/models";
 import { runTask } from "@/src/modules/ia/run-task";
@@ -24,7 +23,7 @@ export async function readSalonSentence(db: Db, p: { restaurantId: string; owner
   let gateway = p.gateway;
   if (gateway === undefined) gateway = (await gatewayFor(db, keyKind, p.now)).gateway;
   if (!gateway) return { ok: false, motivo: "sem_ia" };
-  if (keyKind === "publica" && !(await getFlags(db)).ia_sem_teto && (await copilotSpentToday(db, "publica", p.now)) >= COPILOT_PUBLIC_DAILY_CAP_USD) return { ok: false, motivo: "sem_ia" };
+  if (keyKind === "publica" && !dailyCapOff() && (await copilotSpentToday(db, "publica", p.now)) >= COPILOT_PUBLIC_DAILY_CAP_USD) return { ok: false, motivo: "sem_ia" };
   const res = await runTask(buildSalonTask(MODELS.copiloto), SALON_SYSTEM, { text: `<texto_do_dono>${text.replace(/[<>]/g, "")}</texto_do_dono>` }, { gateway, clock: systemClock, trace: langfuseTracer });
   await recordAiCall(db, { task: "salao_frase", promptVersion: SALON_PROMPT_VERSION, restaurantId: p.restaurantId, result: res, keyKind });
   if (res.status !== "ok") return { ok: false, motivo: "sem_ia" };

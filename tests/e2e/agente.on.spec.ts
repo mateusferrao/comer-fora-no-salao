@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { axe, loginE2E, PROD, S5_ON } from "./helpers";
+import { axe, loginE2E, PROD, S5_ON, waitExampleReady } from "./helpers";
 
 /**
  * D246 com a flag `mcp` (passada `flags-on`): o card "Conectar um assistente de IA" ensina passo a passo; o token
@@ -12,7 +12,7 @@ test("agente (MCP): passo a passo → token funciona no endereço → revogar co
   test.setTimeout(180_000);
   await loginE2E(page.request, 34);
   await page.goto("/parceiro/salao");
-  await expect(page.getByText(/Preparando o restaurante de exemplo/)).toBeHidden({ timeout: 120_000 });
+  await waitExampleReady(page);
   await page.goto("/parceiro/salao/configuracoes");
   // D247: aba própria "Integrações".
   await page.getByRole("tab", { name: "Integrações" }).click();

@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { BARRA, loginE2E } from "./helpers";
+import { BARRA, loginE2E, waitExampleReady } from "./helpers";
 
 /** Modo apresentação (planejamento S3 §4.6; revisão P-I7): larguras de demo, barra visível, troca de restaurante. */
 for (const [w, h] of [
@@ -13,7 +13,7 @@ for (const [w, h] of [
     // Conta própria por tamanho (a 4 é do painel.spec): logins paralelos na mesma conta invalidam o código.
     await loginE2E(page.request, w === 1536 ? 7 : w === 1280 ? 8 : 9);
     await page.goto("/parceiro/salao");
-    await expect(page.getByText(/Preparando o restaurante de exemplo/)).toBeHidden({ timeout: 120_000 });
+    await waitExampleReady(page);
     await page.goto("/apresentacao");
     await expect(page.getByTestId("prototype-bar")).toHaveText(BARRA);
     const portal = page.frameLocator('iframe[title="Portal do Parceiro"]');

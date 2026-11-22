@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { axe, confirmIfAsked, loginE2E, PROD, S5_ON } from "./helpers";
+import { axe, confirmIfAsked, loginE2E, PROD, S5_ON, waitExampleReady } from "./helpers";
 
 /**
  * S5.3 com a flag `explica_ia` (passada `flags-on`; em produção só com E2E_FLAGS=on): "Por que esta oferta?" no plano
@@ -12,7 +12,7 @@ test("plano da semana: 'Por que esta oferta?' abre o painel com opções, fatos,
   test.setTimeout(120_000);
   await loginE2E(page.request, 12);
   await page.goto("/parceiro/salao");
-  await expect(page.getByText(/Preparando o restaurante de exemplo/)).toBeHidden({ timeout: 60_000 });
+  await waitExampleReady(page);
   await page.goto("/parceiro/salao/plano");
   await expect(page.getByRole("heading", { name: "Plano da semana", level: 1 })).toBeVisible();
   // Conta sem plano ("Nenhum plano ainda", ex.: execução anterior interrompida depois do descarte): vai direto para gerar.

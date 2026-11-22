@@ -49,6 +49,16 @@ export async function confirmIfAsked(
   return true;
 }
 
+/**
+ * Espera a cópia do restaurante de exemplo da conta ficar pronta (D255). Primeiro a tela real ("Visão geral"): com o
+ * esqueleto do loading.tsx (D235), o aviso "Preparando…" ainda não chegou e "não visível" passava na hora — o teste
+ * seguia antes de a cópia existir (falha intermitente sob carga, sempre numa conta nova).
+ */
+export async function waitExampleReady(page: Page, timeout = 120_000): Promise<void> {
+  await expect(page.getByRole("heading", { name: "Visão geral", level: 1 })).toBeVisible({ timeout: 60_000 });
+  await expect(page.getByText(/Preparando o restaurante de exemplo/)).toBeHidden({ timeout });
+}
+
 /** Login de teste (D123): pede o código com o token e confere — o cookie fica no contexto da página. */
 export async function loginE2E(request: APIRequestContext, n: number): Promise<void> {
   // O secret colado no GitHub pode vir com quebra de linha ou aspas em volta (revisão da S2: "Invalid character

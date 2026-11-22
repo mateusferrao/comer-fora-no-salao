@@ -1365,13 +1365,19 @@ Detalhes, perguntas, revisão independente (2 subagentes) e itens [C] em [docs/f
 - Achado 2: os fatos da IA tratavam o nível novo "Mais ou menos" (D240) como "um pouco vazia". Agora: muito / mais ou menos / pouco vazia.
 - Observação, sem mudança: o plano pronto do restaurante de exemplo (origem "fixo") tem texto escrito antes ("18% de uso, manter"), que não acompanha os números de hoje (11%, "trocar"). É o plano de demonstração; o primeiro plano gerado já usa os números atuais.
 
-**D252 — Flag "IA sem teto diário" para testes** (21/11, candidato: "remove esse limite só pra gente testar"; forma [C]) ✅
+**D252 — Flag "IA sem teto diário" para testes** (trocada pela D254) (21/11, candidato: "remove esse limite só pra gente testar"; forma [C]) ✅
 - O teto diário da chave pública (US$ 0,50 — D85) continua no código; a flag `ia_sem_teto` nos Bastidores o suspende enquanto estiver ligada. Nasce desligada; ligada pela IA a pedido do candidato, que a desliga ao terminar os testes.
 - Alternativas: apagar o teto (sem volta fácil; risco de gasto por terceiros na chave pública); pôr o e-mail do candidato em `PRESENTER_EMAILS` (chave de demo só para ele, mas exige reescrever todo o ambiente no Easypanel e mandar o e-mail para lá). Trade-off: enquanto ligada, vale para qualquer conta que use a chave pública.
 
 **D253 — Ação fixa no rodapé só em telas de uma ação; Configurações com aviso de alterações não salvas** (22/11, candidato: "e se deixarmos fixo na rolagem? só celular ou desktop também? seja crítico"; escolheu "Só telas de 1 ação") ✅
 - Barra fixa no rodapé ao rolar, no celular e no computador: passos 2 a 5 da ativação, Aprovar/Descartar no Plano da semana e Salvar de Avisos e automação. A mensagem de erro da ação vai dentro da barra.
 - Configurações, Kit e Cardápio continuam salvando por bloco (um "salvar tudo" fixo esconderia qual bloco salva). No lugar: "Alterações não salvas" ao lado do botão do bloco (no Cardápio, o "Salvar" da linha fica cheio) e, ao tocar num link do sistema com algo pendente, a confirmação do design system "Sair sem salvar?" (o candidato vetou o alerta nativo). Fechar ou recarregar a aba fica sem aviso: o navegador só permite o alerta dele.
+
+**D254 — Teto diário de IA suspenso por variável de ambiente, não por flag** (22/11, candidato: "passa pra um env"; "quero alterar direto no Easypanel sem deploy completo") ✅ (troca a D252)
+- `IA_SEM_TETO_DIARIO=1` (ou `true`/`sim`) no env do `case-salao-app` suspende o teto da chave pública (US$ 0,50/dia — D85); sem a variável, ou com outro valor, o teto vale. Para mudar: Easypanel › Environment › salvar › **Restart** (reinicia o container com a mesma imagem, sem build).
+- `/api/health` mostra `ia.teto`: "ativo" ou "suspenso", para conferir sem gastar IA. A flag `ia_sem_teto` saiu dos Bastidores (o valor gravado passa a ser ignorado).
+- Por quê: sai da tela que qualquer pessoa com a senha dos Bastidores alcança; só quem tem o Easypanel liga. Trade-off: mudar exige reiniciar o app (segundos), não é instantâneo como a flag.
+
 **D272 — Ícone da aba com o ícone do iFood** (21/11, candidato: "buscar e adicionar o .ico do ifood na barra"; enviou a imagem do ícone) ✅ (estende D42/D81)
 - O `.ico` do site do iFood não pôde ser baixado (página bloqueada para a sessão; o do Portal do Parceiro é outro desenho, uma fachada). O candidato enviou a imagem do ícone (círculo vermelho com o "sorriso"), usada como veio: `app/favicon.ico` (16/32/48 px), `app/icon.png` (256 px) e `app/apple-icon.png` (180 px), servidos pelo Next; cantos fora do círculo transparentes.
 - Risco de confusão com o iFood oficial aumenta um pouco; mantidos a barra de protótipo, o título da aba sem "iFood" e o `noindex` (D88, D164). Alternativa: ícone neutro do projeto.
@@ -1383,6 +1389,12 @@ Detalhes, perguntas, revisão independente (2 subagentes) e itens [C] em [docs/f
 - Tabela completa em docs/fatias/S8/revisao/revisao.md §2. Mudanças de produto: painel só empurra a partir de 1280 px (sobrepõe no modo apresentação); botão "Assistente" na barra lateral e no cabeçalho do celular (nada flutua sobre o formulário — substitui o botão flutuante da D273); chip da demo com prato concreto escolhido pelo código; faixa "Atualizado pelo assistente"; métricas do copiloto em Qualidade da IA; aceite do cliente e "Como funciona" citam o assistente (nome curto, nunca contato).
 - Técnica/segurança: Zod nas 2 portas, estado `em_andamento`, conversa por dono+loja, isenção de limite só do apresentador, nome com cara de contato vira "Cliente", sem desconto inventado.
 - Não corrigidos: ícone (D272, pedido do candidato); guard de dia/turno no chat. Dívidas: mover `toPayload` para `agente` e gerar o schema do MCP do Zod; menos consultas por turno; limpeza de `agent_proposals`.
+
+**D255 — Falha intermitente da E2E local: causa e correção** (22/11, candidato: "pode investigar"; IA [C]) ✅
+- Causa: com o esqueleto de carregamento das telas do Portal (D235), o `goto` terminava com o esqueleto na tela; o teste conferia que "Preparando o restaurante de exemplo" não estava visível — e passava na hora, porque o aviso ainda não tinha chegado. O teste seguia antes de a cópia do exemplo existir ("Ative o restaurante", "disponíveis depois de ativar"). Aparecia sob carga (mais contas novas copiando o exemplo em paralelo, com a S8), sempre numa conta nova, e a passada `flags-on` não rodava.
+- Correção: helper `waitExampleReady` espera a tela real ("Visão geral") antes de conferir o aviso; aplicado nas 15 specs.
+- Defeito do produto achado junto: a tela do Kit só se atualizava sozinha com o kit "gerando"; aberta logo depois de ativar (antes de a geração começar, em segundo plano), ficava parada em "Seu kit ainda não foi gerado". Agora, sem kit, ela consulta de novo por até ~30 s.
+- Prova: 3 rodadas completas seguidas, cada uma logo após um build novo, 102 testes verdes em todas.
 
 **D275 — Dívidas técnicas da S8 pagas** (22/11, IA [C], plano aprovado pelo candidato; D101) ✅
 - **Dependência circular `ia`↔`agente`:** não existe no nível de arquivo (dependency-cruiser `no-circular` limpo no repo inteiro); `ia/tasks → X/domain` e `X/application → ia/tasks` é o padrão do projeto (beneficios, onboarding, config, kit). Alternativa descartada: mover `toPayload`/ferramentas para `agente` — tornaria o copiloto exceção ao padrão sem ganho. Feito: regra `no-circular` no `.dependency-cruiser.cjs` (trava a regressão).

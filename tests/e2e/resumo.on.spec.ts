@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { axe, confirmIfAsked, loginE2E, PROD, S5_ON } from "./helpers";
+import { axe, confirmIfAsked, loginE2E, PROD, S5_ON, waitExampleReady } from "./helpers";
 
 /**
  * S6.1 com a flag `resumo_email` (passada `flags-on`): Plano › "Ver o e-mail desta semana" → o link "Revisar e
@@ -12,7 +12,7 @@ test("resumo semanal: prévia com link → página de confirmação → aprovar 
   test.setTimeout(120_000);
   await loginE2E(page.request, 21);
   await page.goto("/parceiro/salao");
-  await expect(page.getByText(/Preparando o restaurante de exemplo/)).toBeHidden({ timeout: 60_000 });
+  await waitExampleReady(page);
   await page.goto("/parceiro/salao/plano");
   if (
     (await page.getByTestId("plan-status").getAttribute("data-status")) !==

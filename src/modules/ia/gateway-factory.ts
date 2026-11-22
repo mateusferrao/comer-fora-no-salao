@@ -8,7 +8,6 @@ import { normalizeEmail } from "@/src/modules/contas/domain/login-code";
 import { createOpenRouterGateway } from "./openrouter-gateway";
 import type { AiGateway } from "./gateway";
 import { PUBLIC_DAILY_CAP_USD, spentToday, type KeyKind } from "./ai-calls";
-import { getFlags } from "@/src/modules/config/application/app-config";
 
 export function keyKindFor(owner: { emailHmac: string | null; via?: string | null }, env: NodeJS.ProcessEnv = process.env): KeyKind {
   // Conta aberta pelo link privado do avaliador (D126) usa a chave de demo: o teto diário da chave pública
@@ -36,13 +35,18 @@ export function keyState(raw: string | undefined): "ok" | "ajustada" | "ausente"
   return k === raw ? "ok" : "ajustada";
 }
 
+/** Teto diário da chave pública suspenso por variável de ambiente (D254): "1", "true" ou "sim". */
+export function dailyCapOff(env: NodeJS.ProcessEnv = process.env): boolean {
+  return /^(1|true|sim)$/i.test((env.IA_SEM_TETO_DIARIO ?? "").trim());
+}
+
 export type GatewayChoice = { gateway: AiGateway | null; keyKind: KeyKind; reason?: "sem_chave" | "teto_diario" };
 
 /** Gateway para a chamada; `null` = modo sem IA (sem chave ou teto diário da chave pública atingido). */
 export async function gatewayFor(ex: Executor, keyKind: KeyKind, now: Date, env: NodeJS.ProcessEnv = process.env): Promise<GatewayChoice> {
   const key = cleanApiKey(keyKind === "demo" ? env.OPENROUTER_KEY_DEMO : env.OPENROUTER_KEY_PUBLIC);
   if (!key) return { gateway: null, keyKind, reason: "sem_chave" };
-  // D252: a flag `ia_sem_teto` (Bastidores) suspende o teto da chave pública enquanto o candidato testa.
-  if (keyKind === "publica" && !(await getFlags(ex)).ia_sem_teto && (await spentToday(ex, "publica", now)) >= PUBLIC_DAILY_CAP_USD) return { gateway: null, keyKind, reason: "teto_diario" };
+  // D254: `IA_SEM_TETO_DIARIO` (Easypanel; aplica com Restart, sem build) suspende o teto da chave pública.
+  if (keyKind === "publica" && !dailyCapOff(env) && (await spentToday(ex, "publica", now)) >= PUBLIC_DAILY_CAP_USD) return { gateway: null, keyKind, reason: "teto_diario" };
   return { gateway: createOpenRouterGateway(key), keyKind };
 }

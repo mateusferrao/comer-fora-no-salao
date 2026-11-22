@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { axe, loginE2E } from "./helpers";
+import { axe, loginE2E, waitExampleReady } from "./helpers";
 
 /**
  * Ajustes de 21/11 (sem flag): Clientes mostra todos do grupo (20 por página), busca por nome e ordena ao clicar no
@@ -10,7 +10,7 @@ test("clientes: 20 por página, página 2, ordenar por Selos (aria-sort), buscar
   await page.setViewportSize({ width: 1280, height: 900 });
   await loginE2E(page.request, 27);
   await page.goto("/parceiro/salao");
-  await expect(page.getByText(/Preparando o restaurante de exemplo/)).toBeHidden({ timeout: 60_000 });
+  await waitExampleReady(page);
   await page.goto("/parceiro/salao/clientes?segmento=sumiu");
   const rows = page.getByRole("region", { name: "Lista de clientes (rolável)" }).locator("tbody tr");
   await expect(rows).toHaveCount(20);
@@ -62,7 +62,7 @@ test("celular: o cabeçalho do Portal fica visível depois de rolar", async ({ p
   await page.setViewportSize({ width: 390, height: 844 });
   await loginE2E(page.request, 29);
   await page.goto("/parceiro/salao");
-  await expect(page.getByText(/Preparando o restaurante de exemplo/)).toBeHidden({ timeout: 60_000 });
+  await waitExampleReady(page);
   await page.goto("/parceiro/salao/clientes?segmento=sumiu");
   // A lista chega depois do esqueleto (loading.tsx): rola só com a tela real.
   await expect(page.getByRole("region", { name: "Lista de clientes (rolável)" })).toBeVisible();

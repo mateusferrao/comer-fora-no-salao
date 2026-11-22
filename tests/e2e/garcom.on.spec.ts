@@ -1,12 +1,5 @@
 import { expect, test } from "@playwright/test";
-import {
-  axe,
-  confirmIfAsked,
-  loginCustomer,
-  loginE2E,
-  PROD,
-  S5_ON,
-} from "./helpers";
+import { axe, confirmIfAsked, loginCustomer, loginE2E, PROD, S5_ON, waitExampleReady } from "./helpers";
 
 /**
  * S6.2 com a flag `modo_garcom` (passada `flags-on`): Validar código › "Link do garçom" → link + QR (uma vez) →
@@ -19,7 +12,7 @@ test("link do garçom: criar → validar sem login → revogar corta na hora", a
   test.setTimeout(120_000);
   await loginE2E(page.request, 22);
   await page.goto("/parceiro/salao");
-  await expect(page.getByText(/Preparando o restaurante de exemplo/)).toBeHidden({ timeout: 120_000 });
+  await waitExampleReady(page);
   await page.goto("/parceiro/salao/kit");
   const href = await page.getByRole("link", { name: "Abrir este QR" }).first().getAttribute("href");
   const slug = /\/r\/([^/?#]+)/.exec(href ?? "")![1]!;

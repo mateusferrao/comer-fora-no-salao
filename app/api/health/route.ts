@@ -1,3 +1,4 @@
+import { dailyCapOff } from "@/src/modules/ia/gateway-factory";
 import { pingDb } from "@/src/db/client";
 import { ensureMigrated } from "@/src/db/migrate";
 import { seedStatus } from "@/src/db/seed";
@@ -27,6 +28,7 @@ export const GET = createHealthHandler({
   },
   sha: resolveGitSha(),
   mail: () => mailConfigured(),
-  ia: () => ({ publica: keyState(process.env.OPENROUTER_KEY_PUBLIC), demo: keyState(process.env.OPENROUTER_KEY_DEMO) }),
+  // D254: "teto" mostra se o teto diário da chave pública está suspenso por `IA_SEM_TETO_DIARIO`.
+  ia: () => ({ publica: keyState(process.env.OPENROUTER_KEY_PUBLIC), demo: keyState(process.env.OPENROUTER_KEY_DEMO), teto: dailyCapOff() ? "suspenso" : "ativo" }),
   fakeAi: () => fakeCopilotEnabled(process.env),
 });

@@ -22,8 +22,6 @@ export const FLAGS = [
   "copiloto",
   "mcp_clientes",
   "mcp_edicao",
-  // D252 (candidato: "remove esse limite só pra gente testar"): sem teto diário da chave pública. Nasce desligado.
-  "ia_sem_teto",
 ] as const;
 export type Flag = (typeof FLAGS)[number];
 export type Flags = Record<Flag, boolean>;
@@ -46,7 +44,6 @@ export const FLAG_DEFAULTS: Flags = {
   copiloto: false,
   mcp_clientes: false,
   mcp_edicao: false,
-  ia_sem_teto: false,
 };
 export const FLAG_LABEL: Record<Flag, string> = {
   ab: "A/B das peças (status e 'promover vencedora')",
@@ -66,7 +63,6 @@ export const FLAG_LABEL: Record<Flag, string> = {
   copiloto: "Assistente do salão no Portal: pedidos viram propostas que o dono aplica (S8)",
   mcp_clientes: "MCP: agente vê clientes por nome curto, sem contato (S8)",
   mcp_edicao: "MCP: agente propõe e aplica mudanças nas Configurações (S8)",
-  ia_sem_teto: "IA sem teto diário de gasto na chave pública (só para testes; desligue depois)",
 };
 
 /** Tarefas com bloco de instruções editável ao vivo (D58): só instruções/tom; schema e regras ficam no código. */

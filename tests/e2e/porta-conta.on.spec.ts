@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { axe, loginE2E, PROD, S5_ON } from "./helpers";
+import { axe, loginE2E, PROD, S5_ON, waitExampleReady } from "./helpers";
 
 /**
  * S6.4 com a flag `porta_conta` (passada `flags-on`): Kit › "Adicionar porta-conta" (kit da cópia do exemplo, que
@@ -12,7 +12,7 @@ test("porta-conta: adicionar → texto da 1ª visita → imprimir 3 por folha �
   test.setTimeout(120_000);
   await loginE2E(page.request, 23);
   await page.goto("/parceiro/salao");
-  await expect(page.getByText(/Preparando o restaurante de exemplo/)).toBeHidden({ timeout: 60_000 });
+  await waitExampleReady(page);
   await page.goto("/parceiro/salao/kit");
   // Espera a tela real (depois do esqueleto do loading.tsx) antes de decidir se precisa adicionar.
   await expect(page.getByRole("heading", { name: "Kit de divulgação", level: 1 })).toBeVisible();
