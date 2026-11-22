@@ -1560,3 +1560,7 @@ As decisões sobre a preparação pessoal do candidato para a apresentação (D2
 
 **D320 — Revisão por fatia da S7: só produto e aderência ao case** (22/11, candidato) ✅
 - Cada fatia fecha com commit e push e uma revisão independente de produto e aderência ao iFood. A revisão técnica não se aplica, porque a S7 não muda código de produto; as exceções (o `workflow_dispatch` do CI e o texto "Material do case" no app) passam pelo CI completo.
+
+**D321 — `eval/` entra no repositório público, exceto `eval/privado/`** (22/11, candidato; revisa D311) ✅
+- Achado na E1: as páginas públicas do app (Qualidade da IA, Como funciona) citam `eval/relatorio-*.md` e `eval/resultados-*.json` como prova. Sem `eval/`, o avaliador seguiria a referência e não acharia nada.
+- Entram relatórios, resultados e scripts de avaliação. Os erros reais nos textos da IA que os relatórios mostram são explicados na documentação como achados. `eval/privado/` (foto real) continua fora.
