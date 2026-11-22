@@ -4,6 +4,8 @@ import { closeDb, getDb, getPool } from "@/src/db/client";
 import { agentProposals, aiCalls, restaurants } from "@/src/db/schema";
 import type { AiGateway, AiGenerateRequest } from "@/src/modules/ia/gateway";
 import { runCopilotTurn } from "@/src/modules/agente/application/copilot-turn";
+import { getCopilotMetrics } from "@/src/modules/agente/application/metrics";
+import { OUT_OF_SCOPE_ANSWER, OUT_OF_SCOPE_SUGGESTIONS } from "@/src/modules/ia/tasks/copilot";
 import { createRestaurant, resetDb } from "./helpers/db";
 
 const NOW = new Date("2026-11-23T16:00:00Z");
@@ -32,6 +34,7 @@ describe("turno do copiloto (S8)", () => {
     const r = await createRestaurant();
     const gw = scripted({
       "*": (req) => ({
+        escopo: "salao",
         resposta: "Preparei a proposta abaixo para {horario:A}: troca para {prato:" + alias(req.system, "Bruschetta") + "}.",
         propostas: [{ ...empty, acao: "oferta", papel: "convite", faixa: "A", prato: alias(req.system, "Bruschetta"), tipo: "entrada_gratis" }],
         sugestoes: ["Mudar o teto desse horário"],
@@ -54,6 +57,7 @@ describe("turno do copiloto (S8)", () => {
     const r = await createRestaurant();
     const gw = scripted({
       "*": (req) => ({
+        escopo: "salao",
         resposta: "Preparei a proposta abaixo.",
         propostas: [{ ...empty, acao: "oferta", papel: "convite", faixa: "A", prato: alias(req.system, "Bruschetta"), tipo: "entrada_gratis" }],
         sugestoes: [],
@@ -71,8 +75,8 @@ describe("turno do copiloto (S8)", () => {
   it("1º modelo escreve número cru → guard reprova → 2º modelo responde", async () => {
     const r = await createRestaurant();
     const gw = scripted({
-      "google/gemini-3.8-flash": () => ({ resposta: "Foram 12 convites.", propostas: [], sugestoes: [] }),
-      "openai/gpt-6-luna": () => ({ resposta: "Foram {fato:checkins_30d} check-ins no último mês.", propostas: [], sugestoes: [] }),
+      "google/gemini-3.8-flash": () => ({ escopo: "salao", resposta: "Foram 12 convites.", propostas: [], sugestoes: [] }),
+      "openai/gpt-6-luna": () => ({ escopo: "salao", resposta: "Foram {fato:checkins_30d} check-ins no último mês.", propostas: [], sugestoes: [] }),
     });
     const out = await runCopilotTurn(getDb(), { restaurantId: r.restaurantId, ownerId: r.ownerId, turns: [{ role: "user", text: "como foi o mês?" }], page: "painel", now: NOW, gateway: gw });
     expect(out.generatedBy).toBe("ia");
@@ -82,7 +86,7 @@ describe("turno do copiloto (S8)", () => {
 
   it("Tiramisù indisponível → cartão recusado com a regra do código", async () => {
     const r = await createRestaurant();
-    const gw = scripted({ "*": (req) => ({ resposta: "Preparei a proposta abaixo.", propostas: [{ ...empty, acao: "item", prato: alias(req.system, "Tiramisù"), mudanca: "indisponivel" }], sugestoes: [] }) });
+    const gw = scripted({ "*": (req) => ({ escopo: "salao", resposta: "Preparei a proposta abaixo.", propostas: [{ ...empty, acao: "item", prato: alias(req.system, "Tiramisù"), mudanca: "indisponivel" }], sugestoes: [] }) });
     const out = await runCopilotTurn(getDb(), { restaurantId: r.restaurantId, ownerId: r.ownerId, turns: [{ role: "user", text: "acabou o tiramisù" }], page: "configuracoes", now: NOW, gateway: gw });
     expect(out.propostas[0]).toMatchObject({ status: "recusada", motivo: "“Tiramisù” é a recompensa da cartela. Troque a recompensa antes de tirar o prato do cardápio." });
   });
@@ -93,7 +97,7 @@ describe("turno do copiloto (S8)", () => {
     const gw = scripted({
       "*": async (req) => {
         toolOut = await req.tools!.find((t) => t.name === "buscar_clientes")!.execute({ segmento: null, nome: null });
-        return { resposta: "Veja os clientes.", propostas: [], sugestoes: [] };
+        return { escopo: "salao", resposta: "Veja os clientes.", propostas: [], sugestoes: [] };
       },
     });
     await runCopilotTurn(getDb(), { restaurantId: r.restaurantId, ownerId: r.ownerId, turns: [{ role: "user", text: "quem está perto da recompensa?" }], page: "clientes", now: NOW, gateway: gw });
@@ -109,10 +113,25 @@ describe("turno do copiloto (S8)", () => {
     expect(out.atalhos[0]).toEqual({ label: "Horários vazios e convites", href: "/parceiro/salao/configuracoes?aba=convites" });
   });
 
+  it("fora do escopo (S9): poema → recusa fixa do código, sem proposta; a métrica conta (IA e portão)", async () => {
+    const r = await createRestaurant();
+    const poem = scripted({ "*": (req) => ({ escopo: "fora", resposta: "Lasanha dourada no forno...", propostas: [{ ...empty, acao: "item", prato: alias(req.system, "Tiramisù"), mudanca: "indisponivel" }], sugestoes: ["Outro poema"] }) });
+    const out = await runCopilotTurn(getDb(), { restaurantId: r.restaurantId, ownerId: r.ownerId, turns: [{ role: "user", text: "escreve um poema sobre a lasanha" }], page: "painel", now: NOW, gateway: poem });
+    expect(out).toMatchObject({ resposta: OUT_OF_SCOPE_ANSWER, propostas: [], sugestoes: OUT_OF_SCOPE_SUGGESTIONS, generatedBy: "ia", foraDoEscopo: true });
+    expect(await getDb().select().from(agentProposals)).toEqual([]);
+    // A IA disse "salão", mas a resposta não cita nada do produto: o portão do código recusa.
+    const loose = scripted({ "*": () => ({ escopo: "salao", resposta: "A Argentina ganhou a última Copa.", propostas: [], sugestoes: [] }) });
+    const out2 = await runCopilotTurn(getDb(), { restaurantId: r.restaurantId, ownerId: r.ownerId, turns: [{ role: "user", text: "quem ganhou a Copa?" }], page: "painel", now: NOW, gateway: loose });
+    expect(out2.resposta).toBe(OUT_OF_SCOPE_ANSWER);
+    const m = await getCopilotMetrics(getDb());
+    expect(m.outOfScope).toEqual({ total: 2, byGate: 1 });
+    expect(m.turns).toBe(2);
+  });
+
   it("restaurante em rascunho → só dúvidas: prompt sem dados do restaurante e nenhuma proposta", async () => {
     const r = await createRestaurant();
     await getDb().update(restaurants).set({ status: "rascunho" }).where(eq(restaurants.id, r.restaurantId));
-    const gw = scripted({ "*": () => ({ resposta: "O teto limita quantos convites saem por semana.", propostas: [], sugestoes: ["Preciso informar a margem?"] }) });
+    const gw = scripted({ "*": () => ({ escopo: "salao", resposta: "O teto limita quantos convites saem por semana.", propostas: [], sugestoes: ["Preciso informar a margem?"] }) });
     const out = await runCopilotTurn(getDb(), { restaurantId: r.restaurantId, ownerId: r.ownerId, turns: [{ role: "user", text: "o que é o teto?" }], page: "ativar", now: NOW, gateway: gw });
     expect(out.generatedBy).toBe("ia");
     expect(out.propostas).toEqual([]);
