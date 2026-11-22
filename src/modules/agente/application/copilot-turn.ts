@@ -5,6 +5,7 @@
  */
 import { eq } from "drizzle-orm";
 import type { Db } from "@/src/db/client";
+import { getFlags } from "@/src/modules/config/application/app-config";
 import { owners, restaurants } from "@/src/db/schema";
 import type { AiGateway, ChatTurn } from "@/src/modules/ia/gateway";
 import { gatewayFor, keyKindFor } from "@/src/modules/ia/gateway-factory";
@@ -55,7 +56,8 @@ export async function runCopilotTurn(
     gateway = choice.gateway;
   }
   if (!gateway) return noAi("sem_chave");
-  if (keyKind === "publica" && (await copilotSpentToday(db, "publica", p.now)) >= COPILOT_PUBLIC_DAILY_CAP_USD) return noAi("teto_diario");
+  // D252: a flag `ia_sem_teto` também suspende o teto próprio do copiloto.
+  if (keyKind === "publica" && !(await getFlags(db)).ia_sem_teto && (await copilotSpentToday(db, "publica", p.now)) >= COPILOT_PUBLIC_DAILY_CAP_USD) return noAi("teto_diario");
 
   // Ativação (D265): só dúvidas, com o guia do produto (sem dados nem propostas).
   if (onboarding) {

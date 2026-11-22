@@ -1,5 +1,6 @@
 "use client";
 
+import { StickyActions } from "../../components/StickyActions";
 import {
   INTENSITIES,
   INTENSITY_LABEL,
@@ -249,16 +250,19 @@ export function Step2Salao({ initial, extractionId, extraction, manual = false, 
         />
       </fieldset>
 
-      {errors.geral && (
-        <p role="alert" className="text-sm font-medium text-red-text">
-          {errors.geral}
-        </p>
-      )}
-      <div className="flex justify-end">
+      <StickyActions
+        message={
+          errors.geral && (
+            <p role="alert" className="text-sm font-medium text-red-text">
+              {errors.geral}
+            </p>
+          )
+        }
+      >
         <Button type="submit" variant="primary-portal" loading={busy}>
           Continuar
         </Button>
-      </div>
+      </StickyActions>
     </form>
   );
 }
