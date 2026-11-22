@@ -15,7 +15,13 @@ import { Copilot } from "@/src/ui/portal/copiloto/Copilot";
 async function copilotChips(restaurantId: string): Promise<Record<string, string[]>> {
   const ctx = await loadContext(getDb(), restaurantId);
   const first = ctx ? slotAliases(ctx.slots)[0]?.slot : undefined;
-  const trocar = first ? `Trocar a oferta do convite de ${slotLabel(first)}` : "Trocar a oferta de um convite";
+  // Revisão S8 (E2E com IA real): sem o prato, a IA pergunta qual; com um prato válido e fora de uso, vira cartão.
+  const cur = first && ctx ? ctx.convites[first.id]?.offer.params.itemId : undefined;
+  const inUse = new Set([ctx?.agora?.offer.params.itemId, ctx?.recompensa?.offer.params.itemId, ...Object.values(ctx?.convites ?? {}).map((v) => v.offer.params.itemId)]);
+  const curCat = ctx?.menu.find((m) => m.id === cur)?.category;
+  const free = (ctx?.menu ?? []).filter((m) => !inUse.has(m.id) && !ctx!.inactiveItemIds.includes(m.id) && !ctx!.noOfferItemIds.includes(m.id));
+  const alt = free.find((m) => m.category === curCat) ?? free.find((m) => m.category === "sobremesa");
+  const trocar = first ? `Trocar a oferta do convite de ${slotLabel(first)}${alt ? ` por ${alt.name}` : ""}` : "Trocar a oferta de um convite";
   return {
     painel: ["Como foi a semana?", "Quem está perto da recompensa?", trocar],
     configuracoes: [trocar, "Tirar um prato das ofertas", "Mudar o teto de um horário"],

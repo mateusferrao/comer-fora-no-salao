@@ -62,7 +62,7 @@ export async function runCopilotTurn(
     const cp = buildOnboardingPrompt(p.page);
     const res = await runTask({ ...buildCopilotTask(cp, MODELS.copiloto, [], p.sessionId) }, cp.system, { messages: turns }, { gateway, clock: systemClock, trace: langfuseTracer });
     await recordAiCall(db, { task: "copiloto", promptVersion: `${COPILOT_PROMPT_VERSION}-ativacao`, restaurantId: p.restaurantId, result: res, keyKind });
-    if (res.status !== "ok") return noAi("falha", "Não consegui responder agora. Siga os passos da ativação; cada campo explica o que pede.");
+    if (res.status !== "ok") return { ...noAi("falha", "Não consegui responder agora. Siga os passos da ativação; cada campo explica o que pede."), atalhos: [] };
     return { resposta: renderAnswer(res.data.resposta, cp.ctx), propostas: [], sugestoes: res.data.sugestoes.map((x) => renderAnswer(x, cp.ctx)), generatedBy: "ia", atalhos: [] };
   }
 
@@ -81,6 +81,7 @@ export async function runCopilotTurn(
     propostas,
     sugestoes: res.data.sugestoes.map((s) => renderAnswer(s, cp.ctx)),
     generatedBy: "ia",
-    atalhos: propostas.length ? [] : atalhos,
+    // Atalhos só no modo sem IA (revisão S8: depois de uma resposta da IA, eram ruído).
+    atalhos: [],
   };
 }

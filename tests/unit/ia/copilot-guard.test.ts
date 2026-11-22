@@ -62,3 +62,11 @@ describe("toMessages com conversa (S8)", () => {
     ]);
   });
 });
+
+describe("renderAnswer (revisão S8)", () => {
+  it("nome curto no fim da frase não gera ponto duplo; reticências ficam", async () => {
+    const { renderAnswer } = await import("@/src/modules/ia/tasks/copilot");
+    expect(renderAnswer("Entre eles, {cliente:C3}.", ctx)).toBe("Entre eles, Ana S.");
+    expect(renderAnswer("Veja...", ctx)).toBe("Veja...");
+  });
+});

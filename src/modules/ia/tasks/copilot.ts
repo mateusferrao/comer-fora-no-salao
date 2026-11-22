@@ -57,6 +57,8 @@ const GUIDE = `Regras do produto (explique com estas palavras quando perguntarem
 - Grupo de controle: uma parte dos clientes não recebe convite, para medir quanto o convite trouxe de verdade.
 - Plano da semana: o código calcula os números e as ofertas possíveis; a IA escolhe e explica; o dono aprova.
 - Não existe pausar um prato só por hoje: dá para tirar do cardápio e voltar depois.
+- Ticket médio por pessoa e margem aproximada (uma só, do restaurante) são opcionais e são estimativas do dono: servem só para calcular retorno em reais; sem eles, o painel mostra visitas.
+- Clientes de salão por semana e mesas são o que o dono declarou, não medição.
 - O teto e a oferta de um convite mudam direto, pela proposta "oferta" (não precisa de plano da semana).
 - Desconto tem teto ({fato:desconto_maximo_pct}); acima disso o sistema recusa — explique citando esse fato.`;
 
@@ -333,5 +335,6 @@ export function normalizeHistory(turns: readonly ChatTurn[]): ChatTurn[] {
 }
 
 export function renderAnswer(text: string, ctx: RefContext): string {
-  return renderReferences(text, ctx);
+  // Nome curto termina em "." ("Diego M."): sem ponto duplo no fim da frase (revisão S8, E2E com IA real).
+  return renderReferences(text, ctx).replace(/(\p{L})\.\.(?!\.)/gu, "$1.");
 }
