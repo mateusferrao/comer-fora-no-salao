@@ -453,7 +453,8 @@ Todas as rotas são validadas com Zod, têm limite de uso e tiram o restaurante 
 - **Defesas:**
   - texto da imagem é dado, nunca instrução;
   - nomes de itens limpos e limitados antes de entrar em outros prompts;
-  - IA sem ferramentas (o MCP expõe o **nosso** sistema a agentes externos; nossos prompts continuam sem ferramentas);
+  - IA sem ferramentas de escrita: o plano (S6) e o Assistente do salão (S8) têm só ferramentas de leitura; mudanças saem como proposta tipada que o código confere e o dono aplica com um clique (o MCP expõe o **nosso** sistema a agentes externos);
+  - **Assistente restrito ao escopo do restaurante (D277, D286):** a IA classifica o pedido (`escopo`) e, fora do escopo, a recusa é escrita pelo código, sem propostas; um portão determinístico limita formato, tamanho e âncora da resposta (não garante o assunto);
   - imagem que não é cardápio → caminho de saída;
   - **PII nunca entra no prompt, por construção:** fatos agregados e público resolvido pelo código. **Exceção declarada (S8, D262/D268):** o copiloto e o MCP recebem primeiro nome + inicial e atributos de clientes por apelido (`{cliente:C3}`); **contato (e-mail, telefone) nunca**; o Langfuse não grava entrada nem saída da tarefa do copiloto.
 - **Latência:**
@@ -677,7 +678,7 @@ Todas as rotas são validadas com Zod, têm limite de uso e tiram o restaurante 
 | Dados pessoais reais de clientes (D154, D237) | Aceite explícito no cadastro; HMAC + AES-256-GCM; contato nunca em log, prompt, MCP ou rastro; a IA vê só primeiro nome + inicial (D262, D268); "Apagar meus dados" a qualquer hora (D171) |
 | Opt-in ligado por padrão sustenta a reativação | Convite visível sem envio; reativação só com opt-in; em produção, consentimento ativo (LGPD) |
 | IA inventa número/promessa | Referências + regras + palavras proibidas + escolha ∈ candidatas + revisor + aprovação do dono |
-| Prompt injection (cardápio) | Texto como dado, saída por schema, IA sem ferramentas, nomes limpos |
+| Prompt injection (cardápio, nomes, pedido ao assistente) | Texto como dado, saída por schema, IA só com ferramentas de leitura, nomes limpos, proposta conferida pelo código + clique, escopo do assistente com recusa do código (D277, D286) |
 | IA indisponível / crédito esgotado | Modo sem IA, cache dos exemplos, 2 chaves, tetos e limites |
 | Dados em provedores fora do Brasil (LGPD) | Contato nunca sai; só primeiro nome + inicial vai ao provedor, com `data_collection: deny` (D262); em produção, provedores adequados |
 | Build na VPS compartilhada (OOM) | Deploy só com CI verde, mitigações de memória, checagem antes do deploy, congelamento às 15h |

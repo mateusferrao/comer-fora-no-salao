@@ -13,7 +13,8 @@ Monólito modular em Next.js 16 (App Router) + TypeScript estrito + Postgres (Dr
 - `app/`: rotas e páginas (cliente em `/r/[slug]`, Portal em `/parceiro`, garçom, Bastidores, API em `app/api`).
 - `src/ui`: componentes e telas; `src/db`: esquema, migrações e seed; `src/web`: sessão, guardas e utilitários HTTP.
 - As fronteiras são conferidas no CI (`npm run check:boundaries`, dependency-cruiser): o domínio não importa banco, IA nem framework.
-- Recursos novos ficam atrás de flags (`src/modules/config/domain/flags.ts`), que os Bastidores ligam e desligam ao vivo.
+- Recursos novos ficam atrás de flags (`src/modules/config/domain/flags.ts`), que os Bastidores ligam e desligam ao vivo. Os padrões são os de produção (tudo ligado, menos o agendador), inclusive `mcp_clientes` e `mcp_edicao`: um app de IA conectado pelo MCP, com o token do dono, vê o primeiro nome dos clientes (nunca contato) e propõe e aplica mudanças.
+- Custo de IA: teto diário por chave (US$ 0,50 na pública); `IA_SEM_TETO_DIARIO=1` suspende o teto, só para testes, e o `/api/health` mostra `ia.teto`.
 
 ## IA
 - **O sistema decide número e dinheiro.** Preço, custo, teto de convites, sorteio do grupo de controle e resultado são calculados pelo código. A IA escreve com referências (`{prato}`, `{horario}`, `{fato}`) que o código troca pelos valores.
