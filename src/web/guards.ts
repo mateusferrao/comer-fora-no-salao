@@ -9,6 +9,7 @@ import { owners } from "@/src/db/schema";
 import { E2E_SLUG } from "@/src/db/seed/e2e";
 import { consume } from "@/src/shared/rate-limit";
 import { clientIp } from "@/src/shared/rate-limit-memory";
+import { declaredTooLarge, tooLarge } from "./http";
 
 export const LIMITS = {
   identificacao: { max: 10, windowMs: 60_000 },
@@ -27,7 +28,10 @@ export const LIMITS = {
 export function rejectCrossSite(req: Request, { requireJson = true } = {}): Response | null {
   const site = req.headers.get("sec-fetch-site");
   if (site && site !== "same-origin" && site !== "none") return Response.json({ erro: "origem" }, { status: 403 });
-  if (requireJson && !(req.headers.get("content-type") ?? "").includes("application/json")) return Response.json({ erro: "formato" }, { status: 415 });
+  const json = (req.headers.get("content-type") ?? "").includes("application/json");
+  if (requireJson && !json) return Response.json({ erro: "formato" }, { status: 415 });
+  // S9 (segurança M4): corpo JSON acima de 64 KB recusado antes de ler e antes da autenticação (o upload é multipart).
+  if (json && declaredTooLarge(req)) return tooLarge();
   return null;
 }
 

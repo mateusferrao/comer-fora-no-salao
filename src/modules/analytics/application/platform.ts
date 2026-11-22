@@ -16,7 +16,13 @@ export type PlatformView = {
   newUsers30d: number;
   medianActivationMin: number | null;
   funnel: Array<{ step: number; entered: number; completed: number }>;
+  /** S9 (IA M9): só a ativação (cardápio, pacote, kit e a revisão do kit) ÷ restaurantes ativados. */
   aiCostPerActivatedUsd: number | null;
+  /** Plano da semana (chamada única ou agente + revisor do plano) ÷ planos com chamada de IA. */
+  aiCostPerPlanUsd: number | null;
+  plans: number;
+  /** Assistente do salão (conversa e a frase do "Seu salão"), total. */
+  aiCostAssistantUsd: number;
   aiCostTotalUsd: number;
 };
 
@@ -54,9 +60,18 @@ export async function getPlatformView(ex: Executor, now: Date): Promise<Platform
         count(distinct e.restaurant_id) filter (where e.event = 'concluiu')::int completed
         from onboarding_events e join b on b.id = e.restaurant_id group by e.step order by e.step`,
   );
-  const [ai] = await q(ex, sql`with b as (${BASE}) select coalesce(sum(a.cost_usd), 0)::float total from ai_calls a join b on b.id = a.restaurant_id`);
+  const [ai] = await q(
+    ex,
+    sql`with b as (${BASE}), a as (select a.* from ai_calls a join b on b.id = a.restaurant_id)
+        select coalesce(sum(cost_usd), 0)::float total,
+          coalesce(sum(cost_usd) filter (where task in ('cardapio', 'pacote', 'kit') or (task = 'revisor' and plan_id is null)), 0)::float ativacao,
+          coalesce(sum(cost_usd) filter (where task in ('plano', 'plano_agente') or (task = 'revisor' and plan_id is not null)), 0)::float plano,
+          count(distinct plan_id) filter (where task in ('plano', 'plano_agente'))::int planos,
+          coalesce(sum(cost_usd) filter (where task in ('copiloto', 'salao_frase')), 0)::float assistente
+        from a`,
+  );
   const activated = Number(c?.activated ?? 0);
-  const total = Number(ai?.total ?? 0);
+  const plans = Number(ai?.planos ?? 0);
   return {
     created: Number(c?.created ?? 0),
     activated,
@@ -65,8 +80,11 @@ export async function getPlatformView(ex: Executor, now: Date): Promise<Platform
     newUsers30d: Number(u?.n ?? 0),
     medianActivationMin: c?.med == null ? null : Math.round(Number(c.med)),
     funnel: steps.map((s) => ({ step: Number(s.step), entered: Number(s.entered), completed: Number(s.completed) })),
-    aiCostPerActivatedUsd: activated ? total / activated : null,
-    aiCostTotalUsd: total,
+    aiCostPerActivatedUsd: activated ? Number(ai?.ativacao ?? 0) / activated : null,
+    aiCostPerPlanUsd: plans ? Number(ai?.plano ?? 0) / plans : null,
+    plans,
+    aiCostAssistantUsd: Number(ai?.assistente ?? 0),
+    aiCostTotalUsd: Number(ai?.total ?? 0),
   };
 }
 

@@ -22,8 +22,8 @@ export default function ComoFunciona() {
       <h1 className="mt-3 text-2xl font-bold text-ink">Como este protótipo funciona</h1>
       <p className={p}>
         Protótipo de case para o processo seletivo iFood GenAI 2027. Não é produto oficial do iFood. O produto funciona de verdade: login, check-in, códigos, convites,
-        e-mails e IA. O único dado gerado é o histórico do restaurante de exemplo. A ideia: o salão cheio
-        divulga o horário vazio. O cliente que já está na mesa ganha algo agora e um convite para voltar no horário vazio; o dono vê o retorno medido contra um grupo de controle.
+        e-mails e IA. O único dado gerado é o histórico do restaurante de exemplo. O salão cheio divulga o horário vazio: o cliente que já está na mesa ganha um
+        benefício na hora e um convite para voltar no horário vazio, e o dono vê o retorno medido contra um grupo de controle.
       </p>
 
       <h2 className={h2}>O que é real e o que é gerado</h2>
@@ -56,14 +56,15 @@ export default function ComoFunciona() {
         <li className={li}>Estimador de Welch com intervalo de 95%. Quatro estados: positivo (intervalo todo acima de zero), negativo (todo abaixo), ainda não dá para afirmar (cruza o zero) e amostra insuficiente (menos de 30 clientes num dos grupos).</li>
         <li className={li}>&quot;Visitas registradas&quot; são check-ins: quem volta sem fazer check-in não aparece. Em produção, cruzaríamos com pagamento ou reserva.</li>
         <li className={li}>Proteção contra migração: as visitas fora do horário vazio também são comparadas, para ver se o convite só troca o cliente de horário.</li>
-        <li className={li}>Num restaurante, o grupo de controle é pequeno: o resultado tem intervalo largo. A prova estatística fica para um piloto com ~50 restaurantes.</li>
+        <li className={li}>Num restaurante, o grupo de controle é pequeno e o resultado tem intervalo largo. A prova estatística fica para um piloto com vários restaurantes (a especificação propõe cerca de 50, número ainda sem cálculo de poder).</li>
         <li className={li}>O veredito por oferta (manter, trocar, cedo demais) usa indicadores antecipados (uso em uma semana) e não é causal. O incremento só aparece no total do restaurante.</li>
       </ul>
 
       <h2 className={h2}>A simulação (baseada em agentes, sem IA)</h2>
       <p className={p}>
         Os 60 dias do restaurante de exemplo usam as mesmas regras do produto (as mesmas funções do check-in, do sorteio, do teto e da reativação), com um relógio
-        falso. Cada cliente simulado tem uma taxa de volta; quem recebe convite ganha um efeito programado. O painel &quot;mede&quot; o que foi programado: é isso que mostramos.
+        falso. Cada cliente simulado tem uma taxa de volta; quem recebe convite ganha um efeito programado. O painel recupera esse efeito programado. Isso testa a
+        medida; o efeito real, só um piloto mede.
       </p>
       <table className="mt-3 w-full text-sm">
         <tbody>
@@ -88,7 +89,7 @@ export default function ComoFunciona() {
       <p className={p}>
         Robustez: com o efeito programado, o intervalo fica acima de zero em 132 de 140 combinações (20 sementes × 7 dias da semana de início). A semente da vitrine foi escolhida
         entre as que dão resultado positivo, com o efeito programado dentro do intervalo, em qualquer dia da semana. O restaurante que você cadastra começa vazio e mostra
-        &quot;amostra insuficiente&quot; até ter dados: é o comportamento honesto com pouco tempo de uso.
+        &quot;amostra insuficiente&quot; até ter dados.
       </p>
 
       <h2 className={h2}>O que já existe no Comer Fora × o que é novo aqui</h2>
@@ -106,6 +107,7 @@ export default function ComoFunciona() {
             ["Check-in no app", "Peças físicas com QR por peça e versão (atribuição, A/B)"],
             ["Resultados de campanha, histórico do cliente", "Plano da semana: insights do código + IA que escolhe e explica + \"o que aprendemos\""],
             ["(não encontrado em fontes públicas)", "Incremento medido contra grupo de controle, com intervalo"],
+            ["Toqan (assistente de IA do Portal, voltado ao delivery)", "Assistente do salão: o pedido do dono vira uma proposta conferida pelo código e aplicada com 1 clique, sobre as mesmas ferramentas que o MCP abre para agentes externos"],
           ].map(([a, b]) => (
             <tr key={a} className="border-b border-divider align-top">
               <td className="py-2 pr-4 text-ink">{a}</td>
@@ -117,26 +119,30 @@ export default function ComoFunciona() {
 
       <h2 className={h2}>Hipóteses (por que 80% não divulgam) e como cada uma é medida</h2>
       <ul className="mt-2 list-disc pl-5">
-        <li className={li}>H1 — falta material: % de restaurantes ativados com peça no salão e com leituras.</li>
-        <li className={li}>H2 — o dono não vê retorno: visitas e margem incrementais contra o grupo de controle.</li>
-        <li className={li}>H3 — a equipe não engaja: check-ins sem código validado, por turno.</li>
-        <li className={li}>H4 — o custo assusta: custo por cliente identificado, custo × margem e ajustes do dono no pacote.</li>
-        <li className={li}>H5 — o dono desconfia de divulgar o iFood no próprio salão: abandono por passo do assistente. A base de clientes é declarada do restaurante (o iFood afirma que, no Comer Fora, &quot;os dados ficam com o restaurante&quot; — fonte pública citada na especificação).</li>
+        <li className={li}>H1 (falta material): % de restaurantes ativados com peça no salão e com leituras.</li>
+        <li className={li}>H2 (o dono não vê retorno): visitas e margem incrementais contra o grupo de controle.</li>
+        <li className={li}>H3 (a equipe não engaja): check-ins sem código validado, por turno.</li>
+        <li className={li}>H4 (o custo assusta): custo por cliente identificado, custo × margem e ajustes do dono no pacote.</li>
+        <li className={li}>H5 (o dono desconfia de divulgar o iFood no próprio salão): abandono por passo da ativação. A base de clientes é declarada do restaurante (o iFood afirma que, no Comer Fora, &quot;os dados ficam com o restaurante&quot;, segundo fonte pública citada na especificação).</li>
       </ul>
 
-      <h2 className={h2}>Dados pessoais, IA e segurança</h2>
+      <h2 className={h2}>Dados pessoais</h2>
       <ul className="mt-2 list-disc pl-5">
         <li className={li}>O cliente entra com o próprio e-mail e um código de 6 dígitos. O e-mail fica guardado como código (HMAC) e criptografado (AES-256-GCM); o telefone é opcional e também fica criptografado. O restaurante vê o contato completo dos clientes dele (nome, e-mail e telefone), com o aceite do cliente no cadastro; no restaurante de exemplo, os contatos são fictícios (DDD 00 e e-mails em exemplo.invalid). Contato nunca vai para log, prompt de IA, MCP nem rastro. O Assistente do salão (copiloto) e os agentes conectados pelo MCP recebem só o primeiro nome com a inicial e o histórico de visitas dos clientes, nunca e-mail nem telefone; um nome que pareça contato vira “Cliente”.</li>
         <li className={li}>Os dados do cliente não são apagados sozinhos: ficam enquanto houver relação com o restaurante, como num CRM real, e o cliente apaga tudo quando quiser em &quot;Sua jornada&quot; › engrenagem › &quot;Apagar meus dados&quot;. Por ser um protótipo que recebe dados reais, isso é um risco aceito e declarado.</li>
         <li className={li}>Os interruptores de comunicação (e-mail e notificação no app) vêm ligados, como no app. Em produção, a LGPD pede consentimento ativo.</li>
-        <li className={li}>O e-mail do dono é guardado só como código (HMAC) + uma dica mascarada; o AWS SES processa o endereço para entregar o código de login.</li>
-        <li className={li}>IA só pelo OpenRouter, com saída validada, valores sempre por referência (o código escreve números, preços e nomes), palavras proibidas, aprovação do dono e rastro sem dados pessoais (Langfuse). Contato de cliente nunca entra em prompt; o copiloto e o MCP veem só primeiro nome + inicial (decisão do candidato, D262/D268), e o rastro do copiloto não grava a conversa.</li>
+        <li className={li}>O e-mail do dono fica guardado como código (HMAC), que serve ao login, e criptografado (AES-256-GCM), para enviar o resumo semanal e mostrar a conta no Portal. O AWS SES processa os endereços para entregar os e-mails.</li>
+      </ul>
+
+      <h2 className={h2}>IA e automação</h2>
+      <ul className="mt-2 list-disc pl-5">
+        <li className={li}>IA só pelo OpenRouter, com saída validada, valores sempre por referência (o código escreve números, preços e nomes), palavras proibidas, aprovação do dono e rastro sem dados pessoais (Langfuse). O rastro do Assistente do salão não grava a conversa.</li>
         <li className={li}>Assistente do salão (copiloto): o pedido do dono vira uma proposta com antes → depois, alcance e custo calculados pelo código; nada muda sem o clique em “Aplicar”, que usa as mesmas regras das Configurações. A IA nunca escreve número: cita fatos por referência. Pelo MCP, um agente conectado com o token do dono pode propor e aplicar as mesmas mudanças.</li>
-        <li className={li}>O agendador roda no próprio servidor, uma vez por minuto: no dia e na hora escolhidos pelo dono (padrão segunda 08:30), gera o plano da semana e manda o resumo por e-mail com &quot;Revisar e aprovar&quot;; no dia do convite, manda 1 lembrete ao cliente, X horas antes do horário. Os e-mails são reais (remetente compartilhado msg.automato.pro), só para quem aceitou, sempre com &quot;Preferências de e-mail · Descadastrar&quot;. Não há data para parar: o envio automático é desligado nos Bastidores.</li>
+        <li className={li}>O agendador roda no próprio servidor, uma vez por minuto: no dia e na hora escolhidos pelo dono (padrão segunda 08:30), gera o plano da semana e manda o resumo por e-mail com &quot;Revisar e aprovar&quot;; no dia do convite, manda 1 lembrete ao cliente, X horas antes do horário. Os e-mails são reais (remetente compartilhado msg.automato.pro), só para quem aceitou, sempre com &quot;Preferências de e-mail · Descadastrar&quot;. O envio automático liga e desliga nos Bastidores e vem desligado num banco novo.</li>
         <li className={li}>O link &quot;Revisar e aprovar&quot; vale uma vez, só para aquele plano, por 7 dias; abrir o link não aprova nada (é preciso tocar em &quot;Aprovar plano&quot;). O dono pode desligar a aprovação pelo e-mail. A página leva o logo do iFood, com o risco de confusão aceito.</li>
         <li className={li}>Tudo é configurável: o dono escolhe dia e hora do resumo, plano automático, aprovação pelo e-mail, quais e-mails vão aos clientes e a antecedência do lembrete; o cliente escolhe por restaurante em &quot;Gerenciar notificações&quot;. Quando o dono desliga e-mails aos clientes, o convite continua no app: a medida segue por intenção de tratar, mas a intensidade do tratamento muda (o motivo fica registrado em cada mensagem pulada).</li>
         <li className={li}>&quot;IA do restaurante&quot; é opcional: sem nada preenchido, a IA usa o padrão com os dados que o sistema já tem. Fatos e termos a evitar passam por validação (sem contato, links, marcação nem frases de comando), entram no prompt só como dado delimitado (nunca como instrução) e a saída continua presa às ofertas do código, aos guardrails, ao revisor e à aprovação do dono. O banco só é acessado com consultas parametrizadas.</li>
-        <li className={li}>Plano como agente: a IA pode consultar ferramentas só de leitura (números, ofertas possíveis, custo da semana e conferência dos textos) antes de responder. Na medida com juiz cego (eval/relatorio-t3-agente.md), depois que o convite passou a exigir dia e horário da faixa por regra do código (D226), agente e chamada única passaram nas regras em 10 de 10, e o juiz preferiu o agente em 6 de 10 pares (1 empate, 3 para a chamada única); nas 2 rodadas anteriores o juiz tinha preferido a chamada única (2 × 3 e 3 × 4). O agente leva cerca de 14 s e custa 6× mais por plano. Está ligado (D225). Se o agente falhar, o plano cai na chamada única e depois no modo sem IA.</li>
+        <li className={li}>Plano como agente: a IA pode consultar ferramentas só de leitura (números, ofertas possíveis, custo da semana e conferência dos textos) antes de responder. Na medida com juiz cego (eval/relatorio-t3-agente.md), depois que o convite passou a exigir o dia e a hora do horário vazio por regra do código, agente e chamada única passaram nas regras em 10 de 10, e o juiz preferiu o agente em 6 de 10 pares (1 empate, 3 para a chamada única); nas 2 rodadas anteriores o juiz tinha preferido a chamada única (2 × 3 e 3 × 4). O agente leva cerca de 14 s e custa 6× mais por plano. Está ligado por decisão do candidato. Se o agente falhar, o plano cai na chamada única e depois no modo sem IA.</li>
         <li className={li}>&quot;Avançar 1 dia&quot; fica nas Ferramentas do avaliador, fora do produto: recua a visita e o convite de hoje (só de clientes reais) para mostrar a volta com código no mesmo dia, e tira esses check-ins de &quot;Hoje&quot;.</li>
       </ul>
 
@@ -156,11 +162,11 @@ export default function ComoFunciona() {
       <p className={p}>Fotos de banco livre do Wikimedia Commons (nenhuma mostra pessoas, marcas ou letreiros reais):</p>
       <ul className="mt-1 list-disc pl-5">
         {[
-          "Salão: “Modern dining area with wooden decor and empty tables…” — Nenad Stojković, CC BY 2.0",
-          "Entrada: “Bruschetta (3755334055)” — Karen and Brad Emerson, CC BY 2.0",
-          "Prato: “Spaghetti2” — Popo le Chien, CC0",
-          "Porção: “Arancini (veggie) - Nanninella 2025-10-21” — Andy Li, CC0",
-          "Sobremesa: “Dolce Tiramisù monoporzione” — Anna.Massini, CC BY 4.0",
+          "Salão: “Modern dining area with wooden decor and empty tables…”, de Nenad Stojković (CC BY 2.0)",
+          "Entrada: “Bruschetta (3755334055)”, de Karen and Brad Emerson (CC BY 2.0)",
+          "Prato: “Spaghetti2”, de Popo le Chien (CC0)",
+          "Porção: “Arancini (veggie) - Nanninella 2025-10-21”, de Andy Li (CC0)",
+          "Sobremesa: “Dolce Tiramisù monoporzione”, de Anna.Massini (CC BY 4.0)",
         ].map((x) => (
           <li key={x} className={li}>
             {x}

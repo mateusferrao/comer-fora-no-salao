@@ -30,6 +30,8 @@ describe("porta-conta (S6.4, D192)", () => {
   });
 
   it("kit antigo: 'Adicionar porta-conta' cria 1 peça (2 cliques ao mesmo tempo = 1); sem kit → erro; leitura conta na peça", async () => {
+    // Kit gerado com a flag desligada (ligada por padrão desde a S9).
+    await setFlag(getDb(), "porta_conta", false);
     const r = await createRestaurant({ pieces: [] });
     expect(await addBillHolder(getDb(), { restaurantId: r.restaurantId, now: NOW })).toEqual({ ok: false, erro: "sem_kit" });
     await generateKit(getDb(), { restaurantId: r.restaurantId, ownerId: r.ownerId, now: NOW, gateway: null });
