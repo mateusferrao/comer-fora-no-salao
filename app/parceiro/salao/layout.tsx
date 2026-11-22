@@ -24,7 +24,8 @@ async function copilotChips(restaurantId: string): Promise<Record<string, string
   const trocar = first ? `Trocar a oferta do convite de ${slotLabel(first)}${alt ? ` por ${alt.name}` : ""}` : "Trocar a oferta de um convite";
   return {
     painel: ["Como foi a semana?", "Quem está perto da recompensa?", trocar],
-    configuracoes: [trocar, "Tirar um prato das ofertas", "Mudar o teto de um horário"],
+    // "…" no fim: o chip só preenche o campo para o dono completar (revisão S8, produto 7).
+    configuracoes: [trocar, "Tirar das ofertas o prato…", first ? `Mudar o teto do convite de ${slotLabel(first)} para…` : "Mudar o teto de um horário para…"],
     plano: ["O que o plano está propondo?", trocar, "O que é o grupo de controle?"],
     clientes: ["Quem está perto da recompensa?", "Quem sumiu?"],
     kit: ["O que é o teto de convites?", "Como o QR conta as leituras?"],
@@ -38,7 +39,7 @@ export default async function SalaoLayout({ children }: { children: ReactNode })
   const s = await requireOwner();
   const cur = s.current;
   // S8: restaurante ativo → copiloto completo; em ativação (D265) → só dúvidas.
-  const assistant = cur && (await getFlags(getDb())).copiloto ? <Copilot chips={cur.status === "ativo" ? await copilotChips(cur.id) : { ativar: ["O que é o horário vazio?", "Preciso informar a margem?", "O que é o teto de convites?"] }} /> : undefined;
+  const assistant = cur && (await getFlags(getDb())).copiloto ? <Copilot scope={`${s.owner.id}:${cur.id}`} chips={cur.status === "ativo" ? await copilotChips(cur.id) : { ativar: ["O que é o horário vazio?", "Preciso informar a margem?", "O que é o teto de convites?"] }} /> : undefined;
   return (
     <PortalShell
       mobileTitle={cur?.name}

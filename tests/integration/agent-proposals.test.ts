@@ -4,6 +4,7 @@ import { closeDb, getDb } from "@/src/db/client";
 import { agentProposals, benefitVersions, menuItems, ownerEdits, restaurants, weeklyPlans } from "@/src/db/schema";
 import { generateWeeklyPlan } from "@/src/modules/planos/application/generate-plan";
 import { createProposals, decideProposal, PROPOSAL_TTL_MS } from "@/src/modules/agente/application/proposals";
+import { appliedProposalTitle, getCopilotMetrics } from "@/src/modules/agente/application/metrics";
 import { updateOffer } from "@/src/modules/config/application/update-settings";
 import { createRestaurant, resetDb } from "./helpers/db";
 
@@ -136,6 +137,18 @@ describe("propostas do copiloto (S8 — D261, D269)", () => {
     await getDb().update(agentProposals).set({ status: "aplicando" }).where(eq(agentProposals.id, ok!.id!));
     expect(await decideProposal(getDb(), { restaurantId: r.restaurantId, proposalId: ok!.id!, origin: "copiloto", acao: "aplicar", now: later(60_000) })).toMatchObject({ ok: false, status: "em_andamento" });
     expect(await decideProposal(getDb(), { restaurantId: r.restaurantId, proposalId: ok!.id!, origin: "copiloto", acao: "aplicar", now: later(PROPOSAL_TTL_MS + 3 * 60_000) })).toMatchObject({ ok: false, status: "falhou" });
+  });
+
+  it("revisão S8: métricas do copiloto (mostradas, aplicadas, %) e título da aplicada pela faixa da tela", async () => {
+    const r = await createRestaurant();
+    const cards = await createProposals(getDb(), { restaurantId: r.restaurantId, origin: "copiloto", payloads: [{ acao: "item", itemId: r.items.bruschetta!, mudanca: "preco", priceCents: 2700 }, { acao: "item", itemId: r.items.bruschetta!, mudanca: "fora_das_ofertas" }], now: NOW });
+    await decideProposal(getDb(), { restaurantId: r.restaurantId, proposalId: cards[0]!.id!, origin: "copiloto", acao: "aplicar", now: later(5000) });
+    await decideProposal(getDb(), { restaurantId: r.restaurantId, proposalId: cards[1]!.id!, origin: "copiloto", acao: "descartar", now: later(6000) });
+    const m = await getCopilotMetrics(getDb());
+    expect(m).toMatchObject({ shown: 2, applied: 1, discarded: 1, appliedPct: 50 });
+    expect(m.byAction).toEqual([{ action: "item", shown: 2, applied: 1 }]);
+    expect(await appliedProposalTitle(getDb(), r.restaurantId, cards[0]!.id!.slice(0, 8))).toBe("Mudar o preço de “Bruschetta”");
+    expect(await appliedProposalTitle(getDb(), r.restaurantId, "zzzz")).toBeNull();
   });
 });
 

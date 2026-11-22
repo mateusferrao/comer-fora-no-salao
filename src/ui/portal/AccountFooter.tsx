@@ -1,12 +1,15 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { clearCopilotConversations } from "./copiloto/Copilot";
 
 /** Rodapé da barra lateral (portal/05): usuário logado + Sair. Só a dica mascarada do e-mail (D118). */
 export function AccountFooter({ hint }: { hint: string }) {
   const router = useRouter();
   async function logout() {
     await fetch("/api/parceiro/sair", { method: "POST" });
+    // S8 (revisão, segurança 1): a conversa do assistente não fica para a próxima conta nesta aba.
+    clearCopilotConversations();
     router.replace("/parceiro/entrar");
     router.refresh();
   }

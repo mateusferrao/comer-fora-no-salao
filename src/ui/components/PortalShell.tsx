@@ -77,7 +77,8 @@ export function PortalShell({ nav, children, top, footer, mobileTitle, assistant
         {footer && <div className="border-t border-divider px-4 py-3">{footer}</div>}
       </dialog>
 
-      <div id="conteudo" tabIndex={-1} className="min-w-0 scroll-mt-12 focus:outline-none">
+      {/* S8: espaço sob o botão flutuante do assistente (revisão de produto 9). */}
+      <div id="conteudo" tabIndex={-1} className={`min-w-0 scroll-mt-12 focus:outline-none${assistant ? " pb-20" : ""}`}>
         {children}
       </div>
       {/* S8: Assistente do salão (painel do computador empurra o conteúdo por --copiloto-w). */}

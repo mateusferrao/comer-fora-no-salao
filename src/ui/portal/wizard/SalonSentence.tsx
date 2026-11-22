@@ -46,7 +46,7 @@ export function SalonSentence({ onFill }: { onFill: (f: SalonFill) => void }) {
         <h3 id="salao-frase-titulo" className="font-semibold text-ink">
           Descrever em uma frase (opcional)
         </h3>
-        <p className="mt-1 text-sm text-ink-muted">A IA preenche os campos abaixo para você revisar. Números que você não disser ficam em branco.</p>
+        <p className="mt-1 text-sm text-ink-muted">A IA preenche os campos abaixo para você revisar. O que você não disser continua como está; número que não está na frase nunca é inventado.</p>
       </div>
       <label className="sr-only" htmlFor="salao-frase">
         Descrição do salão
@@ -76,7 +76,8 @@ export function SalonSentence({ onFill }: { onFill: (f: SalonFill) => void }) {
               <li key={l}>{l}</li>
             ))}
           </ul>
-          {fill.naoInformado.length > 0 && <p className="text-ink-muted">Não informado (complete abaixo, se quiser): {fill.naoInformado.join(", ")}.</p>}
+          {fill.slots && <p className="text-ink-muted">Os horários vazios da frase substituem os que estão no formulário.</p>}
+          {fill.naoInformado.length > 0 && <p className="text-ink-muted">Não informado (fica como está no formulário): {fill.naoInformado.join(", ")}.</p>}
           <div className="flex flex-wrap gap-2">
             <Button variant="primary-portal" onClick={() => (onFill(fill), setFill(null), setMsg("Pronto. Revise os campos abaixo e clique em Continuar."))}>
               Preencher o formulário
