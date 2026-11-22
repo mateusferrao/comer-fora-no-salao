@@ -1365,10 +1365,15 @@ Detalhes, perguntas, revisão independente (2 subagentes) e itens [C] em [docs/f
 - Achado 2: os fatos da IA tratavam o nível novo "Mais ou menos" (D240) como "um pouco vazia". Agora: muito / mais ou menos / pouco vazia.
 - Observação, sem mudança: o plano pronto do restaurante de exemplo (origem "fixo") tem texto escrito antes ("18% de uso, manter"), que não acompanha os números de hoje (11%, "trocar"). É o plano de demonstração; o primeiro plano gerado já usa os números atuais.
 
-**D252 — Flag "IA sem teto diário" para testes** (21/11, candidato: "remove esse limite só pra gente testar"; forma [C]) ✅
+**D252 — Flag "IA sem teto diário" para testes** (trocada pela D254) (21/11, candidato: "remove esse limite só pra gente testar"; forma [C]) ✅
 - O teto diário da chave pública (US$ 0,50 — D85) continua no código; a flag `ia_sem_teto` nos Bastidores o suspende enquanto estiver ligada. Nasce desligada; ligada pela IA a pedido do candidato, que a desliga ao terminar os testes.
 - Alternativas: apagar o teto (sem volta fácil; risco de gasto por terceiros na chave pública); pôr o e-mail do candidato em `PRESENTER_EMAILS` (chave de demo só para ele, mas exige reescrever todo o ambiente no Easypanel e mandar o e-mail para lá). Trade-off: enquanto ligada, vale para qualquer conta que use a chave pública.
 
 **D253 — Ação fixa no rodapé só em telas de uma ação; Configurações com aviso de alterações não salvas** (22/11, candidato: "e se deixarmos fixo na rolagem? só celular ou desktop também? seja crítico"; escolheu "Só telas de 1 ação") ✅
 - Barra fixa no rodapé ao rolar, no celular e no computador: passos 2 a 5 da ativação, Aprovar/Descartar no Plano da semana e Salvar de Avisos e automação. A mensagem de erro da ação vai dentro da barra.
 - Configurações, Kit e Cardápio continuam salvando por bloco (um "salvar tudo" fixo esconderia qual bloco salva). No lugar: "Alterações não salvas" ao lado do botão do bloco (no Cardápio, o "Salvar" da linha fica cheio) e, ao tocar num link do sistema com algo pendente, a confirmação do design system "Sair sem salvar?" (o candidato vetou o alerta nativo). Fechar ou recarregar a aba fica sem aviso: o navegador só permite o alerta dele.
+
+**D254 — Teto diário de IA suspenso por variável de ambiente, não por flag** (22/11, candidato: "passa pra um env"; "quero alterar direto no Easypanel sem deploy completo") ✅ (troca a D252)
+- `IA_SEM_TETO_DIARIO=1` (ou `true`/`sim`) no env do `case-salao-app` suspende o teto da chave pública (US$ 0,50/dia — D85); sem a variável, ou com outro valor, o teto vale. Para mudar: Easypanel › Environment › salvar › **Restart** (reinicia o container com a mesma imagem, sem build).
+- `/api/health` mostra `ia.teto`: "ativo" ou "suspenso", para conferir sem gastar IA. A flag `ia_sem_teto` saiu dos Bastidores (o valor gravado passa a ser ignorado).
+- Por quê: sai da tela que qualquer pessoa com a senha dos Bastidores alcança; só quem tem o Easypanel liga. Trade-off: mudar exige reiniciar o app (segundos), não é instantâneo como a flag.
