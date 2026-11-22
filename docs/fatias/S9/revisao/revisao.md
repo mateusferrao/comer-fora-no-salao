@@ -1,6 +1,6 @@
 # Revisão da fatia S9 — Polimento pré-entrega
 
-Data: 22/11/2026 · Base: `05985dd` (main) · Revisado: branch `claude/dreamy-cray-gg09nn` · Produção: _(preencher depois do merge)_
+Data: 22/11/2026 · Base: `05985dd` (main) · Revisado: branch `claude/dreamy-cray-gg09nn` · Produção: `f8560c7` (merge do PR #4)
 
 ## 1. Resumo e veredito
 A S9 nasceu de uma revisão completa do sistema (requisitos × briefing, segurança e privacidade, camada de IA × cultura iFood) e de uma revisão de toda a copy com a skill de copywriting (pedidos do candidato em 22/11). Foi implementada em 5 frentes paralelas, revisada por 4 revisores independentes (aderência ao iFood, técnica, produto/UX/copy, segurança/IA) e corrigida numa segunda rodada em 3 frentes.
@@ -40,7 +40,10 @@ Não procede: "a linha 'você pode ganhar um convite' contraria a §3.5" (a §3.
 - Capturas: [landing-390.png](capturas/landing-390.png), [landing-1280.png](capturas/landing-1280.png).
 
 ## 4. Produção
-_(preencher depois do merge: SHA no `/api/health`, fumaça + `*.on`, landing a 390/1280, assistente com "escreve um poema")_
+- `/api/health` (22/11 05:03 UTC): `ok: true`, `sha: f8560c7`, `ia.teto: ativo`, chaves pública e demo `ok`, `fakeAi: false`.
+- Landing em produção a 1280 e 390 px: título novo, sem rolagem lateral, recorte do cartão de reais no celular (`visao-geral-topo.webp`), 0 erros de console ([prod-landing-1280.png](capturas/prod-landing-1280.png), [prod-landing-390.png](capturas/prod-landing-390.png)).
+- Página do QR: a seta Voltar leva a `/app/jornada` (não à landing do dono).
+- Fumaça do CI na `main` (inclui os `*.on.spec.ts`): em andamento no momento deste registro — conferir o run 125.
 
 ## 5. Pendências fora da fatia (S7 e operação, 23/11)
 - Religar o teto diário de IA (tirar `IA_SEM_TETO_DIARIO`, Restart, conferir `ia.teto: ativo`).
