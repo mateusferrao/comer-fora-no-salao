@@ -63,6 +63,7 @@ flowchart LR
 ## Material do case
 - **Slide do processo** (prompts, APIs e ferramentas, riscos): [PDF](docs/entrega/slide-processo.pdf) · [PPTX](docs/entrega/slide-processo.pptx)
 - **Apresentação** (abertura, fecho e apêndice com telas reais, arquitetura, avaliações, métrica, privacidade e conta de bolso): [PDF](docs/entrega/apresentacao.pdf) · [PPTX](docs/entrega/apresentacao.pptx)
+- **Vídeo da demo** (2 min, telas reais da produção, voz sintética e legendas): [assistir ou baixar](https://github.com/mateusferrao/comer-fora-no-salao/releases/download/entrega/video-demo.mp4)
 - **Documentação:** [como ler](docs/README.md) · [decisões principais](docs/decisoes-principais.md) · [arquitetura](docs/arquitetura.md) · [IA no produto](docs/ia-no-produto.md) · [como foi construído com IA](docs/processo-com-ia.md)
 
 ## Como avaliar em 5 minutos
