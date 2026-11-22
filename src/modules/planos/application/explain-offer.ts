@@ -9,7 +9,8 @@ import type { Db } from "@/src/db/client";
 import { aiCalls, idleSlots, menuItems, weeklyPlans } from "@/src/db/schema";
 import { describeOffer, type Offer, type OfferKind } from "@/src/modules/beneficios/domain/offers";
 import type { MenuItem } from "@/src/modules/beneficios/domain/menu";
-import { slotLabel, slotPhrase } from "@/src/modules/beneficios/domain/slot-text";
+import { slotAliases, slotLabel, slotPhrase } from "@/src/modules/beneficios/domain/slot-text";
+import { loadContext } from "@/src/modules/salao/application/context";
 import { factLabel } from "@/src/modules/textos/domain/fact-labels";
 import { formatFact, referencesIn, renderReferences } from "@/src/modules/textos/domain/references";
 import type { StoredReview } from "@/src/modules/ia/tasks/reviewer";
@@ -59,6 +60,9 @@ export async function explainOffer(db: Db, restaurantId: string, planId: string,
   const raw = choices.find((c) => c.slotId === slotId)?.justificativa ?? "";
   const chosenGain = opcoes.find((o) => o.escolhaDono)?.gain ?? opcoes.find((o) => o.escolhaIa)?.gain;
   const rctx = { facts, items: Object.fromEntries(menu.map((m) => [m.id, m.name])), slots: { [slot.id]: slotPhrase(slot) }, oferta: chosenGain };
+  // S9: o dono vê o horário ("ter a qui · 15h–18h"), não o apelido "A" (mesma ordem de apelidos do plano).
+  const ctx = await loadContext(db, restaurantId);
+  const slotNames: Record<string, string> = Object.fromEntries(slotAliases(ctx?.slots ?? []).map((a) => [a.alias, slotLabel(a.slot)]));
   const keys = [...new Set(referencesIn(raw).filter((r) => r.kind === "fato" && facts[r.key] !== undefined).map((r) => r.key))];
 
   // Plano por agente (S6.3b): a chamada que valeu é a do agente quando ele deu certo; senão, a chamada única.
@@ -76,7 +80,7 @@ export async function explainOffer(db: Db, restaurantId: string, planId: string,
     opcoes,
     escolhida: chosenGain ?? null,
     justificativa: renderReferences(raw, rctx),
-    fatos: keys.map((k) => ({ key: k, label: factLabel(k), value: formatFact(k, facts[k]!) })),
+    fatos: keys.map((k) => ({ key: k, label: factLabel(k, slotNames), value: formatFact(k, facts[k]!) })),
     passos: steps,
     revisor: kind === "pacote" ? null : decision.reviewer ? { status: decision.reviewer.status, reasons: decision.reviewer.reasons ?? [] } : null,
     tecnico: call

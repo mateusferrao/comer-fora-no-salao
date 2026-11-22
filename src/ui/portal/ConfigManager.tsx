@@ -30,6 +30,7 @@ import { Tabs } from "../components/Tabs";
 import { TimeRange } from "../components/TimeRange";
 import { OfferEditor, type OfferValue } from "./OfferEditor";
 import { Switch } from "../components/Switch";
+import { NAME_PROBLEM_TEXT } from "@/src/modules/onboarding/domain/safe-name";
 
 const CATS: Array<[MenuCategory, string]> = [
   ["entrada", "Entrada"],
@@ -49,7 +50,7 @@ const ERR: Record<string, string> = {
   rede: "Sem conexão com o servidor. Verifique a internet e tente de novo.",
   em_uso:
     "Este item está numa oferta em vigor. Troque a oferta antes de excluir.",
-  nome_marca: "O nome do restaurante não pode citar a marca iFood.",
+  ...NAME_PROBLEM_TEXT,
   ultima_faixa: "O restaurante precisa de pelo menos um horário vazio.",
   faixa: "Horário inválido: precisa caber no funcionamento, com fim depois do início.",
   funcionamento: "O novo funcionamento não cobre algum horário vazio. Ajuste os horários vazios antes.",

@@ -9,6 +9,7 @@ import { Button } from "../../components/Button";
 import { Field } from "../../components/Field";
 import { api, markStep } from "./api";
 import { ExtractionStatus, useExtraction, type ExtractionState } from "./ExtractionStatus";
+import { NAME_PROBLEM_TEXT } from "@/src/modules/onboarding/domain/safe-name";
 
 type Row = { categoria: "entrada" | "prato" | "porcao" | "sobremesa" | "bebida"; nome: string; preco: string; confira?: boolean };
 const CATS: Array<[Row["categoria"], string]> = [
@@ -56,12 +57,15 @@ export function Step3Revisao({ extractionId, extraction, initial, manual = false
     if (items.some((i) => i.precoCentavos === null)) return setError("Confira os preços: use valores como 32,90.");
     setBusy(true);
     setError(null);
-    const r = await api("/api/parceiro/cardapio", "POST", { items, cuisine: cuisine.trim() || null, priceBand: band || null, extractionId });
+    const r = await api<{ erro?: string }>("/api/parceiro/cardapio", "POST", { items, cuisine: cuisine.trim() || null, priceBand: band || null, extractionId });
     setBusy(false);
     if (r.ok) {
       router.push("/parceiro/salao/ativar/4");
       router.refresh();
-    } else setError("Não conseguimos salvar o cardápio. Tente de novo.");
+    } else {
+      const e = r.data?.erro;
+      setError(e === "item_contato" || e === "item_marca" ? NAME_PROBLEM_TEXT[e] : "Não conseguimos salvar o cardápio. Tente de novo.");
+    }
   }
 
   return (

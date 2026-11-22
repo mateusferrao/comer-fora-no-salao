@@ -50,7 +50,7 @@ export async function runCopilotTurn(
   if (!r) return noAi("inativo");
   const onboarding = r.status !== "ativo";
   // D197: o dono pode desligar o agente da IA do restaurante; o copiloto respeita (é um agente).
-  if (!parseAiFeatures(r.aiFeatures).agente) return noAi("falha", "O assistente está desligado na aba “IA do restaurante”. Você pode fazer a mudança direto nas Configurações:");
+  if (!parseAiFeatures(r.aiFeatures).agente) return noAi("falha", "O assistente está desligado. Para ligar, abra Configurações › IA do restaurante e ligue “IA consulta seus números antes de sugerir”. Ou faça a mudança direto nas Configurações:");
 
   const [owner] = await db.select({ emailHmac: owners.emailHmac, via: owners.via }).from(owners).where(eq(owners.id, p.ownerId));
   const keyKind = keyKindFor({ emailHmac: owner?.emailHmac ?? null, via: owner?.via ?? null });

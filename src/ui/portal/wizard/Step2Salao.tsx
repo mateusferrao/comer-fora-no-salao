@@ -20,6 +20,7 @@ import { api, markStep } from "./api";
 import { ExtractionStatus, useExtraction, type ExtractionState } from "./ExtractionStatus";
 import { SalonSentence } from "./SalonSentence";
 import type { SalonFill } from "@/src/modules/ia/tasks/salon";
+import { NAME_PROBLEM_TEXT } from "@/src/modules/onboarding/domain/safe-name";
 
 export type SalonForm = {
   name: string;
@@ -103,7 +104,7 @@ export function Step2Salao({ initial, extractionId, extraction, manual = false, 
       router.refresh();
       return;
     }
-    if (r.data.erro === "nome_marca") return setErrors({ name: "O nome do restaurante não pode citar a marca iFood." });
+    if (r.data.erro === "nome_marca" || r.data.erro === "nome_contato") return setErrors({ name: NAME_PROBLEM_TEXT[r.data.erro] });
     const se: Record<string, string> = {};
     r.data.slotErrors?.forEach(
       (errs, i) =>

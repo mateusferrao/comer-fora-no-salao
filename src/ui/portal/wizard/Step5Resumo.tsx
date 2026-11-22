@@ -124,12 +124,12 @@ export function Step5Resumo({ view, slug, todayPlus30 }: { view: PackageView; sl
             <p className="text-xs font-semibold uppercase tracking-wide text-ink-muted">
               Check-in feito
             </p>
-            <p className="mt-2 text-lg font-semibold text-ink">{agora.title}</p>
+            <p className="mt-2 text-lg font-semibold text-ink">{agora.gain}</p>
             <p className="text-sm text-ink-muted">
-              {agora.subtitle} · {agora.itemName}
+              Na 1ª visita
             </p>
             <p className="mt-3 text-sm text-ink">
-              Informe este código ao garçom
+              Mostre este código ao garçom
             </p>
             <p
               aria-hidden="true"
