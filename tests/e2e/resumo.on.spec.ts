@@ -28,7 +28,7 @@ test("resumo semanal: prévia com link → página de confirmação → aprovar 
   }
   const card = page.getByTestId("resumo-email");
   await expect(card).toContainText("Esta conta não tem e-mail guardado");
-  await expect(card.getByRole("button", { name: "Enviar agora" })).toHaveCount(0);
+  await expect(card.getByRole("button", { name: "Enviar para meu e-mail agora" })).toHaveCount(0);
   await card.getByRole("button", { name: "Ver o e-mail desta semana" }).click();
   const panel = page.getByRole("dialog", { name: "O e-mail desta semana" });
   await expect(panel.getByTestId("resumo-previa")).toContainText("seu plano da semana está pronto para aprovar");

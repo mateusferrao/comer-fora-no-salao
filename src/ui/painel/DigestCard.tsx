@@ -34,7 +34,7 @@ export function DigestCard({ to, when, on }: { to: string | null; when: string; 
         Resumo por e-mail
       </h2>
       <p className="text-sm text-ink">
-        {!on ? "Resumo semanal desligado. " : to ? `Toda ${when} para ${to}. ` : "Esta conta não tem e-mail guardado: veja abaixo o e-mail que o dono recebe. "}
+        {!on ? "Resumo semanal desligado. " : to ? `Toda ${when} para ${to}. ` : "Esta conta não tem e-mail guardado: veja abaixo o e-mail do resumo. "}
         <Link href="/parceiro/salao/configuracoes?aba=avisos" className="font-semibold text-red-text underline">
           Avisos e automação
         </Link>
@@ -45,7 +45,7 @@ export function DigestCard({ to, when, on }: { to: string | null; when: string; 
         </Button>
         {to && (
           <Button variant="outline-portal" loading={busy === "enviar"} onClick={() => void call("enviar")}>
-            Enviar agora
+            Enviar para meu e-mail agora
           </Button>
         )}
       </div>
