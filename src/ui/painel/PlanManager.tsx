@@ -1,5 +1,6 @@
 "use client";
 
+import { StickyActions } from "../components/StickyActions";
 import { semIaMotivo } from "@/src/modules/planos/domain/sem-ia";
 import {
   inviteIssues,
@@ -367,7 +368,7 @@ export function PlanManager({ initial, explicaIa = false }: { initial: PlanView;
       )}
 
       {p && editable && (
-        <div className="flex flex-wrap gap-3">
+        <StickyActions justify="between">
           <button type="button" onClick={approve} disabled={v.generating || p.review?.status === "revisando"} aria-busy={busy === "aprovar" || undefined} aria-describedby={v.generating || p.review?.status === "revisando" ? "aprovar-espera" : undefined} className="min-h-11 rounded-xs bg-red-button px-6 text-sm font-semibold text-white hover:brightness-95 disabled:opacity-60">
             {busy === "aprovar" ? "Aprovando…" : "Aprovar plano"}
           </button>
@@ -379,7 +380,7 @@ export function PlanManager({ initial, explicaIa = false }: { initial: PlanView;
           <button type="button" onClick={() => setDiscarding((x) => !x)} className="min-h-11 rounded-xs border border-border bg-white px-5 text-sm font-semibold text-ink">
             Descartar
           </button>
-        </div>
+        </StickyActions>
       )}
       {discarding && (
         <fieldset className="flex flex-col gap-2 rounded-sm border border-border bg-white p-4">

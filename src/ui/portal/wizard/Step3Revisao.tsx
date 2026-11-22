@@ -1,5 +1,6 @@
 "use client";
 
+import { StickyActions } from "../../components/StickyActions";
 import { Select } from "../../components/Select";
 import { useEffect, useState } from "react";
 import Link from "next/link";
@@ -177,16 +178,19 @@ export function Step3Revisao({ extractionId, extraction, initial, manual = false
               onChange={setBand}
             />
           </div>
-          {error && (
-            <p role="alert" className="text-sm font-medium text-red-text">
-              {error}
-            </p>
-          )}
-          <div className="flex justify-end">
+          <StickyActions
+            message={
+              error && (
+                <p role="alert" className="text-sm font-medium text-red-text">
+                  {error}
+                </p>
+              )
+            }
+          >
             <Button variant="primary-portal" loading={busy} onClick={submit}>
               Continuar
             </Button>
-          </div>
+          </StickyActions>
         </>
       )}
     </div>

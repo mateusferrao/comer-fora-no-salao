@@ -1,5 +1,6 @@
 "use client";
 
+import { StickyActions } from "../../components/StickyActions";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { describeOffer, type Offer } from "@/src/modules/beneficios/domain/offers";
@@ -165,19 +166,23 @@ export function Step5Resumo({ view, slug, todayPlus30 }: { view: PackageView; sl
         cada 10 clientes); os outros formam o grupo de controle que mede o
         resultado.
       </p>
-      {error && (
-        <p role="alert" className="text-sm font-medium text-red-text">
-          {error}
-        </p>
-      )}
-      <div className="flex flex-wrap justify-between gap-3">
+      <StickyActions
+        justify="between"
+        message={
+          error && (
+            <p role="alert" className="text-sm font-medium text-red-text">
+              {error}
+            </p>
+          )
+        }
+      >
         <Link href="/parceiro/salao/ativar/4" className="inline-flex min-h-11 items-center rounded-xs border border-red-text px-5 text-sm font-semibold text-red-text">
           Voltar e ajustar
         </Link>
         <Button variant="primary-portal" loading={busy} onClick={activate}>
           Ativar Comer Fora no salão
         </Button>
-      </div>
+      </StickyActions>
     </div>
   );
 }

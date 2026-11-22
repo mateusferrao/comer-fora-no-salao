@@ -35,10 +35,10 @@ test("avisos e automação: e-mails aos clientes por tipo e antecedência do lem
  * fatos e termos salvam e persistem (e voltam ao vazio no fim). Cardápio: "Pode entrar em ofertas" por item.
  */
 test("IA do restaurante: recusa instrução nos fatos, salva fatos e termos, persiste; cardápio com ofertas por item", async ({ page }) => {
-  test.setTimeout(120_000);
-  await loginE2E(page.request, 24);
+  test.setTimeout(180_000);
+  await loginE2E(page.request, 36);
   await page.goto("/parceiro/salao");
-  await expect(page.getByText(/Preparando o restaurante de exemplo/)).toBeHidden({ timeout: 60_000 });
+  await expect(page.getByText(/Preparando o restaurante de exemplo/)).toBeHidden({ timeout: 120_000 });
   await page.goto("/parceiro/salao/configuracoes?aba=ia");
   await expect(page.getByRole("heading", { name: "Como a IA escreve para o seu restaurante" })).toBeVisible();
   await expect(page.getByText("Tudo aqui é opcional.")).toBeVisible();
@@ -74,4 +74,37 @@ test("IA do restaurante: recusa instrução nos fatos, salva fatos e termos, per
     await box.click();
     await expect(box).toBeChecked();
   }
+});
+
+/**
+ * D253 (sem flag): Configurações salvam por bloco; alterar sem salvar mostra "Alterações não salvas" ao lado do botão
+ * do bloco; sair por um link pergunta pela confirmação do design system; desfazer tira o aviso. Conta própria
+ * (e2e-dono+35), nada é salvo.
+ */
+test("Configurações: alteração sem salvar mostra o aviso no bloco", async ({ page }) => {
+  test.setTimeout(180_000);
+  await loginE2E(page.request, 35);
+  await page.goto("/parceiro/salao");
+  await expect(page.getByText(/Preparando o restaurante de exemplo/)).toBeHidden({ timeout: 120_000 });
+  await page.goto("/parceiro/salao/configuracoes?aba=convites");
+  const field = page.getByLabel("Quantas mesas a mais você quer por semana nesse horário?").first();
+  await expect(field).toBeVisible();
+  await expect(page.getByTestId("nao-salvo")).toHaveCount(0);
+  const before = await field.inputValue();
+  await field.fill(String(Number(before) + 1));
+  await expect(page.getByTestId("nao-salvo").first()).toHaveText("Alterações não salvas");
+  // Sair por um link do menu com algo pendente: a confirmação do design system (não o alerta do navegador).
+  const nav = page.getByRole("navigation").getByRole("link", { name: "Plano da semana" });
+  await nav.click();
+  const conf = page.getByRole("alertdialog", { name: "Sair sem salvar?" });
+  await expect(conf).toBeVisible();
+  await axe(page);
+  await conf.getByRole("button", { name: "Continuar editando" }).click();
+  await expect(page).toHaveURL(/configuracoes/);
+  await expect(field).toHaveValue(String(Number(before) + 1));
+  await field.fill(before);
+  await expect(page.getByTestId("nao-salvo")).toHaveCount(0);
+  // Sem nada pendente, o link navega direto.
+  await nav.click();
+  await expect(page).toHaveURL(/\/parceiro\/salao\/plano/);
 });

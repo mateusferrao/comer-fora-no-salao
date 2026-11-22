@@ -2,6 +2,7 @@
 
 import { Checkbox } from "../components/Checkbox";
 import { confirmDialog } from "../components/ConfirmDialog";
+import { UnsavedHint, useUnsavedGuard } from "../components/Unsaved";
 import {
   inviteIssues,
   reasonMessage,
@@ -179,10 +180,11 @@ function OfferTab({ title, note, role, value, menu }: { title: string; note: str
         Agora: <strong>{gain}</strong>
       </p>
       <OfferEditor label={title} value={o} menu={menu} onChange={setO} />
-      <div className="flex items-center gap-3">
+      <div className="flex flex-wrap items-center gap-3">
         <Button variant="primary-portal" loading={busy === role} onClick={() => save(role, { acao: "oferta", role, offer: o })}>
           Salvar
         </Button>
+        <UnsavedHint dirty={!!value && JSON.stringify(o) !== JSON.stringify(value)} />
         <Msg k={role} />
       </div>
     </section>
@@ -303,6 +305,7 @@ function SlotCard({ s, menu, canRemove }: { s: SettingsView["slots"][number]; me
           >
             Salvar horário
           </Button>
+          <UnsavedHint dirty={JSON.stringify(f) !== JSON.stringify({ days: s.days, startMin: s.startMin, endMin: s.endMin, intensity: s.intensity, extraTables: s.extraTables })} />
           {canRemove && (
             <button
               type="button"
@@ -375,6 +378,7 @@ function SlotCard({ s, menu, canRemove }: { s: SettingsView["slots"][number]; me
           >
             Salvar convite
           </Button>
+          <UnsavedHint dirty={textChanged || cap !== (s.weeklyCap ?? s.extraTables * 4) || (!!s.offer && JSON.stringify(o) !== JSON.stringify(s.offer))} />
           <Msg k="convite" />
         </div>
       </div>
@@ -386,6 +390,13 @@ function MenuTab({ v }: { v: SettingsView }) {
   const { save, busy, Msg } = useSaver();
   const [rows, setRows] = useState(v.menu.map((m) => ({ ...m, preco: reais(m.priceCents) })));
   const [novo, setNovo] = useState({ name: "", preco: "", category: "prato" as MenuCategory });
+  // D253: linha alterada e não salva → "Salvar" cheio; sair da página pergunta antes.
+  const orig = new Map(v.menu.map((m) => [m.id, m]));
+  const rowDirty = (r: (typeof rows)[number]) => {
+    const m = orig.get(r.id);
+    return !!m && (r.name !== m.name || r.category !== m.category || cents(r.preco) !== m.priceCents);
+  };
+  useUnsavedGuard(rows.some(rowDirty));
   return (
     <div className="flex flex-col gap-4 py-4">
       <div className="relative overflow-x-auto no-scrollbar rounded-sm border border-border">
@@ -442,7 +453,7 @@ function MenuTab({ v }: { v: SettingsView }) {
                 <td className="px-2 py-1">
                   {/* Ajuste de 21/11 (D247): Salvar e Excluir lado a lado; excluir como ícone de lixeira com nome acessível. */}
                   <div className="flex flex-nowrap items-center justify-end gap-1">
-                    <Button variant="outline-portal" loading={busy === `item-${r.id}`} onClick={() => save(`item-${r.id}`, { acao: "item_editar", itemId: r.id, name: r.name, priceCents: cents(r.preco) ?? 0, category: r.category }, "Item salvo")}>
+                    <Button variant={rowDirty(r) ? "primary-portal" : "outline-portal"} aria-label={rowDirty(r) ? `Salvar ${r.name} (alterações não salvas)` : undefined} loading={busy === `item-${r.id}`} onClick={() => save(`item-${r.id}`, { acao: "item_editar", itemId: r.id, name: r.name, priceCents: cents(r.preco) ?? 0, category: r.category }, "Item salvo")}>
                       Salvar
                     </Button>
                     {!r.inUse && (

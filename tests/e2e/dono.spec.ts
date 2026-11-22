@@ -133,6 +133,8 @@ test("assistente completo com exemplo: salão pré-preenchido → revisão → p
   await expect(page.getByRole("heading", { name: "Pacote proposto" })).toBeVisible();
   await expect(page.getByText(PROD ? /Escolhido pela IA|Sugestão automática \(sem IA\)/ : "Sugestão automática (sem IA)")).toBeVisible({ timeout: 60_000 });
   await expect(page.getByRole("heading", { name: /Convite de volta · / })).toHaveCount(2);
+  // D253: a ação do passo fica fixa no rodapé — visível sem rolar até o fim.
+  await expect(page.getByRole("button", { name: "Revisar e ativar" })).toBeInViewport();
   await axe(page);
   await page.getByRole("button", { name: "Ver outras opções" }).first().click();
   const panel = page.getByRole("dialog");

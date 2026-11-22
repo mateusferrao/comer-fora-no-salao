@@ -1,5 +1,6 @@
 "use client";
 
+import { StickyActions } from "../components/StickyActions";
 import { Select } from "../components/Select";
 import Link from "next/link";
 import { useState } from "react";
@@ -132,16 +133,19 @@ export function NotifySettingsTab({ view, flags }: { view: NotifyView; flags: { 
         />
       </section>
 
-      <div className="flex items-center gap-3">
+      <StickyActions
+        message={
+          msg && (
+            <p role="status" className={`text-sm ${msg.ok ? "text-ink" : "font-medium text-red-text"}`}>
+              {msg.text}
+            </p>
+          )
+        }
+      >
         <Button variant="primary-portal" loading={busy} onClick={() => void save()}>
           Salvar
         </Button>
-        {msg && (
-          <p role="status" className={`text-sm ${msg.ok ? "text-ink" : "font-medium text-red-text"}`}>
-            {msg.text}
-          </p>
-        )}
-      </div>
+      </StickyActions>
     </div>
   );
 }

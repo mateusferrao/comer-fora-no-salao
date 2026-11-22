@@ -1,5 +1,6 @@
 "use client";
 
+import { StickyActions } from "../../components/StickyActions";
 import { confirmDialog } from "../../components/ConfirmDialog";
 import {
   INTENSITY_PHRASE,
@@ -371,12 +372,16 @@ function PackageEditor(p: {
         );
       })}
 
-      {p.error && (
-        <p role="alert" className="text-sm font-medium text-red-text">
-          {p.error}
-        </p>
-      )}
-      <div className="flex flex-wrap justify-between gap-3">
+      <StickyActions
+        justify="between"
+        message={
+          p.error && (
+            <p role="alert" className="text-sm font-medium text-red-text">
+              {p.error}
+            </p>
+          )
+        }
+      >
         <Button variant="outline-portal" onClick={p.onRegenerate}>
           Gerar de novo
         </Button>
@@ -403,7 +408,7 @@ function PackageEditor(p: {
         >
           Revisar e ativar
         </Button>
-      </div>
+      </StickyActions>
     </div>
   );
 }

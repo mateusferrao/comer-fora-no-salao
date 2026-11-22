@@ -7,7 +7,7 @@ import { gatewayFor } from "@/src/modules/ia/gateway-factory";
 import { resetDb } from "./helpers/db";
 
 const NOW = new Date("2026-11-21T18:00:00Z");
-const env = { OPENROUTER_KEY_PUBLIC: "sk-or-teste-ficticia", OPENROUTER_KEY_DEMO: "sk-or-demo-ficticia" } as NodeJS.ProcessEnv;
+const env = { OPENROUTER_KEY_PUBLIC: "sk-or-teste-ficticia", OPENROUTER_KEY_DEMO: "sk-or-demo-ficticia" } as unknown as NodeJS.ProcessEnv;
 
 describe("teto diário da chave pública (D85) e a flag ia_sem_teto (D252)", () => {
   beforeEach(async () => {
