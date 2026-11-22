@@ -67,7 +67,7 @@ flowchart LR
 - **Documentação:** [como ler](docs/README.md) · [decisões principais](docs/decisoes-principais.md) · [arquitetura](docs/arquitetura.md) · [IA no produto](docs/ia-no-produto.md) · [como foi construído com IA](docs/processo-com-ia.md)
 
 ## Como avaliar em 5 minutos
-1. Abra o **link do avaliador** (no e-mail da entrega). Você entra numa conta própria com a **Cantina Nonna Lúcia**, um restaurante de exemplo com 60 dias de histórico gerado. A conta fica pronta em ~10 s.
+1. Abra o **link do avaliador** (no e-mail da entrega) e clique em **"Entrar no Portal"**, sem e-mail nem senha. O mesmo link serve para todos os avaliadores: cada pessoa ganha uma conta própria com uma cópia da **Cantina Nonna Lúcia**, um restaurante de exemplo com 60 dias de histórico gerado, pronta em ~10 s.
 2. **Visão geral:** a margem a mais em R$ (com intervalo), os clientes novos vindos do salão e as metas da semana. O histórico desse restaurante é **gerado**, com o efeito do convite fixado em +0,2 visita por cliente: a tela testa a medida, não prova o efeito.
 3. **Plano da semana:** a oferta sugerida para cada horário vazio, "Por que esta oferta?" e "O que aprendemos".
 4. **Assistente** (botão no menu): toque na sugestão "Trocar a oferta do convite…", veja o cartão "antes → depois" e toque em **Aplicar**.
