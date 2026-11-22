@@ -404,7 +404,7 @@ function RecadoEditor({ initial }: { initial: string }) {
             setBusy(true);
             const r = await call("/api/parceiro/kit/recado", "PUT", { value: v });
             setBusy(false);
-            setMsg(r.ok ? ((r.data.warnings as string[] | undefined)?.includes("convite") ? "Salvo, com aviso: dia, horário ou item do convite atrapalham a comparação com quem não recebe convite." : (r.data.warnings as string[] | undefined)?.length ? "Salvo, com aviso: cita número ou promessa." : "Salvo.") : "Não dá para usar este recado (dados pessoais, HTML ou longo demais).");
+            setMsg(r.ok ? ((r.data.warnings as string[] | undefined)?.includes("convite") ? "Salvo, com aviso: dia, horário ou item do convite atrapalham a comparação com quem não recebe convite." : (r.data.warnings as string[] | undefined)?.length ? "Salvo, com aviso: cita número ou promessa." : "Salvo.") : "Não dá para usar este recado. Tire e-mail, telefone e sinais como < > e use até 120 caracteres.");
           }}
         >
           Salvar recado

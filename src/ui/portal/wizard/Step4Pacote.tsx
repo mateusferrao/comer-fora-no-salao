@@ -87,7 +87,7 @@ export function Step4Pacote({ explicaIa = false }: { explicaIa?: boolean } = {})
       setTimeout(load, 2000);
     } else {
       setState(v ? "pronto" : "erro");
-      setError(r.status === 429 ? "Você já gerou o pacote muitas vezes hoje. Ajuste a proposta atual." : "Não conseguimos montar o pacote agora. Tente de novo.");
+      setError(r.status === 429 ? "Você já gerou o pacote muitas vezes hoje. Ajuste o pacote atual." : "Não conseguimos montar o pacote agora. Tente de novo.");
     }
   }
 
@@ -134,8 +134,8 @@ export function Step4Pacote({ explicaIa = false }: { explicaIa?: boolean } = {})
     if (
       changed &&
       !(await confirmDialog({
-        title: "Gerar a proposta de novo?",
-        body: "A proposta atual e os seus ajustes são substituídos por uma nova.",
+        title: "Gerar o pacote de novo?",
+        body: "O pacote atual e os seus ajustes são substituídos por um novo.",
         confirmLabel: "Gerar de novo",
       }))
     )

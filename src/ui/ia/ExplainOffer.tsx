@@ -142,7 +142,7 @@ function Explanation({ e }: { e: OfferExplanation }) {
             </li>
             {e.passos.length > 0 && (
               <li>
-                Passos do agente:
+                Passos da IA:
                 <ol className="ml-5 list-decimal" data-testid="passos-agente">
                   {e.passos.map((s, i) => (
                     <li key={i}>
