@@ -295,7 +295,7 @@ export function KitManager({ initial, restaurantName, qrs, billHolder = false }:
         </section>
       )}
 
-      <RecadoEditor initial={kit.recado ?? ""} pending={kit.recadoPendente} />
+      <RecadoEditor initial={kit.recado ?? ""} pending={kit.recadoPendente} review={kit.recadoRevisao} />
       {msg && <p role="alert" className="text-sm font-medium text-red-text">{msg}</p>}
 
       {editing && byLabel(editing) && (
@@ -385,7 +385,7 @@ function VersionEditor({ label, texts, onClose, onSaved }: { label: "A" | "B"; t
   );
 }
 
-function RecadoEditor({ initial, pending }: { initial: string; pending: boolean }) {
+function RecadoEditor({ initial, pending, review }: { initial: string; pending: boolean; review: string | null | undefined }) {
   const [v, setV] = useState(initial);
   const [msg, setMsg] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -395,7 +395,15 @@ function RecadoEditor({ initial, pending }: { initial: string; pending: boolean 
         Recado do restaurante
       </h2>
       <p className="text-sm text-ink-muted">Aparece no card do benefício no app, para todos os clientes.</p>
-      {pending && <p className="text-sm text-ink">Sugestão da IA: só vai para o app quando você aprovar o display ou o cartaz, ou salvar o recado aqui.</p>}
+      {pending && (
+        <p className="text-sm text-ink">
+          {review === "atencao"
+            ? "Sugestão da IA com aviso da conferência: só vai para o app se você salvar o recado aqui."
+            : review === "revisando"
+              ? "Sugestão da IA em conferência: vai para o app quando a conferência terminar sem aviso e o display ou o cartaz estiver aprovado. Você também pode salvar o recado aqui."
+              : "Sugestão da IA: só vai para o app quando você aprovar o display ou o cartaz, ou salvar o recado aqui."}
+        </p>
+      )}
       <textarea aria-labelledby="recado" className="min-h-16 rounded-md border border-border p-3 text-base" maxLength={140} value={v} onChange={(e) => setV(e.target.value)} />
       <div className="flex items-center gap-3">
         <Button
