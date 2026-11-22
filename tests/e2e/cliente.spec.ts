@@ -13,6 +13,9 @@ const BARRA = "Protótipo de case · não é produto oficial do iFood";
 test.use({ viewport: { width: 390, height: 844 } });
 
 async function axe(page: Page) {
+  // Animações de entrada (ex.: o cartão do convite surge com opacidade): o axe mede contraste no meio do fade e
+  // reprova um texto que, parado, passa. Espera as animações finitas terminarem (as infinitas, como o indicador de carregando, ficam de fora).
+  await page.evaluate(() => Promise.all(document.getAnimations().filter((a) => a.effect?.getComputedTiming().iterations !== Infinity).map((a) => a.finished.catch(() => null))));
   const r = await new AxeBuilder({ page }).analyze();
   expect(r.violations.map((v) => `${v.id}: ${v.nodes.map((n) => n.target.join(" ")).join(", ")}`)).toEqual([]);
 }
