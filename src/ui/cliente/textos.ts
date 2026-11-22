@@ -14,7 +14,7 @@ export const TXT = {
   // D237: o restaurante vê o contato completo; o consentimento diz isso.
   consentimento: (restaurante: string) =>
     `Aceito que o restaurante ${restaurante} veja meu nome, e-mail e telefone (se eu informar) e registre minhas visitas. O assistente de IA do restaurante pode ver meu primeiro nome e minhas visitas, nunca meu contato.`,
-  primeiraVisitaUsada: "Você já usou o benefício da 1ª visita neste restaurante.",
+  primeiraVisitaUsada: "Você já usou o benefício de 1ª visita neste restaurante.",
   comoUsarConvite: "Vale só nos dias e horários acima. Ao chegar, faça check-in de novo e mostre ao garçom o código do benefício.",
   /** Interruptor `opt_app` (S9): libera os convites mandados depois da visita (reativação); o da mesa aparece sempre. */
   convitesOutrasDatas: "Convites para outras datas",

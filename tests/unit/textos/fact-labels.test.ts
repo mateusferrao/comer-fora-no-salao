@@ -24,7 +24,7 @@ describe("rótulos dos fatos (S5.3; S9: auditoria do Portal 1.6)", () => {
     expect(factLabel("segmento_frequente")).toBe("Clientes frequentes (3 ou mais visitas em 30 dias)");
     expect(factLabel("turno_pouco_1")).toBe("Horário com poucos check-ins (não marcado como vazio)");
     expect(factLabel("desconto_maximo_pct")).toBe("Desconto máximo permitido");
-    expect(factLabel("convites_teto_A", { A: "ter a qui · 15h–18h" })).toBe("ter a qui · 15h–18h: limite semanal de convites");
+    expect(factLabel("convites_teto_A", { A: "ter a qui · 15h–18h" })).toBe("ter a qui · 15h–18h: teto semanal de convites");
   });
 
   it("chave desconhecida continua aparecendo (com espaços)", () => {

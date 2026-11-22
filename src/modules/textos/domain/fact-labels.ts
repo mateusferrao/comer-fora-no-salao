@@ -19,7 +19,7 @@ export function factLabel(key: string, slotNames: Readonly<Record<string, string
   m = /^convites_([A-H])_(emitidos|usados_pct)$/.exec(key);
   if (m) return m[2] === "emitidos" ? `${slot(m[1]!)}: convites entregues nos últimos 30 dias` : `${slot(m[1]!)}: % dos convites usados (últimos 30 dias)`;
   m = /^convites_teto_([A-H])$/.exec(key);
-  if (m) return `${slot(m[1]!)}: limite semanal de convites`;
+  if (m) return `${slot(m[1]!)}: teto semanal de convites`;
   if (/^turno_pouco_\d+$/.test(key)) return "Horário com poucos check-ins (não marcado como vazio)";
   m = /^checkins_([a-z]+)_([a-z]+)$/.exec(key);
   if (m && key !== "checkins_30d") return `Check-ins à ${m[1]}, ${DAYS[m[2]!] ?? m[2]} (30 dias)`;

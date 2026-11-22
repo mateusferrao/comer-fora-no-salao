@@ -333,7 +333,7 @@ function SlotCard({ s, menu, canRemove }: { s: SettingsView["slots"][number]; me
       <div className="flex flex-col gap-3 border-t border-divider pt-3">
         <p className="text-sm font-semibold text-ink">Convite de volta</p>
         <OfferEditor label={`Oferta do convite de ${s.label}`} value={o} menu={menu} onChange={setO} />
-        <Field className="w-48" label="Teto de convites por semana" inputMode="numeric" {...capField} />
+        <Field className="w-48" label="Teto semanal de convites" inputMode="numeric" {...capField} />
         <label className="flex flex-col gap-1.5 text-sm font-medium text-ink">
           Texto do convite (o cliente vê no app)
           <textarea
