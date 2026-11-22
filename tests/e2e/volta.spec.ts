@@ -37,7 +37,7 @@ test("Avançar 1 dia (Bastidores) → novo check-in → código do convite; o cl
   expect(back.outcome).toBe("volta_com_convite");
   expect(back.codes.map((c) => c.type)).toContain("convite");
   await page.goto(`/r/${E2E}/checkin`);
-  await expect(page.getByText("Informe este código ao garçom").first()).toBeVisible();
+  await expect(page.getByText("Mostre este código ao garçom").first()).toBeVisible();
   await axe(page);
   await ctx.close();
 });

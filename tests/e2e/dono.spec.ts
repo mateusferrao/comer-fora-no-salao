@@ -54,11 +54,11 @@ test("conta nova ganha a própria vitrine (60 dias): check-in de cliente nela e 
   const code = ((await ck.json()) as { codes: Array<{ code: string; type: string }> }).codes.find((c) => c.type === "primeira_visita")!.code;
   await ctx.close();
   await page.goto("/parceiro/salao/validar");
-  await page.getByLabel("Código do cliente").fill(code);
-  await page.getByRole("button", { name: "Consultar" }).click();
+  await page.getByLabel("Código do benefício").fill(code);
+  await page.getByRole("button", { name: "Conferir código" }).click();
   await expect(page.getByRole("region", { name: "Código encontrado" })).toContainText("Dani Teste");
-  await page.getByRole("button", { name: "Confirmar" }).click();
-  await expect(page.getByText(/Código validado ✓/)).toBeVisible();
+  await page.getByRole("button", { name: "Confirmar e entregar" }).click();
+  await expect(page.getByText(/Confirmado às \d{2}:\d{2}\. Pode entregar:/)).toBeVisible();
 });
 
 test("isolamento: a conta 2 não abre nem valida nada da conta 1", async ({ page, browser }) => {
@@ -202,21 +202,21 @@ test("assistente completo com exemplo: salão pré-preenchido → revisão → p
 
   // Garçom valida no Portal.
   await page.goto("/parceiro/salao/validar");
-  await page.getByLabel("Código do cliente").fill(code);
-  await page.getByRole("button", { name: "Consultar" }).click();
+  await page.getByLabel("Código do benefício").fill(code);
+  await page.getByRole("button", { name: "Conferir código" }).click();
   const found = page.getByRole("region", { name: "Código encontrado" });
   await expect(found).toContainText("1ª visita");
   await expect(found).toContainText("Bia Teste");
   await axe(page);
-  await found.getByRole("button", { name: "Confirmar" }).click();
-  await expect(page.getByText(/Código validado ✓ às \d{2}:\d{2}/)).toBeVisible();
+  await found.getByRole("button", { name: "Confirmar e entregar" }).click();
+  await expect(page.getByText(/Confirmado às \d{2}:\d{2}\. Pode entregar:/)).toBeVisible();
   await page.getByRole("button", { name: "Validar outro código" }).click();
-  await page.getByLabel("Código do cliente").fill(code);
-  await page.getByRole("button", { name: "Consultar" }).click();
+  await page.getByLabel("Código do benefício").fill(code);
+  await page.getByRole("button", { name: "Conferir código" }).click();
   await expect(page.getByText(/Este código já foi usado às/)).toBeVisible();
   await page.getByRole("button", { name: "Validar outro código" }).click();
-  await page.getByLabel("Código do cliente").fill("ZZZZZZ");
-  await page.getByRole("button", { name: "Consultar" }).click();
+  await page.getByLabel("Código do benefício").fill("ZZZZZZ");
+  await page.getByRole("button", { name: "Conferir código" }).click();
   await expect(page.getByText("Código não encontrado. Confira as letras e números com o cliente.")).toBeVisible();
 });
 

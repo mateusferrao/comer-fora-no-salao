@@ -22,7 +22,7 @@ test("cliente: Seus dados na Jornada (nome e telefone, validação no campo, per
   await expect(sheet.getByLabel("Telefone (opcional)")).toHaveValue("(00) 91234-1420");
   await sheet.getByLabel("Nome").fill("Dados Corrigidos");
   await sheet.getByRole("button", { name: "Salvar" }).click();
-  await expect(sheet.getByText("Dados salvos ✓")).toBeVisible();
+  await expect(sheet.getByText("Dados salvos.")).toBeVisible();
   await axe(page);
   await page.reload();
   await page.getByRole("button", { name: "Configurações da conta" }).click();
@@ -50,7 +50,7 @@ test("cliente: Entrar com e-mail na Jornada, sem check-in, e Seus dados", async 
   await sheet.getByRole("button", { name: "Enviar código" }).click();
   const { codigo } = (await (await sent).json()) as { codigo: string };
   const code = page.getByRole("dialog", { name: "Digite o código" });
-  await code.getByLabel("Código").fill(codigo);
+  await code.getByLabel("Código de acesso").fill(codigo);
   await code.getByRole("button", { name: "Entrar" }).click();
   await expect(page.getByRole("heading", { name: "Olá, Cliente" })).toBeVisible();
   // Depois do reload, o clique só vale com a página interativa (em produção, a hidratação demora mais).
@@ -73,7 +73,7 @@ test("cliente: e-mail sem cadastro não entra pela Jornada", async ({ page }) =>
   await sheet.getByRole("button", { name: "Enviar código" }).click();
   const { codigo } = (await (await sent).json()) as { codigo: string };
   const code = page.getByRole("dialog", { name: "Digite o código" });
-  await code.getByLabel("Código").fill(codigo);
+  await code.getByLabel("Código de acesso").fill(codigo);
   await code.getByRole("button", { name: "Entrar" }).click();
-  await expect(code.getByText("Ainda não há cadastro de cliente com este e-mail. Faça o check-in num restaurante para se cadastrar.")).toBeVisible();
+  await expect(code.getByText("Este e-mail ainda não fez check-in. O cadastro começa no 1º check-in num restaurante.")).toBeVisible();
 });

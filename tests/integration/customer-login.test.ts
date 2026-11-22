@@ -54,7 +54,10 @@ describe("login do cliente por e-mail + código (S4, D154, D173)", () => {
     expect(res).toEqual({ ok: true, email: "ana@exemplo.com" });
     const msg = outbox().at(-1)!;
     expect(msg.to).toBe("ana@exemplo.com");
-    expect(msg.subject).toMatch(/^Seu código: \d{6} · Cantina Teste$/);
+    expect(msg.subject).toMatch(/^Seu código de acesso: \d{6} · Cantina Teste$/);
+    // S9: o código de acesso não é o do garçom.
+    expect(msg.text).toContain("Não mostre este código ao garçom.");
+    expect(msg.text).not.toContain("Comer Fora no Salão");
     expect(msg.text).toContain("Protótipo de case · não é produto oficial do iFood");
     expect(msg.html).not.toMatch(/<a |<img /);
     const [row] = await getDb().select().from(customerLoginCodes);
@@ -207,7 +210,7 @@ describe("login do cliente por e-mail + código (S4, D154, D173)", () => {
     const jornada = (email: string) =>
       requestCustomerCode(getDb(), { restaurantId: null, restaurantName: null, email, ip: "10.0.0.2", now: NOW, sender: memorySender, env, e2eToken: null, emailLogin: true });
     expect(await jornada("ana@exemplo.com")).toMatchObject({ ok: true });
-    expect(outbox().at(-1)!.subject).toMatch(/· Comer Fora no Salão$/);
+    expect(outbox().at(-1)!.subject).toMatch(/^Seu código de acesso: \d{6} · Comer Fora$/);
     expect(outbox().at(-1)!.text).not.toMatch(/check-in/);
     const code = lastCode();
     expect(await confirmCustomerCode(getDb(), { restaurantId: null, email: "ana@exemplo.com", code, ip: "10.0.0.2", now: NOW, createIfMissing: false })).toMatchObject({ ok: true, customerId: v.customerId, created: false });

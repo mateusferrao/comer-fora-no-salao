@@ -43,7 +43,7 @@ describe("check-in (Postgres real)", () => {
     expect(v.outcome).toBe("primeira_visita");
     expect(v.stamps).toBe(1);
     expect(v.codes).toHaveLength(1);
-    expect(v.codes[0]).toMatchObject({ type: "primeira_visita", title: "Doce grátis", itemName: "Panna cotta" });
+    expect(v.codes[0]).toMatchObject({ type: "primeira_visita", title: "Panna cotta grátis", itemName: "Panna cotta" });
     expect(v.codes[0]!.code).toMatch(/^[ABCDEFGHJKMNPQRSTUVWXYZ2-9]{6}$/);
     expect(v.invite).toMatchObject({ state: "novo", days: [2, 3, 4], startMin: 900, endMin: 1080, untilDay: "2026-12-23" });
     expect(v.invite!.offer).toMatchObject({ title: "Doce grátis", itemName: "Cannoli", gain: "Cannoli grátis" });
@@ -133,7 +133,7 @@ describe("check-in (Postgres real)", () => {
     const lembrete = await checkin(r.restaurantId, c, fixedClock(TER_20));
     expect(lembrete.invite!.offer).toMatchObject({ itemName: "Cannoli" });
     const volta = await checkin(r.restaurantId, c, fixedClock("2026-11-25T19:10:00Z"));
-    expect(volta.codes[0]).toMatchObject({ type: "convite", title: "Doce grátis", itemName: "Cannoli" });
+    expect(volta.codes[0]).toMatchObject({ type: "convite", title: "Cannoli grátis", itemName: "Cannoli" });
     expect(volta.invite!.offer).toMatchObject({ itemName: "Cannoli" });
     const [code] = await getDb().select().from(codes).where(and(eq(codes.customerId, c), eq(codes.type, "convite")));
     expect(code!.benefitVersionId).toBe(old!.id);

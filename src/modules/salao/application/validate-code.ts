@@ -42,12 +42,13 @@ async function details(ex: Executor, row: CodeRow): Promise<CodeDetails> {
   const version = await loadVersion(ex, row.benefitVersionId);
   const menu = item ? [{ id: item.id, name: item.name, category: item.category as never, priceCents: item.priceCents }] : [];
   const title = version ? describeOffer(version.offer, menu, row.type === "primeira_visita" ? "agora" : (row.type as "convite" | "recompensa")).gain : (item?.name ?? "Benefício");
-  let conditions = `${TYPE_LABEL[row.type as CodeType]} · vale hoje`;
+  // S9: o selo já diz o tipo; aqui, só quando vale (sem repetir o selo).
+  let conditions = "Vale hoje";
   if (row.type === "convite" && row.inviteId) {
     const [inv] = await ex.select({ slot: invites.slotSnapshot, expiresAt: invites.expiresAt, testValidDay: invites.testValidDay }).from(invites).where(eq(invites.id, row.inviteId));
-    if (inv) conditions = `Convite · válido ${slotLabel(inv.slot as Slot)} · até ${ddmm(daySP(inv.expiresAt))}${inv.testValidDay === row.validDay ? " · liberado hoje pelas ferramentas do avaliador" : ""}`;
+    if (inv) conditions = `Vale hoje · convite de ${slotLabel(inv.slot as Slot)}, até ${ddmm(daySP(inv.expiresAt))}${inv.testValidDay === row.validDay ? " · liberado hoje pelas Ferramentas do avaliador" : ""}`;
   }
-  if (row.type === "recompensa") conditions = "Recompensa da cartela (6 selos) · vale hoje";
+  if (row.type === "recompensa") conditions = "Vale hoje · 6 selos";
   return {
     code: row.code,
     type: row.type as CodeType,

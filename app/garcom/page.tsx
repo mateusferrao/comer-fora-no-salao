@@ -15,9 +15,8 @@ export default async function WaiterPage() {
   return (
     <main className="mx-auto flex max-w-xl flex-col gap-5 px-4 py-6 sm:px-8">
       <header>
-        <p className="text-sm font-semibold text-red-text">Link do garçom</p>
         <h1 className="text-2xl font-bold text-ink">{s ? `Validar código · ${s.restaurantName}` : "Validar código"}</h1>
-        {s && <p className="mt-1 text-sm text-ink-muted">Digite o código que o cliente mostra no app. O sistema reconhece se é 1ª visita, convite ou recompensa.</p>}
+        {s && <p className="mt-1 text-sm text-ink-muted">Digite o código do benefício que o cliente mostrar na tela. Aqui aparece na hora se é 1ª visita, convite ou cartela completa.</p>}
       </header>
       {s ? (
         <ValidateCode endpoint="/api/garcom/codigos" waiter />

@@ -24,6 +24,7 @@ import { PROTOTYPE_FOOTER } from "./customer-login";
 import { offerView } from "./views";
 import { agendaPath } from "./agenda";
 import { nextValidWindow } from "../domain/invite-window";
+import { inviteExtra } from "../domain/invite-text";
 import { emailDecision, parseEmailPrefs, type MessageKind, type SkipReason } from "../domain/email-prefs";
 import { parseNotifySettings } from "@/src/modules/config/domain/notify-settings";
 
@@ -36,57 +37,88 @@ export function unsubscribeToken(customerId: string, restaurantId: string): stri
 
 const esc = (s: string) => s.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]!);
 const ddmm = (day: string) => `${day.slice(8, 10)}/${day.slice(5, 7)}`;
+const cap = (t: string) => t.charAt(0).toUpperCase() + t.slice(1);
 
-export function inviteEmail(p: { restaurant: string; when: string; gain: string; message: string | null; untilDay: string; baseUrl: string; token: string; agendaUrl?: string | null; v2?: boolean }) {
-  // S5.2 (copy_v2): assunto e 1ª linha reescritos (o quando primeiro) + "Adicionar à agenda".
-  const verb = p.gain.startsWith("Leve 2") ? "e aproveite:" : "e ganhe";
-  const subject = p.v2 ? `${p.restaurant} guardou ${p.gain} para você` : `Seu convite: ${p.gain} · ${p.restaurant}`;
-  const first = p.v2 ? `Volte ${p.when} ${verb} ${p.gain}.` : `${p.restaurant} te convida para voltar ${p.when}: ${p.gain}.`;
+/**
+ * E-mail do convite (S9): diz por que a pessoa recebeu (o check-in e a data, ou a visita anterior), a validade com o
+ * 1º dia em que vale, e o link direto para o check-in no restaurante. O texto do dono que só repete a 1ª linha some.
+ */
+export function inviteEmail(p: {
+  restaurant: string;
+  when: string;
+  gain: string;
+  message: string | null;
+  untilDay: string;
+  baseUrl: string;
+  token: string;
+  agendaUrl?: string | null;
+  v2?: boolean;
+  slug: string;
+  kind: "convite_mesa" | "reativacao";
+  issuedDay: string;
+  firstDay?: string | null;
+}) {
+  // S5.2 (copy_v2): o quando primeiro + "Adicionar à agenda".
+  const leve = p.gain.startsWith("Leve 2");
+  const subject = p.v2 ? `${cap(p.when)}: ${p.gain} no restaurante ${p.restaurant}` : `Seu convite: ${p.gain} · ${p.restaurant}`;
+  const firstLead = p.v2 ? `Volte ${p.when} ${leve ? "e aproveite:" : "e ganhe"}` : `O restaurante ${p.restaurant} te convida para voltar ${p.when} ${leve ? "e aproveitar:" : "e ganhar"}`;
+  const why = p.kind === "convite_mesa" ? `Você fez check-in no restaurante ${p.restaurant} em ${ddmm(p.issuedDay)}.` : `Você recebeu este convite porque já fez check-in no restaurante ${p.restaurant}.`;
+  const extra = inviteExtra(p.message, p.gain);
+  const validity = p.firstDay ? `Vale de ${ddmm(p.firstDay)} até ${ddmm(p.untilDay)}, só nesses dias e horários.` : `Vale até ${ddmm(p.untilDay)}, só nesses dias e horários.`;
+  const how = "Ao chegar, faça check-in pelo link abaixo e mostre ao garçom o código do benefício.";
+  const checkinUrl = `${p.baseUrl}/r/${encodeURIComponent(p.slug)}`;
   const journey = `${p.baseUrl}/app/jornada`;
   const unsub = `${p.baseUrl}/cliente/descadastrar?t=${encodeURIComponent(p.token)}`;
   const agenda = p.v2 && p.agendaUrl ? p.agendaUrl : null;
   const lines = [
-    first,
-    ...(p.message ? ["", `"${p.message}"`] : []),
+    `${firstLead} ${p.gain}.`,
+    why,
+    ...(extra ? ["", `"${extra}"`] : []),
     "",
-    `Vale até ${ddmm(p.untilDay)}, só nesses dias e horários. Chegando ao restaurante, faça check-in no app e mostre ao garçom o código do benefício.`,
+    `${validity} ${how}`,
+    `Fazer check-in: ${checkinUrl}`,
     ...(agenda ? [`Adicionar à agenda: ${agenda}`] : []),
-    `Ver o convite: ${journey}`,
+    `Ver meu convite: ${journey}`,
     "",
     `Preferências de e-mail · Descadastrar: ${unsub}`,
     PROTOTYPE_FOOTER,
   ];
   const html = `<div style="font-family:Arial,sans-serif;font-size:15px;color:#151515">
-<p>${p.v2 ? `Volte ${esc(p.when)} ${verb} <strong>${esc(p.gain)}</strong>.` : `${esc(p.restaurant)} te convida para voltar ${esc(p.when)}: <strong>${esc(p.gain)}</strong>.`}</p>
-${p.message ? `<p><em>“${esc(p.message)}”</em></p>` : ""}
-<p>Vale até ${ddmm(p.untilDay)}, só nesses dias e horários. Chegando ao restaurante, faça check-in no app e mostre ao garçom o código do benefício.</p>
+<p>${esc(firstLead)} <strong>${esc(p.gain)}</strong>.<br>${esc(why)}</p>
+${extra ? `<p><em>“${esc(extra)}”</em></p>` : ""}
+<p>${esc(validity)} ${esc(how)}</p>
+<p><a href="${esc(checkinUrl)}">Fazer check-in</a></p>
 ${agenda ? `<p><a href="${esc(agenda)}">Adicionar à agenda</a></p>` : ""}
-<p><a href="${esc(journey)}">Ver o convite</a></p>
+<p><a href="${esc(journey)}">Ver meu convite</a></p>
 <p style="color:#666;font-size:12px"><a href="${esc(unsub)}">Preferências de e-mail · Descadastrar</a><br>${PROTOTYPE_FOOTER}</p>
 </div>`;
-  return { subject, text: lines.join("\n"), html };
+  return { subject: subject.replace(/[\r\n]+/g, " "), text: lines.join("\n"), html };
 }
 
 /** Lembrete no dia do convite (S6.1 — D189): 1 por convite, X h antes da janela. */
-export function reminderEmail(p: { restaurant: string; gain: string; startMin: number; endMin: number; baseUrl: string; token: string; agendaUrl?: string | null }) {
+export function reminderEmail(p: { restaurant: string; gain: string; startMin: number; endMin: number; baseUrl: string; token: string; agendaUrl?: string | null; slug: string }) {
   const hh = (m: number) => `${Math.floor(m / 60)}h${m % 60 ? String(m % 60).padStart(2, "0") : ""}`;
   const subject = `${p.restaurant} · hoje vale seu convite`.replace(/[\r\n]+/g, " ");
-  const first = `${p.restaurant} · hoje vale seu convite: ${p.gain}, das ${hh(p.startMin)} às ${hh(p.endMin)}. Faça check-in no salão para receber o código.`;
+  const first = `Seu convite vale hoje, das ${hh(p.startMin)} às ${hh(p.endMin)}, no restaurante ${p.restaurant}:`;
+  const how = "Ao chegar, faça check-in pelo link abaixo e mostre ao garçom o código do benefício.";
+  const checkinUrl = `${p.baseUrl}/r/${encodeURIComponent(p.slug)}`;
   const journey = `${p.baseUrl}/app/jornada`;
   const prefs = `${p.baseUrl}/cliente/descadastrar?t=${encodeURIComponent(p.token)}`;
   const lines = [
-    first,
+    `${first} ${p.gain}. ${how}`,
+    `Fazer check-in: ${checkinUrl}`,
     "",
     ...(p.agendaUrl ? [`Adicionar à agenda: ${p.agendaUrl}`] : []),
-    `Ver o convite: ${journey}`,
+    `Ver meu convite: ${journey}`,
     "",
     `Preferências de e-mail · Descadastrar: ${prefs}`,
     PROTOTYPE_FOOTER,
   ];
   const html = `<div style="font-family:Arial,sans-serif;font-size:15px;color:#151515">
-<p>${esc(p.restaurant)} · hoje vale seu convite: <strong>${esc(p.gain)}</strong>, das ${hh(p.startMin)} às ${hh(p.endMin)}. Faça check-in no salão para receber o código.</p>
+<p>${esc(first)} <strong>${esc(p.gain)}</strong>. ${esc(how)}</p>
+<p><a href="${esc(checkinUrl)}">Fazer check-in</a></p>
 ${p.agendaUrl ? `<p><a href="${esc(p.agendaUrl)}">Adicionar à agenda</a></p>` : ""}
-<p><a href="${esc(journey)}">Ver o convite</a></p>
+<p><a href="${esc(journey)}">Ver meu convite</a></p>
 <p style="color:#666;font-size:12px"><a href="${esc(prefs)}">Preferências de e-mail · Descadastrar</a><br>${PROTOTYPE_FOOTER}</p>
 </div>`;
   return { subject, text: lines.join("\n"), html };
@@ -150,11 +182,12 @@ export async function sendPendingInviteEmails(
       out.skipped++;
       continue;
     }
-    const agendaUrl = nextValidWindow({ slot, issuedDay: inv.issuedDay, expiresAt: inv.expiresAt, now: p.now }) ? `${p.baseUrl}${agendaPath(inv.id)}` : null;
+    const win = nextValidWindow({ slot, issuedDay: inv.issuedDay, expiresAt: inv.expiresAt, now: p.now });
+    const agendaUrl = win ? `${p.baseUrl}${agendaPath(inv.id)}` : null;
     const token = unsubscribeToken(m.customer_id, p.restaurantId);
     try {
       if (m.kind === "lembrete") {
-        await p.sender.send({ to: email, ...reminderEmail({ restaurant: ctx.restaurant.name, gain, startMin: slot.startMin, endMin: slot.endMin, baseUrl: p.baseUrl, token, agendaUrl: p.v2 ? agendaUrl : null }) });
+        await p.sender.send({ to: email, ...reminderEmail({ restaurant: ctx.restaurant.name, gain, startMin: slot.startMin, endMin: slot.endMin, baseUrl: p.baseUrl, token, agendaUrl: p.v2 ? agendaUrl : null, slug: ctx.restaurant.slug }) });
         out.sent++;
         continue;
       }
@@ -170,6 +203,10 @@ export async function sendPendingInviteEmails(
           token,
           v2: p.v2,
           agendaUrl,
+          slug: ctx.restaurant.slug,
+          kind: m.kind,
+          issuedDay: inv.issuedDay,
+          firstDay: win?.day ?? null,
         }),
       });
       out.sent++;

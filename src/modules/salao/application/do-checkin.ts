@@ -22,6 +22,7 @@ import { renderReferences } from "@/src/modules/textos/domain/references";
 import { slotPhrase } from "@/src/modules/beneficios/domain/slot-text";
 import { offerView, sanitizeCheckinView, type CheckinView, type CodeView, type InviteView } from "./views";
 import { nextValidWindow } from "../domain/invite-window";
+import { inviteExtra } from "../domain/invite-text";
 import { agendaPath } from "./agenda";
 
 export type DoCheckinInput = {
@@ -84,10 +85,12 @@ function inviteViewOf(
     endMin: inv.slot.endMin,
     untilDay: daySP(inv.expiresAt),
     offer,
-    message: inviteMessage(version, inv.slot, ctx, offer?.gain),
+    // S9: sem repetir a 1ª linha do cartão ("Volte {quando} e ganhe {oferta}"); fica só o que o dono acrescentou.
+    message: inviteExtra(inviteMessage(version, inv.slot, ctx, offer?.gain), offer?.gain),
     liberatedToday,
     agendaUrl: win && meta.inviteId ? agendaPath(meta.inviteId) : null,
     validToday: (win?.day === today) || liberatedToday,
+    firstDay: win?.day ?? null,
   };
 }
 
@@ -133,7 +136,8 @@ export async function todayView(ex: Executor, ctx: RestaurantContext, customerId
 function codeView(type: CodeType, code: string, ctx: RestaurantContext, itemId: string | null, inviteVersion: VersionedOffer | null = null): CodeView {
   const role = type === "primeira_visita" ? "agora" : type;
   const source = type === "primeira_visita" ? ctx.agora : type === "recompensa" ? ctx.recompensa : inviteVersion;
-  const titleFrom = source ? offerView(source.offer, ctx.menu, role)?.title : undefined;
+  // S9: o cupom do cliente usa o mesmo nome que o garçom vê ("Panna cotta grátis"), não o tipo ("Doce grátis").
+  const titleFrom = source ? offerView(source.offer, ctx.menu, role)?.gain : undefined;
   const item = ctx.menu.find((i) => i.id === itemId)?.name ?? "";
   const titles: Record<CodeType, string> = { primeira_visita: "Benefício de 1ª visita", convite: "Seu convite", recompensa: "Recompensa da cartela" };
   return { type, code, title: titleFrom ?? titles[type], itemName: item };

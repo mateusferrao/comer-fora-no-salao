@@ -65,7 +65,8 @@ export function MyData({ initial, onBack }: { initial: MyDataView; onBack: () =>
       />
       <div className="text-sm">
         <p className="font-medium text-ink">E-mail</p>
-        <p className="text-ink-muted">{initial.email || "—"} (é o do seu login; para trocar, entre com outro e-mail)</p>
+        <p className="text-ink-muted">{initial.email || "—"}</p>
+        <p className="text-xs text-ink-muted">É o e-mail com que você entra. Ele não muda por aqui.</p>
       </div>
       <p className="text-xs text-ink-muted">Os restaurantes em que você aceitou participar veem seu nome, telefone e e-mail.</p>
       {errors.geral && (
@@ -75,7 +76,7 @@ export function MyData({ initial, onBack }: { initial: MyDataView; onBack: () =>
       )}
       {saved && (
         <p role="status" className="text-sm font-medium text-ink">
-          Dados salvos ✓
+          Dados salvos.
         </p>
       )}
       <Button variant="primary-app" type="submit" loading={busy}>

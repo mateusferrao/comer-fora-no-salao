@@ -38,20 +38,18 @@ function isPresenter(email: string, env: CustomerLoginEnv): boolean {
 
 export function customerCodeEmail(code: string, restaurantName: string | null): { subject: string; text: string; html: string } {
   // D257: sem restaurante, é o login pela Jornada (ver e corrigir os próprios dados), sem check-in.
-  const what = restaurantName ? `entrar no Comer Fora no Salão e fazer check-in em ${restaurantName}` : "entrar no Comer Fora no Salão";
-  const subject = restaurantName ? `Seu código: ${code} · ${restaurantName}` : `Seu código: ${code} · Comer Fora no Salão`;
-  const lines = [
-    `Seu código para ${what} é: ${code}`,
-    "",
-    `Ele vale por ${LOGIN_CODE_TTL_MIN} minutos e só pode ser usado uma vez. Se não foi você que pediu, ignore este e-mail.`,
-    "",
-    PROTOTYPE_FOOTER,
-  ];
+  // S9: "código de acesso" (para entrar) × "código do benefício" (para o garçom); marca "Comer Fora" para o cliente.
+  const what = restaurantName ? `entrar e fazer check-in no restaurante ${restaurantName}` : "entrar em Sua jornada no Comer Fora";
+  const subject = (restaurantName ? `Seu código de acesso: ${code} · ${restaurantName}` : `Seu código de acesso: ${code} · Comer Fora`).replace(/[\r\n]+/g, " ");
+  const validity = `Ele vale por ${LOGIN_CODE_TTL_MIN} minutos e só pode ser usado uma vez. Se não foi você que pediu, ignore este e-mail.`;
+  const notWaiter = restaurantName ? "Não mostre este código ao garçom. O código do benefício aparece na tela depois do check-in." : null;
+  const lines = [`Use este código de acesso para ${what}: ${code}`, "", validity, ...(notWaiter ? [notWaiter] : []), "", PROTOTYPE_FOOTER];
   const esc = (s: string) => s.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]!);
   const html = `<div style="font-family:Arial,sans-serif;font-size:15px;color:#151515">
-<p>Seu código para ${esc(what)} é:</p>
+<p>Use este código de acesso para ${esc(what)}:</p>
 <p style="font-size:28px;font-weight:bold;letter-spacing:6px">${code}</p>
-<p>Ele vale por ${LOGIN_CODE_TTL_MIN} minutos e só pode ser usado uma vez. Se não foi você que pediu, ignore este e-mail.</p>
+<p>${validity}</p>
+${notWaiter ? `<p>${notWaiter}</p>` : ""}
 <p style="color:#666;font-size:12px">${PROTOTYPE_FOOTER}</p>
 </div>`;
   return { subject, text: lines.join("\n"), html };

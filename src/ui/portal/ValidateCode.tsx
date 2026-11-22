@@ -7,7 +7,7 @@ import { Button } from "../components/Button";
 
 const REFUSE: Record<string, string> = {
   INVALIDO: "Código não encontrado. Confira as letras e números com o cliente.",
-  EXPIRADO: "Este código venceu: ele vale só no dia em que foi gerado.",
+  EXPIRADO: "Este código é de outro dia. Cada código vale só no dia do check-in.",
   OUTRO_RESTAURANTE: "Este código é de outro restaurante seu. Troque de loja para validar.",
 };
 
@@ -24,7 +24,12 @@ export function ValidateCode({ endpoint = "/api/parceiro/codigos", waiter = fals
   const input = useRef<HTMLInputElement>(null);
 
   async function call(url: string, body: unknown): Promise<CodeLookup | null> {
-    const r = await fetch(url, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(body) });
+    // S9: sem rede, o botão para de carregar e a tela diz o que fazer.
+    const r = await fetch(url, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(body) }).catch(() => null);
+    if (!r) {
+      setError("Sem conexão. Confira a internet e tente de novo.");
+      return null;
+    }
     if (r.status === 401 && waiter) {
       setError("Este link do garçom não vale mais. Peça um novo ao responsável.");
       return null;
@@ -69,7 +74,7 @@ export function ValidateCode({ endpoint = "/api/parceiro/codigos", waiter = fals
     <div className="flex flex-col gap-4">
       <form onSubmit={consult} className="flex flex-col gap-3" noValidate>
         <label htmlFor="codigo" className="text-sm font-medium text-ink">
-          Código do cliente
+          Código do benefício
         </label>
         <input
           ref={input}
@@ -84,7 +89,7 @@ export function ValidateCode({ endpoint = "/api/parceiro/codigos", waiter = fals
           spellCheck={false}
           inputMode="text"
           maxLength={9}
-          placeholder="Digite o código do cliente"
+          placeholder="Ex.: K7MP3Q"
           aria-describedby={error ? "codigo-erro" : undefined}
           className="min-h-16 rounded-md border border-border bg-white px-4 text-center font-mono text-3xl tracking-[0.3em] text-ink uppercase placeholder:font-sans placeholder:text-base placeholder:tracking-normal placeholder:normal-case placeholder:text-ink-muted"
         />
@@ -94,7 +99,7 @@ export function ValidateCode({ endpoint = "/api/parceiro/codigos", waiter = fals
           </p>
         )}
         <Button type="submit" variant="primary-portal" loading={busy === "consultar"}>
-          Consultar
+          Conferir código
         </Button>
       </form>
 
@@ -102,6 +107,8 @@ export function ValidateCode({ endpoint = "/api/parceiro/codigos", waiter = fals
         {res && (res.status === "INVALIDO" || res.status === "EXPIRADO" || res.status === "OUTRO_RESTAURANTE") && (
           <p role="alert" className="rounded-sm border border-red-text bg-white p-4 text-sm font-medium text-red-text">
             {REFUSE[res.status]}
+            {/* S9: 6 números é o código de acesso do e-mail, não o do benefício. */}
+            {res.status === "INVALIDO" && /^\d{6}$/.test(code.replace(/[\s-]/g, "")) && " Se o cliente mostrou 6 números do e-mail, esse é o código de acesso: peça o código do benefício, que aparece na tela dele depois do check-in."}
           </p>
         )}
         {res && (res.status === "OK" || res.status === "JA_USADO" || res.status === "VALIDADO") && (
@@ -131,12 +138,12 @@ export function ValidateCode({ endpoint = "/api/parceiro/codigos", waiter = fals
             </dl>
             {res.status === "OK" && (
               <Button variant="primary-portal" loading={busy === "confirmar"} onClick={confirm}>
-                Confirmar
+                Confirmar e entregar
               </Button>
             )}
             {res.status === "VALIDADO" && (
               <p role="status" className="text-base font-semibold text-ink">
-                Código validado ✓ às {res.validatedAt}
+                Confirmado às {res.validatedAt}. Pode entregar: {res.title}.
               </p>
             )}
             {res.status === "JA_USADO" && <p className="text-sm font-medium text-red-text">Este código já foi usado às {res.validatedAt}.</p>}

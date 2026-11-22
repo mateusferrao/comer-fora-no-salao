@@ -20,7 +20,7 @@ export default async function DescadastrarPage({ searchParams }: { searchParams:
   const items = target ? await listCustomerPrefs(getDb(), target.customerId, target.restaurantId) : [];
   return (
     <main className="mx-auto flex min-h-[calc(100dvh-3rem)] max-w-md flex-col justify-center gap-4 px-4 py-10">
-      <h1 className="text-center text-2xl font-bold text-ink">Preferências de e-mail</h1>
+      <h1 className="text-center text-2xl font-bold text-ink">{items[0] ? `E-mails do restaurante ${items[0].restaurant}` : "Preferências de e-mail"}</h1>
       {items.length > 0 ? (
         <NotificationPrefs items={items} token={token} />
       ) : (
@@ -28,7 +28,7 @@ export default async function DescadastrarPage({ searchParams }: { searchParams:
       )}
       {items.length > 0 && (
         <section aria-label="Parar todos os e-mails" className="flex flex-col items-center gap-2 text-center">
-          <p className="text-sm text-ink-muted">Você continua vendo os convites em Sua jornada, no app.</p>
+          <p className="text-sm text-ink-muted">Seus convites continuam em Sua jornada.</p>
           <Unsubscribe token={token} />
         </section>
       )}

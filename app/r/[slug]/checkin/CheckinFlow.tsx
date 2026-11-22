@@ -16,7 +16,7 @@ import { CheckinResult } from "@/src/ui/cliente/CheckinResult";
 import { checkGps } from "@/src/ui/cliente/gps";
 import { LoginSheet, type LoginStep } from "@/src/ui/cliente/LoginSheet";
 import { RulesSheet } from "@/src/ui/cliente/RulesSheet";
-import { TXT } from "@/src/ui/cliente/textos";
+import { gpsSheet } from "@/src/ui/cliente/textos";
 import { useDistance } from "@/src/ui/cliente/useDistance";
 
 type Session = "entrar" | "perfil" | "consentir" | "pronto";
@@ -30,10 +30,11 @@ export function CheckinFlow({ page, session, firstName, stamps, initialResult = 
   const [loginStep, setLoginStep] = useState<LoginStep>(stepOf(session));
   const [busy, setBusy] = useState(false);
   const [status, setStatus] = useState("");
-  const [gpsSheet, setGpsSheet] = useState(false);
+  const [gpsOpen, setGpsOpen] = useState(false);
+  const [gpsKind, setGpsKind] = useState<GpsStatus>("sem_suporte");
   const [identifySheet, setIdentifySheet] = useState(false);
   const [rules, setRules] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<{ text: string; retry: boolean } | null>(null);
   const [result, setResult] = useState<CheckinView | null>(initialResult);
   const gps = useRef<GpsStatus>("sem_suporte");
   const gpsAt = useRef(0);
@@ -62,7 +63,7 @@ export function CheckinFlow({ page, session, firstName, stamps, initialResult = 
       setResult((await res.json()) as CheckinView);
       key.current = null;
     } catch {
-      setError("Não conseguimos fazer seu check-in.");
+      setError({ text: "Seu check-in não foi registrado. Confira a internet e tente de novo.", retry: true });
     } finally {
       setBusy(false);
       setStatus("");
@@ -72,7 +73,7 @@ export function CheckinFlow({ page, session, firstName, stamps, initialResult = 
   const proceed = (s: GpsStatus) => {
     gps.current = s;
     if (!navigator.cookieEnabled) {
-      setError("Ative os cookies para fazer check-in.");
+      setError({ text: "Para fazer check-in, permita cookies neste navegador.", retry: false });
       setBusy(false);
       return;
     }
@@ -97,8 +98,10 @@ export function CheckinFlow({ page, session, firstName, stamps, initialResult = 
       return proceed(s);
     }
     setBusy(false);
-    setGpsSheet(true);
+    setGpsKind(s);
+    setGpsOpen(true);
   };
+  const gpsText = gpsSheet(gpsKind);
 
 
   return (
@@ -134,23 +137,23 @@ export function CheckinFlow({ page, session, firstName, stamps, initialResult = 
           ) : (
             <>
               <h1 className="mt-14 text-center text-xl font-medium leading-7">
-                Faça o check-in
-                <br />e junte selos para ganhar!
+                Faça check-in
+                <br />
+                {page.recompensa ? `e junte selos para ganhar ${page.recompensa.gain}` : "e junte selos"}
               </h1>
               <div className="mt-8 rounded-[32px] bg-white p-5 text-ink">
                 <p className="text-base font-semibold">{page.name}</p>
                 {distance && <p className="text-sm text-ink-muted">{distance}</p>}
                 <StampCard stamps={stamps} className="mt-5" />
                 <hr className="my-5 border-divider" />
-                <h2 className="text-base font-semibold">Recompensas</h2>
+                <h2 className="text-base font-semibold">Sua cartela</h2>
                 {page.recompensa && (
                   <div className="mt-3 flex gap-3">
                     <CategoryImage category={page.recompensa.category} className="size-16 shrink-0 rounded-lg" />
                     <div className="min-w-0">
-                      <p className="text-base">{page.recompensa.itemName}</p>
-                      <p className="text-sm text-ink-muted">6 selos - {page.recompensa.itemName}</p>
+                      <p className="text-base">{page.recompensa.gain}</p>
+                      <p className="text-sm text-ink-muted">Com 6 selos</p>
                       <div className="mt-2 flex flex-wrap gap-1.5">
-                        <Chip>Próxima recompensa</Chip>
                         <Chip>{missing === 1 ? "Falta 1 selo" : `Faltam ${missing} selos`}</Chip>
                       </div>
                     </div>
@@ -159,8 +162,8 @@ export function CheckinFlow({ page, session, firstName, stamps, initialResult = 
               </div>
               {error && (
                 <div role="alert" className="mt-5 rounded-md bg-white p-4 text-center text-ink">
-                  <p className="text-sm font-medium">{error}</p>
-                  {error.startsWith("Não conseguimos") && (
+                  <p className="text-sm font-medium">{error.text}</p>
+                  {error.retry && (
                     <Button variant="outline-app" className="mt-3 w-full" onClick={() => void sendCheckin()} loading={busy}>
                       Tentar de novo
                     </Button>
@@ -190,19 +193,19 @@ export function CheckinFlow({ page, session, firstName, stamps, initialResult = 
       </div>
 
       <BottomSheet
-        open={gpsSheet}
-        onClose={() => setGpsSheet(false)}
-        title={TXT.gpsTitulo}
-        description={TXT.gpsCorpo}
+        open={gpsOpen}
+        onClose={() => setGpsOpen(false)}
+        title={gpsText.title}
+        description={gpsText.body}
         actions={
           <>
-            <Button variant="outline-app" onClick={() => setGpsSheet(false)}>
+            <Button variant="outline-app" onClick={() => setGpsOpen(false)}>
               Fechar
             </Button>
             <Button
               variant="primary-app"
               onClick={() => {
-                setGpsSheet(false);
+                setGpsOpen(false);
                 setBusy(true);
                 gpsAt.current = Date.now();
                 proceed("confirmado_manual");

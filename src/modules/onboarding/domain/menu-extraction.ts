@@ -5,6 +5,7 @@
  */
 import { z } from "zod";
 import { MENU_CATEGORIES, type MenuCategory } from "@/src/modules/beneficios/domain/menu";
+import { dishNameProblem } from "./safe-name";
 
 export const PRICE_BANDS = ["$", "$$", "$$$", "$$$$"] as const;
 export const MAX_MENU_ITEMS = 80;
@@ -46,7 +47,9 @@ export function cleanExtraction(raw: RawExtraction): CleanExtraction {
     const dup = seen.has(key);
     seen.add(key);
     const implausivel = !Number.isInteger(it.precoCentavos) || it.precoCentavos < MIN_PRICE || it.precoCentavos > MAX_PRICE;
-    itens.push({ categoria: it.categoria, nome, precoCentavos: Math.max(0, Math.round(it.precoCentavos)), confira: dup || implausivel });
+    // S9 (M1): nome com contato ou com a marca iFood vem marcado; o dono corrige antes de gravar (o servidor recusa).
+    const suspeito = dishNameProblem(nome) !== null;
+    itens.push({ categoria: it.categoria, nome, precoCentavos: Math.max(0, Math.round(it.precoCentavos)), confira: dup || implausivel || suspeito });
   }
   const cuisine = raw.culinaria ? cleanItemName(raw.culinaria).slice(0, 40) || null : null;
   return {

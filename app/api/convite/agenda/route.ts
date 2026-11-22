@@ -14,7 +14,7 @@ export async function GET(req: Request) {
   if (limited) return limited;
   const t = new URL(req.url).searchParams.get("t");
   const cal = t && t.length <= 200 ? await inviteCalendar(getDb(), { token: t, now: new Date(), baseUrl: publicBaseUrl() }) : null;
-  if (!cal) return new Response("Convite não encontrado.", { status: 404, headers: { "content-type": "text/plain; charset=utf-8", "cache-control": "no-store" } });
+  if (!cal) return new Response(`Este link de agenda não vale mais. Seus convites estão em ${publicBaseUrl()}/app/jornada`, { status: 404, headers: { "content-type": "text/plain; charset=utf-8", "cache-control": "no-store" } });
   return new Response(cal.body, {
     headers: {
       "content-type": "text/calendar; charset=utf-8",

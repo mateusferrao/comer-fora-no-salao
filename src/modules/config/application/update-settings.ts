@@ -6,7 +6,6 @@
 import type { Intensity } from "@/src/modules/beneficios/domain/slots";
 import { decryptEmail } from "@/src/shared/crypto";
 import { parseNotifySettings, type NotifySettings } from "../domain/notify-settings";
-import { mentionsIfood } from "@/src/shared/brand";
 import { findAvoided, ownerDataOf, parseAiFeatures, validateAbout, validateAvoid, type AiFeatures } from "../domain/ai-profile";
 import { and, desc, eq, isNull, max, sql } from "drizzle-orm";
 import type { Db } from "@/src/db/client";
@@ -27,6 +26,7 @@ import { buildCandidates, fallbackChoices, weeklyCapFor } from "@/src/modules/on
 import { declaredFacts } from "@/src/modules/onboarding/domain/facts";
 import { slotLabel, slotPhrase } from "@/src/modules/beneficios/domain/slot-text";
 import { cleanItemName } from "@/src/modules/onboarding/domain/menu-extraction";
+import { dishNameProblem, restaurantNameProblem } from "@/src/modules/onboarding/domain/safe-name";
 import { loadContext, type RestaurantContext } from "@/src/modules/salao/application/context";
 import { renderReferences } from "@/src/modules/textos/domain/references";
 import { systemClock } from "@/src/shared/clock";
@@ -40,7 +40,7 @@ export const MAX_SLOTS = 8;
 export type OfferInput = { kind: OfferKind; itemId: string; pct?: number };
 const toOffer = (o: { kind: OfferKind; itemId: string; pct?: number }): Offer => offerFromInput(o);
 
-export type SettingsResult = { ok: true; warnings?: string[] } | { ok: false; erro: "oferta"; erros: OfferError[] } | { ok: false; erro: "texto"; motivos: string[] } | { ok: false; erro: "nao_encontrado" | "em_uso" | "ultima_faixa" | "sem_opcao" | "nome_marca" };
+export type SettingsResult = { ok: true; warnings?: string[] } | { ok: false; erro: "oferta"; erros: OfferError[] } | { ok: false; erro: "texto"; motivos: string[] } | { ok: false; erro: "nao_encontrado" | "em_uso" | "ultima_faixa" | "sem_opcao" | "nome_marca" | "nome_contato" | "item_contato" | "item_marca" };
 
 /**
  * Cria a versão nova de um benefício (a vigente ganha `superseded_at`). Roda dentro da transação do chamador,
@@ -136,14 +136,18 @@ export async function updateMenuItem(db: Db, p: { restaurantId: string; itemId: 
   if (it.category !== p.category && (await itemInUse(db, p.restaurantId, p.itemId))) return { ok: false, erro: "em_uso" };
   const name = cleanItemName(p.name);
   if (!name) return { ok: false, erro: "texto", motivos: ["vazio"] };
+  const problem = dishNameProblem(name); // S9 (M1): o nome do prato vai nos e-mails
+  if (problem) return { ok: false, erro: problem };
   await db.update(menuItems).set({ name, priceCents: Math.max(0, Math.round(p.priceCents)), category: p.category }).where(eq(menuItems.id, p.itemId));
   await db.insert(ownerEdits).values({ restaurantId: p.restaurantId, kind: "config:cardapio", ref: p.itemId, suggested: { name: it.name, priceCents: it.priceCents, category: it.category }, final: { name, priceCents: p.priceCents, category: p.category }, at: p.now });
   return { ok: true };
 }
 
-export async function addMenuItem(db: Db, p: { restaurantId: string; name: string; priceCents: number; category: MenuCategory; now: Date }): Promise<{ ok: true; itemId: string } | { ok: false; erro: "texto" }> {
+export async function addMenuItem(db: Db, p: { restaurantId: string; name: string; priceCents: number; category: MenuCategory; now: Date }): Promise<{ ok: true; itemId: string } | { ok: false; erro: "texto" | "item_contato" | "item_marca" }> {
   const name = cleanItemName(p.name);
   if (!name) return { ok: false, erro: "texto" };
+  const problem = dishNameProblem(name); // S9 (M1): o nome do prato vai nos e-mails
+  if (problem) return { ok: false, erro: problem };
   let [menu] = await db.select({ id: menus.id }).from(menus).where(eq(menus.restaurantId, p.restaurantId)).orderBy(desc(menus.createdAt)).limit(1);
   if (!menu) [menu] = await db.insert(menus).values({ restaurantId: p.restaurantId, source: "manual", createdAt: p.now }).returning({ id: menus.id });
   const [{ pos }] = (await db.select({ pos: max(menuItems.position) }).from(menuItems).where(eq(menuItems.restaurantId, p.restaurantId))) as [{ pos: number | null }];
@@ -241,7 +245,8 @@ export async function updateRestaurantInfo(
   if (ctx.slots.some((s) => validateSlot(s, p.opening).length)) return { ok: false, erro: "funcionamento" };
   const name = cleanItemName(p.name).slice(0, 60);
   if (name.length < 2) return { ok: false, erro: "texto", motivos: ["nome"] };
-  if (mentionsIfood(name)) return { ok: false, erro: "nome_marca" };
+  const problem = restaurantNameProblem(name); // S9 (M1): o nome vai no assunto e no corpo dos e-mails
+  if (problem) return { ok: false, erro: problem };
   await db
     .update(restaurants)
     .set({ name, ticketCents: p.ticketCents, marginPct: p.marginPct, tables: p.tables, weeklyCustomers: p.weeklyCustomers, description: p.description?.trim().slice(0, 400) || null, address: p.address?.trim().slice(0, 160) || null, openingHours: p.opening })
