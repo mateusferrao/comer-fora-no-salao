@@ -49,6 +49,16 @@ describe("ferramentas do agente (S6.3b, D166): só leitura, números do código,
     expect(g.ok === false && g.reasons).toEqual(bad.problemas);
   });
 
+  it("checar_texto usa a candidata escolhida, não a 1ª da faixa (S9, M3)", async () => {
+    const a2 = pp.candByAlias.get("A2")!;
+    const a1 = pp.candByAlias.get("A1")!;
+    expect(a2.gain).not.toBe(a1.gain);
+    const r = (await tools.checar_texto!.execute({ campo: "textoConvite", faixa: "A", candidata: "A2", texto: "Volte {horario:A} e aproveite {oferta}." })) as { renderizado: string };
+    expect(r.renderizado).toContain(a2.gain);
+    expect(r.renderizado).not.toContain(a1.gain);
+    expect(tools.checar_texto!.input.safeParse({ campo: "textoConvite", faixa: "A", candidata: "Z9", texto: "x" }).success).toBe(false);
+  });
+
   it("tarefa: mesmo schema e guard do plano, com 6 passos e 12 s por passo", () => {
     const t = buildPlanAgentTask(pp, [], buildPlanAgentTools(pp, cands));
     expect(t).toMatchObject({ name: "plano_agente", maxSteps: 6, stepMs: 12_000, perAttemptTimeoutMs: 30_000 });
