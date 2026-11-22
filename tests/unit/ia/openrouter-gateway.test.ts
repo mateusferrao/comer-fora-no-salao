@@ -1,7 +1,7 @@
 import { APICallError, NoObjectGeneratedError } from "ai";
 import { describe, expect, it } from "vitest";
 import { AiGatewayError } from "@/src/modules/ia/gateway";
-import { classifyGatewayError, withPaidUsage } from "@/src/modules/ia/openrouter-gateway";
+import { classifyGatewayError, telemetryFor, withPaidUsage } from "@/src/modules/ia/openrouter-gateway";
 
 const apiError = (statusCode: number) =>
   new APICallError({ message: `status ${statusCode}`, url: "https://openrouter.ai/api/v1/chat/completions", requestBodyValues: {}, statusCode });
@@ -53,5 +53,21 @@ describe("custo dos passos já pagos quando o agente falha (revisão S4–S6, se
     expect((withPaidUsage(abort, paid) as { aiUsage?: unknown }).aiUsage).toEqual({ inTokens: 900, outTokens: 300, costUsd: 0.004 });
     const clean = new AiGatewayError("provider", "x");
     expect(withPaidUsage(clean, { inTokens: 0, outTokens: 0, costUsd: 0 })).toBe(clean);
+  });
+});
+
+describe("telemetryFor (o que vai para o Langfuse)", () => {
+  const meta = { telemetry: { functionId: "copiloto", metadata: { restaurantId: "r1" } } };
+  it("privateTrace (copiloto — D262): nem entrada nem saída no rastro", () => {
+    const t = telemetryFor({ input: { messages: [{ role: "user", text: "quem é a Ana?" }] }, privateTrace: true, ...meta });
+    expect(t).toMatchObject({ recordInputs: false, recordOutputs: false, functionId: "copiloto", includeRuntimeContext: { restaurantId: true } });
+  });
+  it("arquivo (foto do cardápio) nunca vai; saída vai", () => {
+    const t = telemetryFor({ input: { text: "extraia", files: [{ data: new Uint8Array([1]), mediaType: "image/png" }] }, ...meta });
+    expect(t.recordInputs).toBe(false);
+    expect("recordOutputs" in t).toBe(false);
+  });
+  it("texto comum: entrada e saída no rastro", () => {
+    expect(telemetryFor({ input: { text: "oi" }, ...meta }).recordInputs).toBe(true);
   });
 });

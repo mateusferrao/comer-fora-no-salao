@@ -1,6 +1,6 @@
-import { afterAll, beforeEach, describe, expect, it } from "vitest";
+import { afterAll, beforeEach, describe, expect, it, vi } from "vitest";
 import { and, eq, isNull } from "drizzle-orm";
-import { closeDb, getDb } from "@/src/db/client";
+import { closeDb, getDb, getPool } from "@/src/db/client";
 import { agentProposals, benefitVersions, menuItems, ownerEdits, restaurants, weeklyPlans } from "@/src/db/schema";
 import { generateWeeklyPlan } from "@/src/modules/planos/application/generate-plan";
 import { APPLYING_STALE_MS, createProposals, decideProposal, PROPOSAL_TTL_MS, sweepProposals } from "@/src/modules/agente/application/proposals";
@@ -48,6 +48,23 @@ describe("propostas do copiloto (S8 — D261, D269)", () => {
     expect((await getCopilotMetrics(getDb())).expired).toBe(1);
     // Idempotente.
     expect(await sweepProposals(getDb(), tickAt)).toEqual({ expired: 0, failed: 0 });
+  });
+
+  it("restaurante: o UPDATE toca só a margem (nada de regravar endereço/horário lidos antes — revisão S8, item 25)", async () => {
+    const r = await createRestaurant();
+    const [card] = await createProposals(getDb(), { restaurantId: r.restaurantId, origin: "copiloto", payloads: [{ acao: "restaurante", marginPct: 40 }], now: NOW });
+    await getDb().update(restaurants).set({ address: "Rua Nova, 10" }).where(eq(restaurants.id, r.restaurantId));
+    const spy = vi.spyOn(getPool(), "query");
+    const res = await decideProposal(getDb(), { restaurantId: r.restaurantId, proposalId: card!.id!, origin: "copiloto", acao: "aplicar", now: later(1000) });
+    const updates = spy.mock.calls.map((c) => String((c[0] as { text?: string })?.text ?? c[0])).filter((t) => t.startsWith('update "restaurants"'));
+    spy.mockRestore();
+    expect(updates).toHaveLength(1);
+    expect(updates[0]).toMatch(/set "margin_pct" = \$1 where/);
+    expect(res).toMatchObject({ ok: true, status: "aplicada" });
+    const [row] = await getDb().select().from(restaurants).where(eq(restaurants.id, r.restaurantId));
+    expect(row).toMatchObject({ marginPct: 40, address: "Rua Nova, 10" });
+    const edits = await getDb().select().from(ownerEdits).where(and(eq(ownerEdits.restaurantId, r.restaurantId), eq(ownerEdits.kind, "config:restaurante")));
+    expect(edits.at(-1)!.final).toMatchObject({ marginPct: 40 });
   });
 
   it("Tiramisù (recompensa) indisponível → recusada, nada gravado", async () => {

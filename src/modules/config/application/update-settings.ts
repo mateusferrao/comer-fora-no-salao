@@ -250,6 +250,19 @@ export async function updateRestaurantInfo(
   return { ok: true };
 }
 
+/**
+ * Só ticket médio e margem (copiloto/MCP — revisão S8, item 25): um UPDATE das duas colunas, sem regravar nome,
+ * endereço e horário lidos antes (o dono pode estar salvando o formulário ao mesmo tempo). `undefined` = não mexe.
+ */
+export async function updateRestaurantFinance(db: Db, p: { restaurantId: string; ticketCents?: number | null; marginPct?: number | null; now: Date }): Promise<SettingsResult> {
+  const set = { ...(p.ticketCents !== undefined ? { ticketCents: p.ticketCents } : {}), ...(p.marginPct !== undefined ? { marginPct: p.marginPct } : {}) };
+  if (!Object.keys(set).length) return { ok: false, erro: "texto", motivos: ["vazio"] };
+  const upd = await db.update(restaurants).set(set).where(eq(restaurants.id, p.restaurantId)).returning({ name: restaurants.name, ticketCents: restaurants.ticketCents, marginPct: restaurants.marginPct });
+  if (!upd[0]) return { ok: false, erro: "nao_encontrado" };
+  await db.insert(ownerEdits).values({ restaurantId: p.restaurantId, kind: "config:restaurante", ref: null, suggested: null, final: upd[0], at: p.now });
+  return { ok: true };
+}
+
 // ---------- Vista das Configurações ----------
 export type SettingsView = {
   restaurant: { aiTone: string | null; aiAbout: string | null; aiAvoid: string | null; aiFeatures: AiFeatures; name: string; kind: string; isCopy: boolean; ticketCents: number | null; marginPct: number | null; tables: number | null; weeklyCustomers: number | null; description: string | null; address: string | null; opening: OpeningHours };

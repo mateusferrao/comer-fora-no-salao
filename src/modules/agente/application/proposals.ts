@@ -12,7 +12,7 @@ import { describeOffer, offerFromInput } from "@/src/modules/beneficios/domain/o
 import { slotPhrase } from "@/src/modules/beneficios/domain/slot-text";
 import { guardText } from "@/src/modules/ia/guardrails";
 import { textIssues } from "@/src/modules/ia/guardrails/messages";
-import { addMenuItem, deactivateSlot, getSettingsView, setItemOfferAllowed, setMenuItemActive, updateMenuItem, updateNotifySettings, updateOffer, updateRestaurantInfo, updateSlot, updateTone } from "@/src/modules/config/application/update-settings";
+import { addMenuItem, deactivateSlot, getSettingsView, setItemOfferAllowed, setMenuItemActive, updateMenuItem, updateNotifySettings, updateOffer, updateRestaurantFinance, updateSlot, updateTone } from "@/src/modules/config/application/update-settings";
 import { parseNotifySettings } from "@/src/modules/config/domain/notify-settings";
 import { validateTone } from "@/src/modules/config/domain/tone";
 import { FORBIDDEN } from "@/src/modules/ia/guardrails";
@@ -194,12 +194,8 @@ async function run(db: Db, restaurantId: string, payload: ProposalPayload, snap:
       const r = await addMenuItem(db, { restaurantId, name: payload.name, category: payload.category, priceCents: payload.priceCents, now });
       return r.ok ? { ok: true } : { ok: false, erro: "texto" };
     }
-    case "restaurante": {
-      const v = await getSettingsView(db, restaurantId);
-      if (!v) return { ok: false, erro: "nao_encontrado" };
-      const x = v.restaurant;
-      return updateRestaurantInfo(db, { restaurantId, name: x.name, ticketCents: payload.ticketCents !== undefined ? payload.ticketCents : x.ticketCents, marginPct: payload.marginPct !== undefined ? payload.marginPct : x.marginPct, tables: x.tables, weeklyCustomers: x.weeklyCustomers, description: x.description, address: x.address, opening: x.opening, now });
-    }
+    case "restaurante":
+      return updateRestaurantFinance(db, { restaurantId, ticketCents: payload.ticketCents, marginPct: payload.marginPct, now });
     case "avisos": {
       const [r] = await db.select({ notify: restaurants.notifySettings }).from(restaurants).where(eq(restaurants.id, restaurantId));
       const cur = parseNotifySettings(r?.notify);
