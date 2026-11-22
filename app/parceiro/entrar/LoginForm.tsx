@@ -160,7 +160,7 @@ export function LoginForm() {
       )}
 
       <p className="mt-6 text-xs leading-5 text-ink-muted">
-        Usamos seu e-mail só para enviar o código de acesso. Guardamos apenas um código irreversível dele (HMAC). Contas sem acesso por 7 dias são apagadas.
+        Usamos seu e-mail para o código de acesso e, se você ligar, para o resumo semanal. Ele fica guardado de duas formas: uma impressão digital irreversível (HMAC), usada no login, e uma cópia criptografada, usada para enviar o resumo. Contas sem acesso por 7 dias são apagadas.
       </p>
     </div>
   );
