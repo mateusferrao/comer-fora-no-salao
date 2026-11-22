@@ -10,7 +10,7 @@ import { getFlags } from "@/src/modules/config/application/app-config";
 import { handleRpc } from "@/src/modules/mcp/server";
 import { resolveToken } from "@/src/modules/mcp/tokens";
 import { consume } from "@/src/shared/rate-limit";
-import { readJson } from "@/src/web/http";
+import { declaredTooLarge, readJson } from "@/src/web/http";
 import { scheduleInviteEmails } from "@/src/web/invite-emails";
 
 export const dynamic = "force-dynamic";
@@ -21,6 +21,8 @@ const err = (status: number, code: number, message: string, headers: Record<stri
 export async function POST(req: Request) {
   const db = getDb();
   if (!(await getFlags(db)).mcp) return new Response(null, { status: 404 });
+  // S9 (segurança M4): corpo acima de 64 KB recusado antes do token; `readJson` também para de ler nesse teto.
+  if (declaredTooLarge(req)) return err(413, -32600, "Request too large");
   const auth = (req.headers.get("authorization") ?? "").trim();
   const tok = await resolveToken(db, /^bearer\s+/i.test(auth) ? auth.replace(/^bearer\s+/i, "").trim() : auth || null);
   if (!tok) return err(401, -32001, "Unauthorized", { "www-authenticate": 'Bearer realm="comer-fora-no-salao"' });
