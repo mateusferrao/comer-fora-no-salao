@@ -6,6 +6,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import type { DashboardView } from "@/src/modules/analytics/application/dashboard";
 import type { Incremental } from "@/src/modules/analytics/domain/incremental";
 import type { Period } from "@/src/modules/analytics/domain/funnel";
+import { marginState } from "@/src/modules/analytics/domain/value";
 import { brl, int, pct, signed, weekLabel } from "./format";
 import { RecentCheckins } from "./RecentCheckins";
 import { SlotGoals } from "./SlotGoals";
@@ -66,12 +67,12 @@ export function Dashboard({ initial }: { initial: DashboardView }) {
   return (
     <div className="flex flex-col gap-6">
       <div className="grid gap-4 lg:grid-cols-[2fr_1fr]">
-        {d.value ? <ValueHero topline={d.value.topline} /> : <MetricHero d={d} />}
+        {d.value ? <ValueHero topline={d.value.topline} /> : <MetricHero d={d} showMoney />}
         <div className="flex flex-col gap-3">
           <div className="rounded-sm border border-border bg-white p-4">
-            <p className="text-sm text-ink-muted">Novos usuários do Comer Fora · últ. 30 dias</p>
+            <p className="text-sm text-ink-muted">Clientes que conheceram o Comer Fora no seu salão · últ. 30 dias</p>
             <p className="text-3xl font-bold text-ink">{int(d.newUsers30d)}</p>
-            <p className="text-xs text-ink-muted">1º check-in da vida aqui, vindo de uma peça do kit.</p>
+            <p className="text-xs text-ink-muted">1º check-in no Comer Fora, feito aqui pelo QR de uma peça do kit.</p>
           </div>
           <Link href="/parceiro/salao/validar" className="flex min-h-11 items-center justify-center rounded-xs border border-red-text bg-white px-5 text-sm font-semibold text-red-text hover:bg-red-text/5">
             Validar código
@@ -103,9 +104,9 @@ export function Dashboard({ initial }: { initial: DashboardView }) {
           <div role="radiogroup" aria-labelledby="periodo-label" className="flex flex-wrap gap-2">
             {(
               [
+                ["hoje", "Hoje"],
                 ["7d", "Últ. 7 dias"],
                 ["30d", "Últ. 30 dias"],
-                ["hoje", "Hoje"],
               ] as const
             ).map(([p, label]) => (
               <button
@@ -134,7 +135,8 @@ export function Dashboard({ initial }: { initial: DashboardView }) {
         </div>
         <FunnelBars steps={funnel.steps} />
         <p className="text-sm text-ink-muted">
-          + {int(funnel.side.invitesReactivation)} convites por reativação · {int(funnel.side.firstVisitValidated)} códigos de 1ª visita validados
+          Fora do funil: {int(funnel.side.invitesReactivation)} {funnel.side.invitesReactivation === 1 ? "convite enviado" : "convites enviados"} ao aprovar o plano da semana ·{" "}
+          {int(funnel.side.firstVisitValidated)} {funnel.side.firstVisitValidated === 1 ? "benefício de 1ª visita entregue" : "benefícios de 1ª visita entregues"} (código validado)
         </p>
       </section>
 
@@ -149,31 +151,54 @@ export function Dashboard({ initial }: { initial: DashboardView }) {
 }
 
 const STATE_TEXT: Record<Incremental["state"], string> = {
-  positivo: "Os convidados voltaram mais que o grupo de controle",
-  negativo: "Os convidados voltaram menos que o grupo de controle. Reveja a oferta no plano da semana",
-  inconclusivo: "Ainda não dá para afirmar",
+  positivo: "Quem recebeu convite voltou mais do que o grupo sem convite",
+  negativo: "Quem recebeu convite voltou menos do que o grupo sem convite. Vale trocar a oferta no plano da semana",
+  inconclusivo: "Ainda não dá para dizer se os convites trouxeram gente a mais: a diferença ainda pode ser acaso",
   amostra_insuficiente: "Ainda não dá para afirmar",
 };
 
-function MetricHero({ d }: { d: DashboardView }) {
+/** Diferença por cliente → visitas a cada 100 convidados (auditoria do Portal 1.4: "+0,12 visita" ninguém visualiza). */
+const per100 = (x: number) => Math.round(x * 100);
+const visits100 = (x: number) => `${signed(per100(x), 0)} ${Math.abs(per100(x)) === 1 ? "visita" : "visitas"}`;
+
+function missingText(m: DashboardView["metric"]["missing"]): string {
+  const parts = [
+    m.controle > 0 ? `${int(m.controle)} ${m.controle === 1 ? "cliente sem convite" : "clientes sem convite"}` : null,
+    m.convidados > 0 ? `${int(m.convidados)} ${m.convidados === 1 ? "cliente com convite" : "clientes com convite"}` : null,
+  ].filter(Boolean);
+  return parts.length ? `Para medir, faltam ${parts.join(" e ")} acompanhados por 14 dias.` : "Para medir, faltam clientes acompanhados por 14 dias.";
+}
+
+/** R$ da medida causal: só aparece aqui quando não há o topo em R$ (sem `painel_valor`); texto pelo estado da margem (A5). */
+function moneyText(d: DashboardView): string {
   const { inc, margin } = d.metric;
+  if (!d.metric.marginDeclared) return "Informe ticket médio e margem em Configurações › Restaurante para ver o resultado em reais.";
+  if (!margin || (inc.state !== "positivo" && inc.state !== "negativo")) return "O resultado em reais aparece quando houver resultado nas visitas.";
+  const range = `entre ${brl(margin.lo)} e ${brl(margin.hi)}`;
+  const st = marginState(margin);
+  if (st === "positiva") return `≈ ${brl(margin.cents)} de margem a mais, já descontado o custo dos convites (pode ficar ${range}). Conta feita com o ticket e a margem que você informou.`;
+  if (st === "negativa") return `Os convites custaram ≈ ${brl(Math.abs(margin.cents))} a mais do que renderam de margem (${range}). Conta feita com o ticket e a margem que você informou.`;
+  return `Em reais, ainda não dá para garantir lucro: pode ficar ${range}, já descontado o custo dos convites. Conta feita com o ticket e a margem que você informou.`;
+}
+
+function MetricHero({ d, showMoney = false }: { d: DashboardView; showMoney?: boolean }) {
+  const { inc } = d.metric;
   const has = inc.state !== "amostra_insuficiente";
   return (
     <section aria-labelledby="metrica" className="flex flex-col gap-3 rounded-sm border border-border bg-white p-5">
       <div className="flex flex-wrap items-center gap-2">
         <h2 id="metrica" className="text-base font-semibold text-ink">
-          Visitas registradas a mais por cliente convidado (14 dias)
+          Visitas a mais de quem recebeu convite (14 dias)
         </h2>
-
       </div>
       {has ? (
         <>
           <p className={inc.state === "inconclusivo" ? "text-xl font-semibold text-ink" : "text-3xl font-bold text-ink"}>
-            {signed(inc.diff)} visita por cliente
+            {visits100(inc.diff)} a cada 100 convidados
             <span className="block text-base font-normal text-ink-muted">
-              provavelmente entre {signed(inc.lo)} e {signed(inc.hi)}
-              {d.metric.totalExtra !== null && inc.state === "positivo" ? ` · ≈ ${int(d.metric.totalExtra)} visitas a mais entre ${int(inc.nT)} convidados` : ""}
-              {" "}(cada cliente acompanhado por 14 dias depois do sorteio)
+              provavelmente entre {signed(per100(inc.lo), 0)} e {signed(per100(inc.hi), 0)}
+              {d.metric.totalExtra !== null && inc.state === "positivo" ? ` · ≈ ${int(d.metric.totalExtra)} visitas a mais no total, entre ${int(inc.nT)} clientes com convite` : ""}
+              {" "}(cada cliente acompanhado por 14 dias)
             </span>
           </p>
           <p className="font-semibold text-ink" data-testid="metric-state" data-state={inc.state}>
@@ -182,26 +207,19 @@ function MetricHero({ d }: { d: DashboardView }) {
         </>
       ) : (
         <p className="font-semibold text-ink" data-testid="metric-state" data-state={inc.state}>
-          Ainda não dá para afirmar: faltam {int(d.metric.missingHoldout)} clientes do grupo de controle com 14 dias completos. Enquanto isso, acompanhe os indicadores antecipados.
+          Ainda não dá para afirmar. {missingText(d.metric.missing)} Enquanto isso, veja os sinais iniciais abaixo.
         </p>
       )}
-      <p className="text-sm text-ink">
-        {!d.metric.marginDeclared
-          ? "Declare ticket e margem em Configurações para ver a margem."
-          : margin && (inc.state === "positivo" || inc.state === "negativo")
-            ? inc.state === "negativo"
-              ? `≈ entre ${brl(Math.abs(margin.hi))} e ${brl(Math.abs(margin.lo))} de margem a menos (estimativa, com base nos valores que você declarou).`
-              : `≈ entre ${brl(margin.lo)} e ${brl(margin.hi)} de margem a mais (estimativa, com base nos valores que você declarou).`
-            : "A margem aparece quando houver resultado."}
-      </p>
-      <p className="text-sm text-ink-muted">Visitas registradas = check-ins. Comparamos por sorteio com um grupo de controle (1 em 10) que não recebe convite.</p>
+      {showMoney && <p className="text-sm text-ink">{moneyText(d)}</p>}
+      <p className="text-sm text-ink-muted">1 em cada 10 clientes fica sem convite, por sorteio, para comparar. Contamos as visitas com check-in.</p>
       <details className="text-sm text-ink-muted">
         <summary className="inline-flex min-h-6 cursor-pointer items-center">Como medimos</summary>
         <ul className="mt-2 list-disc pl-5">
+          <li>Comparamos quem recebeu convite com o grupo de controle: clientes sorteados (1 em 10) que não recebem convite.</li>
           <li>Positivo: o intervalo inteiro fica acima de zero.</li>
           <li>Negativo: o intervalo inteiro fica abaixo de zero.</li>
           <li>Ainda não dá para afirmar: o intervalo cruza o zero.</li>
-          <li>Amostra insuficiente: menos de 30 clientes num dos grupos com 14 dias completos.</li>
+          <li>Poucos dados: menos de 30 clientes em um dos grupos com 14 dias completos.</li>
           <li>Quem não faz check-in não aparece: medimos visitas registradas, não todas as visitas.</li>
         </ul>
       </details>
@@ -209,7 +227,9 @@ function MetricHero({ d }: { d: DashboardView }) {
   );
 }
 
-const PLAN_TEXT: Record<string, string> = { proposto: "Proposto · aguardando você", aprovado: "Aprovado nesta semana", vencido: "Vencido · gere o desta semana", gerando: "Gerando…" };
+const PLAN_TEXT: Record<string, string> = { proposto: "Proposto · aguardando você", aprovado: "Aprovado nesta semana", vencido: "O plano da semana passada venceu", gerando: "Gerando…" };
+/** CTA pelo estado (auditoria do Portal 1.2): diz o que acontece ao clicar. */
+const PLAN_CTA: Record<string, string> = { proposto: "Revisar e aprovar", aprovado: "Ver o plano", vencido: "Gerar o plano da semana", gerando: "Ver o plano" };
 
 function PlanCard({ plan }: { plan: DashboardView["plan"] }) {
   return (
@@ -217,7 +237,7 @@ function PlanCard({ plan }: { plan: DashboardView["plan"] }) {
       <p className="text-sm text-ink-muted">Plano da semana</p>
       <p className="font-semibold text-ink">{plan ? PLAN_TEXT[plan.status] ?? plan.status : "Nenhum plano ainda"}</p>
       <Link href="/parceiro/salao/plano" className="flex min-h-11 items-center justify-center rounded-xs border border-red-text bg-white px-5 text-sm font-semibold text-red-text hover:bg-red-text/5">
-        Revisar plano
+        {plan ? PLAN_CTA[plan.status] ?? "Ver o plano" : "Gerar o plano da semana"}
       </Link>
     </div>
   );
@@ -233,8 +253,8 @@ function FunnelBars({ steps }: { steps: DashboardView["funnel"]["steps"] }) {
   return (
     <>
       <div className="hidden grid-cols-6 gap-2 text-xs font-semibold text-ink-muted sm:grid" aria-hidden="true">
-        <p className="col-span-3 border-b border-divider pb-1">Do QR ao contato</p>
-        <p className="col-span-3 border-b border-divider pb-1">Convite de volta (escala própria)</p>
+        <p className="col-span-3 border-b border-divider pb-1">Do QR ao cliente novo</p>
+        <p className="col-span-3 border-b border-divider pb-1">Convite de volta (barras em outra escala)</p>
       </div>
       <ol className="grid gap-2 sm:grid-cols-6" aria-hidden="true">
         {steps.map((s) => (
@@ -280,23 +300,23 @@ function FunnelBars({ steps }: { steps: DashboardView["funnel"]["steps"] }) {
 }
 
 function controlText(i: Incremental, kind: "idle" | "migration"): string {
-  if (i.state === "amostra_insuficiente") return "Amostra insuficiente · ainda não dá para afirmar";
+  if (i.state === "amostra_insuficiente") return "Poucos dados · ainda não dá para afirmar";
   if (kind === "migration") {
-    if (i.state === "negativo") return `Convidados vieram ${signed(i.diff)} visita fora do horário vazio: parte do efeito é troca de horário`;
-    if (i.state === "positivo") return `Convidados vieram ${signed(i.diff)} visita também fora do horário vazio`;
-    return "Sem sinal de migração: fora do horário vazio, convidados e grupo de controle vieram igual";
+    if (i.state === "negativo") return `Quem recebeu convite veio menos fora do horário vazio (${visits100(i.diff)} a cada 100): parte do efeito pode ser cliente que trocou de horário`;
+    if (i.state === "positivo") return `Não: quem recebeu convite veio mais também fora do horário vazio (${visits100(i.diff)} a cada 100)`;
+    return "Não deu para ver diferença fora do horário vazio";
   }
-  return i.state === "positivo" ? `${signed(i.diff)} visita no horário vazio por convidado` : i.state === "negativo" ? `${signed(i.diff)} visita no horário vazio` : "Ainda não dá para afirmar";
+  return i.state === "positivo" || i.state === "negativo" ? `${visits100(i.diff)} no horário vazio a cada 100 convidados` : "Ainda não dá para afirmar";
 }
 
 function Cards({ d }: { d: DashboardView }) {
   const m = d.metric;
-  const range = (i: Incremental) => (i.state === "amostra_insuficiente" ? "" : `entre ${signed(i.lo)} e ${signed(i.hi)}`);
+  const range = (i: Incremental) => (i.state === "amostra_insuficiente" ? "" : `entre ${signed(per100(i.lo), 0)} e ${signed(per100(i.hi), 0)} a cada 100`);
   return (
     <div className="grid gap-4 lg:grid-cols-2">
       <section aria-labelledby="controle" className="flex flex-col gap-3 rounded-sm border border-border bg-white p-4">
         <h2 id="controle" className="text-base font-bold text-ink">
-          Comparado ao grupo de controle
+          Comparado ao grupo sem convite
         </h2>
         <div>
           <p className="text-sm text-ink-muted">Visitas no horário vazio</p>
@@ -304,19 +324,19 @@ function Cards({ d }: { d: DashboardView }) {
           <p className="text-xs text-ink-muted">{range(m.idle)}</p>
         </div>
         <div>
-          <p className="text-sm text-ink-muted">Proteção contra migração (fora do horário vazio)</p>
+          <p className="text-sm text-ink-muted">O convite tirou cliente de outro horário?</p>
           <p className="font-semibold text-ink">{controlText(m.migration, "migration")}</p>
           <p className="text-xs text-ink-muted">{range(m.migration)}</p>
         </div>
       </section>
       <section aria-labelledby="antecipados" className="flex flex-col gap-3 rounded-sm border border-border bg-white p-4">
         <h2 id="antecipados" className="text-base font-bold text-ink">
-          Indicadores antecipados <span className="text-sm font-normal text-ink-muted">· não causal</span>
+          Sinais iniciais <span className="text-sm font-normal text-ink-muted">· ainda não provam efeito</span>
         </h2>
         <div>
-          <p className="text-sm text-ink-muted">Convites usados por semana de emissão</p>
+          <p className="text-sm text-ink-muted">Convites usados por semana de entrega</p>
           {d.cards.cohorts.length === 0 ? (
-            <p className="text-sm text-ink">Nenhum convite emitido ainda.</p>
+            <p className="text-sm text-ink">Nenhum convite entregue ainda.</p>
           ) : (
             <table className="mt-1 w-full text-sm">
               <thead>
@@ -325,10 +345,10 @@ function Cards({ d }: { d: DashboardView }) {
                     Semana
                   </th>
                   <th scope="col" className="font-normal">
-                    Emitidos
+                    Entregues
                   </th>
                   <th scope="col" className="font-normal">
-                    Usados
+                    Usados em 14 dias
                   </th>
                 </tr>
               </thead>
@@ -338,8 +358,8 @@ function Cards({ d }: { d: DashboardView }) {
                     <td>{weekLabel(c.weekKey)}</td>
                     <td>{int(c.issued)}</td>
                     <td>
-                      {pct(c.pct)}
-                      {c.open ? <span className="text-xs text-ink-muted"> (em aberto)</span> : null}
+                      {int(c.used)} ({pct(c.pct)})
+                      {c.open ? <span className="text-xs text-ink-muted"> (ainda contando)</span> : null}
                     </td>
                   </tr>
                 ))}
@@ -349,19 +369,19 @@ function Cards({ d }: { d: DashboardView }) {
         </div>
         <dl className="grid grid-cols-1 gap-2 text-sm sm:grid-cols-3">
           <div>
-            <dt className="text-ink-muted">Custo por convite emitido</dt>
+            <dt className="text-ink-muted">Custo médio por convite entregue</dt>
             <dd className="font-semibold text-ink">{d.cards.costPerInviteCents === null ? "—" : brl(d.cards.costPerInviteCents)}</dd>
           </div>
           <div>
-            <dt className="text-ink-muted">Custo por cliente identificado</dt>
+            <dt className="text-ink-muted">Custo do benefício de 1ª visita por cliente novo</dt>
             <dd className="font-semibold text-ink">{d.cards.costPerIdentifiedCents === null ? "—" : brl(d.cards.costPerIdentifiedCents)}</dd>
           </div>
           <div>
-            <dt className="text-ink-muted">Custo × margem das visitas</dt>
-            <dd className="font-semibold text-ink">{d.cards.costOverMarginPct === null ? "Declare ticket e margem" : `${d.cards.costOverMarginPct}%`}</dd>
+            <dt className="text-ink-muted">Quanto da margem vai para benefícios</dt>
+            <dd className="font-semibold text-ink">{d.cards.costOverMarginPct === null ? "Informe ticket e margem" : `${d.cards.costOverMarginPct}%`}</dd>
           </div>
         </dl>
-        <p className="text-xs text-ink-muted">Estimativa, com base nos valores que você declarou. Últimos 30 dias.</p>
+        <p className="text-xs text-ink-muted">Custos dos últimos 30 dias. A margem usa o ticket e a margem que você informou.</p>
       </section>
     </div>
   );

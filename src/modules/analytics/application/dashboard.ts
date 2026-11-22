@@ -20,8 +20,8 @@ import { addDaysSP, weekKeySP } from "@/src/shared/week";
 
 export type MetricView = {
   inc: Incremental;
-  /** Clientes do grupo de controle que ainda faltam (com 14 dias completos) para sair de "amostra insuficiente". */
-  missingHoldout: number;
+  /** Clientes que ainda faltam em cada grupo (com 14 dias completos) para sair de "amostra insuficiente" (A13: os dois grupos). */
+  missing: { controle: number; convidados: number };
   /** Visitas a mais no total dos convidados (diff × nT), quando há resultado. */
   totalExtra: number | null;
   margin: { cents: number; lo: number; hi: number } | null;
@@ -52,6 +52,8 @@ export type DashboardView = {
   plan: PlanBadge;
   /** S5.1 (flag `painel_valor`): topo em R$ (D179) e metas da semana por faixa. */
   value?: { topline: Topline; goals: SlotGoal[] };
+  /** "Ver minha página" (A9): a página aberta pelo QR do display A em uso (`?p=`), como o cliente chega; sem display, sem peça. */
+  customerPath: string;
 };
 
 type Row = Record<string, unknown>;
@@ -71,7 +73,7 @@ export async function getFunnel(ex: Executor, restaurantId: string, today: strin
       (select count(*) from (select c.customer_id, min(c.day_sp) d from checkins c where c.restaurant_id = ${restaurantId} group by c.customer_id) f where f.d between ${from} and ${to} ${byOrigin("f")}) as new_contacts,
       (select count(*) from invites i where i.restaurant_id = ${restaurantId} and i.arm = 'convidavel' and i.origin = 'mesa' and i.issued_day between ${from} and ${to} ${byOrigin("i")}) as inv_table,
       (select count(*) from invites i where i.restaurant_id = ${restaurantId} and i.arm = 'convidavel' and i.origin = 'reativacao' and i.issued_day between ${from} and ${to} ${byOrigin("i")}) as inv_react,
-      (select count(*) from codes k where k.restaurant_id = ${restaurantId} and k.type = 'convite' and k.valid_day between ${from} and ${to} ${byOrigin("k")}) as returns,
+      (select count(distinct k.invite_id) from codes k where k.restaurant_id = ${restaurantId} and k.type = 'convite' and k.valid_day between ${from} and ${to} ${byOrigin("k")}) as returns,
       (select count(*) from codes k where k.restaurant_id = ${restaurantId} and k.type = 'convite' and k.status = 'validado' and k.valid_day between ${from} and ${to} ${byOrigin("k")}) as inv_valid,
       (select count(*) from codes k where k.restaurant_id = ${restaurantId} and k.type = 'primeira_visita' and k.status = 'validado' and k.valid_day between ${from} and ${to} ${byOrigin("k")}) as first_valid`,
   );
@@ -161,7 +163,7 @@ async function metricOf(ex: Executor, ctx: RestaurantContext, today: string): Pr
 
   return {
     inc,
-    missingHoldout: inc.state === "amostra_insuficiente" ? Math.max(0, MIN_N - inc.nH) : 0,
+    missing: inc.state === "amostra_insuficiente" ? { controle: Math.max(0, MIN_N - inc.nH), convidados: Math.max(0, MIN_N - inc.nT) } : { controle: 0, convidados: 0 },
     totalExtra: inc.state === "amostra_insuficiente" ? null : Math.round(inc.diff * inc.nT),
     margin: m,
     marginDeclared: declared,
@@ -201,6 +203,18 @@ export async function getNewUsers30d(ex: Executor, restaurantId: string, today: 
   return num(r?.n);
 }
 
+/** Página do restaurante como o cliente chega (A9): pelo QR do display de mesa, versão A em uso (a mais nova). */
+export async function getCustomerPath(ex: Executor, restaurantId: string, slug: string): Promise<string> {
+  const [r] = await rows(
+    ex,
+    sql`select pv.qr_token from piece_variants pv join kit_pieces kp on kp.id = pv.piece_id
+        where pv.restaurant_id = ${restaurantId} and kp.kind = 'display' and pv.label = 'A' and pv.retired_at is null
+        order by pv.created_at desc limit 1`,
+  );
+  const base = `/r/${encodeURIComponent(slug)}`;
+  return r?.qr_token ? `${base}?p=${encodeURIComponent(String(r.qr_token))}` : base;
+}
+
 export async function getDashboard(ex: Executor, restaurantId: string, now: Date, opts: { period?: Period; variantId?: string; painelValor?: boolean } = {}): Promise<DashboardView | null> {
   const ctx = await loadContext(ex, restaurantId);
   if (!ctx) return null;
@@ -226,6 +240,7 @@ export async function getDashboard(ex: Executor, restaurantId: string, now: Date
     cards,
     plan,
     ...(value ? { value } : {}),
+    customerPath: await getCustomerPath(ex, restaurantId, ctx.restaurant.slug),
   };
 }
 
@@ -239,7 +254,7 @@ export async function getLatestCheckin(ex: Executor, restaurantId: string, since
         where c.restaurant_id = ${restaurantId} and c.at > ${since.toISOString()} and c.simulation_run_id is null order by c.at desc limit 1`,
   );
   if (!r) return null;
-  const PIECE: Record<string, string> = { display: "Display mesa", cartaz: "Cartaz" };
+  const PIECE: Record<string, string> = { display: "Display de mesa", cartaz: "Cartaz" };
   return { at: new Date(String(r.at)).toISOString(), piece: r.kind ? `${PIECE[String(r.kind)] ?? String(r.kind)} ${String(r.label)}` : null, holdout: r.arm === "holdout" };
 }
 

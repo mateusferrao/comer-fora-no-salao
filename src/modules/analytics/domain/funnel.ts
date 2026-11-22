@@ -20,7 +20,7 @@ export type FunnelCounts = {
   /** Convites reais emitidos na mesa (`origin = mesa`). */
   invitesTable: number;
   invitesReactivation: number;
-  /** Códigos de convite emitidos (volta dentro da faixa). */
+  /** Convites com volta no horário do convite (códigos de convite emitidos, 1 por convite — A16). */
   returnsWithInvite: number;
   /** Desses, os validados pelo garçom. */
   inviteCodesValidated: number;
@@ -37,10 +37,10 @@ export function funnelSteps(c: FunnelCounts): { steps: FunnelStep[]; side: { inv
     steps: [
       { key: "leituras", label: "Leituras do QR", value: c.scans, pctOfPrev: null },
       { key: "checkins", label: "Check-ins", value: c.checkins, pctOfPrev: pct(c.checkins, c.scans) },
-      { key: "contato", label: "Deixaram contato", value: c.newContacts, pctOfPrev: pct(c.newContacts, c.checkins) },
-      { key: "convites", label: "Convites emitidos na mesa", value: c.invitesTable, pctOfPrev: null },
-      { key: "voltaram", label: "Voltaram com convite", value: c.returnsWithInvite, pctOfPrev: null },
-      { key: "validados", label: "Códigos de convite validados", value: c.inviteCodesValidated, pctOfPrev: pct(c.inviteCodesValidated, c.returnsWithInvite) },
+      { key: "contato", label: "Clientes novos (1ª visita)", value: c.newContacts, pctOfPrev: pct(c.newContacts, c.checkins) },
+      { key: "convites", label: "Convites entregues na mesa", value: c.invitesTable, pctOfPrev: null },
+      { key: "voltaram", label: "Voltaram no horário do convite", value: c.returnsWithInvite, pctOfPrev: null },
+      { key: "validados", label: "Usaram o convite (garçom validou)", value: c.inviteCodesValidated, pctOfPrev: pct(c.inviteCodesValidated, c.returnsWithInvite) },
     ],
     side: { invitesReactivation: c.invitesReactivation, firstVisitValidated: c.firstVisitValidated },
   };

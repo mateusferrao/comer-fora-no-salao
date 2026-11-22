@@ -1,13 +1,16 @@
 import Link from "next/link";
 import type { FirstSteps as Steps } from "@/src/modules/onboarding/application/first-steps";
 
-/** "Primeiros passos" (S4 §4.4): some quando os 4 estão feitos. */
-export function FirstSteps({ steps, slug }: { steps: Steps; slug: string }) {
+/**
+ * "Primeiros passos" (S4 §4.4): some quando os 4 estão feitos. "Ver minha página" abre pelo QR do display A
+ * (`customerPath` com `?p=`, A9), como o cliente chega: o 1º check-in conta como cliente vindo do kit.
+ */
+export function FirstSteps({ steps, customerPath }: { steps: Steps; customerPath: string }) {
   const items: Array<{ done: boolean; label: string; href: string; cta: string; external?: boolean }> = [
-    { done: steps.kitNoSalao, label: "Kit pronto e marcado no salão (não precisa imprimir para testar)", href: "/parceiro/salao/kit", cta: "Abrir o kit" },
-    { done: steps.primeiroCheckin, label: "1º check-in de um cliente", href: `/r/${slug}`, cta: "Ver minha página", external: true },
+    { done: steps.kitNoSalao, label: "Kit pronto e marcado no salão", href: "/parceiro/salao/kit", cta: "Abrir o kit" },
+    { done: steps.primeiroCheckin, label: "1º check-in de um cliente", href: customerPath, cta: "Ver minha página", external: true },
     { done: steps.primeiroCodigo, label: "1º código validado pelo garçom", href: "/parceiro/salao/validar", cta: "Validar código" },
-    { done: steps.primeiraVolta, label: "1º cliente voltou com convite", href: "/bastidores/avaliador", cta: "Como ver a volta hoje" },
+    { done: steps.primeiraVolta, label: "1º cliente voltou com convite", href: "/parceiro/salao/clientes?segmento=convite_ativo", cta: "Ver quem tem convite ativo" },
   ];
   if (items.every((i) => i.done)) return null;
   const done = items.filter((i) => i.done).length;

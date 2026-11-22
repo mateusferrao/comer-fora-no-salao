@@ -7,6 +7,7 @@ import { mulberry32 } from "@/src/shared/rng";
 import { assignArm, type Arm } from "@/src/modules/salao/domain/experiment";
 import { doCheckin } from "@/src/modules/salao/application/do-checkin";
 import { registerScan } from "@/src/modules/salao/application/register-scan";
+import { getFunnel } from "@/src/modules/analytics/application/dashboard";
 import { createRestaurant, resetDb } from "./helpers/db";
 
 const SEG_13 = "2026-11-23T16:00:00Z"; // segunda 13h SP (fora da faixa A Ter–Qui 15–18)
@@ -156,6 +157,34 @@ describe("check-in (Postgres real)", () => {
     await checkin(r.restaurantId, c);
     const [inv] = await getDb().select().from(invites).where(eq(invites.customerId, c));
     await expect(getDb().insert(invites).values({ ...inv!, id: undefined })).rejects.toThrow();
+  });
+
+  it("origem da peça só no 1º check-in: 2º check-in pelo QR não vira 'novo usuário vindo de peça' (A15)", async () => {
+    const r = await createRestaurant({ pieces: [{ kind: "display", variants: [{ label: "A", token: "tok-a", texts: {} }] }] });
+    const variantId = r.variants["tok-a"]!;
+    const semPeca = await customerWithArm(r.restaurantId, "convidavel");
+    await checkin(r.restaurantId, semPeca);
+    await doCheckin(getDb(), { restaurantId: r.restaurantId, customerId: semPeca, gpsStatus: "negado", variantId, idempotencyKey: crypto.randomUUID(), clock: fixedClock(TER_20), randInt: rand() });
+    const [a] = await getDb().select().from(restaurantCustomers).where(eq(restaurantCustomers.customerId, semPeca));
+    expect(a!.originVariantId).toBeNull();
+    const comPeca = await customerWithArm(r.restaurantId, "convidavel");
+    await doCheckin(getDb(), { restaurantId: r.restaurantId, customerId: comPeca, gpsStatus: "negado", variantId, idempotencyKey: crypto.randomUUID(), clock: fixedClock(SEG_13), randInt: rand() });
+    await checkin(r.restaurantId, comPeca, fixedClock(TER_20));
+    const [b] = await getDb().select().from(restaurantCustomers).where(eq(restaurantCustomers.customerId, comPeca));
+    expect(b!.originVariantId).toBe(variantId);
+  });
+
+  it("funil: o mesmo convite usado na faixa em 2 dias conta 1 volta (A16)", async () => {
+    const r = await createRestaurant();
+    const c = await customerWithArm(r.restaurantId, "convidavel");
+    await checkin(r.restaurantId, c);
+    await checkin(r.restaurantId, c, fixedClock("2026-11-25T19:10:00Z")); // quarta 16h10 SP, na faixa
+    await checkin(r.restaurantId, c, fixedClock("2026-11-26T19:10:00Z")); // quinta 16h10 SP, na faixa
+    const codigos = await getDb().select().from(codes).where(and(eq(codes.customerId, c), eq(codes.type, "convite")));
+    expect(codigos).toHaveLength(2);
+    expect(new Set(codigos.map((k) => k.inviteId)).size).toBe(1);
+    const f = await getFunnel(getDb(), r.restaurantId, "2026-11-26", "7d");
+    expect(f.steps.find((s) => s.key === "voltaram")!.value).toBe(1);
   });
 
   it("colisão de código: tenta de novo até achar um livre", async () => {
