@@ -5,7 +5,7 @@
  * MESMAS funções das Configurações, que revalidam tudo.
  */
 import { createHash } from "node:crypto";
-import { and, eq, gt, sql } from "drizzle-orm";
+import { and, eq, gt, lte, sql } from "drizzle-orm";
 import type { Db } from "@/src/db/client";
 import { agentProposals } from "@/src/db/schema";
 import { describeOffer, offerFromInput } from "@/src/modules/beneficios/domain/offers";
@@ -132,6 +132,26 @@ export type DecideResult =
 
 /** Reserva presa em `aplicando` (processo caiu no meio) vira `falhou` depois deste tempo (revisão S8, técnica A2). */
 export const APPLYING_STALE_MS = 2 * 60_000;
+
+/**
+ * Faxina do agendador (revisão S8, item 25): pendente que ninguém decidiu em 30 min vira `expirada` (motivo
+ * `sem_decisao`) e reserva presa vira `falhou` — antes isso só acontecia quando alguém tentava aplicar, e a métrica
+ * "vencidas" subcontava. Nada é apagado: as linhas não têm dado pessoal e apagar só as não aplicadas inflaria o
+ * "% aplicadas" com o tempo.
+ */
+export async function sweepProposals(db: Db, now: Date): Promise<{ expired: number; failed: number }> {
+  const expired = await db
+    .update(agentProposals)
+    .set({ status: "expirada", error: "sem_decisao", decidedAt: now })
+    .where(and(eq(agentProposals.status, "pendente"), lte(agentProposals.createdAt, new Date(now.getTime() - PROPOSAL_TTL_MS))))
+    .returning({ id: agentProposals.id });
+  const failed = await db
+    .update(agentProposals)
+    .set({ status: "falhou", error: "reserva_presa", decidedAt: now })
+    .where(and(eq(agentProposals.status, "aplicando"), lte(agentProposals.createdAt, new Date(now.getTime() - PROPOSAL_TTL_MS - APPLYING_STALE_MS))))
+    .returning({ id: agentProposals.id });
+  return { expired: expired.length, failed: failed.length };
+}
 
 const APPLY_ERR: Record<string, string> = {
   em_uso: "O prato está numa oferta em vigor. Troque a oferta antes.",

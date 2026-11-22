@@ -3,7 +3,8 @@ import { and, eq, isNull } from "drizzle-orm";
 import { closeDb, getDb } from "@/src/db/client";
 import { agentProposals, benefitVersions, menuItems, ownerEdits, restaurants, weeklyPlans } from "@/src/db/schema";
 import { generateWeeklyPlan } from "@/src/modules/planos/application/generate-plan";
-import { createProposals, decideProposal, PROPOSAL_TTL_MS } from "@/src/modules/agente/application/proposals";
+import { APPLYING_STALE_MS, createProposals, decideProposal, PROPOSAL_TTL_MS, sweepProposals } from "@/src/modules/agente/application/proposals";
+import { runSchedulerTick } from "@/src/modules/agendador/application/tick";
 import { appliedProposalTitle, getCopilotMetrics } from "@/src/modules/agente/application/metrics";
 import { updateOffer } from "@/src/modules/config/application/update-settings";
 import { createRestaurant, resetDb } from "./helpers/db";
@@ -28,6 +29,25 @@ describe("propostas do copiloto (S8 — D261, D269)", () => {
     expect(edits.some((e) => e.kind === "config:convite")).toBe(true);
     const [row] = await getDb().select().from(agentProposals).where(eq(agentProposals.id, card!.id!));
     expect(row!.status).toBe("aplicada");
+  });
+
+  it("faxina do agendador: pendente vencida → expirada (sem_decisao); reserva presa → falhou; recente fica (revisão S8, item 25)", async () => {
+    const r = await createRestaurant();
+    const offer = (cap: number) => ({ acao: "oferta" as const, papel: "convite" as const, slotId: r.slots.A!, offer: { kind: "entrada_gratis" as const, itemId: r.items.bruschetta! }, weeklyCap: cap });
+    const [old] = await createProposals(getDb(), { restaurantId: r.restaurantId, origin: "copiloto", payloads: [offer(11)], now: NOW });
+    const [stuck] = await createProposals(getDb(), { restaurantId: r.restaurantId, origin: "mcp", payloads: [offer(12)], now: NOW });
+    await getDb().update(agentProposals).set({ status: "aplicando" }).where(eq(agentProposals.id, stuck!.id!));
+    const [recent] = await createProposals(getDb(), { restaurantId: r.restaurantId, origin: "copiloto", payloads: [offer(13)], now: later(PROPOSAL_TTL_MS) });
+    // Tique global (flags do agendador desligadas: a faxina roda mesmo assim).
+    const tickAt = later(PROPOSAL_TTL_MS + APPLYING_STALE_MS + 1000);
+    await runSchedulerTick(getDb(), tickAt, { sender: null, baseUrl: "http://x", flags: { agendador: false, resumo_email: false }, generatePlan: async () => ({}), sendPending: async () => ({}) });
+    const status = async (id: string) => (await getDb().select().from(agentProposals).where(eq(agentProposals.id, id)))[0]!;
+    expect(await status(old!.id!)).toMatchObject({ status: "expirada", error: "sem_decisao" });
+    expect(await status(stuck!.id!)).toMatchObject({ status: "falhou", error: "reserva_presa" });
+    expect((await status(recent!.id!)).status).toBe("pendente");
+    expect((await getCopilotMetrics(getDb())).expired).toBe(1);
+    // Idempotente.
+    expect(await sweepProposals(getDb(), tickAt)).toEqual({ expired: 0, failed: 0 });
   });
 
   it("Tiramisù (recompensa) indisponível → recusada, nada gravado", async () => {
