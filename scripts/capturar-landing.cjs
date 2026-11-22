@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-require-imports -- script Node avulso (CommonJS), fora do app */
 // Captura os prints da landing (S9): topo da Visão geral da cópia da Cantina e o celular com o 2º card do convite.
 // Uso: node capture-landing.cjs <worktree> <baseURL> <outDir> [explore]
 const path = require("node:path");
