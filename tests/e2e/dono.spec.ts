@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { axe, BARRA, loginE2E, PROD, loginCustomer, pickOption, storeIds } from "./helpers";
+import { axe, BARRA, loginCustomer, loginE2E, pickOption, PROD, storeIds, waitExampleReady } from "./helpers";
 
 /**
  * Fluxo do dono (planejamento S2 §7). Serial: as contas de teste são compartilhadas entre os testes do arquivo.
@@ -40,7 +40,7 @@ test("conta nova ganha a própria vitrine (60 dias): check-in de cliente nela e 
   test.setTimeout(90_000);
   await loginE2E(page.request, 1);
   await page.goto("/parceiro/salao");
-  await expect(page.getByText(/Preparando o restaurante de exemplo/)).toBeHidden({ timeout: 60_000 });
+  await waitExampleReady(page);
   await expect(page.getByText("Restaurante de exemplo · histórico gerado")).toBeVisible();
   const href = (await page.getByRole("link", { name: "Ver minha página" }).getAttribute("href"))!;
   expect(href).toMatch(/^\/r\/cantina-nonna-lucia-[a-z2-9]{6}$/);
@@ -167,7 +167,7 @@ test("assistente completo com exemplo: salão pré-preenchido → revisão → p
 
   // Kit: gerado depois da ativação (sem IA no CI/local), aprovar, "no salão", impressão com QR.
   await page.getByRole("link", { name: "Ver meu kit" }).click();
-  await expect(page.getByRole("heading", { name: "Display de mesa (meia A4)" })).toBeVisible({ timeout: 30_000 });
+  await expect(page.getByRole("heading", { name: "Display de mesa (meia A4)" })).toBeVisible({ timeout: 60_000 });
   await expect(page.getByText(PROD ? /Escrito pela IA|Texto modelo \(sem IA\)/ : "Texto modelo (sem IA)")).toBeVisible();
   await axe(page);
   const display = page.getByRole("region", { name: "Display de mesa (meia A4)" });

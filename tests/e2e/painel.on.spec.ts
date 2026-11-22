@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { axe, loginCustomer, loginE2E, PROD, S5_ON } from "./helpers";
+import { axe, loginCustomer, loginE2E, PROD, S5_ON, waitExampleReady } from "./helpers";
 
 /**
  * S5.1 com a flag `painel_valor` ligada (passada `flags-on`; em produção só com E2E_FLAGS=on): topo em R$,
@@ -11,7 +11,7 @@ test.describe.configure({ mode: "serial" });
 async function openCopy(page: import("@playwright/test").Page) {
   await loginE2E(page.request, 11);
   await page.goto("/parceiro/salao");
-  await expect(page.getByText(/Preparando o restaurante de exemplo/)).toBeHidden({ timeout: 60_000 });
+  await waitExampleReady(page);
   await page.reload();
 }
 

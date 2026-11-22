@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { axe, loginE2E, PROD, storeIds } from "./helpers";
+import { axe, loginE2E, PROD, storeIds, waitExampleReady } from "./helpers";
 
 /**
  * S8 — Assistente do salão (D260–D264). Local: IA roteirizada (só com chaves vazias + token local — `fakeAi` no
@@ -18,7 +18,7 @@ test.describe("copiloto (local, IA roteirizada)", () => {
     await page.setViewportSize({ width: 1280, height: 900 });
     await loginE2E(page.request, 41);
     await page.goto("/parceiro/salao");
-    await expect(page.getByText(/Preparando o restaurante de exemplo/)).toBeHidden({ timeout: 120_000 });
+    await waitExampleReady(page);
     const before = (await (await page.request.get("/api/parceiro/configuracoes")).json()) as { slots: Array<{ offer: { itemId: string } }> };
     await page.goto("/parceiro/salao/configuracoes?aba=convites");
     await page.getByRole("button", { name: "Assistente" }).click();
@@ -42,7 +42,7 @@ test.describe("copiloto (local, IA roteirizada)", () => {
     await page.setViewportSize({ width: 1280, height: 900 });
     await loginE2E(page.request, 42);
     await page.goto("/parceiro/salao");
-    await expect(page.getByText(/Preparando o restaurante de exemplo/)).toBeHidden({ timeout: 120_000 });
+    await waitExampleReady(page);
     await page.getByRole("button", { name: "Assistente" }).click();
     const panel = page.getByRole("complementary", { name: "Assistente do salão" });
     await panel.getByRole("textbox", { name: "Seu pedido" }).fill("acabou o tiramisù");
@@ -58,7 +58,7 @@ test.describe("copiloto (local, IA roteirizada)", () => {
     await page.setViewportSize({ width: 390, height: 844 });
     await loginE2E(page.request, 43);
     await page.goto("/parceiro/salao");
-    await expect(page.getByText(/Preparando o restaurante de exemplo/)).toBeHidden({ timeout: 120_000 });
+    await waitExampleReady(page);
     await page.getByRole("button", { name: "Assistente" }).click();
     const dlg = page.getByRole("dialog", { name: "Assistente do salão" });
     await expect(dlg).toBeVisible();

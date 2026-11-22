@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { axe, loginE2E } from "./helpers";
+import { axe, loginE2E, waitExampleReady } from "./helpers";
 
 /**
  * Ajuste de 21/11: tocar num item do menu responde na hora. Com a resposta do servidor atrasada de propósito, o
@@ -10,7 +10,7 @@ test("celular: menu → Clientes mostra o esqueleto e marca o item na hora, ante
   await page.setViewportSize({ width: 390, height: 844 });
   await loginE2E(page.request, 32);
   await page.goto("/parceiro/salao");
-  await expect(page.getByText(/Preparando o restaurante de exemplo/)).toBeHidden({ timeout: 120_000 });
+  await waitExampleReady(page);
   await expect(page.getByRole("heading", { name: "Visão geral", level: 1 })).toBeVisible();
   // Atrasa só a navegação para Clientes; o prefetch (que traz o esqueleto) passa normal, como na vida real.
   await page.route(/\/parceiro\/salao\/clientes/, async (route) => {
@@ -34,7 +34,7 @@ test("computador: o item tocado fica marcado enquanto a tela carrega", async ({ 
   await page.setViewportSize({ width: 1280, height: 900 });
   await loginE2E(page.request, 33);
   await page.goto("/parceiro/salao");
-  await expect(page.getByText(/Preparando o restaurante de exemplo/)).toBeHidden({ timeout: 120_000 });
+  await waitExampleReady(page);
   await page.route(/\/parceiro\/salao\/kit/, async (route) => {
     if (!route.request().headers()["next-router-prefetch"]) await new Promise((r) => setTimeout(r, 2_500));
     await route.continue();

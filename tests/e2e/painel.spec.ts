@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { axe, confirmIfAsked, loginE2E, loginCustomer } from "./helpers";
+import { axe, confirmIfAsked, loginCustomer, loginE2E, waitExampleReady } from "./helpers";
 
 /** Visão geral e Clientes na cópia da vitrine (planejamento S3 §4.2, §4.5). Conta própria (e2e-dono+4). */
 test.describe.configure({ mode: "serial" });
@@ -7,7 +7,7 @@ test.describe.configure({ mode: "serial" });
 async function openCopy(page: import("@playwright/test").Page) {
   await loginE2E(page.request, 4);
   await page.goto("/parceiro/salao");
-  await expect(page.getByText(/Preparando o restaurante de exemplo/)).toBeHidden({ timeout: 60_000 });
+  await waitExampleReady(page);
   await page.reload();
 }
 

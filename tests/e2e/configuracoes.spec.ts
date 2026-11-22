@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { axe, loginE2E, PROD, S5_ON } from "./helpers";
+import { axe, loginE2E, PROD, S5_ON, waitExampleReady } from "./helpers";
 
 /**
  * S6 (sem flag): Configurações › "Avisos e automação" (D196). Conta própria (e2e-dono+24); o estado é restaurado no fim.
@@ -9,7 +9,7 @@ test("avisos e automação: e-mails aos clientes por tipo e antecedência do lem
   test.setTimeout(120_000);
   await loginE2E(page.request, 24);
   await page.goto("/parceiro/salao");
-  await expect(page.getByText(/Preparando o restaurante de exemplo/)).toBeHidden({ timeout: 60_000 });
+  await waitExampleReady(page);
   await page.goto("/parceiro/salao/configuracoes?aba=avisos");
   await expect(page.getByRole("heading", { name: "Para você" })).toBeVisible();
   const resumo = page.getByRole("switch", { name: "Receber o resumo da semana por e-mail" });
@@ -38,7 +38,7 @@ test("IA do restaurante: recusa instrução nos fatos, salva fatos e termos, per
   test.setTimeout(180_000);
   await loginE2E(page.request, 36);
   await page.goto("/parceiro/salao");
-  await expect(page.getByText(/Preparando o restaurante de exemplo/)).toBeHidden({ timeout: 120_000 });
+  await waitExampleReady(page);
   await page.goto("/parceiro/salao/configuracoes?aba=ia");
   await expect(page.getByRole("heading", { name: "Como a IA escreve para o seu restaurante" })).toBeVisible();
   await expect(page.getByText("Tudo aqui é opcional.")).toBeVisible();
@@ -85,7 +85,7 @@ test("Configurações: alteração sem salvar mostra o aviso no bloco", async ({
   test.setTimeout(180_000);
   await loginE2E(page.request, 35);
   await page.goto("/parceiro/salao");
-  await expect(page.getByText(/Preparando o restaurante de exemplo/)).toBeHidden({ timeout: 120_000 });
+  await waitExampleReady(page);
   await page.goto("/parceiro/salao/configuracoes?aba=convites");
   const field = page.getByLabel("Quantas mesas a mais você quer por semana nesse horário?").first();
   await expect(field).toBeVisible();

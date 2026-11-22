@@ -5,7 +5,6 @@
  */
 import { eq } from "drizzle-orm";
 import type { Db } from "@/src/db/client";
-import { getFlags } from "@/src/modules/config/application/app-config";
 import { owners, restaurants } from "@/src/db/schema";
 import type { AiGateway, ChatTurn } from "@/src/modules/ia/gateway";
 import { dailyCapOff, gatewayFor, keyKindFor } from "@/src/modules/ia/gateway-factory";

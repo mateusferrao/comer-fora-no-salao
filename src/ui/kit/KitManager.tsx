@@ -30,6 +30,19 @@ export function KitManager({ initial, restaurantName, qrs, billHolder = false }:
   const [msg, setMsg] = useState<string | null>(null);
 
   const reviewing = kit.pieces.some((p) => p.variants.some((v) => v.review?.status === "revisando"));
+  // D255: logo depois de ativar, a geração começa em segundo plano; se a tela abrir antes, ela ainda não está
+  // "gerando". Sem kit, consulta de novo por até ~30 s (antes a tela ficava parada em "ainda não foi gerado").
+  const [emptyTries, setEmptyTries] = useState(0);
+  const waitingStart = !kit.pieces.length && !kit.generating && emptyTries < 12;
+  useEffect(() => {
+    if (!waitingStart) return;
+    const t = setTimeout(async () => {
+      const r = await call("/api/parceiro/kit", "GET").catch(() => null);
+      if (r?.ok) setKit(r.data as unknown as KitView);
+      setEmptyTries((n) => n + 1);
+    }, 2500);
+    return () => clearTimeout(t);
+  }, [waitingStart, emptyTries]);
   useEffect(() => {
     if (!kit.generating && !reviewing) return;
     const t = setTimeout(async () => {

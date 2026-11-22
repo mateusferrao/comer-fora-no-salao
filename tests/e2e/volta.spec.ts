@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { axe, loginCustomer, loginE2E, S5_ON } from "./helpers";
+import { axe, loginCustomer, loginE2E, S5_ON, waitExampleReady } from "./helpers";
 
 /**
  * Volta com convite pelas Ferramentas do avaliador (D153) e grupo de controle visível só ao dono (D172).
@@ -58,7 +58,7 @@ test("grupo de controle: o cliente não vê nada; o dono vê a marca em 'Último
   test.setTimeout(240_000);
   await loginE2E(page.request, 8);
   await page.goto("/parceiro/salao");
-  await expect(page.getByText(/Preparando o restaurante de exemplo/)).toBeHidden({ timeout: 60_000 });
+  await waitExampleReady(page);
   await page.reload();
   const href = (await page.getByRole("link", { name: "Ver minha página" }).getAttribute("href"))!;
   let holdout = false;

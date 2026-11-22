@@ -1,5 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
-import { loginE2E } from "./helpers";
+import { loginE2E, waitExampleReady } from "./helpers";
 
 /**
  * Varredura de textos (S4, D152; revisão técnica I8 e de produto M2): nas telas do produto, nada se apresenta
@@ -33,7 +33,7 @@ test("telas do Portal do dono (cópia do restaurante de exemplo)", async ({ page
   test.setTimeout(120_000);
   await loginE2E(page.request, 9);
   await page.goto("/parceiro/salao");
-  await expect(page.getByText(/Preparando o restaurante de exemplo/)).toBeHidden({ timeout: 60_000 });
+  await waitExampleReady(page);
   for (const url of ["/parceiro/salao", "/parceiro/salao/plano", "/parceiro/salao/plano/historico", "/parceiro/salao/kit", "/parceiro/salao/clientes", "/parceiro/salao/configuracoes", "/parceiro/salao/validar"]) {
     await check(page, url);
   }
