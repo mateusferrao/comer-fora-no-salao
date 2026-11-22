@@ -114,6 +114,8 @@ test.describe("vitrine (só leitura)", () => {
     const res = await page.goto("/r/nao-existe-xyz");
     expect(res?.status()).toBe(404);
     await expect(page.getByText("Página não encontrada")).toBeVisible();
+    // S9: a saída do 404 do cliente é Sua jornada, nunca a página do dono.
+    await expect(page.getByRole("link", { name: "Ver Sua jornada" })).toHaveAttribute("href", "/app/jornada");
   });
 });
 

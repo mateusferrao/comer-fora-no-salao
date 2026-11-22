@@ -106,7 +106,7 @@ export function RestaurantView({ page, token, copyV2 = false, recentCheckins = n
       <p className="mt-3 text-base leading-6 text-ink">{page.address ?? "Endereço não informado"}</p>
       <p className="mt-6 text-xs text-ink-muted">
         Fotos ilustrativas de banco livre (Wikimedia Commons, CC0 e CC BY).{" "}
-        <a href="/bastidores/como-funciona" className="underline">
+        <a href="/sobre#fotos" className="underline">
           Créditos das fotos
         </a>
       </p>
@@ -118,9 +118,10 @@ export function RestaurantView({ page, token, copyV2 = false, recentCheckins = n
       {copyV2 && <ConversionBand page={page} recentCheckins={recentCheckins} />}
       <header className="relative">
         <Hero src={page.heroImage} />
+        {/* S9: a página inicial é a do dono (explica o grupo de controle); o cliente volta para Sua jornada. */}
         <Link
-          href="/"
-          aria-label="Voltar"
+          href="/app/jornada"
+          aria-label="Voltar para Sua jornada"
           className="absolute left-4 top-4 flex size-11 items-center justify-center rounded-full bg-black/55 text-white focus-visible:outline-2 focus-visible:outline-white"
         >
           <svg aria-hidden="true" viewBox="0 0 24 24" className="size-5" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round">
