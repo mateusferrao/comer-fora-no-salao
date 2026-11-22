@@ -41,16 +41,16 @@ test("link do garçom: criar → validar sem login → revogar corta na hora", a
   await expect(w).toHaveURL(/\/garcom$/);
   await expect(w.getByRole("heading", { name: /^Validar código · / })).toBeVisible();
   await expect(w.getByRole("navigation", { name: "Menu principal" })).toHaveCount(0);
-  await w.getByLabel("Código do cliente").fill(code);
-  await w.getByRole("button", { name: "Consultar" }).click();
+  await w.getByLabel("Código do benefício").fill(code);
+  await w.getByRole("button", { name: "Conferir código" }).click();
   const found = w.getByRole("region", { name: "Código encontrado" });
   // D237: o garçom vê o contato completo (nome e e-mail; o login de teste não informa telefone).
   await expect(found).toContainText("Gabi Garçom");
   await expect(found).toContainText(/e2e-cliente\+\d+@exemplo\.invalid/);
   await expect(found).not.toContainText("••");
   await axe(w);
-  await found.getByRole("button", { name: "Confirmar" }).click();
-  await expect(w.getByText(/Código validado ✓ às \d{2}:\d{2}/)).toBeVisible();
+  await found.getByRole("button", { name: "Confirmar e entregar" }).click();
+  await expect(w.getByText(/Confirmado às \d{2}:\d{2}\. Pode entregar:/)).toBeVisible();
 
   await card.getByRole("button", { name: "Revogar" }).click();
   const conf = page.getByRole("alertdialog", {

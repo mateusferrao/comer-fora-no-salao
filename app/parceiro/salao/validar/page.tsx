@@ -19,7 +19,7 @@ export default async function ValidarPage() {
       <header>
         <h1 className="text-2xl font-bold text-ink">Validar código</h1>
         <p className="mt-1 text-sm text-ink-muted">
-          {s.current ? `${s.current.name} · ` : ""}Digite o código que o cliente mostra no app. O sistema reconhece se é 1ª visita, convite ou recompensa.
+          {s.current ? `${s.current.name} · ` : ""}Digite o código do benefício que o cliente mostrar na tela. Aqui aparece na hora se é 1ª visita, convite ou cartela completa.
         </p>
       </header>
       {s.current ? <ValidateCode /> : <p className="text-sm text-ink">Crie ou escolha um restaurante para validar códigos.</p>}

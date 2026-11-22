@@ -48,7 +48,7 @@ export function JourneyLogin({ open, onClose, onDone }: { open: boolean; onClose
     setBusy(false);
     if (r?.ok) return onDone();
     const msg: Record<string, string> = {
-      sem_cadastro: "Ainda não há cadastro de cliente com este e-mail. Faça o check-in num restaurante para se cadastrar.",
+      sem_cadastro: "Este e-mail ainda não fez check-in. O cadastro começa no 1º check-in num restaurante.",
       incorreto: `Código incorreto · ${String(j.restantes ?? 0)} ${j.restantes === 1 ? "tentativa restante" : "tentativas restantes"}`,
       expirado: "O código venceu. Peça outro.",
       bloqueado: "Muitas tentativas com este código. Peça outro.",
@@ -66,8 +66,8 @@ export function JourneyLogin({ open, onClose, onDone }: { open: boolean; onClose
     <BottomSheet
       open={open}
       onClose={onClose}
-      title={step === "email" ? "Entrar com e-mail" : "Digite o código"}
-      description={step === "email" ? "Use o e-mail do seu cadastro. Enviamos um código de 6 números." : `Enviamos um código para ${email.trim()}.`}
+      title={step === "email" ? "Entrar com e-mail" : "Digite o código de acesso"}
+      description={step === "email" ? "Use o e-mail do seu cadastro. Enviamos um código de acesso de 6 números." : `Enviamos um código de acesso para ${email.trim()}.`}
       actions={
         <Button variant="primary-app" type="submit" form="form-jornada-login" loading={busy}>
           {step === "email" ? "Enviar código" : "Entrar"}
@@ -87,7 +87,7 @@ export function JourneyLogin({ open, onClose, onDone }: { open: boolean; onClose
           <Field label="E-mail" name="email" type="email" inputMode="email" autoComplete="email" value={email} onChange={(ev) => setEmail(ev.target.value)} maxLength={254} />
         ) : (
           <>
-            <Field label="Código" name="codigo" inputMode="numeric" autoComplete="one-time-code" maxLength={7} value={code} onChange={(ev) => setCode(ev.target.value)} autoFocus />
+            <Field label="Código de acesso" name="codigo" inputMode="numeric" autoComplete="one-time-code" maxLength={7} value={code} onChange={(ev) => setCode(ev.target.value)} autoFocus />
             <button type="button" className="min-h-11 self-start text-sm font-semibold text-red-text underline" onClick={() => (setStep("email"), setCode(""), setError(null))}>
               Trocar e-mail ou pedir outro código
             </button>

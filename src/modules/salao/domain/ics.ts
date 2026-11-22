@@ -47,7 +47,7 @@ export function inviteIcs(p: { uid: string; restaurant: string; address: string 
     `DTEND:${utc(p.window.end)}`,
     `SUMMARY:${escape(`${p.gain} · ${p.restaurant}`)}`,
     ...(p.address ? [`LOCATION:${escape(p.address)}`] : []),
-    `DESCRIPTION:${escape(`Chegando ao restaurante, faça check-in no app e mostre ao garçom o código do benefício.\nVer o convite: ${p.journeyUrl}`)}`,
+    `DESCRIPTION:${escape(`Ao chegar, faça check-in e mostre ao garçom o código do benefício.\nVer meu convite: ${p.journeyUrl}`)}`,
     "END:VEVENT",
     "END:VCALENDAR",
   ];

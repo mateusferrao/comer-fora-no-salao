@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { buildKitPrompt, kitGuard, resolveKit } from "@/src/modules/ia/tasks/kit";
-import { BILL_TEMPLATE, FALLBACK_KIT, INVITE_LINE, sentenceCount, WAITER_TEMPLATE, waiterPhrase } from "@/src/modules/kit/domain/templates";
+import { BILL_TEMPLATE, FALLBACK_KIT, INVITE_LINE, sentenceCount, WAITER_TEMPLATE, waiterPhrase, waiterTemplate } from "@/src/modules/kit/domain/templates";
 import { guardText } from "@/src/modules/ia/guardrails";
 import { qrUrl } from "@/src/modules/kit/domain/qr";
 
@@ -45,7 +45,12 @@ describe("kit — holdout protegido (revisão P-I2)", () => {
   it("S9: cartão do garçom gravado com o texto antigo sai com o texto novo; link do garçom troca o Portal", () => {
     const old = "Hoje, quem faz check-in ganha {beneficio}. Peça o código ao cliente e valide no Portal.";
     expect(waiterPhrase(old, false)).toBe(WAITER_TEMPLATE);
-    expect(waiterPhrase(old, true)).toBe(WAITER_TEMPLATE.replace("valide no Portal", "valide no link do garçom"));
+    expect(waiterPhrase(old, true)).toBe(waiterTemplate(true));
+    // Modelo atual: montado de novo, nos dois sentidos (sem substituir trecho da frase).
+    expect(waiterPhrase(WAITER_TEMPLATE, true)).toBe("Na 1ª visita, quem faz check-in pelo QR da mesa ganha {beneficio}. Peça ao cliente o código do benefício e valide no link do garçom.");
+    expect(waiterPhrase(waiterTemplate(true), false)).toBe(WAITER_TEMPLATE);
+    expect(WAITER_TEMPLATE).toMatch(/valide no Portal\.$/);
+    expect(sentenceCount(waiterTemplate(true))).toBeLessThanOrEqual(2);
     expect(waiterPhrase("Texto do dono.", true)).toBe("Texto do dono.");
   });
   it("QR por versão a partir da URL pública", () => {

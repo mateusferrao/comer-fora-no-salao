@@ -51,7 +51,7 @@ describe("Validar código (garçom — espec. 3.3)", () => {
     const code = back.codes.find((x) => x.type === "convite")!.code;
     const l = await lookupCode(getDb(), { ownerId: r.ownerId, restaurantId: r.restaurantId, raw: code, now: new Date(TER_16) });
     expect(l).toMatchObject({ status: "OK", typeLabel: "Convite", item: "Cannoli" });
-    expect(l.status === "OK" && l.conditions).toBe("Convite · válido Ter, Qua, Qui · 15h–18h · até 23/12");
+    expect(l.status === "OK" && l.conditions).toBe("Vale hoje · convite de Ter, Qua, Qui · 15h–18h, até 23/12");
     await confirmCode(getDb(), { restaurantId: r.restaurantId, raw: code, idempotencyKey: crypto.randomUUID(), now: new Date(TER_16) });
     const [inv] = await getDb().select().from(invites).where(eq(invites.customerId, c));
     expect(inv!.status).toBe("usado");
