@@ -59,8 +59,9 @@ export async function getQualityView(ex: Executor): Promise<QualityView> {
         from owner_edits e
         where (e.kind like 'pacote:%' or e.kind like 'plano:%') and e.kind <> 'plano:descartado'
           and e.restaurant_id not in ${E2E_RESTAURANTS}
-          -- Plano: só o escrito pela IA (o "Exemplo pronto" e o modo sem IA não contam como acerto da IA — revisão S3).
-          and (e.kind like 'pacote:%' or exists (select 1 from weekly_plans wp where wp.restaurant_id = e.restaurant_id and wp.approved_at = e.at and wp.texts->>'generatedBy' = 'ia'))
+          -- Pacote e plano: só o escrito pela IA (o "Exemplo pronto" e o modo sem IA não contam como acerto da IA —
+          -- revisão S3; o pacote também, desde a S9, M10). A ativação grava o pacote aprovado no mesmo instante.
+          and exists (select 1 from weekly_plans wp where wp.restaurant_id = e.restaurant_id and wp.approved_at = e.at and wp.texts->>'generatedBy' = 'ia')
         group by 1`,
   );
   // "IA ≠ maior nota" (revisão da S2 #29): escolhas originais da IA × candidata de maior nota, por faixa.
