@@ -1371,3 +1371,8 @@ Detalhes, perguntas, revisão independente (2 subagentes) e itens [C] em [docs/f
 
 **D273 — Itens [C] da implementação da S8** (22/11, IA [C], D101) ✅
 - Lista em docs/fatias/S8/planejamento.md §14: schema achatado; T4 em 4 rodadas com gemini-3.8-flash + reserva gpt-6-luna (Haiku fora pelo limite de 16 uniões do Anthropic); onda 2 sem kit e sem faixa nova; botão flutuante também no celular; histórico renderizado; painel só de dúvidas na ativação; remontagem por `v` + aviso de edição não salva; flags nascem desligadas e ligam depois da E2E de produção.
+
+**D274 — Decisões da revisão da S8** (22/11, IA [C], D101) ✅
+- Tabela completa em docs/fatias/S8/revisao/revisao.md §2. Mudanças de produto: painel só empurra a partir de 1280 px (sobrepõe no modo apresentação); botão "Assistente" na barra lateral e no cabeçalho do celular (nada flutua sobre o formulário — substitui o botão flutuante da D273); chip da demo com prato concreto escolhido pelo código; faixa "Atualizado pelo assistente"; métricas do copiloto em Qualidade da IA; aceite do cliente e "Como funciona" citam o assistente (nome curto, nunca contato).
+- Técnica/segurança: Zod nas 2 portas, estado `em_andamento`, conversa por dono+loja, isenção de limite só do apresentador, nome com cara de contato vira "Cliente", sem desconto inventado.
+- Não corrigidos: ícone (D272, pedido do candidato); guard de dia/turno no chat. Dívidas: mover `toPayload` para `agente` e gerar o schema do MCP do Zod; menos consultas por turno; limpeza de `agent_proposals`.
