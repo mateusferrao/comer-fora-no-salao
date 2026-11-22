@@ -4,7 +4,7 @@ import { Logo } from "@/src/ui/components/Logo";
 import { getOwnerSession } from "@/src/web/owner-session";
 import { getDb } from "@/src/db/client";
 import { getFlags } from "@/src/modules/config/application/app-config";
-import { OwnerLanding } from "@/src/ui/landing/OwnerLanding";
+import { LANDING_SUBTITLE, LANDING_TITLE, OwnerLanding } from "@/src/ui/landing/OwnerLanding";
 
 export const dynamic = "force-dynamic";
 
@@ -21,10 +21,8 @@ export default async function Home() {
   return (
     <main className="mx-auto flex min-h-[calc(100dvh-3rem)] max-w-xl flex-col items-center justify-center gap-5 px-4 py-8 text-center">
       <Logo height={28} />
-      <h1 className="text-2xl font-bold leading-8 text-ink">Seu salão cheio divulga seu horário vazio</h1>
-      <p className="text-base leading-6 text-ink-muted">
-        Comer Fora no Salão: o cliente que já está na mesa ganha algo agora e um convite para voltar no horário vazio. O dono vê o retorno medido contra um grupo de controle.
-      </p>
+      <h1 className="text-2xl font-bold leading-8 text-ink">{LANDING_TITLE}</h1>
+      <p className="text-base leading-6 text-ink-muted">{LANDING_SUBTITLE}</p>
       <div className="flex w-full max-w-sm flex-col gap-3">
         <Link
           href={s ? "/parceiro/salao" : "/parceiro/entrar"}

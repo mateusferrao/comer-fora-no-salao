@@ -10,7 +10,7 @@ for (const width of [390, 1280]) {
     const res = await page.goto("/");
     expect(res!.headers()["x-robots-tag"]).toContain("noindex");
     await expect(page.getByTestId("prototype-bar")).toHaveText(BARRA);
-    await expect(page.getByRole("heading", { name: "Seu salão cheio divulga seu horário vazio" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Encha a terça à tarde com quem lotou seu sábado à noite" })).toBeVisible();
     // Com `copy_v2` (S5.2, E2E_FLAGS=on em produção), o CTA da landing é "Ativar meu salão".
     await expect(page.getByRole("link", { name: S5_ON ? "Ativar meu salão" : "Entrar no Portal do Parceiro" }).first()).toBeVisible();
     await expect(page.getByRole("link", { name: "Veja o que seu cliente vê" })).toHaveAttribute("href", "/r/cantina-nonna-lucia");
