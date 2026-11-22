@@ -1425,3 +1425,27 @@ Detalhes, perguntas, revisão independente (2 subagentes) e itens [C] em [docs/f
   - ganha velocidade de ativação e números medidos em vez de declarados;
   - pede base legal e transparência para usar dados de clientes de delivery no salão (hoje "convite a clientes de delivery" está fora de escopo);
   - o dono continua conferindo antes de ativar.
+
+## O. Fatia S9 — Polimento pré-entrega (22/11, revisão completa + revisão de copy; planejamento em [../fatias/S9/planejamento.md](../fatias/S9/planejamento.md))
+
+**D277 — Assistente do salão restrito ao escopo do restaurante** (22/11, candidato: "agente não deve poder abordar temas além do escopo (ex.: escrever um poema) por questão de segurança"; forma [C], discutida com o candidato) ✅
+- Decidir se um *pedido* está no escopo é semântico: nenhum código decide isso de forma determinística. Por isso, duas camadas:
+  - **instrução + classificação** (reduz a frequência e deixa medir): o prompt define o escopo (o restaurante no Comer Fora: ofertas, cardápio, horários vazios, clientes, números, plano, configurações, dúvidas do produto) e a saída ganha `escopo: "salao" | "fora"`; `fora` → resposta fixa escrita pelo código, sem propostas;
+  - **portão determinístico de saída** (garante o pior caso): resposta e sugestões curtas (≤ 3 frases, ≤ 2 quebras de linha), sem código, e ancoradas no produto (referência a dado do restaurante ou termo de um léxico fechado); falhou → a mesma recusa fixa. Medido nas 62 respostas reais da T4: 0 falsos positivos.
+- As ações já eram determinísticas: só as 8 ações tipadas do catálogo, validadas pelo código.
+- Limite declarado: um texto curto e ancorado sobre um prato passa no portão; o portão garante formato e âncora, não o assunto.
+- "Deixa o convite mais poético" continua dentro (texto do convite / tom). MCP fora: lá o agente é o do cliente e as ferramentas já são restritas.
+- Alternativas descartadas: só instrução no prompt (não garante nada); lista de palavras proibidas no pedido ("poema", "receita") — falso positivo com pedidos legítimos e fácil de contornar.
+
+**D278 — Título da landing: "Encha a terça à tarde com quem lotou seu sábado à noite"** (22/11, candidato, entre 3 opções da revisão com a skill de copywriting) ✅
+- Diagnóstico: o título anterior ("Seu salão cheio divulga seu horário vazio", promessa da §1) é metáfora e falha no teste "agora você pode…"; a página começava pela mecânica do grupo de controle e não citava o plano da semana nem o assistente.
+- O slogan anterior fica como linha de apoio. A página ganha seção de valor (cardápio → pacote, cliente identificado, plano + assistente, só conta a volta a mais), print real do produto, prova dos 63% sem afirmação causal e FAQ "O que a IA decide?".
+
+**D279 — Favicon e login com o visual do iFood mantidos** (22/11, candidato: "Manter como está"; reafirma D88/D118/D272) ✅
+- A revisão de segurança apontou risco de o link ser marcado como phishing (marca + pede e-mail + código) e sugeriu favicon neutro + linha de protótipo no cartão de login. O candidato manteve; a resposta para a banca fica preparada (barra de protótipo, `noindex`, e-mail sem logo nem link, título da aba sem "iFood").
+
+**D280 — Interruptores de aviso do cliente seguem ligados por padrão** (22/11, candidato: "Manter ligados"; reafirma D161/D173) ✅
+- Pela LGPD, consentimento de marketing pede ação positiva; o aceite principal já é explícito e desmarcado. Limitação registrada para a entrevista: em produção, os interruptores nasceriam desligados.
+
+**D281 — A linha "Faça check-in e você pode ganhar um convite para voltar" fica** (22/11, candidato, depois de perguntar "por que contraria?") ✅
+- A auditoria de copy dizia que a linha contrariava a espec. 3.5. Não contraria: a própria §3.5 pede essa linha; a regra é que nenhuma *oferta* nem *horário* apareça antes do check-in. A linha é igual para os dois grupos, então não afeta a medida.
