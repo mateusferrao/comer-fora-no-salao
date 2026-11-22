@@ -3,6 +3,7 @@
 import { Checkbox } from "../components/Checkbox";
 import { useEffect, useRef, useState } from "react";
 import type { OfferView } from "@/src/modules/salao/application/views";
+import { LOGIN_CODE_TTL_MIN } from "@/src/modules/contas/domain/login-code";
 import { maskPhone } from "@/src/modules/salao/domain/phone";
 import { BottomSheet } from "@/src/ui/components/BottomSheet";
 import { Button } from "@/src/ui/components/Button";
@@ -25,6 +26,7 @@ type Props = {
 
 const STORE_KEY = "cf_login";
 const RESEND_SEC = 30;
+const EMAIL_INVALIDO = "Digite um e-mail válido, como nome@exemplo.com.";
 
 /**
  * Login do cliente (S4 — D154, D161, D171, D173): e-mail + aceite → código → (só quem é novo) nome, telefone
@@ -94,15 +96,15 @@ export function LoginSheet({ open, slug, restaurantName, agora, initialStep, fir
 
   const sendEmail = async (resend = false) => {
     const e: Record<string, string> = {};
-    if (!/^\S+@\S+\.\S+$/.test(email.trim())) e.email = "Informe um e-mail válido";
-    if (!accept && !resend) e.accept = "Marque o aceite para continuar";
+    if (!/^\S+@\S+\.\S+$/.test(email.trim())) e.email = EMAIL_INVALIDO;
+    if (!accept && !resend) e.accept = "Marque a caixa acima para continuar.";
     setErrors(e);
     if (Object.keys(e).length) return;
     setBusy(true);
     try {
       const { res, j } = await post("/entrar", { email: email.trim(), accept: true });
       if (res.status === 429) return setErrors({ geral: "Muitas tentativas. Espere alguns minutos e tente de novo." });
-      if (res.status === 400) return setErrors({ email: "Informe um e-mail válido" });
+      if (res.status === 400) return setErrors({ email: EMAIL_INVALIDO });
       if (!res.ok) return setErrors({ geral: "Não conseguimos enviar o código agora. Tente de novo em instantes." });
       if (j.etapa === "perfil") return afterLogin("perfil");
       const confirmed = typeof j.email === "string" ? j.email : email.trim().toLowerCase();
@@ -125,14 +127,14 @@ export function LoginSheet({ open, slug, restaurantName, agora, initialStep, fir
     try {
       const { res, j } = await post("/entrar/confirmar", { email, code: code.replace(/\s/g, "") });
       if (res.ok) return afterLogin(j.etapa);
-      if (res.status === 429) return setErrors({ code: "Muitas tentativas. Espere alguns minutos." });
+      if (res.status === 429) return setErrors({ code: "Muitas tentativas. Espere alguns minutos e tente de novo." });
       const msg: Record<string, string> = {
         incorreto: `Código incorreto · ${String(j.restantes ?? 0)} ${j.restantes === 1 ? "tentativa restante" : "tentativas restantes"}`,
         expirado: "O código venceu. Peça outro.",
         bloqueado: "Muitas tentativas com este código. Peça outro.",
         sem_codigo: "Este código não vale mais. Peça outro.",
       };
-      setErrors({ code: msg[String(j.erro)] ?? "Não deu certo. Confira o código." });
+      setErrors({ code: msg[String(j.erro)] ?? "Esse código não funcionou. Confira os 6 números ou peça outro." });
     } catch {
       setErrors({ code: "Não conseguimos conferir agora. Tente de novo." });
     } finally {
@@ -142,7 +144,7 @@ export function LoginSheet({ open, slug, restaurantName, agora, initialStep, fir
 
   const saveProfile = async () => {
     const e: Record<string, string> = {};
-    if (name.trim().length < 2) e.name = "Informe seu nome";
+    if (name.trim().length < 2) e.name = "Escreva seu nome (pelo menos 2 letras).";
     if (phone && !/^\(\d{2}\) 9\d{4}-\d{4}$/.test(phone)) e.phone = "Use o formato (11) 91234-5678 ou deixe em branco";
     setErrors(e);
     if (Object.keys(e).length) return;
@@ -173,14 +175,15 @@ export function LoginSheet({ open, slug, restaurantName, agora, initialStep, fir
     }
   };
 
-  const ativa = agora ? `Ao continuar, você ativa: ${agora.title} · ${agora.itemName} e ganha 1 selo.` : null;
+  // S9: o benefício de agora vale só na 1ª visita (o passo do e-mail não sabe se o cliente já usou).
+  const ativa = agora ? `Na 1ª visita, você ganha ${agora.gain}. Cada check-in vale 1 selo.` : null;
   const switches = (
     <div>
-      <h3 className="text-base font-semibold">Comunicações de promoções</h3>
-      <p className="mt-1 text-sm text-ink-muted">Receba os convites e benefícios de {restaurantName}</p>
+      <h3 className="text-base font-semibold">Avisos do restaurante</h3>
+      <p className="mt-1 text-sm text-ink-muted">Escolha como {restaurantName} pode falar com você.</p>
       <div className="mt-2">
         <Switch label="E-mail" checked={opts.optEmail} onChange={(v) => setOpts((o) => ({ ...o, optEmail: v }))} />
-        <Switch label="Convites de volta no app" hint="Sem e-mail e sem esta opção, você não recebe convites para voltar" checked={opts.optApp} onChange={(v) => setOpts((o) => ({ ...o, optApp: v }))} />
+        <Switch label={TXT.convitesOutrasDatas} hint={TXT.convitesOutrasDatasDica} checked={opts.optApp} onChange={(v) => setOpts((o) => ({ ...o, optApp: v }))} />
       </div>
     </div>
   );
@@ -195,21 +198,22 @@ export function LoginSheet({ open, slug, restaurantName, agora, initialStep, fir
       <BottomSheet
         open={open}
         onClose={onClose}
-        title="Digite o código"
+        title="Digite o código de acesso"
         description={
           <>
-            <span className="block">Enviamos um código de 6 números para</span>
+            <span className="block">Enviamos um código de acesso de 6 números para</span>
             <span className="block break-all font-medium text-ink">{email}</span>
+            <span className="block">Ele vale por {LOGIN_CODE_TTL_MIN} minutos. O código para mostrar ao garçom aparece depois do check-in.</span>
           </>
         }
         actions={
           <Button variant="primary-app" type="submit" form="form-codigo" loading={busy}>
-            Entrar
+            Confirmar código
           </Button>
         }
       >
         <form id="form-codigo" noValidate className="flex flex-col gap-3 text-left" onSubmit={(ev) => (ev.preventDefault(), void confirm())}>
-          <Field label="Código" name="codigo" inputMode="numeric" autoComplete="one-time-code" maxLength={7} value={code} onChange={(ev) => setCode(ev.target.value)} error={errors.code} autoFocus />
+          <Field label="Código de acesso" name="codigo" inputMode="numeric" autoComplete="one-time-code" maxLength={7} value={code} onChange={(ev) => setCode(ev.target.value)} error={errors.code} autoFocus />
           <p className="text-sm text-ink-muted">Não chegou? Veja a caixa de spam.</p>
           <div className="flex flex-wrap gap-x-5">
             <button type="button" disabled={resendIn > 0 || busy} onClick={() => void sendEmail(true)} className="min-h-11 text-sm font-medium text-red-text underline disabled:text-ink-muted disabled:no-underline">
@@ -232,7 +236,7 @@ export function LoginSheet({ open, slug, restaurantName, agora, initialStep, fir
         description={ativa}
         actions={
           <Button variant="primary-app" type="submit" form="form-perfil" loading={busy}>
-            Continuar
+            Fazer check-in
           </Button>
         }
       >
@@ -260,7 +264,7 @@ export function LoginSheet({ open, slug, restaurantName, agora, initialStep, fir
       <BottomSheet
         open={open}
         onClose={onClose}
-        title={firstName ? `Olá, ${firstName}!` : "Ative seus benefícios"}
+        title={firstName ? `Olá, ${firstName}` : "Faça check-in neste restaurante"}
         description={ativa ?? `Faça check-in em ${restaurantName} e junte selos.`}
         actions={
           <Button variant="primary-app" onClick={() => void consent()} loading={busy}>
@@ -280,7 +284,7 @@ export function LoginSheet({ open, slug, restaurantName, agora, initialStep, fir
     <BottomSheet
       open={open}
       onClose={onClose}
-      title="Entre para ativar seus benefícios"
+      title="Entre com seu e-mail"
       description={ativa}
       actions={
         <Button variant="primary-app" type="submit" form="form-email" loading={busy}>

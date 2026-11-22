@@ -22,7 +22,7 @@ describe("porta-conta (S6.4, D192)", () => {
     const v = bill.variants[0]!;
     expect(v.rendered).toEqual({
       titulo: "Antes de pagar, faça check-in",
-      subtitulo: "Na 1ª visita: Panna cotta grátis. A cada visita, um selo: na 6ª, Tiramisù grátis.",
+      subtitulo: "Na 1ª visita, Panna cotta grátis. Cada visita vale 1 selo e, com 6 selos, Tiramisù grátis.",
       acao: "Aponte a câmera para o QR",
     });
     expect(JSON.stringify(v.rendered)).not.toMatch(/Cannoli|terça|tarde/);

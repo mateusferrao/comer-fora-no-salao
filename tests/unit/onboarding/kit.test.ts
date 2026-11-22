@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { buildKitPrompt, kitGuard, resolveKit } from "@/src/modules/ia/tasks/kit";
-import { FALLBACK_KIT, INVITE_LINE, sentenceCount, WAITER_TEMPLATE } from "@/src/modules/kit/domain/templates";
+import { BILL_TEMPLATE, FALLBACK_KIT, INVITE_LINE, sentenceCount, WAITER_TEMPLATE, waiterPhrase } from "@/src/modules/kit/domain/templates";
 import { guardText } from "@/src/modules/ia/guardrails";
 import { qrUrl } from "@/src/modules/kit/domain/qr";
 
@@ -33,6 +33,20 @@ describe("kit — holdout protegido (revisão P-I2)", () => {
     expect(sentenceCount(WAITER_TEMPLATE)).toBeLessThanOrEqual(2);
     expect(WAITER_TEMPLATE).not.toMatch(/convite/i);
     expect(INVITE_LINE).not.toMatch(/\d|tarde|noite|segunda|terça/i);
+  });
+  it("S9: o benefício de agora é sempre da 1ª visita; sem exclamação; porta-conta com 'com 6 selos'", () => {
+    expect(WAITER_TEMPLATE).toMatch(/^Na 1ª visita, /);
+    expect(FALLBACK_KIT.A.titulo).toMatch(/primeira visita/);
+    expect(FALLBACK_KIT.B.titulo).toMatch(/primeiro check-in/);
+    expect(Object.values(FALLBACK_KIT).flatMap((v) => (typeof v === "string" ? [v] : Object.values(v))).join(" ")).not.toMatch(/!| no app/);
+    expect(BILL_TEMPLATE.subtitulo).toMatch(/com 6 selos/);
+    expect(BILL_TEMPLATE.subtitulo).not.toMatch(/6ª/);
+  });
+  it("S9: cartão do garçom gravado com o texto antigo sai com o texto novo; link do garçom troca o Portal", () => {
+    const old = "Hoje, quem faz check-in ganha {beneficio}. Peça o código ao cliente e valide no Portal.";
+    expect(waiterPhrase(old, false)).toBe(WAITER_TEMPLATE);
+    expect(waiterPhrase(old, true)).toBe(WAITER_TEMPLATE.replace("valide no Portal", "valide no link do garçom"));
+    expect(waiterPhrase("Texto do dono.", true)).toBe("Texto do dono.");
   });
   it("QR por versão a partir da URL pública", () => {
     expect(qrUrl("https://exemplo.host/", "cantina-x", "tok-a")).toBe("https://exemplo.host/r/cantina-x?p=tok-a");

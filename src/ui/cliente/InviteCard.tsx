@@ -1,5 +1,5 @@
 import type { InviteView } from "@/src/modules/salao/application/views";
-import { ddmm, inviteSentence, inviteWhen, TXT } from "./textos";
+import { inviteSentence, inviteValidity, inviteWhen, TXT } from "./textos";
 
 /** 2º card do convite (espec. 3.5.4): só para convite REAL; o holdout nunca recebe este componente. */
 export function InviteCard({ invite, animate = false, regionLabel, agenda = false }: { invite: InviteView; animate?: boolean; regionLabel?: string; agenda?: boolean }) {
@@ -10,9 +10,9 @@ export function InviteCard({ invite, animate = false, regionLabel, agenda = fals
       <p className="text-xs font-semibold uppercase tracking-wide text-red-text">{heading}</p>
       <p className="mt-2 text-lg font-semibold leading-6 text-ink">
         <span aria-hidden="true">{inviteSentence(invite)}</span>
-        <span className="sr-only">{`Volte ${when.long}${invite.offer ? ` e ganhe ${invite.offer.gain}` : ""}`}</span>
+        <span className="sr-only">{invite.state === "usar_hoje" ? inviteSentence(invite) : `Volte ${when.long}${invite.offer ? ` e ganhe ${invite.offer.gain}` : ""}`}</span>
       </p>
-      <p className="mt-1 text-sm text-ink-muted">Válido até {ddmm(invite.untilDay)}</p>
+      <p className="mt-1 text-sm text-ink-muted">{inviteValidity(invite)}</p>
       {invite.message && (
         <div className="mt-3 border-t border-divider pt-3">
           {/* Texto do convite aprovado pelo dono (D122); sem rótulo, para não confundir com o recado do kit (revisão da S2). */}

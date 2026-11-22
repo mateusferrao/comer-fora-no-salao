@@ -31,7 +31,7 @@ describe("kit (Postgres)", () => {
     expect(k.pieces.map((p) => [p.kind, p.variants.length])).toEqual([["display", 2], ["cartaz", 2], ["garcom", 1]]);
     expect(k.origem).toBe("ia");
     expect(k.pieces[0]!.variants[0]!.rendered.titulo).toBe("Check-in vale Panna cotta grátis");
-    expect(k.pieces[2]!.variants[0]!.rendered.frase).toBe("Hoje, quem faz check-in ganha Panna cotta grátis. Peça o código ao cliente e valide no Portal.");
+    expect(k.pieces[2]!.variants[0]!.rendered.frase).toBe("Na 1ª visita, quem faz check-in pelo QR da mesa ganha Panna cotta grátis. Peça ao cliente o código do benefício e valide no Portal.");
     const [rr] = await getDb().select({ recado: restaurants.recado }).from(restaurants).where(eq(restaurants.id, r.restaurantId));
     expect(rr!.recado).toBe("Que bom ter você aqui!");
     const tokens = (await getDb().select({ t: pieceVariants.qrToken }).from(pieceVariants).where(eq(pieceVariants.restaurantId, r.restaurantId))).map((x) => x.t);

@@ -10,7 +10,7 @@ import { Chip } from "@/src/ui/components/Chip";
 import { Tabs } from "@/src/ui/components/Tabs";
 import { TicketCard } from "@/src/ui/components/TicketCard";
 import { RulesSheet } from "@/src/ui/cliente/RulesSheet";
-import { offerSubtitle, TXT } from "@/src/ui/cliente/textos";
+import { TXT } from "@/src/ui/cliente/textos";
 import { useDistance } from "@/src/ui/cliente/useDistance";
 
 function Hero({ src }: { src: string | null }) {
@@ -54,34 +54,24 @@ export function RestaurantView({ page, token, copyV2 = false, recentCheckins = n
 
   const beneficios = (
     <div className="pb-4">
-      <h2 className="text-xl font-semibold">Benefícios pra você</h2>
+      <h2 className="text-xl font-semibold">O que você ganha aqui</h2>
       <div className="-mx-5 mt-4 flex snap-x gap-3 overflow-x-auto no-scrollbar rounded-xl bg-surface-muted px-5 py-3">
         {page.agora && (
           <button type="button" onClick={() => setDetail(true)} className="w-[85%] shrink-0 snap-start text-left focus-visible:outline-2 focus-visible:outline-ink">
             <TicketCard
               image={<CategoryImage category={page.agora.category} className="size-full" />}
-              title={page.agora.title}
-              subtitle={offerSubtitle(page.agora)}
-              chips={
-                <>
-                  <Chip>Todos os dias</Chip>
-                  <Chip>Dia e Noite</Chip>
-                </>
-              }
+              title={page.agora.gain}
+              subtitle={page.agora.subtitle}
+              chips={<Chip>Qualquer horário</Chip>}
             />
           </button>
         )}
         <button type="button" onClick={() => setRules(true)} className="w-[85%] shrink-0 snap-start text-left focus-visible:outline-2 focus-visible:outline-ink">
           <TicketCard
             image={<StampIllustration />}
-            title="Junte Selos e Ganhe"
-            subtitle="Pra clientes frequentes"
-            chips={
-              <>
-                <Chip>Todos os dias</Chip>
-                <Chip>Dia e Noite</Chip>
-              </>
-            }
+            title="Cartela de selos"
+            subtitle={page.recompensa ? `Com 6 selos, ${page.recompensa.gain}` : "Com 6 selos, uma recompensa"}
+            chips={<Chip>1 selo por visita</Chip>}
           />
         </button>
       </div>
@@ -147,7 +137,7 @@ export function RestaurantView({ page, token, copyV2 = false, recentCheckins = n
       </main>
       <footer className="fixed inset-x-0 bottom-0 z-10 mx-auto w-full max-w-[420px] rounded-t-xl bg-surface px-5 pb-[calc(1rem+env(safe-area-inset-bottom))] pt-3 shadow-[0_-4px_16px_rgba(0,0,0,0.06)]">
         <Link href={checkinHref} className="flex min-h-12 w-full items-center justify-center rounded-md bg-ink text-base font-medium text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink">
-          {copyV2 && page.agora ? "Fazer check-in e ativar o benefício" : "Check-in"}
+          Fazer check-in
         </Link>
       </footer>
 
@@ -155,11 +145,11 @@ export function RestaurantView({ page, token, copyV2 = false, recentCheckins = n
         <BottomSheet
           open={detail}
           onClose={() => setDetail(false)}
-          title="Benefícios pra você"
-          description="Faça o check-in para ativar o benefício e aproveitar"
+          title="O que você ganha aqui"
+          description={`Na 1ª visita, faça check-in e mostre o código ao garçom para ganhar ${page.agora.gain}.`}
           actions={
             <Link href={checkinHref} className="flex min-h-12 items-center justify-center rounded-md bg-ink text-base font-medium text-white">
-              Check-in
+              Fazer check-in
             </Link>
           }
         >
@@ -170,11 +160,10 @@ export function RestaurantView({ page, token, copyV2 = false, recentCheckins = n
             </div>
             <div className="p-4">
               <p className="text-sm font-semibold">{page.name}</p>
-              <p className="mt-3 text-xl font-semibold">{page.agora.title}</p>
-              <p className="mt-1 text-sm text-ink-muted">{offerSubtitle(page.agora)}</p>
+              <p className="mt-3 text-xl font-semibold">{page.agora.gain}</p>
+              <p className="mt-1 text-sm text-ink-muted">{page.agora.subtitle}</p>
               <div className="mt-2 flex gap-1.5">
-                <Chip>Todos os dias</Chip>
-                <Chip>Dia e Noite</Chip>
+                <Chip>Qualquer horário</Chip>
               </div>
               {page.recado && (
                 <>
@@ -215,13 +204,13 @@ function ConversionBand({ page, recentCheckins }: { page: RestaurantPageView; re
             <path d="M12 8v13M19 12v7a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-7M7.5 8a2.5 2.5 0 0 1 0-5C10 3 12 8 12 8s2-5 4.5-5a2.5 2.5 0 0 1 0 5" />
           </svg>
           <span>
-            {page.agora.title}: {page.agora.itemName}
+            {page.agora.gain}
             <span className="block text-sm font-normal">na sua 1ª visita</span>
           </span>
         </p>
       )}
       <ol className="mt-3 flex flex-wrap gap-x-2 gap-y-1 text-sm" aria-label="Como funciona">
-        {["Faça check-in", "Receba o código", "Diga o código ao garçom"].map((t, i) => (
+        {["Faça check-in", "Receba o código", "Mostre o código ao garçom"].map((t, i) => (
           <li key={t} className="flex items-center gap-1.5">
             <span aria-hidden="true" className="flex size-5 items-center justify-center rounded-full bg-white text-xs font-bold text-red-text">
               {i + 1}

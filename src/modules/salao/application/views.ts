@@ -36,6 +36,8 @@ export type InviteView = {
   agendaUrl?: string | null;
   /** S5.2: a próxima janela em que o código pode nascer é hoje. */
   validToday?: boolean;
+  /** S9: 1º dia (SP) em que o código do convite pode nascer (`nextValidWindow`); `null` sem janela pela frente. */
+  firstDay?: string | null;
 };
 
 export type CheckinView = {
@@ -68,6 +70,7 @@ export function sanitizeCheckinView(v: CheckinView): CheckinView {
           liberatedToday: v.invite.liberatedToday ?? false,
           agendaUrl: v.invite.agendaUrl ?? null,
           validToday: v.invite.validToday ?? false,
+          firstDay: v.invite.firstDay ?? null,
         }
       : null,
     firstVisitAlreadyUsed: v.firstVisitAlreadyUsed,
@@ -94,6 +97,7 @@ export const checkinViewSchema = z.object({
       liberatedToday: z.boolean().optional(),
       agendaUrl: z.string().nullable().optional(),
       validToday: z.boolean().optional(),
+      firstDay: z.string().nullable().optional(),
     })
     .nullable(),
   firstVisitAlreadyUsed: z.boolean(),

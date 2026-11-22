@@ -29,7 +29,7 @@ async function apiCheckin(request: APIRequestContext) {
 /** Login pela interface (S4 — D154, D173): e-mail + aceite → código (vem na resposta com o token do E2E) → nome. */
 async function uiLogin(page: Page) {
   await page.setExtraHTTPHeaders({ "x-e2e-token": e2eToken() });
-  const sheet = page.getByRole("dialog", { name: "Entre para ativar seus benefícios" });
+  const sheet = page.getByRole("dialog", { name: "Entre com seu e-mail" });
   await expect(sheet).toBeVisible();
   await expect(sheet.getByText("Protótipo de case, não é o iFood. Você pode apagar seus dados quando quiser.")).toBeVisible();
   await expect(sheet.getByLabel("E-mail", { exact: true })).toHaveAttribute("autocomplete", "email");
@@ -39,25 +39,26 @@ async function uiLogin(page: Page) {
   const resp = page.waitForResponse((r) => r.url().endsWith("/entrar") && r.request().method() === "POST");
   await sheet.getByRole("button", { name: "Enviar código" }).click();
   const { codigo } = (await (await resp).json()) as { codigo: string };
-  const code = page.getByRole("dialog", { name: "Digite o código" });
+  const code = page.getByRole("dialog", { name: "Digite o código de acesso" });
   await expect(code).toContainText(email);
-  await code.getByLabel("Código").fill(codigo);
-  await code.getByRole("button", { name: "Entrar" }).click();
+  await code.getByLabel("Código de acesso").fill(codigo);
+  await code.getByRole("button", { name: "Confirmar código" }).click();
   const perfil = page.getByRole("dialog", { name: "Como podemos te chamar?" });
   await perfil.getByLabel("Nome").fill("Teste Automático");
-  await perfil.getByRole("button", { name: "Continuar" }).click();
+  await perfil.getByRole("button", { name: "Fazer check-in" }).click();
 }
 
 /** Fluxo completo pela interface, com GPS negado (o padrão do navegador de teste). */
 async function uiCheckin(page: Page) {
   await page.goto(`/r/${E2E}/checkin`);
   await page.getByRole("button", { name: "Fazer check-in" }).click();
-  const gps = page.getByRole("dialog", { name: "Parece que você não está no restaurante!" });
+  // S9: GPS negado não diz mais "você não está no restaurante" (só "longe" pergunta isso).
+  const gps = page.getByRole("dialog", { name: "Não conseguimos ver sua localização" });
   await expect(gps).toBeVisible();
-  await expect(gps).toContainText("O GPS pode não ser preciso. Se você já está no restaurante, confirme abaixo para tentarmos validar seu benefício novamente.");
+  await expect(gps).toContainText("Tudo bem. Se você está no restaurante, confirme para continuar.");
   await gps.getByRole("button", { name: "Confirmar localização" }).click();
   await uiLogin(page);
-  await expect(page.getByRole("heading", { name: "Check-in feito!" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Check-in feito" })).toBeVisible();
 }
 
 /** Repete com clientes novos até cair um convidável (10% caem no holdout). */
@@ -82,7 +83,7 @@ test.describe("vitrine (só leitura)", () => {
     await expect(page.getByRole("heading", { level: 1, name: "Cantina Nonna Lúcia" })).toBeVisible();
     await expect(page.getByRole("tab", { name: "Benefícios" })).toHaveAttribute("aria-selected", "true");
     await expect(page.getByText("Faça check-in e você pode ganhar um convite para voltar")).toBeVisible();
-    await expect(page.getByText("Doce grátis").first()).toBeVisible();
+    await expect(page.getByText("Panna cotta grátis").first()).toBeVisible();
     const html = await page.content();
     for (const banned of ["Cannoli", "Bruschetta", "15h–18h", "21h–23h"]) expect(html).not.toContain(banned);
     await axe(page);
@@ -92,14 +93,14 @@ test.describe("vitrine (só leitura)", () => {
 
   test("detalhe do benefício e regras abrem e fecham com Esc", async ({ page }) => {
     await page.goto(`/r/${VITRINE}`);
-    await page.getByRole("button", { name: /Doce grátis/ }).click();
-    const sheet = page.getByRole("dialog", { name: "Benefícios pra você" });
-    await expect(sheet).toContainText("Faça o check-in para ativar o benefício e aproveitar");
+    await page.getByRole("button", { name: /Panna cotta grátis/ }).click();
+    const sheet = page.getByRole("dialog", { name: "O que você ganha aqui" });
+    await expect(sheet).toContainText("Na 1ª visita, faça check-in e mostre o código ao garçom para ganhar Panna cotta grátis.");
     await expect(sheet).toContainText("Recado do Cantina Nonna Lúcia");
     await axe(page);
     await page.keyboard.press("Escape");
     await expect(sheet).toBeHidden();
-    await page.getByRole("button", { name: /Junte Selos e Ganhe/ }).click();
+    await page.getByRole("button", { name: /Cartela de selos/ }).click();
     await expect(page.getByRole("dialog", { name: "Detalhes e regras" })).toContainText("Limitado a 1 check-in por dia");
   });
 
@@ -122,14 +123,14 @@ test.describe("vitrine (só leitura)", () => {
 test.describe("check-in no restaurante E2E", () => {
   test("GPS negado → identificação → código + selo 1/6 + 2º card; recarregar mantém o código", async ({ context, browser }) => {
     const page = await uiCheckinConvidavel(context, () => browser.newContext({ viewport: { width: 390, height: 844 } }));
-    await expect(page.getByText("Informe este código ao garçom")).toBeVisible();
+    await expect(page.getByText("Mostre este código ao garçom")).toBeVisible();
     await expect(page.getByText("Vale só hoje")).toBeVisible();
     await expect(page.getByRole("list", { name: "Cartela: 1 de 6 selos" })).toBeVisible();
     const invite = page.getByRole("region", { name: "Seu convite" });
     await expect(invite).toContainText("Cannoli grátis");
-    await expect(invite).toContainText(
-      "Chegando ao restaurante, faça check-in aqui no app e o código do benefício aparece para mostrar ao garçom.",
-    );
+    await expect(invite).toContainText("Ao chegar, faça check-in de novo e mostre ao garçom o código do benefício.");
+    // S9: o convite nasce hoje e só vale a partir de outro dia.
+    await expect(invite).toContainText(/Vale (de \d{2}\/\d{2} até|a partir de amanhã, até) \d{2}\/\d{2}/);
     const code = (await page
       .getByLabel(/^Código /)
       .first()
@@ -146,7 +147,7 @@ test.describe("check-in no restaurante E2E", () => {
     // Jornada com o convite ativo e o código de hoje.
     await page.goto("/app/jornada");
     await expect(page.getByRole("link", { name: "Restaurante E2E (teste)" })).toBeVisible();
-    await expect(page.getByText("Convite ativo")).toBeVisible();
+    await expect(page.getByRole("region", { name: /^Seu convite/ })).toBeVisible();
     await expect(page.getByText(code)).toBeVisible();
     await axe(page);
   });
@@ -179,7 +180,7 @@ test.describe("check-in no restaurante E2E", () => {
     const page = await ctx.newPage();
     await page.goto("/app/jornada");
     await expect(page.getByRole("link", { name: "Restaurante E2E (teste)" })).toBeVisible();
-    await expect(page.getByText("Convite ativo")).toHaveCount(0);
+    await expect(page.getByRole("region", { name: /^Seu convite/ })).toHaveCount(0);
     await expect(page.locator("body")).not.toContainText("convite para voltar");
   });
 
@@ -189,13 +190,13 @@ test.describe("check-in no restaurante E2E", () => {
     await page.getByRole("button", { name: "Configurações da conta" }).click();
     const conta = page.getByRole("dialog", { name: "Sua conta" });
     await conta.getByRole("button", { name: "Apagar meus dados" }).click();
-    await expect(conta).toContainText("Seu nome, telefone e e-mail serão apagados.");
+    await expect(conta).toContainText("Vamos apagar seu nome, telefone e e-mail");
     await conta.getByRole("button", { name: "Apagar meus dados" }).click();
     await page.waitForURL(/\/r\//);
     await page.goto(`/r/${E2E}/checkin`);
     await page.getByRole("button", { name: "Fazer check-in" }).click();
     await page.getByRole("button", { name: "Confirmar localização" }).click();
-    await expect(page.getByRole("dialog", { name: "Entre para ativar seus benefícios" })).toBeVisible();
+    await expect(page.getByRole("dialog", { name: "Entre com seu e-mail" })).toBeVisible();
   });
 
   test("falha de rede no check-in → mensagem e 'Tentar de novo' com a mesma chave", async ({ page }) => {
@@ -215,7 +216,7 @@ test.describe("check-in no restaurante E2E", () => {
     await uiLogin(page);
     await expect(page.getByRole("alert").filter({ hasText: "Não conseguimos" })).toContainText("Não conseguimos fazer seu check-in.");
     await page.getByRole("button", { name: "Tentar de novo" }).click();
-    await expect(page.getByRole("heading", { name: "Check-in feito!" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Check-in feito" })).toBeVisible();
     expect(new Set(keys).size).toBe(1);
     keys = [];
   });
@@ -226,17 +227,17 @@ test.describe("check-in no restaurante E2E", () => {
     await page.goto(`/r/${E2E}/checkin`);
     await page.getByRole("button", { name: "Fazer check-in" }).click();
     await page.getByRole("button", { name: "Confirmar localização" }).click();
-    const id = page.getByRole("dialog", { name: "Entre para ativar seus benefícios" });
+    const id = page.getByRole("dialog", { name: "Entre com seu e-mail" });
     await expect(id.getByTestId("prototype-bar-sheet")).toHaveText(BARRA);
     await expect(id.getByTestId("prototype-bar-sheet")).toBeInViewport();
     await expect(id.getByRole("button", { name: "Enviar código" })).toBeInViewport();
-    await expect(id.getByText(/Ao continuar, você ativa: Doce grátis · Panna cotta/)).toBeVisible();
+    await expect(id.getByText(/Na 1ª visita, você ganha Panna cotta grátis/)).toBeVisible();
   });
 
   test("na moldura do celular (1280 px), o aviso abre dentro da tela do celular e Esc fecha (D258)", async ({ page }) => {
     await page.setViewportSize({ width: 1280, height: 900 });
     await page.goto(`/r/${E2E}`);
-    await page.getByRole("button", { name: /Junte Selos e Ganhe/ }).click();
+    await page.getByRole("button", { name: /Cartela de selos/ }).click();
     const sheet = page.getByRole("dialog", { name: "Detalhes e regras" });
     await expect(sheet).toBeVisible();
     const screen = (await page.locator("[data-camada-celular]").boundingBox())!;
@@ -254,11 +255,11 @@ test.describe("check-in no restaurante E2E", () => {
     await page.goto(`/r/${E2E}/checkin`);
     await page.getByRole("button", { name: "Fazer check-in" }).click();
     await page.getByRole("button", { name: "Confirmar localização" }).click();
-    const id = page.getByRole("dialog", { name: "Entre para ativar seus benefícios" });
+    const id = page.getByRole("dialog", { name: "Entre com seu e-mail" });
     await id.getByLabel("E-mail", { exact: true }).fill("sem-arroba");
     await id.getByRole("button", { name: "Enviar código" }).click();
-    await expect(id.getByText("Informe um e-mail válido")).toBeVisible();
-    await expect(id.getByText("Marque o aceite para continuar")).toBeVisible();
+    await expect(id.getByText("Digite um e-mail válido, como nome@exemplo.com.")).toBeVisible();
+    await expect(id.getByText("Marque a caixa acima para continuar.")).toBeVisible();
     await axe(page);
   });
 

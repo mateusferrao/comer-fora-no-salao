@@ -5,7 +5,7 @@ const E2E = "e2e-salao-teste";
 
 /**
  * S6.1 (D198, sem flag): Jornada › engrenagem › "Gerenciar notificações": E-mail (mestre) com Convites e Lembretes e
- * "Convites de volta no app"; grava a cada toque e persiste. Mestre desligado desabilita os tipos.
+ * "Convites para outras datas"; grava a cada toque e persiste. Mestre desligado desabilita os tipos.
  */
 test("cliente: gerenciar notificações na Jornada (por tipo, persiste; mestre desabilita os tipos)", async ({ page }) => {
   await loginCustomer(page.request, `/api/r/${E2E}`, "Preferências Automáticas");
@@ -25,5 +25,5 @@ test("cliente: gerenciar notificações na Jornada (por tipo, persiste; mestre d
   await expect(box2.getByRole("switch", { name: "Lembretes" })).toHaveAttribute("aria-checked", "false");
   await box2.getByRole("switch", { name: "E-mail", exact: true }).click();
   await expect(box2.getByRole("switch", { name: "Convites", exact: true })).toBeDisabled();
-  await expect(box2.getByRole("switch", { name: "Convites de volta no app" })).toBeEnabled();
+  await expect(box2.getByRole("switch", { name: "Convites para outras datas" })).toBeEnabled();
 });

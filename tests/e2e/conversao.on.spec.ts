@@ -38,8 +38,8 @@ test("página do QR: faixa do benefício de agora, 3 passos, botão fixo; nada d
   await page.goto("/r/cantina-nonna-lucia");
   const band = page.getByTestId("faixa-conversao");
   await expect(band).toContainText("na sua 1ª visita");
-  await expect(band).toContainText("Diga o código ao garçom");
-  await expect(page.getByRole("link", { name: "Fazer check-in e ativar o benefício" })).toBeVisible();
+  await expect(band).toContainText("Mostre o código ao garçom");
+  await expect(page.getByRole("link", { name: "Fazer check-in" })).toBeVisible();
   await expect(page.locator("body")).not.toContainText(/Volte .* e ganhe|Seu convite/);
   expect(PROIBIDO.exec(await visibleText(page))).toBeNull();
   await axe(page);
