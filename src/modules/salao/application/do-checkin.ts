@@ -291,7 +291,7 @@ export async function doCheckin(db: Db, p: DoCheckinInput): Promise<CheckinView>
         lastCheckinDay: decision.day,
         firstCheckinAt: rc!.firstCheckinAt ?? now,
         firstVisitCodeIssued: rc!.firstVisitCodeIssued || codesToIssue.includes("primeira_visita"),
-        originVariantId: rc!.originVariantId ?? p.variantId,
+        originVariantId: rc!.firstCheckinAt ? rc!.originVariantId : p.variantId, // A15: a peça de origem é a do 1º check-in
         cardStartedDay: decision.card?.startedDay ?? null,
         cardStamps: decision.card?.stamps ?? 0,
         cardLastDay: decision.card?.lastDay ?? null,

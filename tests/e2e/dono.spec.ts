@@ -42,11 +42,15 @@ test("conta nova ganha a própria vitrine (60 dias): check-in de cliente nela e 
   await page.goto("/parceiro/salao");
   await waitExampleReady(page);
   await expect(page.getByText("Restaurante de exemplo · histórico gerado")).toBeVisible();
-  const href = (await page.getByRole("link", { name: "Ver minha página" }).getAttribute("href"))!;
+  // A9: o link abre a página como o cliente chega, pelo QR do display A (`?p=<token>`).
+  const link = new URL((await page.getByRole("link", { name: "Ver minha página" }).getAttribute("href"))!, "http://x");
+  const href = link.pathname;
   expect(href).toMatch(/^\/r\/cantina-nonna-lucia-[a-z2-9]{6}$/);
+  const p = link.searchParams.get("p");
+  expect(p).toBeTruthy();
   const ctx = await page.context().browser()!.newContext();
   await loginCustomer(ctx.request, `/api${href}`, "Dani Teste");
-  const ck = await ctx.request.post(`/api${href}/checkin`, { data: { gpsStatus: "negado", idempotencyKey: crypto.randomUUID() } });
+  const ck = await ctx.request.post(`/api${href}/checkin`, { data: { gpsStatus: "negado", idempotencyKey: crypto.randomUUID(), p } });
   const code = ((await ck.json()) as { codes: Array<{ code: string; type: string }> }).codes.find((c) => c.type === "primeira_visita")!.code;
   await ctx.close();
   await page.goto("/parceiro/salao/validar");

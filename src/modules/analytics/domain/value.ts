@@ -1,6 +1,8 @@
 /**
  * Valor ao dono em R$ (S5.1, D179): topo em 2 camadas e metas por faixa.
- * - Causal: margem incremental contra o grupo de controle (espec. 2), só com resultado positivo/negativo.
+ * - Causal: margem incremental contra o grupo de controle (espec. 2), só com resultado positivo/negativo nas visitas.
+ *   O tipo sai do estado da MARGEM (S9, A5): a margem já desconta o custo dos convites e pode ser negativa ou cruzar
+ *   o zero mesmo com visitas a mais (oferta cara). `visitas` guarda o sinal das visitas para o texto.
  * - Antecipada (sem resultado): convites usados × ticket declarado — "estimativa, não causal".
  * Só tipos de domínio (fronteira domain-no-infra).
  */
@@ -12,16 +14,28 @@ export type EarlyValue = { usados: number; custoCents: number };
 
 type Faltam = { faltamControle: number; faltamConvidados: number };
 export type Topline =
-  | { kind: "causal_positivo" | "causal_negativo"; cents: number; lo: number; hi: number; nT: number }
-  | ({ kind: "antecipado"; motivo: "amostra" | "inconclusivo"; usados: number; consumoCents: number; margemCents: number; custoCents: number } & Faltam)
+  | { kind: "causal_positivo" | "causal_negativo" | "causal_cruza_zero"; visitas: "positivo" | "negativo"; cents: number; lo: number; hi: number; nT: number }
+  | ({ kind: "antecipado"; motivo: "amostra" | "inconclusivo"; usados: number; consumoCents: number; margemCents: number; custoCents: number; liquidoCents: number } & Faltam)
   | ({ kind: "sem_valores"; motivo: "amostra" | "inconclusivo" | "causal"; usados: number; custoCents: number } & Faltam);
+
+export type MarginState = "positiva" | "negativa" | "cruza_zero";
+
+/** Estado da margem incremental pelo IC (S9, A5): positiva só se o mínimo passa de zero; negativa só se o máximo fica abaixo. */
+export function marginState(m: { lo: number; hi: number }): MarginState {
+  if (m.lo > 0) return "positiva";
+  if (m.hi < 0) return "negativa";
+  return "cruza_zero";
+}
+
+const KIND: Record<MarginState, "causal_positivo" | "causal_negativo" | "causal_cruza_zero"> = { positiva: "causal_positivo", negativa: "causal_negativo", cruza_zero: "causal_cruza_zero" };
 
 export function valueTopline(p: { inc: Incremental; margin: MarginIncrement | null; early: EarlyValue; ticketCents: number | null; marginPct: number | null; minN?: number }): Topline {
   const minN = p.minN ?? MIN_N;
   const causal = p.inc.state === "positivo" || p.inc.state === "negativo";
   const declared = p.ticketCents != null && p.marginPct != null;
   if (causal && declared && p.margin) {
-    return { kind: p.inc.state === "positivo" ? "causal_positivo" : "causal_negativo", cents: Math.round(p.margin.cents), lo: Math.round(p.margin.lo), hi: Math.round(p.margin.hi), nT: p.inc.nT };
+    const [cents, lo, hi] = [Math.round(p.margin.cents), Math.round(p.margin.lo), Math.round(p.margin.hi)];
+    return { kind: KIND[marginState({ lo, hi })], visitas: p.inc.state === "positivo" ? "positivo" : "negativo", cents, lo, hi, nT: p.inc.nT };
   }
   const amostra = p.inc.state === "amostra_insuficiente";
   const faltam: Faltam = {
@@ -31,13 +45,15 @@ export function valueTopline(p: { inc: Incremental; margin: MarginIncrement | nu
   const motivo = amostra ? "amostra" : "inconclusivo";
   if (!declared) return { kind: "sem_valores", motivo: causal ? "causal" : motivo, usados: p.early.usados, custoCents: p.early.custoCents, ...faltam };
   const consumoCents = p.early.usados * p.ticketCents!;
+  const margemCents = Math.round((consumoCents * p.marginPct!) / 100);
   return {
     kind: "antecipado",
     motivo,
     usados: p.early.usados,
     consumoCents,
-    margemCents: Math.round((consumoCents * p.marginPct!) / 100),
+    margemCents,
     custoCents: p.early.custoCents,
+    liquidoCents: margemCents - p.early.custoCents,
     ...faltam,
   };
 }

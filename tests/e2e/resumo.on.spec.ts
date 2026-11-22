@@ -31,7 +31,8 @@ test("resumo semanal: prévia com link → página de confirmação → aprovar 
   await expect(card.getByRole("button", { name: "Enviar agora" })).toHaveCount(0);
   await card.getByRole("button", { name: "Ver o e-mail desta semana" }).click();
   const panel = page.getByRole("dialog", { name: "O e-mail desta semana" });
-  await expect(panel.getByTestId("resumo-previa")).toContainText("seu plano da semana está pronto para aprovar");
+  // S9: com margem a mais certa, o assunto traz o valor ("… · plano para aprovar").
+  await expect(panel.getByTestId("resumo-previa")).toContainText(/para aprovar/);
   await expect(panel.getByTestId("resumo-previa")).toContainText("Revisar e aprovar:");
   await axe(page);
   const href = await panel.getByRole("link", { name: /Abrir “Revisar e aprovar”/ }).getAttribute("href");
@@ -43,9 +44,9 @@ test("resumo semanal: prévia com link → página de confirmação → aprovar 
   const mail = await ctx.newPage();
   await mail.goto(path);
   await expect(mail.getByRole("heading", { name: /^Plano da semana · / })).toBeVisible();
-  await expect(mail.getByText("Estado: Esperando aprovação")).toBeVisible();
+  await expect(mail.getByText("Situação: esperando sua aprovação")).toBeVisible();
   await axe(mail);
-  await mail.getByRole("button", { name: "Aprovar plano" }).click();
+  await mail.getByRole("button", { name: "Aprovar e enviar convites" }).click();
   await expect(mail.getByTestId("aprovado-email")).toContainText("Plano aprovado.");
   await mail.reload();
   await expect(mail.getByText("Este link já foi usado. Veja o plano no Portal.")).toBeVisible();
@@ -59,4 +60,6 @@ test("resumo semanal: prévia com link → página de confirmação → aprovar 
 test("link inválido → 404", async ({ page }) => {
   const r = await page.goto("/parceiro/aprovar/rv_naoexiste_naoexiste_naoexiste_naoexiste_000");
   expect(r?.status()).toBe(404);
+  // S9: o 404 aponta o caminho que resolve.
+  await expect(page.getByRole("link", { name: "Abrir o plano no Portal" })).toHaveAttribute("href", "/parceiro/salao/plano");
 });

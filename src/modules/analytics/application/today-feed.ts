@@ -24,7 +24,7 @@ export type TodayFeed = { counts: { leituras: number; checkins: number; validado
 
 type Row = Record<string, unknown>;
 const rows = async (ex: Executor, q: ReturnType<typeof sql>): Promise<Row[]> => ((await ex.execute(q)) as unknown as { rows: Row[] }).rows;
-const PIECE: Record<string, string> = { display: "Display mesa", cartaz: "Cartaz", garcom: "Cartão do garçom", porta_conta: "Porta-conta" };
+const PIECE: Record<string, string> = { display: "Display de mesa", cartaz: "Cartaz", garcom: "Cartão do garçom", porta_conta: "Porta-conta" };
 const iso = (v: unknown) => new Date(String(v)).toISOString();
 const name = (v: unknown) => fullName(v == null ? null : String(v));
 

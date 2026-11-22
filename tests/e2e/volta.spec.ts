@@ -60,7 +60,8 @@ test("grupo de controle: o cliente não vê nada; o dono vê a marca em 'Último
   await page.goto("/parceiro/salao");
   await waitExampleReady(page);
   await page.reload();
-  const href = (await page.getByRole("link", { name: "Ver minha página" }).getAttribute("href"))!;
+  // A9: o link abre pelo QR do display A (`?p=`); a API do cliente usa só o caminho.
+  const href = (await page.getByRole("link", { name: "Ver minha página" }).getAttribute("href"))!.split("?")[0]!;
   let holdout = false;
   for (let i = 0; i < 80 && !holdout; i++) {
     const ctx = await browser.newContext();
@@ -73,5 +74,6 @@ test("grupo de controle: o cliente não vê nada; o dono vê a marca em 'Último
   expect(holdout, "nenhum cliente no grupo de controle em 80 tentativas").toBe(true);
   await page.reload();
   // Com `painel_valor` (S5.1), a lista vira "Hoje no salão", com a mesma marca.
-  await expect(page.getByTestId(S5_ON ? "hoje-no-salao" : "ultimos-checkins")).toContainText("grupo de controle · sem convite (mede o efeito)", { timeout: 10_000 });
+  // S9: "Hoje no salão" usa o rótulo "grupo sem convite"; a lista antiga mantém o texto dela.
+  await expect(page.getByTestId(S5_ON ? "hoje-no-salao" : "ultimos-checkins")).toContainText(S5_ON ? "grupo sem convite · sorteado para comparar" : "grupo de controle · sem convite (mede o efeito)", { timeout: 10_000 });
 });

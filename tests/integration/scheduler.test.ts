@@ -58,7 +58,7 @@ describe("agendador: plano e resumo no dia e hora do dono (S6.1, D187, D196)", (
     expect((await runSchedulerTick(getDb(), at("2026-11-23", "08:30"), deps())).resumos.enviados).toBe(1);
     await Promise.all([runSchedulerTick(getDb(), at("2026-11-23", "08:31"), deps()), runSchedulerTick(getDb(), at("2026-11-23", "08:31"), deps())]);
     expect(toOwner()).toHaveLength(1);
-    expect(toOwner()[0]!.subject).toContain("pronto para aprovar");
+    expect(toOwner()[0]!.subject).toContain("para aprovar"); // S9: com margem a mais certa, o valor vai no assunto
     const [w] = await getDb().select().from(weeklyDigests).where(eq(weeklyDigests.restaurantId, VITRINE_ID));
     expect(w).toMatchObject({ weekKey: "2026-W48", status: "enviado" });
   });
@@ -111,7 +111,7 @@ describe("agendador: plano e resumo no dia e hora do dono (S6.1, D187, D196)", (
     await getDb().delete(weeklyPlans).where(and(eq(weeklyPlans.restaurantId, VITRINE_ID), eq(weeklyPlans.status, "proposto")));
     await setSettings(VITRINE_ID, { planoAuto: false });
     await runSchedulerTick(getDb(), at("2026-11-23", "08:35"), deps());
-    expect(toOwner()[0]!.subject).toContain("sua semana em números");
+    expect(toOwner()[0]!.subject).not.toContain("para aprovar"); // S9: sem link de aprovar (o assunto pode trazer o valor)
   });
 
   it("dia e hora escolhidos: quarta 19:00", async () => {

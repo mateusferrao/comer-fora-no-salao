@@ -11,9 +11,9 @@ const pct = (n: number, d: number) => (d ? `${Math.round((100 * n) / d)}%` : "�
 
 function statusText(r: AbRow): string {
   if (!r.status) return "Falta uma das versões.";
-  if (r.status.state === "faltam") return `Sem vencedora ainda · faltam ~${r.status.missing} leituras por versão`;
+  if (r.status.state === "faltam") return `Ainda sem vencedora · faltam cerca de ${r.status.missing} leituras do QR em cada versão`;
   if (r.status.state === "sem_diferenca") return "Sem diferença clara entre as versões";
-  return `A versão ${r.status.winner} converte mais leituras em check-in`;
+  return `A versão ${r.status.winner} leva mais gente do QR ao check-in`;
 }
 
 /** Alertas de operação (insight 4) e tabela do A/B — cada um só aparece com a flag ligada. */
@@ -38,7 +38,7 @@ export function Operations({ view, showAb, showAlerts }: { view: OperationsView;
       {showAb && (
         <details className="rounded-sm border border-border bg-white p-5" data-testid="ab">
           <summary className="cursor-pointer text-lg font-bold text-ink">Versões das peças (A/B)</summary>
-          <p className="mt-2 text-sm text-ink-muted">Decide só pela conversão leitura do QR → check-in entre as versões da mesma peça. Amostra mínima: ~356 leituras por versão.</p>
+          <p className="mt-2 text-sm text-ink-muted">Comparamos quantas leituras do QR viram check-in em cada versão da mesma peça. Precisamos de cerca de 356 leituras em cada uma.</p>
           {view.ab.map((r) => (
             <div key={r.kind} className="mt-4 flex flex-col gap-2">
               <table className="w-full text-left text-sm text-ink">
@@ -73,20 +73,20 @@ export function Operations({ view, showAb, showAlerts }: { view: OperationsView;
                   onClick={async () => {
                     if (
                       !(await confirmDialog({
-                        title: `Promover a versão ${r.status?.state === "vencedora" ? r.status.winner : ""}?`,
+                        title: `Usar o texto da versão ${r.status?.state === "vencedora" ? r.status.winner : ""} nas duas?`,
                         body: "A outra versão ganha o texto da vencedora e um QR novo: reimprima o display e o cartaz. O QR atual continua funcionando.",
-                        confirmLabel: "Promover",
+                        confirmLabel: "Usar nas duas",
                       }))
                     )
                       return;
                     setBusy(r.kind);
                     const res = await fetch("/api/parceiro/kit/campo", { method: "PATCH", headers: { "content-type": "application/json" }, body: JSON.stringify({ promover: r.kind }) });
                     setBusy(null);
-                    setMsg(res.ok ? "Pronto: a versão vencedora foi promovida. Reimprima as peças no Kit." : "Não deu para promover agora.");
+                    setMsg(res.ok ? "Pronto: as duas versões usam o texto da vencedora. Reimprima as peças no Kit." : "Não deu para trocar o texto agora. Tente de novo em instantes.");
                     router.refresh();
                   }}
                 >
-                  Promover vencedora
+                  Usar o texto da versão {r.status.winner} nas duas
                 </button>
               )}
             </div>

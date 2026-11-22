@@ -23,6 +23,6 @@ describe("insight 4 e A/B", () => {
     expect(a).toEqual([{ kind: "teto", alias: "A", cap: 20 }, { kind: "validacao", weekday: 6, turn: "noite", pct: 30, codes: 10 }]);
     expect(alertText(a[1]!, () => "")).toBe("Sábado à noite: 30% dos códigos sem validação (de 10 em 30 dias). Confira se a equipe está validando no Portal.");
     expect(alertText(a[0]!, () => "ter a qui das 15h às 18h")).toBe("Teto atingido em ter a qui das 15h às 18h: os 20 convites desta semana acabaram.");
-    expect(alertText({ kind: "peca", piece: "display", worse: "B", ratio: 2.5 }, () => "")).toBe("Display de mesa: a versão B converte 2,5× menos leituras em check-in.");
+    expect(alertText({ kind: "peca", piece: "display", worse: "B", ratio: 2.5 }, () => "")).toBe("Display de mesa: a versão B leva 2,5× menos gente do QR ao check-in.");
   });
 });

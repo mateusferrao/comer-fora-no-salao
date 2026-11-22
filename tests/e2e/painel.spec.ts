@@ -20,8 +20,8 @@ for (const width of [1280, 390]) {
     await expect(page.getByText("Restaurante de exemplo · histórico gerado")).toBeVisible();
     await expect(page.getByTestId("metric-state")).toHaveAttribute("data-state", "positivo");
     await expect(page.getByText(/provavelmente entre \+/)).toBeVisible();
-    await expect(page.getByRole("heading", { name: "Comparado ao grupo de controle" })).toBeVisible();
-    await expect(page.getByRole("heading", { name: /Indicadores antecipados/ })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Comparado ao grupo sem convite" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: /Sinais iniciais/ })).toBeVisible();
     await expect(page.getByRole("radio", { name: "Últ. 7 dias" })).toHaveAttribute("aria-checked", "true");
     await page.getByRole("radio", { name: "Últ. 30 dias" }).click();
     await expect(page.getByRole("radio", { name: "Últ. 30 dias" })).toHaveAttribute("aria-checked", "true");
@@ -40,7 +40,7 @@ test("check-in feito em outra aba aparece no funil em até 5 s", async ({ page, 
   const count = async () => Number(/^[\d.]+/.exec((await page.getByTestId("funil-checkins").innerText()).trim())![0].replace(/\./g, ""));
   await expect(page.getByTestId("funil-checkins")).toBeVisible();
   const before = await count();
-  const href = (await page.getByRole("link", { name: "Ver minha página" }).getAttribute("href"))!;
+  const href = (await page.getByRole("link", { name: "Ver minha página" }).getAttribute("href"))!.split("?")[0]!; // A9: sem o `?p=` do display
   const ctx = await browser.newContext();
   await loginCustomer(ctx.request, `/api${href}`, "Lia Teste");
   const ck = await ctx.request.post(`/api${href}/checkin`, { data: { gpsStatus: "negado", idempotencyKey: crypto.randomUUID() } });
