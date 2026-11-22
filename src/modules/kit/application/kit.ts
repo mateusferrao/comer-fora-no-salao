@@ -198,7 +198,7 @@ async function pendingRecado(db: Executor, restaurantId: string): Promise<{ text
 }
 
 /** Só "ok" ou "não revisado" (revisor indisponível ou mais de 20 s) liberam o recado da IA; sem registro, como antes. */
-export function recadoPublishable(review: StoredReview | null, now: Date): boolean {
+function recadoPublishable(review: StoredReview | null, now: Date): boolean {
   const e = effectiveReview(review, now);
   return !e || e.status === "ok" || e.status === "nao_revisado";
 }
