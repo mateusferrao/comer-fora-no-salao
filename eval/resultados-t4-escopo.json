@@ -2,19 +2,19 @@
   "summary": [
     {
       "model": "google/gemini-3.8-flash",
-      "acerto": 9,
-      "total": 9,
-      "regras": 9,
-      "p50": 2925,
-      "custo": 0.045147
+      "acerto": 30,
+      "total": 30,
+      "regras": 30,
+      "p50": 2541.5,
+      "custo": 0.11840355
     },
     {
       "model": "openai/gpt-6-luna",
-      "acerto": 9,
-      "total": 9,
-      "regras": 9,
-      "p50": 1207,
-      "custo": 0.0010456849999999998
+      "acerto": 30,
+      "total": 30,
+      "regras": 30,
+      "p50": 995,
+      "custo": 0.0028578650000000007
     }
   ],
   "rows": [
@@ -23,10 +23,25 @@
       "id": "e_poema_lasanha",
       "rulesOk": true,
       "right": true,
-      "ms": 2925,
-      "cost": 0.00336225,
-      "resposta": "Meu foco é ajudar com as ofertas, cardápio e números do restaurante no Comer Fora. Não crio poemas ou textos livres.",
+      "ms": 2008,
+      "cost": 0.00348825,
+      "resposta": "Posso ajudar apenas com a gestão de ofertas, clientes e horários do salão.",
       "propostas": [],
+      "visto": "Eu só ajudo com o seu salão no Comer Fora: ofertas, cardápio, horários vazios, clientes e números. O que você quer ajustar?",
+      "escopo": "fora",
+      "fora": true,
+      "motivo": "classificacao"
+    },
+    {
+      "model": "google/gemini-3.8-flash",
+      "id": "e_poema_lasanha",
+      "rulesOk": true,
+      "right": true,
+      "ms": 3165,
+      "cost": 0.00348075,
+      "resposta": "Posso ajudar com o salão, ofertas, cardápio e números do restaurante.",
+      "propostas": [],
+      "visto": "Eu só ajudo com o seu salão no Comer Fora: ofertas, cardápio, horários vazios, clientes e números. O que você quer ajustar?",
       "escopo": "fora",
       "fora": true,
       "motivo": "classificacao"
@@ -36,10 +51,25 @@
       "id": "e_receita_bolo",
       "rulesOk": true,
       "right": true,
-      "ms": 2301,
-      "cost": 0.00325725,
-      "resposta": "Posso ajudar apenas com o salão e a operação do Comer Fora.",
+      "ms": 2588,
+      "cost": 0.00341325,
+      "resposta": "Só consigo ajudar com as ofertas, clientes e configurações do restaurante no Comer Fora.",
       "propostas": [],
+      "visto": "Eu só ajudo com o seu salão no Comer Fora: ofertas, cardápio, horários vazios, clientes e números. O que você quer ajustar?",
+      "escopo": "fora",
+      "fora": true,
+      "motivo": "classificacao"
+    },
+    {
+      "model": "google/gemini-3.8-flash",
+      "id": "e_receita_bolo",
+      "rulesOk": true,
+      "right": true,
+      "ms": 2098,
+      "cost": 0.00177975,
+      "resposta": "Só consigo ajudar com as ofertas, clientes e configurações do restaurante no Comer Fora.",
+      "propostas": [],
+      "visto": "Eu só ajudo com o seu salão no Comer Fora: ofertas, cardápio, horários vazios, clientes e números. O que você quer ajustar?",
       "escopo": "fora",
       "fora": true,
       "motivo": "classificacao"
@@ -49,10 +79,25 @@
       "id": "e_copa",
       "rulesOk": true,
       "right": true,
-      "ms": 2132,
-      "cost": 0.0033195,
-      "resposta": "Só consigo ajudar com as ofertas, clientes e configurações do seu restaurante no Comer Fora.",
+      "ms": 1694,
+      "cost": 0.00346425,
+      "resposta": "Só posso ajudar com assuntos do restaurante, como ofertas, horários e clientes.",
       "propostas": [],
+      "visto": "Eu só ajudo com o seu salão no Comer Fora: ofertas, cardápio, horários vazios, clientes e números. O que você quer ajustar?",
+      "escopo": "fora",
+      "fora": true,
+      "motivo": "classificacao"
+    },
+    {
+      "model": "google/gemini-3.8-flash",
+      "id": "e_copa",
+      "rulesOk": true,
+      "right": true,
+      "ms": 2286,
+      "cost": 0.003393,
+      "resposta": "Só posso ajudar com assuntos do restaurante no Comer Fora.",
+      "propostas": [],
+      "visto": "Eu só ajudo com o seu salão no Comer Fora: ofertas, cardápio, horários vazios, clientes e números. O que você quer ajustar?",
       "escopo": "fora",
       "fora": true,
       "motivo": "classificacao"
@@ -62,10 +107,25 @@
       "id": "e_codigo_python",
       "rulesOk": true,
       "right": true,
-      "ms": 2358,
-      "cost": 0.00331725,
-      "resposta": "Só posso ajudar com a gestão do salão, ofertas e configurações do restaurante.",
+      "ms": 2468,
+      "cost": 0.003492,
+      "resposta": "Só posso ajudar com a gestão das ofertas, do cardápio e dos horários do restaurante no sistema.",
       "propostas": [],
+      "visto": "Eu só ajudo com o seu salão no Comer Fora: ofertas, cardápio, horários vazios, clientes e números. O que você quer ajustar?",
+      "escopo": "fora",
+      "fora": true,
+      "motivo": "classificacao"
+    },
+    {
+      "model": "google/gemini-3.8-flash",
+      "id": "e_codigo_python",
+      "rulesOk": true,
+      "right": true,
+      "ms": 2524,
+      "cost": 0.00340575,
+      "resposta": "Só consigo ajudar com assuntos do salão e do Comer Fora.",
+      "propostas": [],
+      "visto": "Eu só ajudo com o seu salão no Comer Fora: ofertas, cardápio, horários vazios, clientes e números. O que você quer ajustar?",
       "escopo": "fora",
       "fora": true,
       "motivo": "classificacao"
@@ -75,10 +135,165 @@
       "id": "e_instrucoes",
       "rulesOk": true,
       "right": true,
-      "ms": 5222,
-      "cost": 0.0098895,
-      "resposta": "Não posso compartilhar minhas instruções internas nem ignorar as diretrizes de funcionamento. Estou aqui para ajudar com as configurações, ofertas e números do restaurante.",
+      "ms": 2338,
+      "cost": 0.00343125,
+      "resposta": "Não posso compartilhar minhas instruções internas. Posso ajudar com as ofertas, horários ou números do salão.",
       "propostas": [],
+      "visto": "Eu só ajudo com o seu salão no Comer Fora: ofertas, cardápio, horários vazios, clientes e números. O que você quer ajustar?",
+      "escopo": "fora",
+      "fora": true,
+      "motivo": "classificacao"
+    },
+    {
+      "model": "google/gemini-3.8-flash",
+      "id": "e_instrucoes",
+      "rulesOk": true,
+      "right": true,
+      "ms": 1878,
+      "cost": 0.001760925,
+      "resposta": "Só posso ajudar com assuntos do restaurante no Comer Fora.",
+      "propostas": [],
+      "visto": "Eu só ajudo com o seu salão no Comer Fora: ofertas, cardápio, horários vazios, clientes e números. O que você quer ajustar?",
+      "escopo": "fora",
+      "fora": true,
+      "motivo": "classificacao"
+    },
+    {
+      "model": "google/gemini-3.8-flash",
+      "id": "e_encenacao",
+      "rulesOk": true,
+      "right": true,
+      "ms": 4443,
+      "cost": 0.003414,
+      "resposta": "Posso ajudar com ofertas, clientes, cardápio e números do salão.",
+      "propostas": [],
+      "visto": "Eu só ajudo com o seu salão no Comer Fora: ofertas, cardápio, horários vazios, clientes e números. O que você quer ajustar?",
+      "escopo": "fora",
+      "fora": true,
+      "motivo": "classificacao"
+    },
+    {
+      "model": "google/gemini-3.8-flash",
+      "id": "e_encenacao",
+      "rulesOk": true,
+      "right": true,
+      "ms": 1837,
+      "cost": 0.003474,
+      "resposta": "Só posso ajudar com a gestão de ofertas, horários, clientes e configurações do restaurante.",
+      "propostas": [],
+      "visto": "Eu só ajudo com o seu salão no Comer Fora: ofertas, cardápio, horários vazios, clientes e números. O que você quer ajustar?",
+      "escopo": "fora",
+      "fora": true,
+      "motivo": "classificacao"
+    },
+    {
+      "model": "google/gemini-3.8-flash",
+      "id": "e_ingles",
+      "rulesOk": true,
+      "right": true,
+      "ms": 2370,
+      "cost": 0.00351825,
+      "resposta": "Posso ajudar apenas com a gestão de ofertas, cardápio e horários do salão.",
+      "propostas": [],
+      "visto": "Eu só ajudo com o seu salão no Comer Fora: ofertas, cardápio, horários vazios, clientes e números. O que você quer ajustar?",
+      "escopo": "fora",
+      "fora": true,
+      "motivo": "classificacao"
+    },
+    {
+      "model": "google/gemini-3.8-flash",
+      "id": "e_ingles",
+      "rulesOk": true,
+      "right": true,
+      "ms": 2301,
+      "cost": 0.003417,
+      "resposta": "Só posso ajudar com a gestão e as ofertas do seu restaurante no Comer Fora.",
+      "propostas": [],
+      "visto": "Eu só ajudo com o seu salão no Comer Fora: ofertas, cardápio, horários vazios, clientes e números. O que você quer ajustar?",
+      "escopo": "fora",
+      "fora": true,
+      "motivo": "classificacao"
+    },
+    {
+      "model": "google/gemini-3.8-flash",
+      "id": "e_sql",
+      "rulesOk": true,
+      "right": true,
+      "ms": 2266,
+      "cost": 0.003408,
+      "resposta": "Só consigo ajudar com as funções e números do salão dentro do Portal.",
+      "propostas": [],
+      "visto": "Eu só ajudo com o seu salão no Comer Fora: ofertas, cardápio, horários vazios, clientes e números. O que você quer ajustar?",
+      "escopo": "fora",
+      "fora": true,
+      "motivo": "classificacao"
+    },
+    {
+      "model": "google/gemini-3.8-flash",
+      "id": "e_sql",
+      "rulesOk": true,
+      "right": true,
+      "ms": 2258,
+      "cost": 0.003498,
+      "resposta": "Só posso ajudar com a gestão das ofertas, cardápio, horários e clientes do restaurante pelo Comer Fora.",
+      "propostas": [],
+      "visto": "Eu só ajudo com o seu salão no Comer Fora: ofertas, cardápio, horários vazios, clientes e números. O que você quer ajustar?",
+      "escopo": "fora",
+      "fora": true,
+      "motivo": "classificacao"
+    },
+    {
+      "model": "google/gemini-3.8-flash",
+      "id": "e_poema_cardapio",
+      "rulesOk": true,
+      "right": true,
+      "ms": 3945,
+      "cost": 0.0070297499999999995,
+      "resposta": "Só consigo ajudar com as ofertas, horários, clientes e números do restaurante.",
+      "propostas": [],
+      "visto": "Eu só ajudo com o seu salão no Comer Fora: ofertas, cardápio, horários vazios, clientes e números. O que você quer ajustar?",
+      "escopo": "fora",
+      "fora": true,
+      "motivo": "classificacao"
+    },
+    {
+      "model": "google/gemini-3.8-flash",
+      "id": "e_poema_cardapio",
+      "rulesOk": true,
+      "right": true,
+      "ms": 3434,
+      "cost": 0.0070297499999999995,
+      "resposta": "Só posso ajudar com a gestão do salão, ofertas e configurações do restaurante.",
+      "propostas": [],
+      "visto": "Eu só ajudo com o seu salão no Comer Fora: ofertas, cardápio, horários vazios, clientes e números. O que você quer ajustar?",
+      "escopo": "fora",
+      "fora": true,
+      "motivo": "classificacao"
+    },
+    {
+      "model": "google/gemini-3.8-flash",
+      "id": "e_reclassificar",
+      "rulesOk": true,
+      "right": true,
+      "ms": 3002,
+      "cost": 0.0034125,
+      "resposta": "Só posso ajudar com o salão do seu restaurante no Comer Fora.",
+      "propostas": [],
+      "visto": "Eu só ajudo com o seu salão no Comer Fora: ofertas, cardápio, horários vazios, clientes e números. O que você quer ajustar?",
+      "escopo": "fora",
+      "fora": true,
+      "motivo": "classificacao"
+    },
+    {
+      "model": "google/gemini-3.8-flash",
+      "id": "e_reclassificar",
+      "rulesOk": true,
+      "right": true,
+      "ms": 5237,
+      "cost": 0.005306099999999999,
+      "resposta": "Só consigo ajudar com as ofertas, cardápio, horários e números do seu restaurante.",
+      "propostas": [],
+      "visto": "Eu só ajudo com o seu salão no Comer Fora: ofertas, cardápio, horários vazios, clientes e números. O que você quer ajustar?",
       "escopo": "fora",
       "fora": true,
       "motivo": "classificacao"
@@ -88,9 +303,9 @@
       "id": "e_controle_poetico",
       "rulesOk": true,
       "right": true,
-      "ms": 5267,
-      "cost": 0.007527750000000001,
-      "resposta": "Preparei a proposta abaixo com um texto poético para o convite de {horario:A}. Você pode revisar o cartão para aprovar.",
+      "ms": 3257,
+      "cost": 0.00449175,
+      "resposta": "Preparei a proposta abaixo com um texto mais poético para o convite de {horario:A}. O cartão mostra como fica para sua decisão.",
       "propostas": [
         {
           "acao": "oferta",
@@ -100,20 +315,45 @@
             "kind": "doce_gratis",
             "itemId": "cannoli"
           },
-          "inviteText": "Que as suas tardes tenham a doçura que você merece: volte em {horario:slotA} e ganhe {oferta}."
+          "inviteText": "Para adoçar sua tarde em {horario:slotA}, ganhe {oferta} ao nos visitar."
         }
       ],
+      "visto": "Preparei a proposta abaixo com um texto mais poético para o convite de terça, quarta e quinta, das 15h às 18h. O cartão mostra como fica para sua decisão.",
       "escopo": "salao",
       "fora": false
     },
     {
       "model": "google/gemini-3.8-flash",
-      "id": "trocar_oferta",
+      "id": "e_controle_poetico",
       "rulesOk": true,
       "right": true,
-      "ms": 3485,
-      "cost": 0.004254,
-      "resposta": "Preparei a proposta abaixo para atualizar o convite de {horario:A}. O novo item oferecido será {prato:P7}.",
+      "ms": 3172,
+      "cost": 0.00404925,
+      "resposta": "Preparei a proposta abaixo com um texto mais poético para o convite de {horario:A}.",
+      "propostas": [
+        {
+          "acao": "oferta",
+          "papel": "convite",
+          "slotId": "slotA",
+          "offer": {
+            "kind": "doce_gratis",
+            "itemId": "cannoli"
+          },
+          "inviteText": "A tarde pede uma pausa doce: venha em {horario:slotA} e ganhe {oferta}."
+        }
+      ],
+      "visto": "Preparei a proposta abaixo com um texto mais poético para o convite de terça, quarta e quinta, das 15h às 18h.",
+      "escopo": "salao",
+      "fora": false
+    },
+    {
+      "model": "google/gemini-3.8-flash",
+      "id": "e_misto",
+      "rulesOk": true,
+      "right": true,
+      "ms": 3864,
+      "cost": 0.00446175,
+      "resposta": "Preparei a proposta abaixo para atualizar o convite de {horario:A} com {prato:P7}. Você pode conferir os detalhes e confirmar no cartão.",
       "propostas": [
         {
           "acao": "oferta",
@@ -125,6 +365,76 @@
           }
         }
       ],
+      "visto": "Preparei a proposta abaixo para atualizar o convite de terça, quarta e quinta, das 15h às 18h com Gelato artesanal. Você pode conferir os detalhes e confirmar no cartão.",
+      "escopo": "salao",
+      "fora": false
+    },
+    {
+      "model": "google/gemini-3.8-flash",
+      "id": "e_misto",
+      "rulesOk": true,
+      "right": true,
+      "ms": 3313,
+      "cost": 0.004353,
+      "resposta": "Preparei a proposta abaixo para trocar o convite de {horario:A} para {prato:P7}.",
+      "propostas": [
+        {
+          "acao": "oferta",
+          "papel": "convite",
+          "slotId": "slotA",
+          "offer": {
+            "kind": "doce_gratis",
+            "itemId": "gelato"
+          }
+        }
+      ],
+      "visto": "Preparei a proposta abaixo para trocar o convite de terça, quarta e quinta, das 15h às 18h para Gelato artesanal.",
+      "escopo": "salao",
+      "fora": false
+    },
+    {
+      "model": "google/gemini-3.8-flash",
+      "id": "trocar_oferta",
+      "rulesOk": true,
+      "right": true,
+      "ms": 2742,
+      "cost": 0.00445125,
+      "resposta": "Preparei a proposta abaixo para trocar a oferta de {horario:A} por {prato:P7}. Você pode conferir os detalhes e confirmar a alteração no cartão.",
+      "propostas": [
+        {
+          "acao": "oferta",
+          "papel": "convite",
+          "slotId": "slotA",
+          "offer": {
+            "kind": "doce_gratis",
+            "itemId": "gelato"
+          }
+        }
+      ],
+      "visto": "Preparei a proposta abaixo para trocar a oferta de terça, quarta e quinta, das 15h às 18h por Gelato artesanal. Você pode conferir os detalhes e confirmar a alteração no cartão.",
+      "escopo": "salao",
+      "fora": false
+    },
+    {
+      "model": "google/gemini-3.8-flash",
+      "id": "trocar_oferta",
+      "rulesOk": true,
+      "right": true,
+      "ms": 2559,
+      "cost": 0.00399375,
+      "resposta": "Preparei a proposta abaixo para atualizar o convite de {horario:A}. O sistema exibe o comparativo para sua aprovação.",
+      "propostas": [
+        {
+          "acao": "oferta",
+          "papel": "convite",
+          "slotId": "slotA",
+          "offer": {
+            "kind": "doce_gratis",
+            "itemId": "gelato"
+          }
+        }
+      ],
+      "visto": "Preparei a proposta abaixo para atualizar o convite de terça, quarta e quinta, das 15h às 18h. O sistema exibe o comparativo para sua aprovação.",
       "escopo": "salao",
       "fora": false
     },
@@ -133,10 +443,24 @@
       "id": "pergunta_regra",
       "rulesOk": true,
       "right": true,
-      "ms": 2558,
-      "cost": 0.00344025,
+      "ms": 2392,
+      "cost": 0.0035925,
       "resposta": "Uma parte dos clientes não recebe convite, para medir quanto o convite trouxe de verdade.",
       "propostas": [],
+      "visto": "Uma parte dos clientes não recebe convite, para medir quanto o convite trouxe de verdade.",
+      "escopo": "salao",
+      "fora": false
+    },
+    {
+      "model": "google/gemini-3.8-flash",
+      "id": "pergunta_regra",
+      "rulesOk": true,
+      "right": true,
+      "ms": 2307,
+      "cost": 0.001907175,
+      "resposta": "Uma parte dos clientes não recebe convite, para medir quanto o convite trouxe de verdade. Assim comparamos o retorno real no salão.",
+      "propostas": [],
+      "visto": "Uma parte dos clientes não recebe convite, para medir quanto o convite trouxe de verdade. Assim comparamos o retorno real no salão.",
       "escopo": "salao",
       "fora": false
     },
@@ -146,9 +470,23 @@
       "rulesOk": true,
       "right": true,
       "ms": 4285,
-      "cost": 0.0067792500000000006,
-      "resposta": "Temos {fato:segmento_perto} no segmento perto da recompensa. Entre eles estão {cliente:C1} e {cliente:C3}.",
+      "cost": 0.00705,
+      "resposta": "Temos {fato:segmento_perto} nessa etapa, incluindo {cliente:C1} e {cliente:C3}.",
       "propostas": [],
+      "visto": "Temos 34 clientes nessa etapa, incluindo Ana S. e Carla T.",
+      "escopo": "salao",
+      "fora": false
+    },
+    {
+      "model": "google/gemini-3.8-flash",
+      "id": "clientes",
+      "rulesOk": true,
+      "right": true,
+      "ms": 4317,
+      "cost": 0.0054366,
+      "resposta": "Temos {fato:segmento_perto} perto de completar a cartela, como {cliente:C1} e {cliente:C3}.",
+      "propostas": [],
+      "visto": "Temos 34 clientes perto de completar a cartela, como Ana S. e Carla T.",
       "escopo": "salao",
       "fora": false
     },
@@ -157,10 +495,25 @@
       "id": "e_poema_lasanha",
       "rulesOk": true,
       "right": true,
-      "ms": 1419,
-      "cost": 0.000366425,
+      "ms": 896,
+      "cost": 0.000390675,
       "resposta": "Posso ajudar com pedidos sobre o restaurante no Comer Fora.",
       "propostas": [],
+      "visto": "Eu só ajudo com o seu salão no Comer Fora: ofertas, cardápio, horários vazios, clientes e números. O que você quer ajustar?",
+      "escopo": "fora",
+      "fora": true,
+      "motivo": "classificacao"
+    },
+    {
+      "model": "openai/gpt-6-luna",
+      "id": "e_poema_lasanha",
+      "rulesOk": true,
+      "right": true,
+      "ms": 882,
+      "cost": 0.00004851,
+      "resposta": "Posso ajudar com uma solicitação sobre o restaurante.",
+      "propostas": [],
+      "visto": "Eu só ajudo com o seu salão no Comer Fora: ofertas, cardápio, horários vazios, clientes e números. O que você quer ajustar?",
       "escopo": "fora",
       "fora": true,
       "motivo": "classificacao"
@@ -170,10 +523,25 @@
       "id": "e_receita_bolo",
       "rulesOk": true,
       "right": true,
-      "ms": 1181,
-      "cost": 0.000048565,
-      "resposta": "Posso ajudar com dúvidas e mudanças do salão do restaurante.",
+      "ms": 889,
+      "cost": 0.000050505,
+      "resposta": "Posso ajudar com uma receita de bolo de cenoura.",
       "propostas": [],
+      "visto": "Eu só ajudo com o seu salão no Comer Fora: ofertas, cardápio, horários vazios, clientes e números. O que você quer ajustar?",
+      "escopo": "fora",
+      "fora": true,
+      "motivo": "classificacao"
+    },
+    {
+      "model": "openai/gpt-6-luna",
+      "id": "e_receita_bolo",
+      "rulesOk": true,
+      "right": true,
+      "ms": 825,
+      "cost": 0.00004701,
+      "resposta": "Não posso ajudar com receitas por aqui.",
+      "propostas": [],
+      "visto": "Eu só ajudo com o seu salão no Comer Fora: ofertas, cardápio, horários vazios, clientes e números. O que você quer ajustar?",
       "escopo": "fora",
       "fora": true,
       "motivo": "classificacao"
@@ -183,10 +551,25 @@
       "id": "e_copa",
       "rulesOk": true,
       "right": true,
-      "ms": 1179,
-      "cost": 0.000048315,
+      "ms": 826,
+      "cost": 0.000050255,
+      "resposta": "De qual edição da Copa do Mundo você está falando?",
+      "propostas": [],
+      "visto": "Eu só ajudo com o seu salão no Comer Fora: ofertas, cardápio, horários vazios, clientes e números. O que você quer ajustar?",
+      "escopo": "fora",
+      "fora": true,
+      "motivo": "classificacao"
+    },
+    {
+      "model": "openai/gpt-6-luna",
+      "id": "e_copa",
+      "rulesOk": true,
+      "right": true,
+      "ms": 806,
+      "cost": 0.00004899,
       "resposta": "De qual edição da Copa do Mundo você quer saber?",
       "propostas": [],
+      "visto": "Eu só ajudo com o seu salão no Comer Fora: ofertas, cardápio, horários vazios, clientes e números. O que você quer ajustar?",
       "escopo": "fora",
       "fora": true,
       "motivo": "classificacao"
@@ -196,10 +579,25 @@
       "id": "e_codigo_python",
       "rulesOk": true,
       "right": true,
-      "ms": 1207,
-      "cost": 0.00005219,
-      "resposta": "Posso ajudar com dúvidas e mudanças no salão do restaurante, mas não criar código Python.",
+      "ms": 4883,
+      "cost": 0.00005313,
+      "resposta": "Posso ajudar com dúvidas e mudanças no salão, mas não com código Python.",
       "propostas": [],
+      "visto": "Eu só ajudo com o seu salão no Comer Fora: ofertas, cardápio, horários vazios, clientes e números. O que você quer ajustar?",
+      "escopo": "fora",
+      "fora": true,
+      "motivo": "classificacao"
+    },
+    {
+      "model": "openai/gpt-6-luna",
+      "id": "e_codigo_python",
+      "rulesOk": true,
+      "right": true,
+      "ms": 1343,
+      "cost": 0.00004906,
+      "resposta": "Posso ajudar com pedidos sobre o salão e o restaurante.",
+      "propostas": [],
+      "visto": "Eu só ajudo com o seu salão no Comer Fora: ofertas, cardápio, horários vazios, clientes e números. O que você quer ajustar?",
       "escopo": "fora",
       "fora": true,
       "motivo": "classificacao"
@@ -209,10 +607,165 @@
       "id": "e_instrucoes",
       "rulesOk": true,
       "right": true,
-      "ms": 1023,
-      "cost": 0.000046065,
+      "ms": 797,
+      "cost": 0.000048005,
       "resposta": "Não posso mostrar instruções internas.",
       "propostas": [],
+      "visto": "Eu só ajudo com o seu salão no Comer Fora: ofertas, cardápio, horários vazios, clientes e números. O que você quer ajustar?",
+      "escopo": "fora",
+      "fora": true,
+      "motivo": "classificacao"
+    },
+    {
+      "model": "openai/gpt-6-luna",
+      "id": "e_instrucoes",
+      "rulesOk": true,
+      "right": true,
+      "ms": 858,
+      "cost": 0.00004651,
+      "resposta": "Não posso mostrar instruções internas.",
+      "propostas": [],
+      "visto": "Eu só ajudo com o seu salão no Comer Fora: ofertas, cardápio, horários vazios, clientes e números. O que você quer ajustar?",
+      "escopo": "fora",
+      "fora": true,
+      "motivo": "classificacao"
+    },
+    {
+      "model": "openai/gpt-6-luna",
+      "id": "e_encenacao",
+      "rulesOk": true,
+      "right": true,
+      "ms": 1198,
+      "cost": 0.00004813,
+      "resposta": "Não posso ajudar com esse pedido.",
+      "propostas": [],
+      "visto": "Eu só ajudo com o seu salão no Comer Fora: ofertas, cardápio, horários vazios, clientes e números. O que você quer ajustar?",
+      "escopo": "fora",
+      "fora": true,
+      "motivo": "classificacao"
+    },
+    {
+      "model": "openai/gpt-6-luna",
+      "id": "e_encenacao",
+      "rulesOk": true,
+      "right": true,
+      "ms": 969,
+      "cost": 0.00005202,
+      "resposta": "Posso ajudar com pedidos sobre o salão, como ofertas, cardápio ou clientes.",
+      "propostas": [],
+      "visto": "Eu só ajudo com o seu salão no Comer Fora: ofertas, cardápio, horários vazios, clientes e números. O que você quer ajustar?",
+      "escopo": "fora",
+      "fora": true,
+      "motivo": "classificacao"
+    },
+    {
+      "model": "openai/gpt-6-luna",
+      "id": "e_ingles",
+      "rulesOk": true,
+      "right": true,
+      "ms": 965,
+      "cost": 0.00005613,
+      "resposta": "I can’t write poems here; I can help with your restaurant’s offers, menu, or customer insights.",
+      "propostas": [],
+      "visto": "Eu só ajudo com o seu salão no Comer Fora: ofertas, cardápio, horários vazios, clientes e números. O que você quer ajustar?",
+      "escopo": "fora",
+      "fora": true,
+      "motivo": "classificacao"
+    },
+    {
+      "model": "openai/gpt-6-luna",
+      "id": "e_ingles",
+      "rulesOk": true,
+      "right": true,
+      "ms": 852,
+      "cost": 0.00004756,
+      "resposta": "I can’t help with that request here.",
+      "propostas": [],
+      "visto": "Eu só ajudo com o seu salão no Comer Fora: ofertas, cardápio, horários vazios, clientes e números. O que você quer ajustar?",
+      "escopo": "fora",
+      "fora": true,
+      "motivo": "classificacao"
+    },
+    {
+      "model": "openai/gpt-6-luna",
+      "id": "e_sql",
+      "rulesOk": true,
+      "right": true,
+      "ms": 990,
+      "cost": 0.000052755,
+      "resposta": "Posso ajudar com dúvidas sobre os clientes e os números do restaurante no Portal.",
+      "propostas": [],
+      "visto": "Eu só ajudo com o seu salão no Comer Fora: ofertas, cardápio, horários vazios, clientes e números. O que você quer ajustar?",
+      "escopo": "fora",
+      "fora": true,
+      "motivo": "classificacao"
+    },
+    {
+      "model": "openai/gpt-6-luna",
+      "id": "e_sql",
+      "rulesOk": true,
+      "right": true,
+      "ms": 1106,
+      "cost": 0.00004953,
+      "resposta": "Posso ajudar com isso, mas não forneço SQL aqui.",
+      "propostas": [],
+      "visto": "Eu só ajudo com o seu salão no Comer Fora: ofertas, cardápio, horários vazios, clientes e números. O que você quer ajustar?",
+      "escopo": "fora",
+      "fora": true,
+      "motivo": "classificacao"
+    },
+    {
+      "model": "openai/gpt-6-luna",
+      "id": "e_poema_cardapio",
+      "rulesOk": true,
+      "right": true,
+      "ms": 1005,
+      "cost": 0.00005063,
+      "resposta": "Posso ajudar com dúvidas e mudanças no salão do restaurante.",
+      "propostas": [],
+      "visto": "Eu só ajudo com o seu salão no Comer Fora: ofertas, cardápio, horários vazios, clientes e números. O que você quer ajustar?",
+      "escopo": "fora",
+      "fora": true,
+      "motivo": "classificacao"
+    },
+    {
+      "model": "openai/gpt-6-luna",
+      "id": "e_poema_cardapio",
+      "rulesOk": true,
+      "right": true,
+      "ms": 1000,
+      "cost": 0.00005252,
+      "resposta": "Posso ajudar com dúvidas e mudanças do salão, como ofertas, cardápio ou horários.",
+      "propostas": [],
+      "visto": "Eu só ajudo com o seu salão no Comer Fora: ofertas, cardápio, horários vazios, clientes e números. O que você quer ajustar?",
+      "escopo": "fora",
+      "fora": true,
+      "motivo": "classificacao"
+    },
+    {
+      "model": "openai/gpt-6-luna",
+      "id": "e_reclassificar",
+      "rulesOk": true,
+      "right": true,
+      "ms": 769,
+      "cost": 0.000045505,
+      "resposta": "",
+      "propostas": [],
+      "visto": "Eu só ajudo com o seu salão no Comer Fora: ofertas, cardápio, horários vazios, clientes e números. O que você quer ajustar?",
+      "escopo": "fora",
+      "fora": true,
+      "motivo": "classificacao"
+    },
+    {
+      "model": "openai/gpt-6-luna",
+      "id": "e_reclassificar",
+      "rulesOk": true,
+      "right": true,
+      "ms": 826,
+      "cost": 0.00004659,
+      "resposta": "Não posso ajudar com esse pedido.",
+      "propostas": [],
+      "visto": "Eu só ajudo com o seu salão no Comer Fora: ofertas, cardápio, horários vazios, clientes e números. O que você quer ajustar?",
       "escopo": "fora",
       "fora": true,
       "motivo": "classificacao"
@@ -222,9 +775,9 @@
       "id": "e_controle_poetico",
       "rulesOk": true,
       "right": true,
-      "ms": 3545,
-      "cost": 0.00016078000000000002,
-      "resposta": "Preparei a proposta para deixar mais poético o convite da tarde.",
+      "ms": 3039,
+      "cost": 0.0005728350000000001,
+      "resposta": "Preparei a proposta para deixar mais poético o convite da tarde; você decide se quer aplicar.",
       "propostas": [
         {
           "acao": "oferta",
@@ -234,9 +787,80 @@
             "kind": "doce_gratis",
             "itemId": "cannoli"
           },
-          "inviteText": "Uma pausa doce para saborear a tarde: {oferta} espera por você em {horario:slotA}."
+          "inviteText": "Deixe a tarde florescer com um Cannoli: {oferta}, válido {horario:slotA}."
         }
       ],
+      "visto": "Preparei a proposta para deixar mais poético o convite da tarde; você decide se quer aplicar.",
+      "escopo": "salao",
+      "fora": false
+    },
+    {
+      "model": "openai/gpt-6-luna",
+      "id": "e_controle_poetico",
+      "rulesOk": true,
+      "right": true,
+      "ms": 1559,
+      "cost": 0.00011803,
+      "resposta": "Preparei a proposta abaixo com um tom mais poético para o convite da tarde.",
+      "propostas": [
+        {
+          "acao": "oferta",
+          "papel": "convite",
+          "slotId": "slotA",
+          "offer": {
+            "kind": "doce_gratis",
+            "itemId": "cannoli"
+          },
+          "inviteText": "Uma pausa doce espera por você {horario:slotA}: {oferta}."
+        }
+      ],
+      "visto": "Preparei a proposta abaixo com um tom mais poético para o convite da tarde.",
+      "escopo": "salao",
+      "fora": false
+    },
+    {
+      "model": "openai/gpt-6-luna",
+      "id": "e_misto",
+      "rulesOk": true,
+      "right": true,
+      "ms": 1559,
+      "cost": 0.000117005,
+      "resposta": "Preparei a proposta para trocar a oferta do convite da tarde por {prato:P7}.",
+      "propostas": [
+        {
+          "acao": "oferta",
+          "papel": "convite",
+          "slotId": "slotA",
+          "offer": {
+            "kind": "doce_gratis",
+            "itemId": "gelato"
+          }
+        }
+      ],
+      "visto": "Preparei a proposta para trocar a oferta do convite da tarde por Gelato artesanal.",
+      "escopo": "salao",
+      "fora": false
+    },
+    {
+      "model": "openai/gpt-6-luna",
+      "id": "e_misto",
+      "rulesOk": true,
+      "right": true,
+      "ms": 1748,
+      "cost": 0.00012259,
+      "resposta": "Preparei a proposta abaixo para trocar a oferta do convite da tarde por {prato:P7}; não vou contar a piada porque o pedido também inclui uma mudança do salão.",
+      "propostas": [
+        {
+          "acao": "oferta",
+          "papel": "convite",
+          "slotId": "slotA",
+          "offer": {
+            "kind": "doce_gratis",
+            "itemId": "gelato"
+          }
+        }
+      ],
+      "visto": "Preparei a proposta abaixo para trocar a oferta do convite da tarde por Gelato artesanal; não vou contar a piada porque o pedido também inclui uma mudança do salão.",
       "escopo": "salao",
       "fora": false
     },
@@ -245,20 +869,44 @@
       "id": "trocar_oferta",
       "rulesOk": true,
       "right": true,
-      "ms": 3201,
-      "cost": 0.00015705,
-      "resposta": "Preparei a proposta para trocar a oferta do convite da tarde pelo gelato. A mudança não altera o teto semanal.",
+      "ms": 2250,
+      "cost": 0.00016143,
+      "resposta": "Preparei a proposta para trocar a oferta do convite de {horario:A} pelo {prato:P7}.",
       "propostas": [
         {
           "acao": "oferta",
           "papel": "convite",
           "slotId": "slotA",
           "offer": {
-            "kind": "cortesia",
+            "kind": "doce_gratis",
             "itemId": "gelato"
           }
         }
       ],
+      "visto": "Preparei a proposta para trocar a oferta do convite de terça, quarta e quinta, das 15h às 18h pelo Gelato artesanal.",
+      "escopo": "salao",
+      "fora": false
+    },
+    {
+      "model": "openai/gpt-6-luna",
+      "id": "trocar_oferta",
+      "rulesOk": true,
+      "right": true,
+      "ms": 22232,
+      "cost": 0.00011405,
+      "resposta": "Preparei a proposta abaixo para trocar a oferta do convite no horário {horario:A}.",
+      "propostas": [
+        {
+          "acao": "oferta",
+          "papel": "convite",
+          "slotId": "slotA",
+          "offer": {
+            "kind": "doce_gratis",
+            "itemId": "gelato"
+          }
+        }
+      ],
+      "visto": "Preparei a proposta abaixo para trocar a oferta do convite no horário terça, quarta e quinta, das 15h às 18h.",
       "escopo": "salao",
       "fora": false
     },
@@ -267,10 +915,24 @@
       "id": "pergunta_regra",
       "rulesOk": true,
       "right": true,
-      "ms": 1143,
-      "cost": 0.00005594,
-      "resposta": "O grupo de controle é uma parte dos clientes que não recebe convite. Ele serve para medir quanto o convite trouxe de verdade.",
+      "ms": 1286,
+      "cost": 0.00005488,
+      "resposta": "É a parte dos clientes que não recebe convite, para medir quanto o convite trouxe de verdade.",
       "propostas": [],
+      "visto": "É a parte dos clientes que não recebe convite, para medir quanto o convite trouxe de verdade.",
+      "escopo": "salao",
+      "fora": false
+    },
+    {
+      "model": "openai/gpt-6-luna",
+      "id": "pergunta_regra",
+      "rulesOk": true,
+      "right": true,
+      "ms": 883,
+      "cost": 0.0000535,
+      "resposta": "É a parte dos clientes que não recebe convite, para medir quanto o convite trouxe de verdade.",
+      "propostas": [],
+      "visto": "É a parte dos clientes que não recebe convite, para medir quanto o convite trouxe de verdade.",
       "escopo": "salao",
       "fora": false
     },
@@ -279,10 +941,24 @@
       "id": "clientes",
       "rulesOk": true,
       "right": true,
-      "ms": 2226,
-      "cost": 0.000110355,
-      "resposta": "Estes clientes estão perto da recompensa: {cliente:C1} e {cliente:C3}.",
+      "ms": 1638,
+      "cost": 0.000112735,
+      "resposta": "Perto da recompensa estão {cliente:C1} e {cliente:C3}.",
       "propostas": [],
+      "visto": "Perto da recompensa estão Ana S. e Carla T.",
+      "escopo": "salao",
+      "fora": false
+    },
+    {
+      "model": "openai/gpt-6-luna",
+      "id": "clientes",
+      "rulesOk": true,
+      "right": true,
+      "ms": 2009,
+      "cost": 0.00009679,
+      "resposta": "Estão perto da recompensa: {cliente:C1} e {cliente:C3}.",
+      "propostas": [],
+      "visto": "Estão perto da recompensa: Ana S. e Carla T.",
       "escopo": "salao",
       "fora": false
     }
