@@ -77,6 +77,18 @@ export function validateOffer(offer: Offer, menu: readonly MenuItem[]): OfferErr
   return errors;
 }
 
+/**
+ * Regra única de uma oferta nova (S8 — revisão técnica B3): validação do tipo + item "fora das ofertas" (D197) + teto
+ * do desconto. Usada por Configurações (`updateOffer`), aprovação do plano e prévia do copiloto, para o cartão nunca
+ * dizer "ok" quando a aplicação recusaria.
+ */
+export function checkOffer(offer: Offer, activeMenu: readonly MenuItem[], noOfferItemIds: readonly string[]): OfferError[] {
+  const errs = validateOffer(offer, activeMenu);
+  if (noOfferItemIds.includes(offer.params.itemId)) errs.push("item_fora_das_ofertas");
+  if (offer.kind === "desconto" && (offer.params.pct ?? 0) > MAX_DISCOUNT_PCT && !errs.includes("desconto_acima_do_teto")) errs.push("desconto_acima_do_teto");
+  return errs;
+}
+
 const SUBTITLES: Record<Role, string> = { agora: "Pra novos clientes", convite: "No seu convite", recompensa: "Na cartela" };
 
 export function describeOffer(offer: Offer, menu: readonly MenuItem[], role: Role): OfferText {

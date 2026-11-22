@@ -13,7 +13,7 @@ import type { Db } from "@/src/db/client";
 import type { Executor, Tx } from "@/src/db/executor";
 import { benefits, benefitVersions, idleSlots, menuItems, menus, ownerEdits, owners, restaurants } from "@/src/db/schema";
 import type { MenuCategory } from "@/src/modules/beneficios/domain/menu";
-import { describeOffer, MAX_DISCOUNT_PCT, validateOffer, type Offer, type OfferError, type OfferKind, offerFromInput } from "@/src/modules/beneficios/domain/offers";
+import { checkOffer, describeOffer, type Offer, type OfferError, type OfferKind, offerFromInput } from "@/src/modules/beneficios/domain/offers";
 import { validateSlot, type OpeningHours, type Slot, type SlotError } from "@/src/modules/beneficios/domain/slots";
 import { guardText } from "@/src/modules/ia/guardrails";
 import type { AiGateway } from "@/src/modules/ia/gateway";
@@ -83,10 +83,8 @@ export async function updateOffer(
   const activeMenu = await db.select({ id: menuItems.id, category: menuItems.category, name: menuItems.name, priceCents: menuItems.priceCents }).from(menuItems).where(and(eq(menuItems.restaurantId, p.restaurantId), eq(menuItems.active, true)));
   const menu = activeMenu.map((m) => ({ ...m, category: m.category as MenuCategory }));
   const offer = toOffer(p.offer);
-  const errs = validateOffer(offer, menu);
-  // S6.3a (D197): item "fora das ofertas" não vira oferta nova.
-  if (ctx.noOfferItemIds.includes(offer.params.itemId)) errs.push("item_fora_das_ofertas");
-  if (offer.kind === "desconto" && (offer.params.pct ?? 0) > MAX_DISCOUNT_PCT && !errs.includes("desconto_acima_do_teto")) errs.push("desconto_acima_do_teto");
+  // S6.3a (D197) + S8: regra única (`checkOffer`), a mesma da prévia do copiloto.
+  const errs = checkOffer(offer, menu, ctx.noOfferItemIds);
   if (errs.length) return { ok: false, erro: "oferta", erros: errs };
   let inviteText: string | null = null;
   let warnings: string[] = [];

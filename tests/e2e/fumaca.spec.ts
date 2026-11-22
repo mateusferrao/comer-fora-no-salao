@@ -21,9 +21,11 @@ test("cabeçalho X-Robots-Tag com noindex", async ({ request }) => {
 test("/api/health responde 200 com banco no ar", async ({ request }) => {
   const res = await request.get("/api/health");
   expect(res.status()).toBe(200);
-  const body = (await res.json()) as { ok: boolean; db: string; sha: string };
+  const body = (await res.json()) as { ok: boolean; db: string; sha: string; fakeAi?: boolean };
   expect(body).toMatchObject({ ok: true, db: "up" });
   if (process.env.EXPECTED_SHA) expect(body.sha).toBe(process.env.EXPECTED_SHA);
+  // S8 (revisão, segurança 2): a IA roteirizada do E2E nunca liga em produção.
+  if (process.env.BASE_URL) expect(body.fakeAi).toBe(false);
 });
 
 test("galeria /bastidores/componentes com barra e noindex", async ({ page }) => {

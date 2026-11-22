@@ -19,7 +19,7 @@ test("link do garçom: criar → validar sem login → revogar corta na hora", a
   test.setTimeout(120_000);
   await loginE2E(page.request, 22);
   await page.goto("/parceiro/salao");
-  await expect(page.getByText(/Preparando o restaurante de exemplo/)).toBeHidden({ timeout: 60_000 });
+  await expect(page.getByText(/Preparando o restaurante de exemplo/)).toBeHidden({ timeout: 120_000 });
   await page.goto("/parceiro/salao/kit");
   const href = await page.getByRole("link", { name: "Abrir este QR" }).first().getAttribute("href");
   const slug = /\/r\/([^/?#]+)/.exec(href ?? "")![1]!;

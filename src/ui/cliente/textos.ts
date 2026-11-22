@@ -12,7 +12,7 @@ export const TXT = {
   privacidade: "Protótipo de case, não é o iFood. Você pode apagar seus dados quando quiser.",
   /** Aceite obrigatório: só o uso dos dados (revisão S4 I5); os interruptores são as escolhas de marketing [C]. */
   // D237: o restaurante vê o contato completo; o consentimento diz isso.
-  consentimento: (restaurante: string) => `Aceito que ${restaurante} veja meu nome, e-mail e telefone e registre minhas visitas.`,
+  consentimento: (restaurante: string) => `Aceito que ${restaurante} veja meu nome, e-mail e telefone e registre minhas visitas. O assistente de IA do restaurante pode ver meu primeiro nome e minhas visitas, nunca meu contato.`,
   primeiraVisitaUsada: "O benefício de 1ª visita vale só no primeiro check-in.",
   comoUsarConvite:
     "Vale só nos dias e horários acima. Chegando ao restaurante, faça check-in aqui no app e o código do benefício aparece para mostrar ao garçom.",

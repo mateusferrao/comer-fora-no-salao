@@ -1,7 +1,13 @@
 import type { ZodType } from "zod";
 
 /** Entrada da IA: só texto, ou texto + arquivos (foto/PDF do cardápio na S2). */
-export type AiInput = { text: string } | { text: string; files: Array<{ data: Uint8Array | URL; mediaType: string }> };
+export type AiInput =
+  | { text: string }
+  | { text: string; files: Array<{ data: Uint8Array | URL; mediaType: string }> }
+  /** Conversa (S8 — copiloto): turnos anteriores + o pedido atual (o último `user`). */
+  | { messages: ChatTurn[] };
+
+export type ChatTurn = { role: "user" | "assistant"; text: string };
 
 export type ModelRef = {
   id: string;
@@ -41,6 +47,8 @@ export type AiGenerateRequest = {
   tools?: readonly AiTool[];
   maxSteps?: number;
   stepMs?: number;
+  /** S8 (D262): o rastro não grava entrada nem saída (a conversa pode citar nomes de clientes). */
+  privateTrace?: boolean;
 };
 
 export type AiGenerateResult = { output: unknown; usage: AiUsage; model: string; steps?: AgentStep[] };

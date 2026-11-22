@@ -6,7 +6,7 @@
 import { renderReferences, stripReferences, unknownRefs, referencesIn, type RefContext, type RefKind } from "@/src/modules/textos/domain/references";
 import { findAvoided } from "@/src/modules/config/domain/ai-profile";
 
-export type GuardField = "textoConvite" | "justificativa" | "aprendemos" | "kit";
+export type GuardField = "textoConvite" | "justificativa" | "aprendemos" | "kit" | "chat";
 export type GuardOptions = {
   allowed: readonly RefKind[];
   maxLen: number;
@@ -22,6 +22,8 @@ export type GuardOptions = {
    * `artigo_antes_do_horario` e `oferta_repetida` (críticas do juiz na T3 do agente, agora determinísticas).
    */
   requireSlot?: string;
+  /** S8: lista de palavras proibidas do campo (padrão: `FORBIDDEN`, feita para textos de marketing). */
+  forbidden?: readonly string[];
 };
 export type TextGuard = { ok: true; warnings: string[] } | { ok: false; reasons: string[]; warnings: string[] };
 
@@ -29,6 +31,14 @@ const norm = (s: string) => s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,
 
 /** Lista [C]: promessas e números escritos por extenso que o código não controla. */
 export const FORBIDDEN = ["gratis", "de graca", "metade", "dobro", "garantid", "melhor do", "o melhor", "ultimas", "so hoje", "imperdivel", "ifood paga", "reais", "r$"];
+/**
+ * Chat do copiloto (S8 — D264, [C]): o texto explica regras e ofertas ao dono, então "grátis" e "melhor" podem aparecer;
+ * continuam proibidas as promessas de dinheiro e de marca e os números por extenso.
+ */
+export const CHAT_FORBIDDEN = ["metade", "dobro", "garantid", "ifood paga", "reais", "r$"];
+/** Números por extenso (S8): a IA não escreve número, nem em palavras ("um/uma" ficam de fora: são artigos). */
+const NUMBER_WORDS = ["dois", "duas", "tres", "quatro", "cinco", "seis", "sete", "oito", "nove", "dez", "onze", "doze", "treze", "catorze", "quatorze", "quinze", "dezesseis", "dezessete", "dezoito", "dezenove", "vinte", "trinta", "quarenta", "cinquenta", "sessenta", "setenta", "oitenta", "noventa", "cem", "cento", "duzentos", "trezentos", "quinhentos", "mil", "milhao", "milhoes", "dezena", "duzia"];
+const URL_RE = /https?:\/\/|www\.|\b[a-z0-9-]+(\.[a-z0-9-]+)*\.(com|br|net|org|io|app|me|ly|info|site|online|link|xyz)\b/i;
 const CONVITE_ONLY = ["desconto"];
 const DAY_TURN = ["segunda", "terca", "quarta", "quinta", "sexta", "sabado", "domingo", "manha", "tarde", "noite", "almoco", "jantar", "madrugada", "happy hour", "fim de semana"];
 
@@ -52,7 +62,11 @@ export function guardText(text: string, ctx: RefContext, o: GuardOptions): TextG
   if (EMAIL.test(bare) || PHONE.test(bare) || CPF.test(bare)) reasons.push("pii");
   if (/\d/.test(bare) || bare.includes("%")) soft("numero");
   const n = norm(bare);
-  for (const w of FORBIDDEN) if (hasWord(n, w)) soft(`proibida:${w}`);
+  for (const w of o.forbidden ?? FORBIDDEN) if (hasWord(n, w)) soft(`proibida:${w}`);
+  if (o.field === "chat") {
+    for (const w of NUMBER_WORDS) if (new RegExp(`(^|[^a-z0-9])${w}([^a-z0-9]|$)`).test(n)) soft(`numero_extenso:${w}`);
+    if (URL_RE.test(bare)) reasons.push("url");
+  }
   if (o.field === "textoConvite") for (const w of CONVITE_ONLY) if (hasWord(n, w)) soft(`proibida:${w}`);
   if (o.requireSlot !== undefined) for (const r of conviteReasons(text, o.requireSlot)) soft(r);
   // Sem as referências: o nome de um prato citado por {prato:…} não conta como uso do termo.

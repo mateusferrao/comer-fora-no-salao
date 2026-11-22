@@ -3,11 +3,11 @@
  * `{prato:id}`, `{horario:slotId}`, `{oferta}`, `{beneficio}`, `{recompensa}`; o código troca pelos textos
  * (números, nomes de pratos, horários e ofertas são sempre do código).
  */
-export const REF_KINDS = ["fato", "prato", "horario", "oferta", "beneficio", "recompensa"] as const;
+export const REF_KINDS = ["fato", "prato", "horario", "oferta", "beneficio", "recompensa", "cliente"] as const;
 export type RefKind = (typeof REF_KINDS)[number];
 export type Ref = { kind: RefKind; key: string };
 
-const REF_RE = /\{(fato|prato|horario):([^{}\s]+)\}|\{(oferta|beneficio|recompensa)\}/g;
+const REF_RE = /\{(fato|prato|horario|cliente):([^{}\s]+)\}|\{(oferta|beneficio|recompensa)\}/g;
 
 export type RefContext = {
   facts?: Record<string, number | string>;
@@ -18,6 +18,8 @@ export type RefContext = {
   oferta?: string;
   beneficio?: string;
   recompensa?: string;
+  /** S8 (D262): apelido do cliente (C1, C2…) → nome curto ("Ana S."); contato nunca entra aqui. */
+  clientes?: Record<string, string>;
 };
 
 export function referencesIn(text: string): Ref[] {
@@ -69,6 +71,8 @@ function resolve(r: Ref, ctx: RefContext): string | undefined {
       return ctx.items?.[r.key];
     case "horario":
       return ctx.slots?.[r.key];
+    case "cliente":
+      return ctx.clientes?.[r.key];
     default:
       return ctx[r.kind];
   }

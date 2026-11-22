@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { averagePriceCents, type MenuItem } from "@/src/modules/beneficios/domain/menu";
 import { describeOffer, minSpendAlert, offerRegistry, unitCost, validateOffer } from "@/src/modules/beneficios/domain/offers";
+import { checkOffer } from "@/src/modules/beneficios/domain/offers";
 
 const menu: MenuItem[] = [
   { id: "panna", category: "sobremesa", name: "Panna cotta", priceCents: 1800 },
@@ -59,5 +60,24 @@ describe("ofertas polimórficas", () => {
       subtitle: "Na cartela",
       gain: "Leve 2, pague 1 em Fritto misto",
     });
+  });
+});
+
+describe("checkOffer (S8: regra única para Configurações, plano e prévia do copiloto)", () => {
+  const menu = [
+    { id: "p1", category: "sobremesa" as const, name: "Cannoli", priceCents: 2200 },
+    { id: "p2", category: "prato" as const, name: "Lasanha", priceCents: 5800 },
+  ];
+  it("ok com item ativo e permitido", () => {
+    expect(checkOffer({ kind: "doce_gratis", params: { itemId: "p1" } }, menu, [])).toEqual([]);
+  });
+  it("desconto de 60% → desconto_acima_do_teto", () => {
+    expect(checkOffer({ kind: "desconto", params: { itemId: "p2", pct: 60 } }, menu, [])).toEqual(["desconto_acima_do_teto"]);
+  });
+  it("doce grátis com prato → categoria_incompativel", () => {
+    expect(checkOffer({ kind: "doce_gratis", params: { itemId: "p2" } }, menu, [])).toEqual(["categoria_incompativel"]);
+  });
+  it("item fora das ofertas → item_fora_das_ofertas", () => {
+    expect(checkOffer({ kind: "doce_gratis", params: { itemId: "p1" } }, menu, ["p1"])).toEqual(["item_fora_das_ofertas"]);
   });
 });

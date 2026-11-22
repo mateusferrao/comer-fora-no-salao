@@ -109,3 +109,16 @@ Nome "Assistente do salão"; painel não modal que empurra o conteúdo; históri
 
 ## Verificação
 `npm run check` (tipos, lint, fronteiras), `npm test` (unit + integração com Postgres), `npx playwright test` (inclui `copiloto.on.spec.ts`), `npx tsx eval/run-t4.ts`, deploy pelo CI verde, `/api/health` com SHA e `fakeAi:false`, E2E de produção com `E2E_FLAGS=on` e 1 conversa real com a chave demo.
+
+## 14. Mudanças durante a implementação (21–22/11) — D273 [C]
+- **Schema achatado direto:** o spike (eval/spike-copiloto.ts) mostrou saída achatada (`acao` enum + campos `nullable`) + ferramenta + histórico funcionando nos 3 modelos; a união discriminada nem foi tentada.
+- **T4 em 4 rodadas** (eval/relatorio-t4.md): principal `google/gemini-3.8-flash` (16/16, p50 3,6 s), reserva `openai/gpt-6-luna` (15/16). O `claude-haiku-5.5` saiu: com as ações da onda 2 o schema tem 22 parâmetros com união e o Anthropic aceita no máximo 16. Prompt `copiloto-v3`: o teto do desconto virou fato citável (`desconto_maximo_pct`), "o teto muda direto, sem plano"; proposta de convite só com teto ou texto é completada pelo código com a oferta atual.
+- **Onda 2 entregue em parte:** aprovar o plano (com 1 troca de oferta ou teto), tom, item novo, ticket/margem e resumo semanal. **Cortados:** kit (regras próprias de texto, peça travada depois de leitura) e faixa nova (chama a IA do pacote dentro da aplicação). Os dois seguem a 1 clique por "Editar no formulário"/atalhos.
+- **Botão "Assistente"** flutuante embaixo à direita também no celular (não no cabeçalho): um lugar só, sem disputar espaço com o título.
+- **Histórico** vai ao modelo com o texto já renderizado da resposta anterior (o guard barra número escrito pela IA de qualquer jeito).
+- **Ativação:** o painel funciona só para dúvidas (guia do produto, sem dados nem propostas); "Descrever em uma frase" fica dentro do passo 2.
+- **Remontagem do formulário:** em vez de `key` por seção, "Aplicar" leva a `?aba=…&v=<proposta>` e o `ConfigManager` remonta só nesse caso; edição não salva é detectada por eventos `input` na tela e pede confirmação (`confirmDialog`, D242).
+- **Bug achado na E2E:** `useEffect(() => el.scrollIntoView())` derrubava a tela no Chromium recente (o método devolve uma Promise e o React a chamava como limpeza) — efeitos com corpo em bloco.
+- **Flags `copiloto`, `mcp_clientes`, `mcp_edicao` nascem desligadas**; ligam em produção depois do deploy e da E2E (Bastidores).
+- `recordAiCall` devolve o id (liga a proposta à chamada); `spentToday` aceita a tarefa (teto próprio do copiloto e da frase do salão).
+- Ícone da aba (D272, pedido do candidato durante a fatia).

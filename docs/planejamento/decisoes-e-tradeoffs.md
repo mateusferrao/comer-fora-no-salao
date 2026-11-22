@@ -1377,3 +1377,15 @@ Detalhes, perguntas, revisão independente (2 subagentes) e itens [C] em [docs/f
 - `IA_SEM_TETO_DIARIO=1` (ou `true`/`sim`) no env do `case-salao-app` suspende o teto da chave pública (US$ 0,50/dia — D85); sem a variável, ou com outro valor, o teto vale. Para mudar: Easypanel › Environment › salvar › **Restart** (reinicia o container com a mesma imagem, sem build).
 - `/api/health` mostra `ia.teto`: "ativo" ou "suspenso", para conferir sem gastar IA. A flag `ia_sem_teto` saiu dos Bastidores (o valor gravado passa a ser ignorado).
 - Por quê: sai da tela que qualquer pessoa com a senha dos Bastidores alcança; só quem tem o Easypanel liga. Trade-off: mudar exige reiniciar o app (segundos), não é instantâneo como a flag.
+
+**D272 — Ícone da aba com o ícone do iFood** (21/11, candidato: "buscar e adicionar o .ico do ifood na barra"; enviou a imagem do ícone) ✅ (estende D42/D81)
+- O `.ico` do site do iFood não pôde ser baixado (página bloqueada para a sessão; o do Portal do Parceiro é outro desenho, uma fachada). O candidato enviou a imagem do ícone (círculo vermelho com o "sorriso"), usada como veio: `app/favicon.ico` (16/32/48 px), `app/icon.png` (256 px) e `app/apple-icon.png` (180 px), servidos pelo Next; cantos fora do círculo transparentes.
+- Risco de confusão com o iFood oficial aumenta um pouco; mantidos a barra de protótipo, o título da aba sem "iFood" e o `noindex` (D88, D164). Alternativa: ícone neutro do projeto.
+
+**D273 — Itens [C] da implementação da S8** (22/11, IA [C], D101) ✅
+- Lista em docs/fatias/S8/planejamento.md §14: schema achatado; T4 em 4 rodadas com gemini-3.8-flash + reserva gpt-6-luna (Haiku fora pelo limite de 16 uniões do Anthropic); onda 2 sem kit e sem faixa nova; botão flutuante também no celular; histórico renderizado; painel só de dúvidas na ativação; remontagem por `v` + aviso de edição não salva; flags nascem desligadas e ligam depois da E2E de produção.
+
+**D274 — Decisões da revisão da S8** (22/11, IA [C], D101) ✅
+- Tabela completa em docs/fatias/S8/revisao/revisao.md §2. Mudanças de produto: painel só empurra a partir de 1280 px (sobrepõe no modo apresentação); botão "Assistente" na barra lateral e no cabeçalho do celular (nada flutua sobre o formulário — substitui o botão flutuante da D273); chip da demo com prato concreto escolhido pelo código; faixa "Atualizado pelo assistente"; métricas do copiloto em Qualidade da IA; aceite do cliente e "Como funciona" citam o assistente (nome curto, nunca contato).
+- Técnica/segurança: Zod nas 2 portas, estado `em_andamento`, conversa por dono+loja, isenção de limite só do apresentador, nome com cara de contato vira "Cliente", sem desconto inventado.
+- Não corrigidos: ícone (D272, pedido do candidato); guard de dia/turno no chat. Dívidas: mover `toPayload` para `agente` e gerar o schema do MCP do Zod; menos consultas por turno; limpeza de `agent_proposals`.

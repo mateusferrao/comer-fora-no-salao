@@ -1,5 +1,5 @@
 /** Rótulos da IA para a tela (Qualidade da IA nos Bastidores e "Por que esta oferta?" — S5.3). */
-export const TASK: Record<string, string> = { cardapio: "Leitura do cardápio", pacote: "Pacote da ativação", plano: "Plano da semana", plano_agente: "Plano da semana (agente)", kit: "Chamadas do kit", revisor: "Revisor" };
+export const TASK: Record<string, string> = { cardapio: "Leitura do cardápio", pacote: "Pacote da ativação", plano: "Plano da semana", plano_agente: "Plano da semana (agente)", kit: "Chamadas do kit", revisor: "Revisor", copiloto: "Assistente do salão (copiloto)", salao_frase: "Seu salão por frase" };
 export const REASON: Record<string, string> = {
   invalid: "fora do formato ou reprovado nas regras",
   timeout: "tempo esgotado",

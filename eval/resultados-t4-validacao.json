@@ -1,0 +1,584 @@
+{
+  "summary": [
+    {
+      "model": "google/gemini-3.8-flash",
+      "acerto": 17,
+      "total": 18,
+      "regras": 17,
+      "p50": 3201.5,
+      "custo": 0.059139750000000005
+    },
+    {
+      "model": "openai/gpt-6-luna",
+      "acerto": 14,
+      "total": 18,
+      "regras": 14,
+      "p50": 1059.5,
+      "custo": 0.0024030500000000003
+    }
+  ],
+  "rows": [
+    {
+      "model": "google/gemini-3.8-flash",
+      "id": "v_chip_demo",
+      "rulesOk": true,
+      "right": true,
+      "ms": 3429,
+      "cost": 0.0040665,
+      "resposta": "Preparei a proposta abaixo para atualizar o convite de {horario:A}. O benefício passará a ser {prato:P7}.",
+      "propostas": [
+        {
+          "acao": "oferta",
+          "papel": "convite",
+          "slotId": "slotA",
+          "offer": {
+            "kind": "doce_gratis",
+            "itemId": "gelato"
+          }
+        }
+      ]
+    },
+    {
+      "model": "google/gemini-3.8-flash",
+      "id": "v_chip_demo",
+      "rulesOk": true,
+      "right": true,
+      "ms": 4706,
+      "cost": 0.00357765,
+      "resposta": "Preparei a proposta abaixo para atualizar o convite de {horario:A} com {prato:P7}. Você pode conferir os detalhes e decidir no cartão.",
+      "propostas": [
+        {
+          "acao": "oferta",
+          "papel": "convite",
+          "slotId": "slotA",
+          "offer": {
+            "kind": "doce_gratis",
+            "itemId": "gelato"
+          }
+        }
+      ]
+    },
+    {
+      "model": "google/gemini-3.8-flash",
+      "id": "v_chip_demo",
+      "rulesOk": true,
+      "right": true,
+      "ms": 5261,
+      "cost": 0.0037464,
+      "resposta": "Preparei a proposta abaixo para atualizar o convite de {horario:A} com {prato:P7}. Você pode conferir os detalhes no cartão e decidir se deseja aplicar.",
+      "propostas": [
+        {
+          "acao": "oferta",
+          "papel": "convite",
+          "slotId": "slotA",
+          "offer": {
+            "kind": "doce_gratis",
+            "itemId": "gelato"
+          }
+        }
+      ]
+    },
+    {
+      "model": "google/gemini-3.8-flash",
+      "id": "v_noite_bruschetta",
+      "rulesOk": true,
+      "right": true,
+      "ms": 4012,
+      "cost": 0.0027444,
+      "resposta": "Preparei a proposta abaixo para trocar o convite de {horario:B} para {prato:P4}. Você pode conferir os detalhes no cartão e decidir se aprova.",
+      "propostas": [
+        {
+          "acao": "oferta",
+          "papel": "convite",
+          "slotId": "slotB",
+          "offer": {
+            "kind": "doce_gratis",
+            "itemId": "panna"
+          }
+        }
+      ]
+    },
+    {
+      "model": "google/gemini-3.8-flash",
+      "id": "v_noite_bruschetta",
+      "rulesOk": true,
+      "right": true,
+      "ms": 3140,
+      "cost": 0.00274065,
+      "resposta": "Preparei a proposta abaixo para trocar a oferta do convite em {horario:B}. O item oferecido passará a ser {prato:P4} como sobremesa grátis.",
+      "propostas": [
+        {
+          "acao": "oferta",
+          "papel": "convite",
+          "slotId": "slotB",
+          "offer": {
+            "kind": "doce_gratis",
+            "itemId": "panna"
+          }
+        }
+      ]
+    },
+    {
+      "model": "google/gemini-3.8-flash",
+      "id": "v_noite_bruschetta",
+      "rulesOk": true,
+      "right": true,
+      "ms": 3125,
+      "cost": 0.00273315,
+      "resposta": "Preparei a proposta abaixo para trocar o convite de {horario:B} para {prato:P4}. Você pode conferir os detalhes e aprovar no cartão.",
+      "propostas": [
+        {
+          "acao": "oferta",
+          "papel": "convite",
+          "slotId": "slotB",
+          "offer": {
+            "kind": "doce_gratis",
+            "itemId": "panna"
+          }
+        }
+      ]
+    },
+    {
+      "model": "google/gemini-3.8-flash",
+      "id": "v_nhoque_sumiu",
+      "rulesOk": true,
+      "right": true,
+      "ms": 2564,
+      "cost": 0.0036255,
+      "resposta": "Preparei a proposta abaixo para deixar {prato:P3} indisponível no cardápio. Você pode revisar e confirmar a alteração.",
+      "propostas": [
+        {
+          "acao": "item",
+          "itemId": "nhoque",
+          "mudanca": "indisponivel"
+        }
+      ]
+    },
+    {
+      "model": "google/gemini-3.8-flash",
+      "id": "v_nhoque_sumiu",
+      "rulesOk": true,
+      "right": true,
+      "ms": 6334,
+      "cost": 0.002282925,
+      "resposta": "Preparei a proposta abaixo para retirar {prato:P3} do cardápio. Você poderá conferir e confirmar no cartão.",
+      "propostas": [
+        {
+          "acao": "item",
+          "itemId": "nhoque",
+          "mudanca": "indisponivel"
+        }
+      ]
+    },
+    {
+      "model": "google/gemini-3.8-flash",
+      "id": "v_nhoque_sumiu",
+      "rulesOk": true,
+      "right": true,
+      "ms": 3327,
+      "cost": 0.002665425,
+      "resposta": "Preparei a proposta abaixo para retirar {prato:P3} do cardápio. Você pode revisar o cartão e confirmar a alteração.",
+      "propostas": [
+        {
+          "acao": "item",
+          "itemId": "nhoque",
+          "mudanca": "indisponivel"
+        }
+      ]
+    },
+    {
+      "model": "google/gemini-3.8-flash",
+      "id": "v_resumo_sexta",
+      "rulesOk": true,
+      "right": true,
+      "ms": 2812,
+      "cost": 0.0039915,
+      "resposta": "Preparei a proposta abaixo para atualizar o envio do seu resumo semanal. Você pode conferir os detalhes antes de confirmar.",
+      "propostas": [
+        {
+          "acao": "avisos",
+          "resumoOn": true,
+          "weekday": 5,
+          "minute": 1080
+        }
+      ]
+    },
+    {
+      "model": "google/gemini-3.8-flash",
+      "id": "v_resumo_sexta",
+      "rulesOk": true,
+      "right": true,
+      "ms": 3030,
+      "cost": 0.00401775,
+      "resposta": "Preparei a proposta abaixo para atualizar o envio do seu resumo semanal. Você pode conferir os detalhes e confirmar a alteração no cartão.",
+      "propostas": [
+        {
+          "acao": "avisos",
+          "resumoOn": true,
+          "weekday": 5,
+          "minute": 1080
+        }
+      ]
+    },
+    {
+      "model": "google/gemini-3.8-flash",
+      "id": "v_resumo_sexta",
+      "rulesOk": true,
+      "right": true,
+      "ms": 2680,
+      "cost": 0.002267775,
+      "resposta": "Preparei a proposta abaixo para agendar o resumo semanal por e-mail. Dê uma olhada no cartão para confirmar.",
+      "propostas": [
+        {
+          "acao": "avisos",
+          "resumoOn": true,
+          "weekday": 5,
+          "minute": 1080
+        }
+      ]
+    },
+    {
+      "model": "google/gemini-3.8-flash",
+      "id": "v_margem",
+      "rulesOk": true,
+      "right": true,
+      "ms": 3301,
+      "cost": 0.00400125,
+      "resposta": "Preparei a proposta abaixo para atualizar a margem estimada do restaurante. Essa estimativa ajuda a calcular o retorno financeiro no painel.",
+      "propostas": [
+        {
+          "acao": "restaurante",
+          "marginPct": 55
+        }
+      ]
+    },
+    {
+      "model": "google/gemini-3.8-flash",
+      "id": "v_margem",
+      "rulesOk": false,
+      "right": false,
+      "ms": 3002,
+      "cost": 0.0039975,
+      "resposta": "",
+      "propostas": [],
+      "reasons": "guard:resposta:proibida:reais"
+    },
+    {
+      "model": "google/gemini-3.8-flash",
+      "id": "v_margem",
+      "rulesOk": true,
+      "right": true,
+      "ms": 3263,
+      "cost": 0.0039975,
+      "resposta": "Preparei a proposta abaixo para atualizar a margem estimada do salão. Você pode conferir os detalhes e confirmar a alteração no cartão.",
+      "propostas": [
+        {
+          "acao": "restaurante",
+          "marginPct": 55
+        }
+      ]
+    },
+    {
+      "model": "google/gemini-3.8-flash",
+      "id": "v_duvida_holdout",
+      "rulesOk": true,
+      "right": true,
+      "ms": 3107,
+      "cost": 0.0034125,
+      "resposta": "Uma parte dos clientes faz parte do grupo de controle, que não recebe convite para podermos medir o quanto as ofertas realmente trazem de retorno. Além disso, cada horário vazio tem um teto semanal de convites para proteger seus custos. Se esse limite já foi atingido na semana, novos convites não são emitidos.",
+      "propostas": []
+    },
+    {
+      "model": "google/gemini-3.8-flash",
+      "id": "v_duvida_holdout",
+      "rulesOk": true,
+      "right": true,
+      "ms": 2697,
+      "cost": 0.003345,
+      "resposta": "Uma parte dos clientes não recebe convite por causa do grupo de controle, que serve para medir quantas pessoas voltaram por causa do benefício de verdade. Além disso, o envio para quando atinge o teto semanal do horário vazio.",
+      "propostas": []
+    },
+    {
+      "model": "google/gemini-3.8-flash",
+      "id": "v_duvida_holdout",
+      "rulesOk": true,
+      "right": true,
+      "ms": 3849,
+      "cost": 0.001926375,
+      "resposta": "Uma parte dos clientes faz parte do grupo de controle e não recebe convite de propósito. Isso serve para medir com precisão quantas visitas o convite trouxe de verdade. Além disso, o teto semanal de cada horário vazio limita a quantidade de convites emitidos.",
+      "propostas": []
+    },
+    {
+      "model": "openai/gpt-6-luna",
+      "id": "v_chip_demo",
+      "rulesOk": true,
+      "right": true,
+      "ms": 1075,
+      "cost": 0.00010614,
+      "resposta": "Preparei a proposta abaixo para trocar a oferta do convite em {horario:A}.",
+      "propostas": [
+        {
+          "acao": "oferta",
+          "papel": "convite",
+          "slotId": "slotA",
+          "offer": {
+            "kind": "doce_gratis",
+            "itemId": "gelato"
+          }
+        }
+      ]
+    },
+    {
+      "model": "openai/gpt-6-luna",
+      "id": "v_chip_demo",
+      "rulesOk": true,
+      "right": true,
+      "ms": 980,
+      "cost": 0.00010614,
+      "resposta": "Preparei a proposta abaixo para trocar a oferta do convite em {horario:A}.",
+      "propostas": [
+        {
+          "acao": "oferta",
+          "papel": "convite",
+          "slotId": "slotA",
+          "offer": {
+            "kind": "doce_gratis",
+            "itemId": "gelato"
+          }
+        }
+      ]
+    },
+    {
+      "model": "openai/gpt-6-luna",
+      "id": "v_chip_demo",
+      "rulesOk": true,
+      "right": true,
+      "ms": 1030,
+      "cost": 0.00010614,
+      "resposta": "Preparei a proposta abaixo para trocar a oferta do convite em {horario:A}.",
+      "propostas": [
+        {
+          "acao": "oferta",
+          "papel": "convite",
+          "slotId": "slotA",
+          "offer": {
+            "kind": "doce_gratis",
+            "itemId": "gelato"
+          }
+        }
+      ]
+    },
+    {
+      "model": "openai/gpt-6-luna",
+      "id": "v_noite_bruschetta",
+      "rulesOk": true,
+      "right": true,
+      "ms": 1060,
+      "cost": 0.00010957,
+      "resposta": "Preparei a proposta abaixo para trocar a oferta do convite da noite por {prato:P4}.",
+      "propostas": [
+        {
+          "acao": "oferta",
+          "papel": "convite",
+          "slotId": "slotB",
+          "offer": {
+            "kind": "doce_gratis",
+            "itemId": "panna"
+          }
+        }
+      ]
+    },
+    {
+      "model": "openai/gpt-6-luna",
+      "id": "v_noite_bruschetta",
+      "rulesOk": true,
+      "right": true,
+      "ms": 992,
+      "cost": 0.00010757,
+      "resposta": "Preparei a proposta abaixo: no convite da noite, trocar a bruschetta pela panna cotta.",
+      "propostas": [
+        {
+          "acao": "oferta",
+          "papel": "convite",
+          "slotId": "slotB",
+          "offer": {
+            "kind": "doce_gratis",
+            "itemId": "panna"
+          }
+        }
+      ]
+    },
+    {
+      "model": "openai/gpt-6-luna",
+      "id": "v_noite_bruschetta",
+      "rulesOk": true,
+      "right": true,
+      "ms": 1073,
+      "cost": 0.00010807,
+      "resposta": "Preparei a proposta abaixo para trocar o convite da noite pela panna cotta; você decide se aprova.",
+      "propostas": [
+        {
+          "acao": "oferta",
+          "papel": "convite",
+          "slotId": "slotB",
+          "offer": {
+            "kind": "doce_gratis",
+            "itemId": "panna"
+          }
+        }
+      ]
+    },
+    {
+      "model": "openai/gpt-6-luna",
+      "id": "v_nhoque_sumiu",
+      "rulesOk": true,
+      "right": true,
+      "ms": 1589,
+      "cost": 0.00019035,
+      "resposta": "Preparei a proposta para tirar o nhoque do cardápio; nada muda até você aprovar.",
+      "propostas": [
+        {
+          "acao": "item",
+          "itemId": "nhoque",
+          "mudanca": "indisponivel"
+        }
+      ]
+    },
+    {
+      "model": "openai/gpt-6-luna",
+      "id": "v_nhoque_sumiu",
+      "rulesOk": true,
+      "right": true,
+      "ms": 1004,
+      "cost": 0.00010905,
+      "resposta": "Preparei a proposta para tirar {prato:P3} do cardápio; ela não será aplicada até você aprovar.",
+      "propostas": [
+        {
+          "acao": "item",
+          "itemId": "nhoque",
+          "mudanca": "indisponivel"
+        }
+      ]
+    },
+    {
+      "model": "openai/gpt-6-luna",
+      "id": "v_nhoque_sumiu",
+      "rulesOk": true,
+      "right": true,
+      "ms": 997,
+      "cost": 0.00010805,
+      "resposta": "Preparei a proposta abaixo para tirar {prato:P3} do cardápio; você decide se aprova.",
+      "propostas": [
+        {
+          "acao": "item",
+          "itemId": "nhoque",
+          "mudanca": "indisponivel"
+        }
+      ]
+    },
+    {
+      "model": "openai/gpt-6-luna",
+      "id": "v_resumo_sexta",
+      "rulesOk": false,
+      "right": false,
+      "ms": 951,
+      "cost": 0.00010551,
+      "resposta": "",
+      "propostas": [],
+      "reasons": "guard:resposta:numero_extenso:seis"
+    },
+    {
+      "model": "openai/gpt-6-luna",
+      "id": "v_resumo_sexta",
+      "rulesOk": false,
+      "right": false,
+      "ms": 1847,
+      "cost": 0.00014422,
+      "resposta": "",
+      "propostas": [],
+      "reasons": "guard:resposta:numero_extenso:dezoito"
+    },
+    {
+      "model": "openai/gpt-6-luna",
+      "id": "v_resumo_sexta",
+      "rulesOk": false,
+      "right": false,
+      "ms": 1883,
+      "cost": 0.00051792,
+      "resposta": "",
+      "propostas": [],
+      "reasons": "guard:resposta:numero_extenso:dezoito"
+    },
+    {
+      "model": "openai/gpt-6-luna",
+      "id": "v_margem",
+      "rulesOk": true,
+      "right": true,
+      "ms": 959,
+      "cost": 0.00010099,
+      "resposta": "Preparei a proposta para atualizar a margem aproximada do restaurante.",
+      "propostas": [
+        {
+          "acao": "restaurante",
+          "marginPct": 55
+        }
+      ]
+    },
+    {
+      "model": "openai/gpt-6-luna",
+      "id": "v_margem",
+      "rulesOk": true,
+      "right": true,
+      "ms": 977,
+      "cost": 0.00010549,
+      "resposta": "Preparei a proposta abaixo para atualizar a margem aproximada do restaurante; ela só muda se você aprovar.",
+      "propostas": [
+        {
+          "acao": "restaurante",
+          "marginPct": 55
+        }
+      ]
+    },
+    {
+      "model": "openai/gpt-6-luna",
+      "id": "v_margem",
+      "rulesOk": false,
+      "right": false,
+      "ms": 1059,
+      "cost": 0.00010749,
+      "resposta": "",
+      "propostas": [],
+      "reasons": "guard:resposta:numero"
+    },
+    {
+      "model": "openai/gpt-6-luna",
+      "id": "v_duvida_holdout",
+      "rulesOk": true,
+      "right": true,
+      "ms": 1638,
+      "cost": 0.00010018,
+      "resposta": "Uma parte dos clientes fica no grupo de controle e não recebe convite; isso permite medir quanto os convites trouxeram de verdade. Além disso, o convite de volta nasce na mesa após o check-in e só vale no horário vazio escolhido, dentro do período definido.",
+      "propostas": []
+    },
+    {
+      "model": "openai/gpt-6-luna",
+      "id": "v_duvida_holdout",
+      "rulesOk": true,
+      "right": true,
+      "ms": 22110,
+      "cost": 0.00006449,
+      "resposta": "Uma parte dos clientes fica no grupo de controle e não recebe convite, para medir quanto os convites trouxeram de verdade. Além disso, o convite de volta nasce na mesa para quem fez check-in e vale apenas no horário vazio escolhido pelo dono.",
+      "propostas": []
+    },
+    {
+      "model": "openai/gpt-6-luna",
+      "id": "v_duvida_holdout",
+      "rulesOk": true,
+      "right": true,
+      "ms": 1335,
+      "cost": 0.00010568,
+      "resposta": "Uma parte dos clientes fica no grupo de controle e não recebe convite, para medir quanto os convites realmente trazem. Além disso, o convite de volta nasce na mesa após o check-in e vale só no horário vazio escolhido; o teto semanal também limita quantos convites saem por horário.",
+      "propostas": []
+    }
+  ]
+}

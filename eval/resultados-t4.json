@@ -1,0 +1,491 @@
+{
+  "summary": [
+    {
+      "model": "google/gemini-3.8-flash",
+      "acerto": 16,
+      "regras": 16,
+      "p50": 3561,
+      "custo": 0.07306125
+    },
+    {
+      "model": "openai/gpt-6-luna",
+      "acerto": 15,
+      "regras": 15,
+      "p50": 1003.5,
+      "custo": 0.004312265
+    }
+  ],
+  "rows": [
+    {
+      "model": "google/gemini-3.8-flash",
+      "id": "trocar_oferta",
+      "rulesOk": true,
+      "right": true,
+      "ms": 2851,
+      "cost": 0.00401175,
+      "resposta": "Preparei a proposta abaixo para atualizar o convite de {horario:A} com {prato:P7}. Você pode conferir os detalhes e confirmar a mudança.",
+      "propostas": [
+        {
+          "acao": "oferta",
+          "papel": "convite",
+          "slotId": "slotA",
+          "offer": {
+            "kind": "doce_gratis",
+            "itemId": "gelato"
+          }
+        }
+      ]
+    },
+    {
+      "model": "google/gemini-3.8-flash",
+      "id": "acabou_tiramisu",
+      "rulesOk": true,
+      "right": true,
+      "ms": 8148,
+      "cost": 0.004041,
+      "resposta": "Preparei a proposta abaixo para marcar {prato:P6} como indisponível. Como ele é a recompensa da cartela, você pode definir outra sobremesa para substituí-lo.",
+      "propostas": [
+        {
+          "acao": "item",
+          "itemId": "tiramisu",
+          "mudanca": "indisponivel"
+        }
+      ]
+    },
+    {
+      "model": "google/gemini-3.8-flash",
+      "id": "teto",
+      "rulesOk": true,
+      "right": true,
+      "ms": 2755,
+      "cost": 0.00400575,
+      "resposta": "Preparei a proposta abaixo para ajustar o teto do convite de {horario:A}. O teto semanal ajuda a proteger o custo do restaurante.",
+      "propostas": [
+        {
+          "acao": "oferta",
+          "papel": "convite",
+          "slotId": "slotA",
+          "offer": {
+            "kind": "doce_gratis",
+            "itemId": "cannoli"
+          },
+          "weeklyCap": 12
+        }
+      ]
+    },
+    {
+      "model": "google/gemini-3.8-flash",
+      "id": "preco",
+      "rulesOk": true,
+      "right": true,
+      "ms": 2734,
+      "cost": 0.00396075,
+      "resposta": "Preparei a proposta abaixo para atualizar o valor de {prato:P2}. Você pode conferir os detalhes antes de confirmar.",
+      "propostas": [
+        {
+          "acao": "item",
+          "itemId": "lasanha",
+          "mudanca": "preco",
+          "priceCents": 6200
+        }
+      ]
+    },
+    {
+      "model": "google/gemini-3.8-flash",
+      "id": "fora_ofertas",
+      "rulesOk": true,
+      "right": true,
+      "ms": 3217,
+      "cost": 0.00400125,
+      "resposta": "Preparei a proposta abaixo para retirar {prato:P8} das ofertas. O item continuará no cardápio normalmente, mas não será sugerido nem usado em benefícios.",
+      "propostas": [
+        {
+          "acao": "item",
+          "itemId": "soda",
+          "mudanca": "fora_das_ofertas"
+        }
+      ]
+    },
+    {
+      "model": "google/gemini-3.8-flash",
+      "id": "faixa_fim",
+      "rulesOk": true,
+      "right": true,
+      "ms": 4698,
+      "cost": 0.00397425,
+      "resposta": "Preparei a proposta abaixo para ajustar o término de {horario:A}. O sistema calculou o impacto para você decidir no cartão.",
+      "propostas": [
+        {
+          "acao": "faixa",
+          "slotId": "slotA",
+          "mudanca": "editar",
+          "endMin": 1140
+        }
+      ]
+    },
+    {
+      "model": "google/gemini-3.8-flash",
+      "id": "desativar",
+      "rulesOk": true,
+      "right": true,
+      "ms": 3714,
+      "cost": 0.0039735,
+      "resposta": "Preparei a proposta abaixo para desativar os convites de {horario:B}. Dê uma olhada no cartão com o antes e depois para confirmar.",
+      "propostas": [
+        {
+          "acao": "faixa",
+          "slotId": "slotB",
+          "mudanca": "desativar"
+        }
+      ]
+    },
+    {
+      "model": "google/gemini-3.8-flash",
+      "id": "sabado",
+      "rulesOk": true,
+      "right": true,
+      "ms": 4398,
+      "cost": 0.006288,
+      "resposta": "Nenhum dos seus horários vazios inclui sábado. Para aumentar o teto de um convite, escolha entre {horario:A} ou {horario:B}, ou adicione o sábado aos dias de uma dessas faixas.",
+      "propostas": []
+    },
+    {
+      "model": "google/gemini-3.8-flash",
+      "id": "pergunta_numeros",
+      "rulesOk": true,
+      "right": true,
+      "ms": 4788,
+      "cost": 0.0065055,
+      "resposta": "Em {horario:A}, foram emitidos {fato:convites7d_A} com taxa de uso de {fato:uso7d_A_pct}. Já em {horario:B}, saíram {fato:convites7d_B} e a conversão ficou em {fato:uso7d_B_pct}.",
+      "propostas": []
+    },
+    {
+      "model": "google/gemini-3.8-flash",
+      "id": "pergunta_regra",
+      "rulesOk": true,
+      "right": true,
+      "ms": 2616,
+      "cost": 0.00323175,
+      "resposta": "Uma parte dos clientes não recebe convite de volta. Isso serve para medir quanto o convite trouxe de movimento de verdade. Assim comparamos quem recebeu com quem não recebeu.",
+      "propostas": []
+    },
+    {
+      "model": "google/gemini-3.8-flash",
+      "id": "clientes",
+      "rulesOk": true,
+      "right": true,
+      "ms": 4383,
+      "cost": 0.006276,
+      "resposta": "Temos {fato:segmento_perto} clientes perto de completar a cartela. Entre eles estão {cliente:C1} e {cliente:C3}.",
+      "propostas": []
+    },
+    {
+      "model": "google/gemini-3.8-flash",
+      "id": "tom",
+      "rulesOk": true,
+      "right": true,
+      "ms": 2760,
+      "cost": 0.00398475,
+      "resposta": "Preparei a proposta abaixo para atualizar o estilo dos textos da IA. O cartão vai mostrar a alteração para você decidir.",
+      "propostas": [
+        {
+          "acao": "tom",
+          "tone": "Descontraído, caloroso e acolhedor, com jeito de cantina italiana de família."
+        }
+      ]
+    },
+    {
+      "model": "google/gemini-3.8-flash",
+      "id": "ticket",
+      "rulesOk": true,
+      "right": true,
+      "ms": 5967,
+      "cost": 0.00393975,
+      "resposta": "Preparei a proposta abaixo para atualizar o gasto médio por pessoa. Confira o cartão e decida se quer aplicar.",
+      "propostas": [
+        {
+          "acao": "restaurante",
+          "ticketCents": 9000
+        }
+      ]
+    },
+    {
+      "model": "google/gemini-3.8-flash",
+      "id": "resumo_off",
+      "rulesOk": true,
+      "right": true,
+      "ms": 3408,
+      "cost": 0.00394275,
+      "resposta": "Preparei a proposta abaixo para desativar o envio do resumo semanal por e-mail. Você pode conferir os detalhes e confirmar a alteração no cartão.",
+      "propostas": [
+        {
+          "acao": "avisos",
+          "resumoOn": false
+        }
+      ]
+    },
+    {
+      "model": "google/gemini-3.8-flash",
+      "id": "aprovar_plano",
+      "rulesOk": true,
+      "right": true,
+      "ms": 4984,
+      "cost": 0.00685725,
+      "resposta": "Preparei a proposta abaixo para aprovar o plano da semana. Você pode conferir os detalhes e confirmar.",
+      "propostas": [
+        {
+          "acao": "plano",
+          "planId": "plano-1"
+        }
+      ]
+    },
+    {
+      "model": "google/gemini-3.8-flash",
+      "id": "desconto_60",
+      "rulesOk": true,
+      "right": true,
+      "ms": 2670,
+      "cost": 0.00406725,
+      "resposta": "O desconto máximo permitido pelo sistema é de {fato:desconto_maximo_pct}, então não consigo aplicar o valor pedido. Preparei uma proposta com o teto de desconto permitido para {prato:P2} em {horario:B}.",
+      "propostas": [
+        {
+          "acao": "oferta",
+          "papel": "convite",
+          "slotId": "slotB",
+          "offer": {
+            "kind": "desconto",
+            "itemId": "lasanha",
+            "pct": 50
+          }
+        }
+      ]
+    },
+    {
+      "model": "openai/gpt-6-luna",
+      "id": "trocar_oferta",
+      "rulesOk": true,
+      "right": true,
+      "ms": 1012,
+      "cost": 0.00040045,
+      "resposta": "Preparei a proposta abaixo para trocar a oferta do convite de terça à tarde por {prato:P7}; não apliquei a mudança.",
+      "propostas": [
+        {
+          "acao": "oferta",
+          "papel": "convite",
+          "slotId": "slotA",
+          "offer": {
+            "kind": "doce_gratis",
+            "itemId": "gelato"
+          }
+        }
+      ]
+    },
+    {
+      "model": "openai/gpt-6-luna",
+      "id": "acabou_tiramisu",
+      "rulesOk": true,
+      "right": true,
+      "ms": 1073,
+      "cost": 0.000395575,
+      "resposta": "Preparei a proposta para tirar o tiramisù do cardápio; não existe pausa só por hoje.",
+      "propostas": [
+        {
+          "acao": "item",
+          "itemId": "tiramisu",
+          "mudanca": "indisponivel"
+        }
+      ]
+    },
+    {
+      "model": "openai/gpt-6-luna",
+      "id": "teto",
+      "rulesOk": true,
+      "right": true,
+      "ms": 2267,
+      "cost": 0.00014257499999999998,
+      "resposta": "Preparei a proposta para aumentar o teto do convite da tarde, sem alterar o plano da semana.",
+      "propostas": [
+        {
+          "acao": "oferta",
+          "papel": "convite",
+          "slotId": "slotA",
+          "offer": {
+            "kind": "doce_gratis",
+            "itemId": "cannoli"
+          },
+          "weeklyCap": 12
+        }
+      ]
+    },
+    {
+      "model": "openai/gpt-6-luna",
+      "id": "preco",
+      "rulesOk": true,
+      "right": true,
+      "ms": 995,
+      "cost": 0.000395825,
+      "resposta": "Preparei a proposta para atualizar o preço de {prato:P2}; você decide se quer aplicá-la.",
+      "propostas": [
+        {
+          "acao": "item",
+          "itemId": "lasanha",
+          "mudanca": "preco",
+          "priceCents": 6200
+        }
+      ]
+    },
+    {
+      "model": "openai/gpt-6-luna",
+      "id": "fora_ofertas",
+      "rulesOk": true,
+      "right": true,
+      "ms": 892,
+      "cost": 0.00039545,
+      "resposta": "Preparei a proposta para tirar a soda italiana das promoções; ela continuará no cardápio.",
+      "propostas": [
+        {
+          "acao": "item",
+          "itemId": "soda",
+          "mudanca": "fora_das_ofertas"
+        }
+      ]
+    },
+    {
+      "model": "openai/gpt-6-luna",
+      "id": "faixa_fim",
+      "rulesOk": false,
+      "right": false,
+      "ms": 898,
+      "cost": 0.000394325,
+      "resposta": "",
+      "propostas": [],
+      "reasons": "guard:resposta:numero_extenso:dezenove"
+    },
+    {
+      "model": "openai/gpt-6-luna",
+      "id": "desativar",
+      "rulesOk": true,
+      "right": true,
+      "ms": 1121,
+      "cost": 0.0003952,
+      "resposta": "Preparei a proposta para parar o convite de {horario:B}; isso não altera o outro horário.",
+      "propostas": [
+        {
+          "acao": "faixa",
+          "slotId": "slotB",
+          "mudanca": "desativar"
+        }
+      ]
+    },
+    {
+      "model": "openai/gpt-6-luna",
+      "id": "sabado",
+      "rulesOk": true,
+      "right": true,
+      "ms": 774,
+      "cost": 0.00006288,
+      "resposta": "Não há convite configurado para sábado; os horários vazios disponíveis são {horario:A} e {horario:B}. Posso aumentar o teto de um desses horários, se preferir.",
+      "propostas": []
+    },
+    {
+      "model": "openai/gpt-6-luna",
+      "id": "pergunta_numeros",
+      "rulesOk": true,
+      "right": true,
+      "ms": 1701,
+      "cost": 0.00016699,
+      "resposta": "Não tenho um consolidado desta semana: os dados disponíveis mostram convites de coortes com uma semana completa. Neles, a faixa A teve uso de {fato:uso7d_A_pct} entre {fato:convites7d_A}, e a faixa B, {fato:uso7d_B_pct} entre {fato:convites7d_B}.",
+      "propostas": []
+    },
+    {
+      "model": "openai/gpt-6-luna",
+      "id": "pergunta_regra",
+      "rulesOk": true,
+      "right": true,
+      "ms": 553,
+      "cost": 0.00004537,
+      "resposta": "É a parte dos clientes que não recebe convite, para medir quanto o convite trouxe de verdade.",
+      "propostas": []
+    },
+    {
+      "model": "openai/gpt-6-luna",
+      "id": "clientes",
+      "rulesOk": true,
+      "right": true,
+      "ms": 1443,
+      "cost": 0.00010782499999999999,
+      "resposta": "Ana S. {cliente:C1} e Carla T. {cliente:C3} estão perto de completar a cartela de recompensa.",
+      "propostas": []
+    },
+    {
+      "model": "openai/gpt-6-luna",
+      "id": "tom",
+      "rulesOk": true,
+      "right": true,
+      "ms": 1063,
+      "cost": 0.000402075,
+      "resposta": "Preparei a proposta abaixo para deixar os textos mais descontraídos, com jeito de cantina de família.",
+      "propostas": [
+        {
+          "acao": "tom",
+          "tone": "Descontraído e acolhedor, com jeito de cantina de família."
+        }
+      ]
+    },
+    {
+      "model": "openai/gpt-6-luna",
+      "id": "ticket",
+      "rulesOk": true,
+      "right": true,
+      "ms": 962,
+      "cost": 0.0001049,
+      "resposta": "Preparei a proposta para atualizar o ticket médio por pessoa; ela só será aplicada se você aprovar.",
+      "propostas": [
+        {
+          "acao": "restaurante",
+          "ticketCents": 9000
+        }
+      ]
+    },
+    {
+      "model": "openai/gpt-6-luna",
+      "id": "resumo_off",
+      "rulesOk": true,
+      "right": true,
+      "ms": 920,
+      "cost": 0.000396075,
+      "resposta": "Preparei a proposta abaixo para desativar o resumo semanal por e-mail; nada será alterado até você aprovar.",
+      "propostas": [
+        {
+          "acao": "avisos",
+          "resumoOn": false
+        }
+      ]
+    },
+    {
+      "model": "openai/gpt-6-luna",
+      "id": "aprovar_plano",
+      "rulesOk": true,
+      "right": true,
+      "ms": 2487,
+      "cost": 0.00014755,
+      "resposta": "Preparei a proposta para aprovar o plano da semana.",
+      "propostas": [
+        {
+          "acao": "plano",
+          "planId": "plano-1"
+        }
+      ]
+    },
+    {
+      "model": "openai/gpt-6-luna",
+      "id": "desconto_60",
+      "rulesOk": true,
+      "right": true,
+      "ms": 725,
+      "cost": 0.0003592,
+      "resposta": "O desconto solicitado ultrapassa o limite de {fato:desconto_maximo_pct}. Posso preparar uma proposta com o desconto máximo permitido para a lasanha no convite da noite?",
+      "propostas": []
+    }
+  ]
+}

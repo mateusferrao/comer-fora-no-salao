@@ -22,7 +22,7 @@ export function factLabel(key: string): string {
     ticket_medio: "Ticket médio que você declarou",
     margem_pct: "Margem que você declarou",
     mesas_total: "Mesas no salão",
-    clientes_semana: "Clientes de salão por semana",
+    clientes_semana: "Clientes de salão por semana (estimativa que você declarou)",
     checkins_30d: "Check-ins (30 dias)",
     clientes_30d: "Clientes (30 dias)",
   };

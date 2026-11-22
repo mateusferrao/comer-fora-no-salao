@@ -51,6 +51,8 @@ export default defineConfig({
           OPENROUTER_KEY_DEMO: "",
           // S6.1: o agendador nunca roda no servidor da E2E (provado por integração com relógio fixo — revisão I2).
           SCHEDULER: "off",
+          // S8: IA roteirizada do copiloto (só aqui: chaves vazias + token local — revisão técnica I8).
+          COPILOT_FAKE_AI: "1",
         },
       },
 });

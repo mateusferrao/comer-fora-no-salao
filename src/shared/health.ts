@@ -1,7 +1,7 @@
 export type SeedStatus = { state: "rodando" | "ok" | "falhou"; reason?: string };
 export type MailState = "configurado" | "memoria" | "ausente" | "falhou";
 export type KeyState = "ok" | "ajustada" | "ausente";
-export type HealthBody = { ok: boolean; db: "up" | "down"; sha: string; seed?: SeedStatus["state"]; mail?: MailState; ia?: { publica: KeyState; demo: KeyState } };
+export type HealthBody = { ok: boolean; db: "up" | "down"; sha: string; seed?: SeedStatus["state"]; mail?: MailState; ia?: { publica: KeyState; demo: KeyState }; fakeAi?: boolean };
 
 export type HealthDeps = {
   /** Consulta trivial ao banco; rejeita se o banco estiver fora. */
@@ -14,6 +14,8 @@ export type HealthDeps = {
   mail?: () => MailState;
   /** Estado das chaves do OpenRouter (só o estado; "ajustada" = tinha aspas/espaços em volta). Não derruba o `ok`. */
   ia?: () => { publica: KeyState; demo: KeyState };
+  /** S8: IA falsa do copiloto (só E2E local); a E2E de produção confere que é `false`. */
+  fakeAi?: () => boolean;
 };
 
 const DEFAULT_TIMEOUT_MS = 2_000;
@@ -34,7 +36,7 @@ function withTimeout(promise: Promise<void>, ms: number): Promise<void> {
   });
 }
 
-export function createHealthHandler({ ping, sha, timeoutMs = DEFAULT_TIMEOUT_MS, seed, mail, ia }: HealthDeps) {
+export function createHealthHandler({ ping, sha, timeoutMs = DEFAULT_TIMEOUT_MS, seed, mail, ia, fakeAi }: HealthDeps) {
   return async function health(): Promise<Response> {
     let db: HealthBody["db"] = "up";
     try {
@@ -50,6 +52,7 @@ export function createHealthHandler({ ping, sha, timeoutMs = DEFAULT_TIMEOUT_MS,
     }
     if (mail) body.mail = mail();
     if (ia) body.ia = ia();
+    if (fakeAi) body.fakeAi = fakeAi();
     return Response.json(body, { status: body.ok ? 200 : 503, headers: { "cache-control": "no-store" } });
   };
 }

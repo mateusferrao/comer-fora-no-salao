@@ -44,7 +44,7 @@ export default async function HistoricoPage() {
                 <tr key={h.id} className="border-t border-divider">
                   <td className="py-2">{weekLabel(h.weekKey)}</td>
                   <td>{STATUS[h.status] ?? h.status}</td>
-                  <td>{h.status === "aprovado" ? (h.via === "agente" ? "agente (MCP)" : h.via === "email" ? "e-mail" : "Portal") : "—"}</td>
+                  <td>{h.status === "aprovado" ? (h.via === "agente" ? "agente (MCP)" : h.via === "email" ? "e-mail" : h.via === "copiloto" ? "assistente" : "Portal") : "—"}</td>
                   <td>{h.status === "aprovado" ? `${h.sent} clientes` : "—"}</td>
                 </tr>
               ))}
