@@ -1,7 +1,7 @@
 import { afterAll, beforeEach, describe, expect, it } from "vitest";
 import { eq, sql } from "drizzle-orm";
 import { closeDb, getDb } from "@/src/db/client";
-import { owners, restaurants } from "@/src/db/schema";
+import { aiCalls, ownerEdits, owners, restaurants, weeklyPlans } from "@/src/db/schema";
 import { seedAll } from "@/src/db/seed";
 import { vitrineHistory } from "@/src/db/seed/history";
 import { VITRINE_ID, VITRINE_OWNER_ID } from "@/src/db/seed/vitrine";
@@ -46,9 +46,11 @@ describe("configuração ao vivo (D58, D138)", () => {
   it("publicações simultâneas não colidem na versão; flags começam ligadas (D148) e desligam ao vivo", async () => {
     const [a, b] = await Promise.all([publishPrompt(getDb(), "kit", "Versão A do tom do kit, simples."), publishPrompt(getDb(), "kit", "Versão B do tom do kit, simples.")]);
     expect([a, b].map((x) => (x.ok ? x.version : 0)).sort()).toEqual([1, 2]);
-    // D148: os 5 recursos da S3 vêm ligados por padrão (e o login por e-mail da S4); os da S5/S6 nascem desligados até ficarem prontos (D160).
+    // D148: os 5 recursos da S3 vêm ligados por padrão (e o login por e-mail da S4); desde a S9, também os entregues
+    // da S5–S8. Só o agendador nasce desligado.
     const f0 = await getFlags(getDb());
     expect([f0.ab, f0.revisor, f0.aprende, f0.insight_operacao, f0.mcp, f0.login_cliente_email].every((x) => x === true)).toBe(true);
+    expect([f0.painel_valor, f0.copiloto, f0.mcp_edicao, f0.agendador]).toEqual([true, true, true, false]);
     expect((await setFlag(getDb(), "ab", false)).ab).toBe(false);
     expect((await getFlags(getDb())).ab).toBe(false);
     expect((await getFlags(getDb())).mcp).toBe(true);
@@ -80,6 +82,41 @@ describe("páginas públicas agregadas", () => {
     const q = await getQualityView(getDb());
     expect(q.tasks).toEqual([]);
     expect(q.aiVsTop).toEqual({ compared: 0, differs: 0 });
+  });
+
+  it("custo de IA separado: ativação por restaurante ativado, por plano semanal e do assistente (S9, IA M9)", async () => {
+    const { restaurantId } = await createRestaurant();
+    const [p1, p2] = [crypto.randomUUID(), crypto.randomUUID()];
+    const row = (task: string, cost: number, planId: string | null = null) => ({ task, promptVersion: "t", restaurantId, status: "ok", attempts: [], keyKind: "publica", costUsd: String(cost), at: NOW, planId });
+    await getDb().insert(aiCalls).values([
+      row("cardapio", 0.01),
+      row("pacote", 0.02, crypto.randomUUID()),
+      row("kit", 0.004),
+      row("revisor", 0.001),
+      row("plano_agente", 0.014, p1),
+      row("revisor", 0.002, p1),
+      row("plano", 0.004, p2),
+      row("copiloto", 0.004),
+      row("salao_frase", 0.001),
+    ]);
+    const v = await getPlatformView(getDb(), NOW);
+    expect(v.activated).toBe(1);
+    expect(v.aiCostPerActivatedUsd).toBeCloseTo(0.035, 6);
+    expect(v.aiCostPerPlanUsd).toBeCloseTo(0.01, 6);
+    expect(v.plans).toBe(2);
+    expect(v.aiCostAssistantUsd).toBeCloseTo(0.005, 6);
+    expect(v.aiCostTotalUsd).toBeCloseTo(0.06, 6);
+  });
+
+  it("aceite sem edição do pacote só conta o pacote escrito pela IA (S9, M10)", async () => {
+    const at = new Date("2026-11-20T15:00:00Z");
+    for (const generatedBy of ["ia", "sem_ia"] as const) {
+      const r = await createRestaurant();
+      await getDb().insert(weeklyPlans).values({ restaurantId: r.restaurantId, weekKey: `x-${generatedBy}`, status: "aprovado", facts: {}, candidates: [], choices: [], texts: { order: [], generatedBy, version: 1 }, learned: [], approvedAt: at });
+      await getDb().insert(ownerEdits).values({ restaurantId: r.restaurantId, kind: "pacote:sem_edicao", at });
+    }
+    const q = await getQualityView(getDb());
+    expect(q.acceptedNoEdit.find((e) => e.what === "pacote")).toEqual({ what: "pacote", accepted: 1, total: 1 });
   });
 
 });

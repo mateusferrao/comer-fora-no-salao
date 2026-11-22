@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { Incremental } from "@/src/modules/analytics/domain/incremental";
-import { slotGoals, valueTopline } from "@/src/modules/analytics/domain/value";
+import { marginState, slotGoals, valueTopline } from "@/src/modules/analytics/domain/value";
 import type { Slot } from "@/src/modules/beneficios/domain/slots";
 
 const early = { usados: 14, custoCents: 12_600 };
@@ -13,6 +13,7 @@ describe("valueTopline (S5.1, D179)", () => {
   it("resultado positivo com margem → camada causal, com centavos arredondados", () => {
     expect(valueTopline({ inc: positivo, margin: { cents: 184_012.4, lo: 90_000.6, hi: 270_000 }, early, ticketCents: 7_000, marginPct: 35 })).toEqual({
       kind: "causal_positivo",
+      visitas: "positivo",
       cents: 184_012,
       lo: 90_001,
       hi: 270_000,
@@ -21,7 +22,35 @@ describe("valueTopline (S5.1, D179)", () => {
   });
 
   it("resultado negativo → causal_negativo", () => {
-    expect(valueTopline({ inc: negativo, margin: { cents: -31_000, lo: -50_000, hi: -12_000 }, early, ticketCents: 7_000, marginPct: 35 })).toMatchObject({ kind: "causal_negativo", cents: -31_000 });
+    expect(valueTopline({ inc: negativo, margin: { cents: -31_000, lo: -50_000, hi: -12_000 }, early, ticketCents: 7_000, marginPct: 35 })).toMatchObject({ kind: "causal_negativo", visitas: "negativo", cents: -31_000 });
+  });
+
+  it("margem negativa com visitas a mais (oferta cara) → causal_negativo, nunca 'a mais' (A5)", () => {
+    expect(valueTopline({ inc: positivo, margin: { cents: -20_000, lo: -35_000, hi: -5_000 }, early, ticketCents: 7_000, marginPct: 35 })).toMatchObject({
+      kind: "causal_negativo",
+      visitas: "positivo",
+      cents: -20_000,
+      lo: -35_000,
+      hi: -5_000,
+    });
+  });
+
+  it("intervalo da margem cruza o zero → causal_cruza_zero, mesmo com visitas a mais (A5)", () => {
+    expect(valueTopline({ inc: positivo, margin: { cents: 30_000, lo: -5_000, hi: 65_000 }, early, ticketCents: 7_000, marginPct: 35 })).toMatchObject({
+      kind: "causal_cruza_zero",
+      visitas: "positivo",
+      cents: 30_000,
+      lo: -5_000,
+      hi: 65_000,
+    });
+  });
+
+  it("estado da margem: positiva só com o mínimo acima de zero; negativa só com o máximo abaixo; o resto cruza o zero", () => {
+    expect(marginState({ lo: 1, hi: 10 })).toBe("positiva");
+    expect(marginState({ lo: -10, hi: -1 })).toBe("negativa");
+    expect(marginState({ lo: 0, hi: 10 })).toBe("cruza_zero");
+    expect(marginState({ lo: -10, hi: 0 })).toBe("cruza_zero");
+    expect(marginState({ lo: -10, hi: 10 })).toBe("cruza_zero");
   });
 
   it("amostra insuficiente → antecipada: consumo = usados × ticket; margem = consumo × margem%; faltam por grupo", () => {
@@ -32,6 +61,7 @@ describe("valueTopline (S5.1, D179)", () => {
       consumoCents: 98_000,
       margemCents: 34_300,
       custoCents: 12_600,
+      liquidoCents: 21_700,
       faltamControle: 18,
       faltamConvidados: 0,
     });

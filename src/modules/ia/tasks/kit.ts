@@ -14,7 +14,8 @@ import { examplesBlock } from "../examples";
 import { toneForPrompt } from "@/src/modules/config/domain/tone";
 import { hasOwnerData, OWNER_DATA_SYSTEM, ownerDataLines, type OwnerData } from "../owner-data";
 
-export const KIT_PROMPT_VERSION = "kit-v1";
+/** kit-v3 (revisão S9): "primeira visita" por extenso; o guard reprova dígito no texto da IA ("1ª visita"). */
+export const KIT_PROMPT_VERSION = "kit-v3";
 
 export const KIT_INSTRUCTIONS = `Você escreve as chamadas de um display de mesa e de um cartaz que ficam no salão de um restaurante, para convidar quem já está sentado a ler o QR e fazer check-in no app.
 Tom: caloroso, simples e direto, na voz do restaurante. Português do Brasil.`;
@@ -27,14 +28,20 @@ const RULES = `Escreva 2 versões diferentes (A e B), para testar qual chama mai
 Regras fixas:
 - Nunca escreva números, preços, percentuais, nomes de pratos por extenso, dias da semana ou turnos (manhã, tarde, noite): use só as referências entre chaves.
 - Não fale de convite, volta ou horários: isso é decidido em outra etapa.
-- Não use "grátis", "de graça", "desconto", "metade", "imperdível", "só hoje", "garantido".`;
+- Não use "grátis", "de graça", "desconto", "metade", "imperdível", "só hoje", "garantido", "brinde", "por conta da casa".
+- {beneficio} é o que o cliente ganha na primeira visita, ao fazer o check-in. Escreva "primeira visita" por extenso, nunca com algarismo.
+Escrita (S9):
+- Sem ponto de exclamação e sem travessão (—). Frases curtas, com ponto final ou vírgula.
+- Nada de fórmulas de anúncio: "descubra", "experimente", "não perca", "aproveite já", "venha conferir", "especial para você", "momento único", "sabor inesquecível", "do jeito que você merece".
+- Nada de "não é só X, é Y", de listas do que não tem ("sem X, sem Y") nem de pergunta seguida da resposta ("O melhor? …").
+- Diga o que o cliente faz e o que ganha, com palavras simples.`;
 
 export type KitOut = { A: { titulo: string; subtitulo: string; acao: string }; B: { titulo: string; subtitulo: string; acao: string }; recado: string };
 
 const version = z.object({ titulo: z.string(), subtitulo: z.string(), acao: z.string() });
 export const kitSchema = z.object({ A: version, B: version, recado: z.string() });
 
-export type KitPrompt = { system: string; text: string; ctx: RefContext; itemByAlias: Map<string, MenuItem>; forbidAliases: string[]; avoid?: readonly string[] };
+export type KitPrompt = { system: string; text: string; ctx: RefContext; itemByAlias: Map<string, MenuItem>; forbidAliases: string[]; avoid?: readonly string[]; ownNames?: readonly string[] };
 
 const clean = (s: string) => s.replace(/[{}<>\n\r]/g, "").slice(0, 60);
 
@@ -44,8 +51,8 @@ export function buildKitPrompt(p: { restaurantName: string; cuisine?: string | n
   const itemByAlias = new Map(visible.map((m, i) => [`p${i + 1}`, m]));
   const text = [
     `Restaurante: ${clean(p.restaurantName)}${p.cuisine ? ` (${clean(p.cuisine)})` : ""}`,
-    `{beneficio} = ${clean(p.beneficio)} (${p.beneficio.length} caracteres; para quem faz o 1º check-in)`,
-    `{recompensa} = ${clean(p.recompensa)} (${p.recompensa.length} caracteres; no 6º selo da cartela)`,
+    `{beneficio} = ${clean(p.beneficio)} (${p.beneficio.length} caracteres; o cliente ganha na primeira visita, ao fazer o check-in)`,
+    `{recompensa} = ${clean(p.recompensa)} (${p.recompensa.length} caracteres; ao completar a cartela de selos)`,
     "Pratos (cite por referência):",
     ...[...itemByAlias].map(([a, m]) => `  {prato:${a}} = ${clean(m.name)} (${m.name.length} caracteres)`),
     // Tom do dono (D138): dado delimitado no conteúdo do usuário, nunca no `system`.
@@ -57,13 +64,13 @@ export function buildKitPrompt(p: { restaurantName: string; cuisine?: string | n
   ].join("\n");
   const ctx: RefContext = { beneficio: p.beneficio, recompensa: p.recompensa, items: Object.fromEntries([...itemByAlias].map(([a, m]) => [a, m.name])) };
   const system = `${p.instructions ?? KIT_INSTRUCTIONS}\n\n${RULES}${hasOwnerData(p.owner) ? `\n\n${OWNER_DATA_SYSTEM}` : ""}`;
-  return { system, text, ctx, itemByAlias, forbidAliases: [], avoid: p.owner?.avoid ?? [] };
+  return { system, text, ctx, itemByAlias, forbidAliases: [], avoid: p.owner?.avoid ?? [], ownNames: [p.restaurantName, p.cuisine ?? ""].filter(Boolean) };
 }
 
 export function kitGuard(kp: KitPrompt): (d: KitOut) => GuardResult {
   return (d) => {
     const reasons: string[] = [];
-    const opts = (maxLen: number) => ({ allowed: ["beneficio", "recompensa", "prato"] as const, maxLen, field: "kit" as const, mode: "ia" as const, forbidDayTurn: true, avoid: kp.avoid ?? [] });
+    const opts = (maxLen: number) => ({ allowed: ["beneficio", "recompensa", "prato"] as const, maxLen, field: "kit" as const, mode: "ia" as const, forbidDayTurn: true, avoid: kp.avoid ?? [], ownNames: kp.ownNames ?? [] });
     for (const v of ["A", "B"] as const) {
       for (const f of VERSION_FIELDS) {
         const g = guardText(d[v][f], kp.ctx, opts(FIELD_MAX[f]));

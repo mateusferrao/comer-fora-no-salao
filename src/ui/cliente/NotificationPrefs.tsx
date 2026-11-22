@@ -3,13 +3,14 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Switch } from "@/src/ui/components/Switch";
+import { TXT } from "./textos";
 
 export type PrefsItem = { restaurantId: string; restaurant: string; email: boolean; convites: boolean; lembretes: boolean; app: boolean };
 type Patch = Partial<Pick<PrefsItem, "email" | "convites" | "lembretes" | "app">>;
 
 /**
  * "Gerenciar notificações" (S6.1 — D198; app/14): por restaurante, "E-mail" (chave-mestra) com "Convites" e
- * "Lembretes" abaixo e "Convites de volta no app". Grava a cada toque (POST). `token`: veio do link do e-mail — aí só
+ * "Lembretes" abaixo e "Convites para outras datas" (`opt_app`). Grava a cada toque (POST). `token`: veio do link do e-mail — aí só
  * desliga (ligar de novo exige entrar no app; revisão S4–S6). Depois de salvar, `router.refresh()` para quem reabre
  * a lista ver o estado novo.
  */
@@ -52,7 +53,7 @@ export function NotificationPrefs({ items: initial, token }: { items: PrefsItem[
           <div className="pl-4">
             <Switch
               label="Convites"
-              hint={lockOn(it.email && it.convites) && it.email ? relink : "Inclui o convite para voltar"}
+              hint={lockOn(it.email && it.convites) && it.email ? relink : "E-mail a cada convite novo"}
               checked={it.email && it.convites}
               disabled={!it.email || lockOn(it.convites)}
               onChange={(v) => void save(it, { convites: v })}
@@ -66,8 +67,8 @@ export function NotificationPrefs({ items: initial, token }: { items: PrefsItem[
             />
           </div>
           <Switch
-            label="Convites de volta no app"
-            hint={lockOn(it.app) ? relink : "Sem e-mail e sem esta opção, você não recebe convites para voltar"}
+            label={TXT.convitesOutrasDatas}
+            hint={lockOn(it.app) ? relink : TXT.convitesOutrasDatasDica}
             checked={it.app}
             disabled={lockOn(it.app)}
             onChange={(v) => void save(it, { app: v })}

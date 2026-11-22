@@ -46,7 +46,7 @@ describe("ofertas polimórficas", () => {
   it("descrição vem do código, por papel", () => {
     expect(describeOffer({ kind: "doce_gratis", params: { itemId: "panna" } }, menu, "agora")).toEqual({
       title: "Doce grátis",
-      subtitle: "Pra novos clientes",
+      subtitle: "Na 1ª visita",
       itemName: "Panna cotta",
       gain: "Panna cotta grátis",
     });

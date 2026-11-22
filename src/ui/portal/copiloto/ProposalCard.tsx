@@ -18,7 +18,7 @@ export type Card = { id: string; status: "pendente"; preview: CardPreview } | { 
 export type CardEstado = "aplicada" | "descartada" | "erro";
 type Status = "pendente" | "aplicando" | CardEstado;
 
-const ABA_LABEL: Record<string, string> = { agora: "Benefício agora", cartela: "Cartela", convites: "Horários vazios e convites", cardapio: "Cardápio", restaurante: "Restaurante", ia: "IA do restaurante", avisos: "Avisos e automação", plano: "Plano da semana" };
+const ABA_LABEL: Record<string, string> = { agora: "Benefício de 1ª visita", cartela: "Cartela", convites: "Horários vazios e convites", cardapio: "Cardápio", restaurante: "Restaurante", ia: "IA do restaurante", avisos: "Avisos e automação", plano: "Plano da semana" };
 export const abaHref = (aba: string, v?: string) => (aba === "plano" ? "/parceiro/salao/plano" : `/parceiro/salao/configuracoes?aba=${aba}${v ? `&v=${v.slice(0, 8)}` : ""}`);
 const doneMsg = (aba: string) => (aba === "plano" ? "Plano aprovado. Veja em Plano da semana." : `Aplicado. Veja em Configurações › ${ABA_LABEL[aba] ?? "Configurações"}.`);
 

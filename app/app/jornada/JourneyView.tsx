@@ -12,7 +12,7 @@ import { InviteCard } from "@/src/ui/cliente/InviteCard";
 import { NotificationPrefs, type PrefsItem } from "@/src/ui/cliente/NotificationPrefs";
 import { MyData, type MyDataView } from "@/src/ui/cliente/MyData";
 import { JourneyLogin } from "@/src/ui/cliente/JourneyLogin";
-import { TXT } from "@/src/ui/cliente/textos";
+import { codeTitle, TXT } from "@/src/ui/cliente/textos";
 
 /** Jornada (app/13; S4 — D156, D171): "Sair" e "Apagar meus dados" atrás da engrenagem, como no app. */
 export function JourneyView({
@@ -110,7 +110,7 @@ export function JourneyView({
                     {m.unread && <span className="ml-2 text-xs font-semibold text-red-text">Novo</span>}
                   </span>
                   <Link href={`/r/${m.slug}`} className="inline-flex min-h-11 items-center text-sm font-semibold text-red-text underline">
-                    Ver
+                    Ver convite
                   </Link>
                 </li>
               ))}
@@ -119,25 +119,18 @@ export function JourneyView({
         )}
         <p className="mt-2 text-center">
           <Link href={exploreHref} className="inline-flex min-h-11 items-center text-base font-medium text-red-text">
-            Explorar restaurantes ›
+            Ver o restaurante de exemplo ›
           </Link>
         </p>
-        <dl className="mt-6 grid grid-cols-3 text-center">
-          {[
-            ["Visitas", journey.visits],
-            ["Reservas", 0],
-            ["Avaliações", 0],
-          ].map(([label, n]) => (
-            <div key={label}>
-              <dd className="text-3xl font-semibold">{n}</dd>
-              <dt className="mt-1 text-base text-ink-muted">{label}</dt>
-            </div>
-          ))}
-        </dl>
+        {/* S9: só o que existe (Reservas e Avaliações com zero fixo saíram). */}
+        <p className="mt-6 flex flex-col items-center text-center">
+          <span className="text-3xl font-semibold">{journey.visits}</span>
+          <span className="mt-1 text-base text-ink-muted">{journey.visits === 1 ? "Visita" : "Visitas"}</span>
+        </p>
 
         <h2 className="mt-10 text-xl font-semibold">Seus restaurantes</h2>
         {journey.restaurants.length === 0 ? (
-          <p className="mt-4 rounded-xl border border-border px-5 py-6 text-base text-ink-muted">Ao fazer check-in, suas visitas serão registradas aqui</p>
+          <p className="mt-4 rounded-xl border border-border px-5 py-6 text-base text-ink-muted">Suas visitas aparecem aqui depois do 1º check-in.</p>
         ) : (
           <ul className="mt-4 flex flex-col gap-4">
             {journey.restaurants.map((r) => (
@@ -153,13 +146,10 @@ export function JourneyView({
                     <p className="text-sm font-semibold">Códigos de hoje</p>
                     {r.todayCodes.map((c) => (
                       <div key={c.code} className="mt-2">
-                        <p className="text-sm">
-                          {c.title}
-                          {c.itemName ? ` · ${c.itemName}` : ""}
-                        </p>
+                        <p className="text-sm">{codeTitle(c)}</p>
                         <CodeDisplay code={c.code} className="mt-1 text-2xl" />
                         <p className="mt-1 text-xs text-ink-muted">
-                          {TXT.informeCodigo} · {TXT.valeHoje}
+                          {TXT.mostreCodigo} · {TXT.valeHoje}
                         </p>
                       </div>
                     ))}
@@ -167,7 +157,6 @@ export function JourneyView({
                 )}
                 {r.invite && (
                   <div className="mt-3">
-                    <p className="mb-2 text-sm font-semibold text-red-text">Convite ativo</p>
                     <InviteCard invite={r.invite} agenda={copyV2} />
                   </div>
                 )}
@@ -189,7 +178,7 @@ export function JourneyView({
           </div>
         ) : confirmDelete ? (
           <div className="flex flex-col gap-3 text-left">
-            <p className="text-sm text-ink">Seu nome, telefone e e-mail serão apagados. Suas visitas continuam só como números anônimos dos restaurantes.</p>
+            <p className="text-sm text-ink">Vamos apagar seu nome, telefone e e-mail, e você deixa de receber convites. Suas visitas ficam só como números anônimos para os restaurantes.</p>
             <Button variant="primary-app" loading={busy} onClick={() => void leave("apagar")}>
               Apagar meus dados
             </Button>

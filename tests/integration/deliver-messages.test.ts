@@ -54,6 +54,11 @@ describe("convite entregue no app e por e-mail (S4.4 — D155, D163, D174, D175)
     expect(m.to).toBe("ana@exemplo.com");
     expect(m.text).toContain("Protótipo de case · não é produto oficial do iFood");
     expect(m.text).toContain(`${BASE}/app/jornada`);
+    // S9: por que recebeu, validade com o 1º dia em que vale e link direto para o check-in.
+    expect(m.text).toContain("Você fez check-in no restaurante Cantina de Teste em 23/11.");
+    expect(m.text).toMatch(/Vale de 24\/11 até \d{2}\/\d{2}, só nesses dias e horários\./);
+    expect(m.text).toMatch(new RegExp(`Fazer check-in: ${BASE}/r/t-`));
+    expect(m.text).not.toContain("no app");
     expect(m.text).toMatch(new RegExp(`${BASE}/cliente/descadastrar\\?t=`));
     // Idempotente: rodar de novo não reenvia.
     expect(await sendPendingInviteEmails(getDb(), { restaurantId: r.restaurantId, sender: memorySender, baseUrl: BASE, now: SEG_13 })).toEqual({ sent: 0, skipped: 0, failed: 0 });
@@ -67,8 +72,10 @@ describe("convite entregue no app e por e-mail (S4.4 — D155, D163, D174, D175)
     await checkin(r.restaurantId, c);
     await sendPendingInviteEmails(getDb(), { restaurantId: r.restaurantId, sender: memorySender, baseUrl: BASE, now: SEG_13, v2: true });
     const m = outbox().at(-1)!;
-    expect(m.subject).toMatch(/^Cantina de Teste guardou .+ para você$/);
+    expect(m.subject).toMatch(/^Terça, quarta e quinta, das 15h às 18h: .+ grátis no restaurante Cantina de Teste$/);
     expect(m.text.split("\n")[0]).toMatch(/^Volte terça, quarta e quinta, das 15h às 18h e ganhe .+\.$/);
+    // S9: a 1ª linha não se repete no texto do convite.
+    expect(m.text.match(/Volte terça, quarta e quinta/g)).toHaveLength(1);
     expect(m.text).toMatch(new RegExp(`Adicionar à agenda: ${BASE}/api/convite/agenda\\?t=`));
     expect(m.text).toContain("Protótipo de case · não é produto oficial do iFood");
   });

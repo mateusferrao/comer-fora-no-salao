@@ -453,7 +453,8 @@ Todas as rotas são validadas com Zod, têm limite de uso e tiram o restaurante 
 - **Defesas:**
   - texto da imagem é dado, nunca instrução;
   - nomes de itens limpos e limitados antes de entrar em outros prompts;
-  - IA sem ferramentas (o MCP expõe o **nosso** sistema a agentes externos; nossos prompts continuam sem ferramentas);
+  - IA sem ferramentas de escrita: o plano (S6) e o Assistente do salão (S8) têm só ferramentas de leitura; mudanças saem como proposta tipada que o código confere e o dono aplica com um clique (o MCP expõe o **nosso** sistema a agentes externos);
+  - **Assistente restrito ao escopo do restaurante (D277, D286):** a IA classifica o pedido (`escopo`) e, fora do escopo, a recusa é escrita pelo código, sem propostas; um portão determinístico limita formato, tamanho e âncora da resposta (não garante o assunto);
   - imagem que não é cardápio → caminho de saída;
   - **PII nunca entra no prompt, por construção:** fatos agregados e público resolvido pelo código. **Exceção declarada (S8, D262/D268):** o copiloto e o MCP recebem primeiro nome + inicial e atributos de clientes por apelido (`{cliente:C3}`); **contato (e-mail, telefone) nunca**; o Langfuse não grava entrada nem saída da tarefa do copiloto.
 - **Latência:**
@@ -513,18 +514,22 @@ Todas as rotas são validadas com Zod, têm limite de uso e tiram o restaurante 
 - **Acesso:**
   - rotas públicas só por token;
   - senha própria nos bastidores;
-  - **MCP com token do dono por restaurante (hash no banco, revogável), mesmos limites, sem PII nas respostas; aprovação "via agente" registrada**.
+  - **MCP com token do dono por restaurante (hash no banco, revogável), mesmos limites, sem contato de cliente nas respostas (só primeiro nome + inicial e atributos, com a flag `mcp_clientes` — D268); aprovação "via agente" registrada**.
 - **Entrada e conteúdo:** Zod em tudo; React sem HTML cru da IA.
-- **Plataforma:** CSP e cabeçalhos de segurança; patches de segurança atuais; limites de uso.
-- **Dados pessoais:**
-  - PII fictícia, guardada como HMAC + 4 dígitos, nunca no prompt;
-  - **e-mail real do dono** (D118): só HMAC + dica mascarada, nunca em log, rastro ou prompt; o SES processa o endereço para entregar o código (declarado na tela e em "Como funciona"); contas sem acesso por 7 dias são apagadas;
+- **Plataforma:** CSP e cabeçalhos de segurança; patches de segurança atuais; limites de uso; corpo JSON de até 64 KB, com 413 acima disso antes da autenticação (S9).
+- **Dados pessoais** (atualizado na S9 com D154, D169, D171, D173, D237, D262 e D268):
+  - **cliente real:** entra com o próprio e-mail e um código de 6 dígitos por e-mail, com aceite explícito; nome e telefone (opcional) só no 1º acesso (D154, D173);
+  - e-mail e telefone guardados como HMAC (busca) e criptografados com AES-256-GCM, chave derivada do `SESSION_SECRET` por HKDF (D169, D237);
+  - o dono vê o contato completo dos próprios clientes, com o aceite do cliente no cadastro (D237); no restaurante de exemplo, contatos fictícios óbvios (DDD 00, `exemplo.invalid`);
+  - contato de cliente **nunca** vai para log, prompt de IA, MCP nem rastro; o copiloto e o MCP veem só primeiro nome + inicial e atributos (visitas, selos, segmento), por apelido; o rastro do copiloto não grava a conversa (D262, D268);
+  - sem apagamento automático dos dados do cliente; "Apagar meus dados" sempre disponível na Jornada; risco declarado em "Como funciona" (D171);
+  - **e-mail real do dono** (D118, D169, D237): HMAC para o login e criptografado (AES-256-GCM) para o resumo semanal e o rodapé do Portal; nunca em log, rastro ou prompt; o SES processa o endereço para entregar os e-mails (declarado na tela e em "Como funciona"); contas sem acesso por 7 dias são apagadas;
   - coordenada nunca guardada;
   - limpeza "de carona" de restaurantes de teste com mais de 7 dias;
   - segredos só em variáveis de ambiente.
 - **Dependências:** verificação no CI.
 - **Opt-in:** o convite aparece na tela e na Jornada **sem depender de envio**; a reativação simulada vai **só para quem tem opt-in**.
-- **Em produção:** o opt-in exigiria consentimento ativo (LGPD) e provedores de IA adequados à transferência internacional.
+- **Em produção:** o opt-in exigiria consentimento ativo (LGPD) e provedores de IA adequados à transferência internacional (hoje, primeiro nome + inicial de clientes vão ao OpenRouter com `data_collection: deny` — D262).
 
 ### 4.7 Testes (T7)
 - **TDD no domínio:**
@@ -648,7 +653,12 @@ Todas as rotas são validadas com Zod, têm limite de uso e tiram o restaurante 
 | 20/11 → manhã de 21/11 | **S1:** domínio com TDD (faixas e turnos, ofertas, cartela, códigos, sorteio + fantasma, teto, `decideCheckin`, incremento/coortes/migração) + esquema v2 + identificação/leituras/check-in + simulador por agente e seed de 60 dias (com 2 planos fixos em JSON com referências) + telas do cliente |
 | 21/11 → manhã de 22/11 | **S2:** Portal (casca, login demo) + limites + guardrails com as referências novas + cardápio com IA + **motor de candidatas + tarefa de IA 3 + modo sem IA** + ativação com **pacote proposto** + kit + Validar código |
 | 22/11 | **S3:** insights e painel + **plano da semana** (veredito, IA, "o que aprendemos", aprovar, reativação com fantasma) + entrada, modo apresentação e "Como funciona" + bastidores ("antecipar convite") → mini-avaliação (T1 e T3, com linha de base sem IA) → E2E em produção → insight 4 + A/B → revisor → aprende → MCP |
-| 23/11 até 15h | Polimento, vídeo, slide PPTX, envio pelos 2 canais, **congelamento às 15h** |
+| 21/11 | **S4:** produto real e identidade: cliente com o próprio e-mail e código, contato criptografado, nada de "teste" nas telas (D151–D176) |
+| 21/11 | **S5:** valor e conversão: painel em reais e meta, "Hoje no salão", landing e página do QR reescritas, "Por que esta oferta?" (D179–D185; flags `painel_valor`, `copy_v2`, `explica_ia`) |
+| 21/11 | **S6:** IA que opera e sistema configurável: resumo semanal por e-mail com "Revisar e aprovar", agendador, link do garçom, plano como agente, porta-conta (D187–D200). S4–S6 com revisão e merge únicos (`959f679`, D167) |
+| 21/11 → madrugada de 22/11 | **S8:** Assistente do salão (pedido → proposta conferida pelo código → "Aplicar") e MCP sobre o mesmo catálogo (D260–D271; merge `df36504`). Roda antes da S7 |
+| 22/11 | **S9:** polimento pré-entrega: revisão completa (requisitos, IA, segurança) e revisão de copy; flags entregues ligadas por padrão |
+| 23/11 até 15h | **S7** (era a S4, renumerada pela D151): slide PPTX, vídeo de telas reais, cópia pública, envio pelos 2 canais, **congelamento às 15h** |
 | 23/11 15–17h | Resetar demo, ensaio cronometrado, checklist do dia |
 
 ## 8. Riscos e tratamento
@@ -661,16 +671,16 @@ Todas as rotas são validadas com Zod, têm limite de uso e tiram o restaurante 
 | **Grupos não comparáveis** | Sorteio só entre quem poderia receber + convite fantasma (intenção de tratar) |
 | **Medida = check-ins, não visitas** (viés a favor do produto) | Rótulo "visitas registradas"; limitação declarada; em produção, cruzar com pagamento ou reserva |
 | **Contaminação do holdout** | Antes do check-in, só "você pode ganhar um convite"; garçom fala só do "agora" |
-| **MCP aprova plano** (caminho de dinheiro sem clique no Portal) | Token do dono por restaurante, revogável; limites; registro "via agente"; flag desligável |
+| **MCP aprova plano** (caminho de dinheiro sem clique no Portal) | Token do dono por restaurante, revogável; limites; registro "via agente"; flag desligável; edição só por propor → aplicar (D269) |
 | **IA decorativa** | Código decide números e dinheiro; IA escolhe entre candidatas, casa item × turno e explica; mini-avaliação compara IA × linha de base sem IA (rubrica e aceite sem edição) |
 | Página confundida com o iFood oficial / bloqueio por phishing | Barra de protótipo, `noindex`, nome neutro; risco aceito sem Search Console (D88). Desde a S2 o login é idêntico ao portal/01 e pede e-mail real (D118, risco aceito pelo candidato): link privado do avaliador (D126), e-mail sem logo nem link, DMARC |
-| E-mail real do dono (dado pessoal) e dependência do SES | Só HMAC + dica; limites por e-mail, IP e global; preflight do SES e teste de entrega antes do merge; link do avaliador como saída |
-| Dados pessoais reais digitados | Campos pré-preenchidos com fictícios, `autocomplete="off"`, aviso; HMAC; PII nunca no prompt nem no MCP |
+| E-mail real do dono (dado pessoal) e dependência do SES | HMAC para o login + criptografado (AES-256-GCM) para o resumo; limites por e-mail, IP e global; preflight do SES e teste de entrega antes do merge; link do avaliador como saída |
+| Dados pessoais reais de clientes (D154, D237) | Aceite explícito no cadastro; HMAC + AES-256-GCM; contato nunca em log, prompt, MCP ou rastro; a IA vê só primeiro nome + inicial (D262, D268); "Apagar meus dados" a qualquer hora (D171) |
 | Opt-in ligado por padrão sustenta a reativação | Convite visível sem envio; reativação só com opt-in; em produção, consentimento ativo (LGPD) |
 | IA inventa número/promessa | Referências + regras + palavras proibidas + escolha ∈ candidatas + revisor + aprovação do dono |
-| Prompt injection (cardápio) | Texto como dado, saída por schema, IA sem ferramentas, nomes limpos |
+| Prompt injection (cardápio, nomes, pedido ao assistente) | Texto como dado, saída por schema, IA só com ferramentas de leitura, nomes limpos, proposta conferida pelo código + clique, escopo do assistente com recusa do código (D277, D286) |
 | IA indisponível / crédito esgotado | Modo sem IA, cache dos exemplos, 2 chaves, tetos e limites |
-| Dados em provedores fora do Brasil (LGPD) | Só dados fictícios; em produção, provedores adequados |
+| Dados em provedores fora do Brasil (LGPD) | Contato nunca sai; só primeiro nome + inicial vai ao provedor, com `data_collection: deny` (D262); em produção, provedores adequados |
 | Build na VPS compartilhada (OOM) | Deploy só com CI verde, mitigações de memória, checagem antes do deploy, congelamento às 15h |
 | Fraude de benefício (QR fotografado) | Código único por cliente validado pelo garçom; 1 check-in/dia; convite com horário e uso único |
 | Cliente confuso com "agora" + "convite"; garçom com vários códigos | Convite como 2º card depois do agora; uma tela "Validar código" que reconhece o tipo |

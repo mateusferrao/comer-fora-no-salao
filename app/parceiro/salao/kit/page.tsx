@@ -33,16 +33,17 @@ export default async function KitPage() {
     <main className="mx-auto flex max-w-5xl flex-col gap-6 px-4 py-6 sm:px-8">
       <header>
         <h1 className="text-2xl font-bold text-ink">Kit de divulgação</h1>
-        <p className="mt-1 text-sm text-ink-muted">
-          Display de mesa e cartaz em 2 versões (cada uma com o próprio QR, para saber qual traz mais check-ins) e o cartão do garçom. As chamadas vêm da IA (ou do
-          texto modelo, quando ela não responde) e você pode editar; o benefício e os números vêm das regras.
+        <p className="mt-1 text-sm text-ink">
+          Imprima o display e o cartaz, coloque nas mesas e marque “Está no salão”. Cada versão tem o próprio QR: o painel mostra qual traz mais check-ins.
         </p>
-        <p className="mt-2 text-sm text-ink-muted">
-          Cada QR identifica a peça e a versão (display A ou B, cartaz A ou B,
-          cartão do garçom, porta-conta), não a mesa: imprima o mesmo display
-          para todas as mesas. As leituras e os check-ins são contados por peça
-          e versão, e é isso que mostra qual chamada funciona melhor.
-        </p>
+        <details className="mt-2 text-sm text-ink-muted">
+          <summary className="flex min-h-11 cursor-pointer items-center font-semibold text-ink sm:min-h-6">Como os QRs contam</summary>
+          <p className="mt-1">
+            Cada QR identifica a peça e a versão (display A ou B, cartaz A ou B, porta-conta), não a mesa: imprima o mesmo display para todas as mesas. As leituras e
+            os check-ins são contados por peça e versão, e é isso que mostra qual chamada funciona melhor. As chamadas vêm da IA (ou do texto padrão, quando ela não
+            responde) e você pode editar. O benefício e os números vêm do sistema. O cartão do garçom não tem QR.
+          </p>
+        </details>
       </header>
       <KitManager initial={kit} restaurantName={cur.name} qrs={qrs} billHolder={(await getFlags(getDb())).porta_conta} />
     </main>

@@ -5,12 +5,18 @@ import { aiCalls } from "@/src/db/schema";
 import { endOfDaySP } from "@/src/shared/tz";
 import type { TaskResult } from "./run-task";
 
-export type KeyKind = "publica" | "demo";
+/** "e2e" (S9): conta da E2E, sempre no modo sem IA (só aparece gravada com a IA falsa do servidor local). */
+export type KeyKind = "publica" | "demo" | "e2e";
 /** Teto diário da chave pública [C] (US$): acima disso, as tarefas caem no modo sem IA, com aviso. */
 export const PUBLIC_DAILY_CAP_USD = 0.5;
 
-export async function recordAiCall(ex: Executor, p: { task: string; promptVersion: string; restaurantId?: string | null; planId?: string | null; result: TaskResult<unknown>; keyKind: KeyKind; at?: Date }): Promise<string | null> {
+/**
+ * `notes`: marcas do código sobre o resultado (ex.: `fora_do_escopo` no copiloto — S9), somadas às notas da última
+ * tentativa; servem às métricas sem gravar conteúdo.
+ */
+export async function recordAiCall(ex: Executor, p: { task: string; promptVersion: string; restaurantId?: string | null; planId?: string | null; result: TaskResult<unknown>; keyKind: KeyKind; at?: Date; notes?: string[] }): Promise<string | null> {
   const a = p.result.attempts;
+  const last = a.length - 1;
   const sum = (f: (x: (typeof a)[number]) => number | undefined) => a.reduce((acc, x) => acc + (f(x) ?? 0), 0);
   try {
     const [row] = await ex.insert(aiCalls).values({
@@ -26,7 +32,7 @@ export async function recordAiCall(ex: Executor, p: { task: string; promptVersio
       outTokens: sum((x) => x.outTokens),
       costUsd: String(sum((x) => x.costUsd)),
       latencyMs: sum((x) => x.latencyMs),
-      attempts: a.map((x) => ({ model: x.model, ok: x.ok, error: x.error ?? null, notes: x.notes ?? [], latencyMs: x.latencyMs, costUsd: x.costUsd ?? null })),
+      attempts: a.map((x, i) => ({ model: x.model, ok: x.ok, error: x.error ?? null, notes: [...(x.notes ?? []), ...(i === last ? (p.notes ?? []) : [])], latencyMs: x.latencyMs, costUsd: x.costUsd ?? null })),
       keyKind: p.keyKind,
       at: p.at ?? new Date(),
     }).returning({ id: aiCalls.id });

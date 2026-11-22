@@ -1,7 +1,9 @@
 import { afterAll, beforeEach, describe, expect, it } from "vitest";
 import { and, eq, sql } from "drizzle-orm";
 import { closeDb, getDb } from "@/src/db/client";
-import { benefitVersions, invites, ownerEdits, planSends, weeklyPlans, customerMessages } from "@/src/db/schema";
+import { benefitVersions, idleSlots, invites, ownerEdits, planSends, weeklyPlans, customerMessages } from "@/src/db/schema";
+import { slotAliases, slotLabel } from "@/src/modules/beneficios/domain/slot-text";
+import { loadContext } from "@/src/modules/salao/application/context";
 import { seedAll } from "@/src/db/seed";
 import { vitrineHistory } from "@/src/db/seed/history";
 import { VITRINE_ID, VITRINE_OWNER_ID } from "@/src/db/seed/vitrine";
@@ -79,6 +81,29 @@ describe("plano da semana (S3 §4.3–4.4)", () => {
     expect(d.aiChoices).toHaveLength(2);
     // ordem da IA respeitada
     expect((p.texts as { order: string[] }).order).toEqual([...ins.ctx.slots].sort((a, b) => (a.intensity === "muito" ? -1 : 1) - (b.intensity === "muito" ? -1 : 1)).map((s) => s.id).reverse());
+  });
+
+  it("veredito 'trocar' obrigatório (S9, A4): a oferta avaliada sai das candidatas da faixa, com e sem IA", async () => {
+    // A oferta vigente da 1ª faixa passa a ser a 1ª candidata do código; depois, nenhum convite dela foi usado → "trocar".
+    const before = (await getPlanInsights(getDb(), VITRINE_ID, NOW))!;
+    const slotId = before.offers[0]!.slotId;
+    const versionId = before.ctx.convites[slotId]!.versionId;
+    await generateWeeklyPlan(getDb(), { restaurantId: VITRINE_ID, ownerId: VITRINE_OWNER_ID, now: NOW, gateway: fakeGateway });
+    const p0 = (await latestPlan(getDb(), VITRINE_ID))!;
+    const top = (p0.candidates as Array<{ slotId: string; options: Array<{ id: string; offer: { kind: string; itemId: string; pct?: number } }> }>).find((c) => c.slotId === slotId)!.options[0]!;
+    await getDb().update(benefitVersions).set({ kind: top.offer.kind, params: { itemId: top.offer.itemId, ...(top.offer.pct ? { pct: top.offer.pct } : {}) } }).where(eq(benefitVersions.id, versionId));
+    await getDb().update(invites).set({ usedAt: null }).where(and(eq(invites.restaurantId, VITRINE_ID), eq(invites.benefitVersionId, versionId)));
+    const ins = (await getPlanInsights(getDb(), VITRINE_ID, NOW))!;
+    expect(ins.offers.find((o) => o.slotId === slotId)!.verdict).toBe("trocar");
+    for (const gw of [fakeGateway, failing]) {
+      await getDb().delete(weeklyPlans).where(and(eq(weeklyPlans.restaurantId, VITRINE_ID), eq(weeklyPlans.status, "proposto")));
+      await generateWeeklyPlan(getDb(), { restaurantId: VITRINE_ID, ownerId: VITRINE_OWNER_ID, now: NOW, gateway: gw });
+      const p = (await latestPlan(getDb(), VITRINE_ID))!;
+      const opts = (p.candidates as Array<{ slotId: string; options: Array<{ id: string }> }>).find((c) => c.slotId === slotId)!.options.map((o) => o.id);
+      expect(opts.length).toBeGreaterThan(0);
+      expect(opts).not.toContain(top.id);
+      expect((p.choices as Array<{ slotId: string; candidateId: string }>).find((c) => c.slotId === slotId)!.candidateId).not.toBe(top.id);
+    }
   });
 
   it("IA indisponível → texto modelo (sem IA) com 'o que aprendemos' por modelo; clique duplo → 1 chamada", async () => {
@@ -195,13 +220,37 @@ describe("plano da semana (S3 §4.3–4.4)", () => {
     expect(e.opcoes.filter((o) => o.escolhaIa)).toHaveLength(1);
     expect(e.opcoes.filter((o) => o.maiorNota)).toHaveLength(1);
     expect(e.fatos.length).toBeGreaterThan(0);
-    expect(e.fatos[0]!.label).toMatch(/^Faixa [A-H]: quanto fica vazia$/);
+    expect(e.fatos[0]!.label).toMatch(/: quanto fica vazio$/);
+    expect(e.fatos[0]!.label).not.toMatch(/Faixa/); // S9: horário legível ou "Horário vazio A"
     expect(e.justificativa).not.toMatch(/\{fato:/);
     expect(e.tecnico).toMatchObject({ task: "plano", reserva: true, promptVersion: expect.stringMatching(/^plano-v/) });
     expect(e.tecnico!.attempts[0]).toMatchObject({ ok: false, error: "guard" });
     expect(e.tecnico!.attempts[0]!.notes.some((x) => x.includes("proibida"))).toBe(true);
     // Outro restaurante (ou plano de outro restaurante): nada.
     expect(await explainOffer(getDb(), "00000000-0000-4000-8000-000000000000", g.planId, slotId)).toBeNull();
+  });
+
+  it("S9: 'Fatos usados' com o horário legível de cada apelido (ordem de prioridade do plano; faixa inativa fora)", async () => {
+    const g = await generateWeeklyPlan(getDb(), { restaurantId: VITRINE_ID, ownerId: VITRINE_OWNER_ID, now: NOW, gateway: fakeGateway });
+    if (!g.ok) throw new Error("não gerou");
+    // Faixa desativada, de prioridade máxima e na 1ª posição: se entrasse, empurraria os apelidos.
+    await getDb().insert(idleSlots).values({ restaurantId: VITRINE_ID, days: [1], startMin: 600, endMin: 660, intensity: "muito", extraTables: 1, position: -1, active: false });
+    const { explainOffer } = await import("@/src/modules/planos/application/explain-offer");
+    const plan = (await latestPlan(getDb(), VITRINE_ID))!;
+    const ctx = (await loadContext(getDb(), VITRINE_ID))!;
+    const names = new Map(slotAliases(ctx.slots).map((a) => [a.alias, slotLabel(a.slot)]));
+    let checked = 0;
+    for (const { slotId } of plan.choices as Array<{ slotId: string }>) {
+      const e = (await explainOffer(getDb(), VITRINE_ID, g.planId, slotId))!;
+      for (const f of e.fatos) {
+        const m = /^faixa_([A-H])_intensidade$/.exec(f.key);
+        if (!m) continue;
+        expect(f.label).toBe(`${names.get(m[1]!)}: quanto fica vazio`);
+        expect(f.label).toMatch(/^[A-Z][a-z]{2}.* · \d+h/);
+        checked++;
+      }
+    }
+    expect(checked).toBeGreaterThan(0);
   });
 
   it("S5.3: o plano pronto do restaurante de exemplo é declarado 'fixo', sem chamada de IA", async () => {

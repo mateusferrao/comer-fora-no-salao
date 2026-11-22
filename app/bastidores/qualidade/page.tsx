@@ -2,7 +2,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { getDb } from "@/src/db/client";
 import { getQualityViewCached } from "@/src/modules/analytics/application/quality";
-import { REASON, TASK, usd } from "@/src/ui/ia/labels";
+import { guardNote, REASON, TASK, usd } from "@/src/ui/ia/labels";
 import { getCopilotMetrics } from "@/src/modules/agente/application/metrics";
 
 export const dynamic = "force-dynamic";
@@ -25,7 +25,7 @@ export default async function Qualidade() {
       </p>
       <h1 className="mt-3 text-2xl font-bold text-ink">Qualidade da IA</h1>
       <p className="mt-2 text-sm leading-6 text-ink-muted">
-        Cada chamada de IA passa por contrato (schema), regras fixas (referências, palavras proibidas, tamanho) e aprovação do dono; se falhar, entra o modelo reserva e, por fim, o texto modelo (sem IA). Números agregados, sem os testes automáticos.
+        Cada chamada de IA passa por contrato (schema), regras fixas (referências, palavras proibidas, tamanho) e aprovação do dono; se falhar, entra o modelo reserva e, por fim, o texto modelo (sem IA). Números agregados, fora as chamadas dos testes automáticos.
       </p>
       <div
         className="mt-4 overflow-x-auto no-scrollbar rounded-sm border border-border bg-white p-4"
@@ -62,7 +62,7 @@ export default async function Qualidade() {
                 <td>{t.okPct}%</td>
                 <td className="text-xs">{Object.entries(t.fallbackByReason).map(([r, n]) => `${n} · ${REASON[r] ?? r}`).join("; ") || "—"}</td>
                 <td>{t.reservePct}%</td>
-                <td className="text-xs">{t.topBlocks.map((b) => `${b.reason} (${b.n})`).join(", ") || "—"}</td>
+                <td className="text-xs">{t.topBlocks.map((b) => `${guardNote(b.reason)} (${b.n})`).join("; ") || "—"}</td>
                 <td>{usd(t.avgCostUsd)}</td>
                 <td>{t.p50Ms === null ? "—" : `${(t.p50Ms / 1000).toLocaleString("pt-BR", { maximumFractionDigits: 1 })} s`}</td>
               </tr>
@@ -91,17 +91,28 @@ export default async function Qualidade() {
           <p className="mt-2 text-sm text-ink">
             {v.aiVsTop.compared === 0 ? "Ainda sem escolhas da IA para comparar." : `${v.aiVsTop.differs} de ${v.aiVsTop.compared} escolhas (${Math.round((100 * v.aiVsTop.differs) / v.aiVsTop.compared)}%)`}
           </p>
-          <p className="mt-1 text-xs text-ink-muted">Decisão de projeto: a nota do código é só econômica; quem casa item × turno é a IA. Se ela sempre escolhesse a maior nota, seria decorativa.</p>
+          <p className="mt-1 text-xs text-ink-muted">
+            A nota do código é só econômica; quem casa item × turno é a IA. Escolher diferente mostra que ela não repete a regra do código, mas não mostra que
+            escolhe melhor: isso é hipótese, a medir no piloto.
+          </p>
         </section>
       </div>
       <section className="mt-4 rounded-sm border border-border bg-white p-4" aria-labelledby="avaliacao">
         <h2 id="avaliacao" className="text-base font-bold text-ink">
           Mini-avaliação
         </h2>
+        <p className="mt-2 text-sm leading-6 text-ink">
+          <strong>Ganho medido da IA:</strong> leitura do cardápio (T1, contra OCR) e texto do convite e da justificativa (T3, contra o texto modelo).{" "}
+          <strong>Hipótese:</strong> a escolha de item × turno pela IA rende mais que a de maior nota; mede-se no piloto, com restaurantes sem a escolha da IA.
+        </p>
         <ul className="mt-2 list-disc pl-5 text-sm leading-6 text-ink">
-          <li>T1 (leitura do cardápio): 7 modelos de visão e 3 linhas de base de OCR em 4 cardápios. Venceu google/gemini-3.1-flash-lite (nota 1,000; p50 2,4 s; US$ 0,0017 por cardápio); OCR + regras ficou em 0,42–0,46.</li>
-          <li>Revisor (outro provedor, só nos textos que chegam ao cliente): em 10 planos gerados pela IA, 0 bloqueados e 3 com &quot;atenção&quot; (eval/resultados-revisor.json).</li>
-          <li>T3 (pacote e plano): 6 modelos × 5 cenários fictícios × 2 repetições, contra a linha de base sem IA, com um juiz de IA de um provedor que não concorre (sem saber qual proposta é da IA; a linha de base é reconhecível pelo texto fixo, o que limita o &quot;cego&quot;). Venceu google/gemini-3.8-flash (regras ok em 90%; p50 2,8 s; US$ 0,002 por plano), com openai/gpt-6-luna de reserva; nos 9 pares, o juiz preferiu a IA em 8. Nota humana nos mesmos pares: {T3_HUMANO}. Relatório: eval/relatorio-t3.md.</li>
+          <li>T1 (leitura do cardápio): 7 modelos de visão e 3 linhas de base de OCR em 4 cardápios. Venceu google/gemini-3.1-flash-lite (nota 1,000; p50 2,4 s; US$ 0,0017 por cardápio); OCR + regras ficou em 0,42–0,46 e OCR + IA de texto, em 0,73.</li>
+          <li>
+            T3 (pacote e plano): 6 modelos × 5 cenários fictícios × 2 repetições, com um juiz de IA de um provedor que não concorre. Venceu google/gemini-3.8-flash (regras ok em 90%; p50 2,8 s), com openai/gpt-6-luna de reserva. Contra o texto modelo, o juiz preferiu a IA em 8 de 9 pares; {T3_HUMANO}. O texto modelo é reconhecível pelo formato, e no critério item × turno o vencedor empatou com ele em 3 de 4 cenários: a vantagem medida está no texto. Relatório: eval/relatorio-t3.md.
+          </li>
+          <li>T3 do agente (plano da semana): agente com ferramentas × chamada única, 3 rodadas. Na última, os dois passaram nas regras em 10 de 10; o juiz preferiu o agente em 6, empate em 1, chamada única em 3; custo por plano US$ 0,014 × US$ 0,002 e p50 13,8 s × 3,6 s. Relatório: eval/relatorio-t3-agente.md.</li>
+          <li>Revisor (outro provedor, só nos textos que chegam ao cliente): em 10 planos gerados pela IA, 0 bloqueados e 3 com &quot;atenção&quot;. Mede só bloqueio indevido; textos ruins de propósito ainda não foram testados (eval/resultados-revisor.json).</li>
+          <li>T4 (Assistente do salão): 16 pedidos com gabarito; fora da amostra, 6 casos novos × 3 repetições: gemini-3.8-flash acertou 17 de 18 e gpt-6-luna, 14 de 18 (eval/relatorio-t4-validacao.md).</li>
         </ul>
       </section>
           <section className="mt-6 rounded-sm border border-border bg-white p-4 text-sm" aria-labelledby="copiloto-metricas">
@@ -110,9 +121,10 @@ export default async function Qualidade() {
         <ul className="mt-2 list-disc pl-5">
           <li>Pedidos ao copiloto: {cm.turns}{cm.turnsNoAiPct !== null ? ` · sem IA em ${cm.turnsNoAiPct}%` : ""}</li>
           <li>Propostas mostradas: {cm.shown} · aplicadas: {cm.applied}{cm.appliedPct !== null ? ` (${cm.appliedPct}%)` : ""} · descartadas: {cm.discarded} · vencidas: {cm.expired} · com falha: {cm.failed}</li>
+          <li>Pedidos fora do escopo do restaurante (D277): {cm.outOfScope.total}{cm.outOfScope.total > 0 ? ` · barrados pelo portão do sistema, mesmo marcados como do restaurante: ${cm.outOfScope.byGate}` : ""}. O dono vê uma recusa fixa e nenhuma proposta.</li>
           <li>Tempo até aplicar (mediana): {cm.p50SecToApply === null ? "—" : `${cm.p50SecToApply} s`}</li>
           <li>Mudanças nas Configurações nos últimos 7 dias: {cm.editsLast7.total}, das quais {cm.editsLast7.copilot} pelo assistente ou por agente</li>
-          {cm.byOrigin.length > 0 && <li>Aplicadas por porta: {cm.byOrigin.map((o) => `${o.origin === "mcp" ? "agente (MCP)" : "copiloto"} ${o.applied}`).join(" · ")}</li>}
+          {cm.byOrigin.length > 0 && <li>Aplicadas por canal: {cm.byOrigin.map((o) => `${o.origin === "mcp" ? "app de IA conectado (MCP)" : "Assistente do salão"} ${o.applied}`).join(" · ")}</li>}
         </ul>
         {cm.byAction.length > 0 && (
           <table className="mt-3 w-full text-sm">

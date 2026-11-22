@@ -104,7 +104,9 @@ describe("assistente de ativação (Postgres)", () => {
     await getDb().insert(customers).values({ id: customerId });
     const ck = await doCheckin(getDb(), { restaurantId, customerId, gpsStatus: "negado", variantId: null, idempotencyKey: crypto.randomUUID(), clock: fixedClock("2026-11-21T14:30:00Z"), randInt: (n) => Math.floor(Math.random() * n) });
     const inv = (ck as { invite: { message: string | null } | null }).invite;
-    expect(inv?.message).toMatch(/^Volte .+, das \d+h às \d+h e aproveite .+\.$/);
+    // S9: o texto modelo só repete a 1ª linha do cartão ("Volte {quando} e aproveite {oferta}"), então não aparece de novo.
+    expect(inv).not.toBeNull();
+    expect(inv?.message).toBeNull();
     const ev = await getDb().select().from(onboardingEvents).where(eq(onboardingEvents.restaurantId, restaurantId));
     expect(ev.filter((e) => e.event === "concluiu").map((e) => e.step).sort()).toEqual([2, 3, 5]);
   });

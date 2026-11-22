@@ -11,6 +11,7 @@ import { systemClock } from "@/src/shared/clock";
 import { readCustomerId } from "@/src/web/customer-session";
 import { safeErr } from "@/src/shared/safe-err";
 import { isE2eRestaurant, overLimit, rejectCrossSite } from "@/src/web/guards";
+import { readJson, tooLarge } from "@/src/web/http";
 import { log } from "@/src/shared/log";
 import { scheduleInviteEmails } from "@/src/web/invite-emails";
 
@@ -27,7 +28,9 @@ export async function POST(req: Request, { params }: { params: Promise<{ slug: s
   const { slug } = await params;
   const blocked = rejectCrossSite(req);
   if (blocked) return blocked;
-  const parsed = bodySchema.safeParse(await req.json().catch(() => null));
+  const raw = await readJson(req);
+  if (raw.erro === "grande") return tooLarge();
+  const parsed = bodySchema.safeParse(raw.value);
   if (!parsed.success) return Response.json({ erro: "dados_invalidos" }, { status: 400 });
   const db = getDb();
   const r = await findRestaurantBySlug(db, slug);

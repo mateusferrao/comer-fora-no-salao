@@ -5,8 +5,8 @@ import type { ListQuery, SortKey } from "@/src/modules/analytics/domain/customer
 import { int } from "./format";
 
 const LABEL: Record<Segment, { title: string; hint: string }> = {
-  sumiu: { title: "1 visita e sumiu", hint: "Uma visita, há 14 dias ou mais. Alvo da reativação." },
-  perto: { title: "Perto da recompensa", hint: "4 ou 5 selos na cartela. Alvo da reativação." },
+  sumiu: { title: "1 visita e sumiu", hint: "Uma visita, há 14 dias ou mais. Quem aceita avisos pode receber convite para voltar quando você aprova o plano da semana." },
+  perto: { title: "Perto da recompensa", hint: "4 ou 5 selos na cartela. Quem aceita avisos pode receber convite para voltar quando você aprova o plano da semana." },
   convite_ativo: { title: "Com convite ativo", hint: "Têm um convite de volta válido." },
   frequente: { title: "Frequentes", hint: "3 ou mais visitas em 30 dias. Não recebem reativação, para não trocar o horário de quem já vem." },
 };
@@ -21,8 +21,8 @@ const COLS: Array<{ label: string; sort?: SortKey }> = [
   { label: "1ª visita", sort: "primeira" },
   { label: "Última", sort: "ultima" },
   { label: "Selos", sort: "selos" },
-  { label: "Peça de origem", sort: "peca" },
-  { label: "Opt-in", sort: "optin" },
+  { label: "Chegou pelo QR", sort: "peca" },
+  { label: "Aceita avisos", sort: "optin" },
 ];
 
 /** Setas pretas de ordenação (SVG, nunca emoji): as duas em cinza quando a coluna não está ordenada. */
@@ -59,7 +59,7 @@ export function CustomersView({ data }: { data: SegmentsView }) {
               <span className="text-2xl font-bold text-ink" data-testid={`seg-${s}`}>
                 {int(data.counts[s].count)}
               </span>
-              <span className="text-xs text-ink-muted">com opt-in: {int(data.counts[s].optIn)}</span>
+              <span className="text-xs text-ink-muted">aceitam avisos: {int(data.counts[s].optIn)}</span>
             </Link>
           </li>
         ))}
@@ -141,7 +141,7 @@ export function CustomersView({ data }: { data: SegmentsView }) {
                     <td>{fmtDay(c.lastDay)}</td>
                     <td>{c.stamps}/6</td>
                     <td>{c.piece ?? "—"}</td>
-                    <td className="text-xs">{[c.optIn.email && "E-mail", c.optIn.app && "App"].filter(Boolean).join(" · ") || "nenhum"}</td>
+                    <td className="text-xs">{[c.optIn.email && "E-mail", c.optIn.app && "App"].filter(Boolean).join(" · ") || "não"}</td>
                   </tr>
                 ))}
               </tbody>

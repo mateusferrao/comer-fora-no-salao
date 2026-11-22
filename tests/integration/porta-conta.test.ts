@@ -22,7 +22,7 @@ describe("porta-conta (S6.4, D192)", () => {
     const v = bill.variants[0]!;
     expect(v.rendered).toEqual({
       titulo: "Antes de pagar, faça check-in",
-      subtitulo: "Na 1ª visita: Panna cotta grátis. A cada visita, um selo: na 6ª, Tiramisù grátis.",
+      subtitulo: "Na 1ª visita, Panna cotta grátis. Cada visita vale 1 selo e, com 6 selos, Tiramisù grátis.",
       acao: "Aponte a câmera para o QR",
     });
     expect(JSON.stringify(v.rendered)).not.toMatch(/Cannoli|terça|tarde/);
@@ -30,6 +30,8 @@ describe("porta-conta (S6.4, D192)", () => {
   });
 
   it("kit antigo: 'Adicionar porta-conta' cria 1 peça (2 cliques ao mesmo tempo = 1); sem kit → erro; leitura conta na peça", async () => {
+    // Kit gerado com a flag desligada (ligada por padrão desde a S9).
+    await setFlag(getDb(), "porta_conta", false);
     const r = await createRestaurant({ pieces: [] });
     expect(await addBillHolder(getDb(), { restaurantId: r.restaurantId, now: NOW })).toEqual({ ok: false, erro: "sem_kit" });
     await generateKit(getDb(), { restaurantId: r.restaurantId, ownerId: r.ownerId, now: NOW, gateway: null });

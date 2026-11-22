@@ -54,9 +54,9 @@ const WD = ["domingo", "segunda", "terça", "quarta", "quinta", "sexta", "sábad
 const TURN = { almoco: "no almoço", tarde: "à tarde", noite: "à noite" } as const;
 const PIECE = { display: "display de mesa", cartaz: "cartaz" } as const;
 
-/** Texto do alerta (o código escreve os números). */
+/** Texto do alerta (o sistema escreve os números). */
 export function alertText(a: OpsAlert, slotPhrase: (alias: string) => string): string {
   if (a.kind === "teto") return `Teto atingido em ${slotPhrase(a.alias)}: os ${a.cap} convites desta semana acabaram.`;
-  if (a.kind === "peca") return `${PIECE[a.piece][0]!.toUpperCase()}${PIECE[a.piece].slice(1)}: a versão ${a.worse} converte ${Number.isFinite(a.ratio) ? `${String(a.ratio).replace(".", ",")}×` : "muito"} menos leituras em check-in.`;
+  if (a.kind === "peca") return `${PIECE[a.piece][0]!.toUpperCase()}${PIECE[a.piece].slice(1)}: a versão ${a.worse} leva ${Number.isFinite(a.ratio) ? `${String(a.ratio).replace(".", ",")}×` : "muito"} menos gente do QR ao check-in.`;
   return `${WD[a.weekday]![0]!.toUpperCase()}${WD[a.weekday]!.slice(1)} ${TURN[a.turn]}: ${a.pct}% dos códigos sem validação (de ${a.codes} em 30 dias). Confira se a equipe está validando no Portal.`;
 }

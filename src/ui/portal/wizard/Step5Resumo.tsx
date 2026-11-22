@@ -13,7 +13,8 @@ import {
   inviteIssues,
   reasonMessage,
 } from "@/src/modules/ia/guardrails/messages";
-import { api, markStep } from "./api";
+import { api, brl, markStep } from "./api";
+import { weeklyInviteCost } from "./weekly-cost";
 import { finalPayload, initialFinal, useTexts } from "./Step4Pacote";
 
 const toOffer = (v: { kind: Offer["kind"]; itemId: string; pct?: number }): Offer => ({ kind: v.kind, params: { itemId: v.itemId, ...(v.kind === "desconto" ? { pct: v.pct ?? 15 } : {}) } });
@@ -68,10 +69,11 @@ export function Step5Resumo({ view, slug, todayPlus30 }: { view: PackageView; sl
   }
 
   const agora = describeOffer(toOffer(f.agora), view.menu, "agora");
+  const week = weeklyInviteCost(f.slots.map((st) => ({ offer: toOffer(st.offer), weeklyCap: st.weeklyCap })), view.menu, view.marginPct ?? undefined);
   if (done) {
     return (
       <div className="flex flex-col gap-4" role="status">
-        <h2 className="text-xl font-bold text-ink">Comer Fora no salão ativo!</h2>
+        <h2 className="text-xl font-bold text-ink">Comer Fora no salão ativado</h2>
         <p className="text-sm text-ink">Seu kit de divulgação já está sendo preparado. Próximos passos:</p>
         <ol className="list-decimal pl-5 text-sm leading-6 text-ink">
           <li>Aprove e imprima o display e o cartaz.</li>
@@ -120,14 +122,14 @@ export function Step5Resumo({ view, slug, todayPlus30 }: { view: PackageView; sl
             className="rounded-xl bg-white p-4 shadow-medium"
           >
             <p className="text-xs font-semibold uppercase tracking-wide text-ink-muted">
-              Check-in feito!
+              Check-in feito
             </p>
-            <p className="mt-2 text-lg font-semibold text-ink">{agora.title}</p>
+            <p className="mt-2 text-lg font-semibold text-ink">{agora.gain}</p>
             <p className="text-sm text-ink-muted">
-              {agora.subtitle} · {agora.itemName}
+              Na 1ª visita
             </p>
             <p className="mt-3 text-sm text-ink">
-              Informe este código ao garçom
+              Mostre este código ao garçom
             </p>
             <p
               aria-hidden="true"
@@ -162,9 +164,12 @@ export function Step5Resumo({ view, slug, todayPlus30 }: { view: PackageView; sl
         </div>
       </PhoneFrame>
       <p className="text-xs text-ink-muted">
-        O 2º card só aparece para quem foi sorteado para receber o convite (9 em
-        cada 10 clientes); os outros formam o grupo de controle que mede o
-        resultado.
+        9 em cada 10 clientes veem este convite. Os outros ficam sem convite, por
+        sorteio, para medir o resultado.
+      </p>
+      <p className="text-sm text-ink">
+        Se todos os convites da semana forem usados, o custo {week.isMax ? "máximo" : "estimado"} é{" "}
+        <strong>{week.isMax ? brl(week.cents) : `≈ ${brl(week.cents)}`}</strong> por semana. Você muda o teto semanal de cada horário em Configurações.
       </p>
       <StickyActions
         justify="between"

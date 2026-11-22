@@ -1,6 +1,6 @@
 /**
- * Recursos com flag (espec. 4.4, D57): o que não estiver pronto e testado fica desligado. Os 5 foram
- * entregues com testes na S3, então vêm ligados por padrão (D148 [C]); os Bastidores desligam ao vivo.
+ * Recursos com flag (espec. 4.4, D57): o que não estiver pronto e testado fica desligado. O que foi entregue com
+ * testes vem ligado por padrão (D148 [C] na S3; S9 para S4–S8); os Bastidores desligam ao vivo.
  */
 export const FLAGS = [
   "ab",
@@ -8,7 +8,7 @@ export const FLAGS = [
   "aprende",
   "insight_operacao",
   "mcp",
-  // S4–S6 (D160, regra de corte): o que não fechar até domingo 22h nasce desligado.
+  // S4–S6 (D160, regra de corte): nasceram desligadas; ligadas por padrão na S9 depois de verdes em produção.
   "login_cliente_email",
   "painel_valor",
   "copy_v2",
@@ -18,7 +18,7 @@ export const FLAGS = [
   "modo_garcom",
   "plano_agente",
   "porta_conta",
-  // S8 (D270): copiloto e MCP sobre o catálogo; nascem desligados e ligam quando verdes.
+  // S8 (D270): copiloto e MCP sobre o catálogo; nasceram desligados, ligados por padrão na S9.
   "copiloto",
   "mcp_clientes",
   "mcp_edicao",
@@ -32,18 +32,21 @@ export const FLAG_DEFAULTS: Flags = {
   insight_operacao: true,
   mcp: true,
   login_cliente_email: true,
-  painel_valor: false,
-  copy_v2: false,
-  explica_ia: false,
-  resumo_email: false,
+  // S9 (revisão de requisitos A3): o que foi entregue, testado e está ligado em produção vem ligado no código,
+  // para um banco novo ser o mesmo produto do ar. Os Bastidores continuam desligando ao vivo.
+  painel_valor: true,
+  copy_v2: true,
+  explica_ia: true,
+  resumo_email: true,
+  // Envio automático (segunda 08:30) gasta IA e manda e-mail sozinho: só liga por decisão explícita nos Bastidores.
   agendador: false,
-  modo_garcom: false,
+  modo_garcom: true,
   // D225 (candidato): ligado — confiabilidade nas regras vence; a chamada única fica de reserva.
   plano_agente: true,
-  porta_conta: false,
-  copiloto: false,
-  mcp_clientes: false,
-  mcp_edicao: false,
+  porta_conta: true,
+  copiloto: true,
+  mcp_clientes: true,
+  mcp_edicao: true,
 };
 export const FLAG_LABEL: Record<Flag, string> = {
   ab: "A/B das peças (status e 'promover vencedora')",

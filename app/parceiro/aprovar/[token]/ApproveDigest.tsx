@@ -8,13 +8,13 @@ const ERRORS: Record<string, string> = {
   usado: "Este link já foi usado. Veja o plano no Portal.",
   substituido: "Este plano foi substituído por um mais novo. Abra no Portal.",
   nao_proposto: "Este plano não está mais esperando aprovação.",
-  revisor: "O revisor automático pediu ajustes nos textos. Ajuste no Portal antes de aprovar.",
+  revisor: "A conferência automática pediu ajustes nos textos. Ajuste no Portal antes de aprovar.",
   desligado: "Aprovação por e-mail desligada nas suas configurações. Aprove no Portal.",
   oferta: "Uma das ofertas não vale mais (o cardápio mudou). Ajuste no Portal.",
   texto: "Um dos textos não passou nas regras. Ajuste no Portal.",
 };
 
-/** POST com o token: aprova o plano como está (`via: email`). */
+/** POST com o token: aprova o plano como está (`via: email`); os convites de reativação saem na hora. */
 export function ApproveDigest({ token }: { token: string }) {
   const [state, setState] = useState<"" | "busy">("");
   const [done, setDone] = useState<Ok | null>(null);
@@ -32,14 +32,16 @@ export function ApproveDigest({ token }: { token: string }) {
     return (
       <p role="status" data-testid="aprovado-email" className="rounded-sm border border-border bg-white p-4 text-base text-ink">
         Plano aprovado.{" "}
-        {done.sent.real > 0 ? `Convite entregue a ${done.sent.real} clientes em Sua jornada${done.sent.emails ? ` · ${done.sent.emails} também por e-mail` : ""}.` : "A regra do convite na mesa já vale."}
+        {done.sent.real > 0
+          ? `${done.sent.real} ${done.sent.real === 1 ? "cliente recebeu" : "clientes receberam"} o convite no app${done.sent.emails ? ` · ${done.sent.emails} também por e-mail` : ""}.`
+          : "Os convites na mesa já seguem o plano novo."}
         {done.semEmail && <span className="block text-sm text-ink-muted">Textos com link ou contato não vão por e-mail.</span>}
       </p>
     );
   return (
     <div className="flex flex-col gap-2">
       <Button variant="primary-portal" loading={state === "busy"} onClick={() => void go()}>
-        Aprovar plano
+        Aprovar e enviar convites
       </Button>
       {err && (
         <p role="alert" className="text-sm text-red-text">

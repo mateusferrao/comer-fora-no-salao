@@ -50,18 +50,30 @@ export default async function Plataforma() {
           <p className="text-3xl font-bold text-ink">{v.medianActivationMin === null ? "—" : duration(v.medianActivationMin)}</p>
         </div>
         <div className={card}>
-          <p className="text-sm text-ink-muted">Custo de IA por restaurante ativado</p>
+          <p className="text-sm text-ink-muted">Custo de IA da ativação, por restaurante ativado</p>
           <p className="text-3xl font-bold text-ink">{v.aiCostPerActivatedUsd === null ? "—" : usd(v.aiCostPerActivatedUsd)}</p>
-          <p className="text-xs text-ink-muted">total: {usd(v.aiCostTotalUsd)}</p>
+          <p className="text-xs text-ink-muted">cardápio, pacote e kit, uma vez; inclui quem começou e não ativou</p>
+        </div>
+        <div className={card}>
+          <p className="text-sm text-ink-muted">Custo de IA por plano da semana</p>
+          <p className="text-3xl font-bold text-ink">{v.aiCostPerPlanUsd === null ? "—" : usd(v.aiCostPerPlanUsd)}</p>
+          <p className="text-xs text-ink-muted">
+            agente ou chamada única, mais o revisor; {v.plans} {v.plans === 1 ? "plano" : "planos"}
+          </p>
+        </div>
+        <div className={card}>
+          <p className="text-sm text-ink-muted">Custo de IA do Assistente do salão</p>
+          <p className="text-3xl font-bold text-ink">{usd(v.aiCostAssistantUsd)}</p>
+          <p className="text-xs text-ink-muted">total, depende do uso; todo o gasto de IA: {usd(v.aiCostTotalUsd)}</p>
         </div>
       </div>
 
       <section className={`${card} mt-4`} aria-labelledby="abandono">
         <h2 id="abandono" className="text-base font-bold text-ink">
-          Abandono por passo do assistente (hipótese H5)
+          Abandono por passo da ativação (hipótese H5)
         </h2>
         {v.funnel.length === 0 ? (
-          <p className="mt-2 text-sm text-ink">Ninguém passou pelo assistente ainda.</p>
+          <p className="mt-2 text-sm text-ink">Ninguém passou pela ativação ainda.</p>
         ) : (
           <table className="mt-2 w-full text-sm">
             <thead>
@@ -92,7 +104,14 @@ export default async function Plataforma() {
           <li>Briefing (números fictícios do case): 400 mil restaurantes parceiros, 75% só delivery → ~100 mil com salão [interpretação nossa]; 20% divulgam o Comer Fora no salão (~20 mil).</li>
           <li>Hipótese: se a ativação proposta levar a divulgação de 20% para 30% dos restaurantes com salão, são ~10 mil restaurantes a mais divulgando.</li>
           <li>Meta do briefing: 2,5 → 5 milhões de usuários ativos até 2028 (gap de 2,5 mi). Para o salão cobrir metade do gap com esses ~10 mil restaurantes, cada um precisaria trazer ~125 novos usuários por ano (≈ 2–3 por semana). É esse o número que o piloto testa; aqui ele aparece no card &quot;Novos usuários&quot; acima.</li>
-          <li>Custo de IA medido neste protótipo por restaurante ativado: {v.aiCostPerActivatedUsd === null ? "ainda sem dados" : usd(v.aiCostPerActivatedUsd)} (uma vez, na ativação, mais cerca de US$ 0,002 por plano semanal). O custo do benefício é do restaurante e é limitado pelo teto semanal.</li>
+          <li>
+            Custo de IA medido neste protótipo: {v.aiCostPerActivatedUsd === null ? "ainda sem dados" : usd(v.aiCostPerActivatedUsd)} por restaurante ativado, uma vez, e{" "}
+            {v.aiCostPerPlanUsd === null ? "ainda sem dados" : usd(v.aiCostPerPlanUsd)} por plano da semana.
+            {v.aiCostPerActivatedUsd !== null && v.aiCostPerPlanUsd !== null
+              ? ` No 1º ano, com 52 planos e sem o assistente, daria cerca de ${usd(v.aiCostPerActivatedUsd + 52 * v.aiCostPerPlanUsd)} por restaurante.`
+              : ""}{" "}
+            O assistente custa conforme o uso. O custo do benefício é do restaurante e é limitado pelo teto semanal.
+          </li>
         </ul>
       </section>
     </main>

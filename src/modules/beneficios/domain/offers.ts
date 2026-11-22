@@ -89,7 +89,8 @@ export function checkOffer(offer: Offer, activeMenu: readonly MenuItem[], noOffe
   return errs;
 }
 
-const SUBTITLES: Record<Role, string> = { agora: "Pra novos clientes", convite: "No seu convite", recompensa: "Na cartela" };
+/** S9: "Na 1ª visita" (a regra real) no lugar de "Pra novos clientes" (visão do dono). */
+const SUBTITLES: Record<Role, string> = { agora: "Na 1ª visita", convite: "No seu convite", recompensa: "Na cartela" };
 
 export function describeOffer(offer: Offer, menu: readonly MenuItem[], role: Role): OfferText {
   const strategy = offerRegistry[offer.kind];

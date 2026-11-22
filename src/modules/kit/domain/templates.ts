@@ -15,7 +15,7 @@ export const FIXED_KINDS: readonly PieceKind[] = ["garcom", "porta_conta"];
  */
 export const BILL_TEMPLATE = {
   titulo: "Antes de pagar, faça check-in",
-  subtitulo: "Na 1ª visita: {beneficio}. A cada visita, um selo: na 6ª, {recompensa}.",
+  subtitulo: "Na 1ª visita, {beneficio}. Cada visita vale 1 selo e, com 6 selos, {recompensa}.",
   acao: "Aponte a câmera para o QR",
 } as const;
 
@@ -30,19 +30,33 @@ export type KitTexts = { A: VersionTexts; B: VersionTexts; recado: string };
 /** Linha fixa do código sobre o convite: genérica, sem oferta nem horário. */
 export const INVITE_LINE = "Faça check-in e você pode ganhar um convite para voltar";
 
-/** Cartão do garçom (≤ 2 frases, só o "agora"; não menciona o convite para não contaminar o holdout). */
-export const WAITER_TEMPLATE = "Hoje, quem faz check-in ganha {beneficio}. Peça o código ao cliente e valide no Portal.";
+/**
+ * Cartão do garçom (≤ 2 frases, só o "agora"; não menciona o convite para não contaminar o holdout). S9: o benefício
+ * vale só na 1ª visita, e o código é o "do benefício" (o de acesso, do e-mail, não serve ao garçom).
+ */
+export function waiterTemplate(waiterLink: boolean): string {
+  return `Na 1ª visita, quem faz check-in pelo QR da mesa ganha {beneficio}. Peça ao cliente o código do benefício e valide ${waiterLink ? "no link do garçom" : "no Portal"}.`;
+}
+/** Texto gravado no kit (sem o link do garçom); a tela e o impresso usam `waiterPhrase`. */
+export const WAITER_TEMPLATE = waiterTemplate(false);
+/** Textos de modelo já gravados (o de antes da S9 prometia o benefício a todo check-in): saem com o modelo atual. */
+const KNOWN_WAITER_TEXTS = new Set([WAITER_TEMPLATE, waiterTemplate(true), "Hoje, quem faz check-in ganha {beneficio}. Peça o código ao cliente e valide no Portal."]);
 
-/** Com o link do garçom ligado (S6.2 — D190), o cartão impresso aponta para ele; o texto gravado não muda. */
+/**
+ * Com o link do garçom ligado (S6.2 — D190), o cartão impresso aponta para ele; o texto gravado não muda. S9: texto de
+ * modelo (atual ou antigo) é montado de novo por `waiterTemplate`, sem trocar trechos da frase.
+ */
 export function waiterPhrase(frase: string, waiterLink: boolean): string {
+  if (KNOWN_WAITER_TEXTS.has(frase)) return waiterTemplate(waiterLink);
   return waiterLink ? frase.replace("valide no Portal", "valide no link do garçom") : frase;
 }
 
 /** Textos modelo do modo sem IA (rotulados na tela). */
 export const FALLBACK_KIT: KitTexts = {
-  A: { titulo: "Faça check-in e ganhe {beneficio}", subtitulo: "Leia o QR, faça check-in no app e mostre o código ao garçom.", acao: "Aponte a câmera para o QR" },
-  B: { titulo: "Ganhe {beneficio} no seu check-in", subtitulo: "Junte selos a cada visita e ganhe {recompensa}.", acao: "Leia o QR e faça check-in" },
-  recado: "Obrigado por estar aqui. Boa refeição!",
+  // S9: "primeira" por extenso (o texto do kit não leva algarismo); o benefício vale só na 1ª visita.
+  A: { titulo: "Na primeira visita, ganhe {beneficio}", subtitulo: "Leia o QR, faça check-in e mostre o código ao garçom.", acao: "Aponte a câmera para o QR" },
+  B: { titulo: "{beneficio} no seu primeiro check-in", subtitulo: "Cada visita vale um selo. Junte selos e ganhe {recompensa}.", acao: "Leia o QR e faça check-in" },
+  recado: "Obrigado por estar aqui. Boa refeição.",
 };
 
 export function sentenceCount(text: string): number {

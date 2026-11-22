@@ -53,7 +53,7 @@ export function TodayFeed({ feed }: { feed: Feed }) {
           Hoje no salão
         </h2>
         <p className="text-sm text-ink-muted" data-testid="hoje-contagens">
-          Hoje: {int(feed.counts.leituras)} {feed.counts.leituras === 1 ? "leitura" : "leituras"} · {int(feed.counts.checkins)} check-ins · {int(feed.counts.validados)}{" "}
+          Hoje: {int(feed.counts.leituras)} {feed.counts.leituras === 1 ? "leitura" : "leituras"} · {int(feed.counts.checkins)} {feed.counts.checkins === 1 ? "check-in" : "check-ins"} · {int(feed.counts.validados)}{" "}
           {feed.counts.validados === 1 ? "código validado" : "códigos validados"}
         </p>
       </div>
@@ -68,7 +68,7 @@ export function TodayFeed({ feed }: { feed: Feed }) {
             <li key={i.id} className={`flex flex-wrap items-center gap-x-3 gap-y-1 border-t border-divider py-2 text-sm first:border-t-0 ${fresh.has(i.id) ? "motion-safe:bg-surface-muted motion-safe:transition-colors" : ""}`}>
               <span className="w-12 tabular-nums text-ink-muted">{hhmm(i.at)}</span>
               <span className="text-ink">{feedText(i)}</span>
-              {i.controle && <span className="rounded-xs bg-surface-muted px-1.5 py-0.5 text-xs text-ink">grupo de controle · sem convite (mede o efeito)</span>}
+              {i.controle && <span className="rounded-xs bg-surface-muted px-1.5 py-0.5 text-xs text-ink">grupo sem convite · sorteado para comparar</span>}
               {fresh.has(i.id) && <span className="rounded-xs border border-red-text bg-white px-1.5 text-xs font-semibold text-red-text">novo</span>}
             </li>
           ))}

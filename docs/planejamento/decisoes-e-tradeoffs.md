@@ -1452,3 +1452,46 @@ Detalhes, perguntas, revisão independente (2 subagentes) e itens [C] em [docs/f
 
 **D281 — A linha "Faça check-in e você pode ganhar um convite para voltar" fica** (22/11, candidato, depois de perguntar "por que contraria?") ✅
 - A auditoria de copy dizia que a linha contrariava a espec. 3.5. Não contraria: a própria §3.5 pede essa linha; a regra é que nenhuma *oferta* nem *horário* apareça antes do check-in. A linha é igual para os dois grupos, então não afeta a medida.
+
+### Implementação e revisão da S9 — decisões (D101, IA [C])
+
+**D282 — Margem com estado próprio no topo em R$** (22/11, IA [C]) ✅
+- O topo segue o intervalo da **margem**, não o sinal das visitas: positiva só com `lo > 0`, negativa com `hi < 0`, senão "cruza o zero" ("Em reais, ainda pode ser acaso…", com "Trocar a oferta" quando as visitas também caíram). Texto numa fonte única (`analytics/domain/value-text.ts`) para painel e e-mail; o assunto do resumo só leva valor no positivo. Descartado: manter o sinal das visitas (com oferta cara, a margem líquida pode ser negativa com visitas a mais).
+- O R$ do cartão de visitas só aparece sem o topo em R$; antecipado mostra 1 número líquido com o aviso logo abaixo; migração inconclusiva não vira "sem sinal".
+
+**D283 — Guard de texto da IA mais rígido em todos os campos** (22/11, IA [C]) ✅
+- Número por extenso, "por cento", multiplicadores (dobrar, triplicar…) e ordinais que inventam meta ("na terceira visita") valem para convite, kit, justificativa e "o que aprendemos", não só no chat; "brinde" e "por conta da casa" proibidos no convite e no kit ("cortesia" segue livre: é tipo de oferta). O nome do restaurante e a culinária saem do texto antes da checagem ("Bar Dois Irmãos" não reprova). O prompt do kit escreve "primeira visita" (o guard barra dígito). Trade-off: mais quedas para o texto modelo; aceitas porque "IA nunca escreve número" é promessa central.
+
+**D284 — Veredito "trocar" obrigatório** (22/11, IA [C]) ✅
+- A oferta marcada "trocar" sai das candidatas da faixa (com IA e sem IA) e o guard reprova `manteve_oferta_trocar` quando há alternativa. Sem alternativa, a oferta fica (a faixa nunca fica sem candidata). Descartado: só instruir no prompt (não garante).
+
+**D285 — Recado do kit escrito pela IA só vai ao app depois de aprovado e conferido** (22/11, IA [C]) ✅
+- Fica pendente em `piece_variants.texts` (sem migração) com revisão própria (`recadoReview`); publica na aprovação do display/cartaz se a conferência deu "ok" ou não rodou, ou quando ela termina depois da aprovação; "bloquear" retira o recado da IA já publicado (nunca o do dono); "atenção" não publica. Edições de campo gravam por `||` no jsonb para não apagar o que o revisor grava em paralelo. O texto modelo (sem IA) continua publicado na hora.
+
+**D286 — Assistente: portão determinístico refeito depois da revisão** (22/11, IA [C]; refina D277) ✅
+- A revisão de segurança mostrou 8 textos fora do escopo que passavam (poema com "mesa", SQL, inglês, receita…). O léxico perdeu os termos genéricos e a âncora exige 1 referência a dado do restaurante ou 2 termos específicos do produto; teto de tamanho e de palavras por frase; padrões de código ampliados. Falha **só de formato** em pedido do restaurante vai ao guard (nova tentativa) e, se persistir, mantém as propostas válidas com um texto do código em vez da recusa. Sugestão que falha no portão some sem recusar o turno.
+- Correção de texto da D277: o portão **limita formato, tamanho e âncora; não garante o assunto**. A T4 de escopo é indicativa (n pequeno).
+
+**D287 — Limite de 64 KB em todo corpo JSON** (22/11, IA [C]) ✅
+- `readJson` lê por stream com teto e devolve "grande" (413) × "inválido" (400); todas as rotas JSON usam `readJson` (teste que varre `app/api` e barra `req.json()` direto; exceção: o upload multipart do cardápio, com teto próprio). `rejectCrossSite` e o MCP recusam pelo `content-length` antes da autenticação. Descartado: exceção lançada (viraria 500 sem ponto central no Next).
+
+**D288 — Padrões das flags = o que está em produção** (22/11, IA [C]) ✅
+- Todas as flags entregues nascem ligadas, menos `agendador`. Quem clona o repositório vê o mesmo produto da demo; `setFlag` grava o conjunto completo, então produção (linha já gravada) não muda. Testes antigos que precisam do padrão desligado desligam explicitamente. A fumaça de produção do CI passa a rodar os `*.on.spec.ts`.
+
+**D289 — "Ver minha página" abre pelo QR do display A** (22/11, IA [C]) ✅
+- O link do dono e os Primeiros passos usam `?p=<token>` do display A em uso, como o cliente chega de verdade; assim o check-in do avaliador conta em "novos usuários vindos do salão". Trade-off aceito: a leitura e o check-in do próprio dono entram no A/B da versão A (amostra de demonstração). Descartado: link sem peça (a métrica do topo para o iFood ficava em 0 no roteiro).
+
+**D290 — Contagens e origem corrigidas** (22/11, IA [C]) ✅
+- "Voltaram no horário do convite" conta cada convite uma vez; a peça de origem é gravada só no 1º check-in; "faltam" conta os dois grupos; "custo máximo" = "dos convites emitidos na semana".
+
+**D291 — Telas do cliente não levam à explicação do grupo de controle** (22/11, IA [C]) ✅
+- Voltar e 404 nas rotas do cliente vão a Sua jornada; a barra nas rotas do cliente aponta para "Sobre este protótipo" (`/sobre`, sem o sorteio, com os créditos das fotos). O texto do convite que só repete o cabeçalho sai da tela e do e-mail (o dado gravado não muda); o cupom usa o ganho ("Panna cotta grátis"), o mesmo nome que o garçom vê; "código de acesso" (e-mail) × "código do benefício" (garçom).
+
+**D292 — Nome de restaurante e de prato sem contato nem marca** (22/11, IA [C]) ✅
+- Os nomes vão no assunto de e-mails enviados a qualquer endereço (remetente compartilhado — D175); a gravação recusa telefone (inclusive com dígitos separados), @, domínios, "zap/whats/insta/arroba/ponto com" e "iFood" disfarçado (NFKC, 0→o, letras fora do alfabeto latino). Prato suspeito vindo da extração chega marcado "confira".
+
+**D293 — Fumaça de produção sem gastar a chave pública** (22/11, IA [C]) ✅
+- Contas E2E em produção usam o modo sem IA; os specs aceitam "sem IA". Motivo: com o teto diário religado, cada deploy do dia 23 comeria o orçamento do avaliador.
+
+**D294 — Landing: ajustes da revisão** (22/11, IA [C]; mantém o título da D278) ✅
+- Linha acima do título nomeia o produto ("Comer Fora no salão · para restaurantes com horário sobrando"); subtítulo diz "benefício na 1ª visita" e "já descontado o custo dos convites"; "Do cardápio ao kit para imprimir em 5 passos"; "Quando você gera o plano da semana" (o agendador nasce desligado); custo: só os convites têm teto (texto da FAQ "Quanto custa?" da D184 atualizado); legenda dos prints: "histórico gerado, com o efeito do convite fixado em +0,2 visita… Não é resultado medido"; no celular, recorte só do cartão de reais. Termos únicos no produto: "teto semanal de convites", "benefício de 1ª visita", plano "Sugerido · esperando sua aprovação".

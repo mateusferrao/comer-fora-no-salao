@@ -8,7 +8,7 @@ import { getFlags } from "@/src/modules/config/application/app-config";
 import { createWaiterToken, revokeWaiterTokens } from "@/src/modules/salao/application/waiter-tokens";
 import { consume } from "@/src/shared/rate-limit";
 import { rejectCrossSite } from "@/src/web/guards";
-import { readJson, tooMany } from "@/src/web/http";
+import { readJson, tooLarge, tooMany } from "@/src/web/http";
 import { requireStore } from "@/src/web/portal-guards";
 import { publicBaseUrl, qrDataUri } from "@/src/web/qr";
 
@@ -22,7 +22,9 @@ export async function POST(req: Request) {
   if (auth instanceof Response) return auth;
   const db = getDb();
   if (!(await getFlags(db)).modo_garcom) return Response.json({ erro: "nao_encontrado" }, { status: 404 });
-  const b = body.safeParse(await readJson(req));
+  const raw = await readJson(req);
+  if (raw.erro === "grande") return tooLarge();
+  const b = body.safeParse(raw.value);
   if (!b.success) return Response.json({ erro: "entrada" }, { status: 400 });
   const now = new Date();
   const lim = await consume(db, `garcom:link:${auth.r.id}`, 20, 3600, now);

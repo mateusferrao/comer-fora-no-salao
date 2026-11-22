@@ -3,7 +3,7 @@ import { getDb } from "@/src/db/client";
 import { confirmCode } from "@/src/modules/salao/application/validate-code";
 import { consume } from "@/src/shared/rate-limit";
 import { rejectCrossSite } from "@/src/web/guards";
-import { readJson, tooMany } from "@/src/web/http";
+import { readJson, tooLarge, tooMany } from "@/src/web/http";
 import { requireStore } from "@/src/web/portal-guards";
 
 export const dynamic = "force-dynamic";
@@ -15,7 +15,9 @@ export async function POST(req: Request) {
   if (blocked) return blocked;
   const auth = await requireStore();
   if (auth instanceof Response) return auth;
-  const body = input.safeParse(await readJson(req));
+  const raw = await readJson(req);
+  if (raw.erro === "grande") return tooLarge();
+  const body = input.safeParse(raw.value);
   if (!body.success) return Response.json({ status: "INVALIDO" }, { status: 400 });
   const db = getDb();
   const now = new Date();

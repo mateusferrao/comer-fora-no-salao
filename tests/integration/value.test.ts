@@ -94,7 +94,7 @@ describe("valor ao dono em R$, metas e 'Hoje no salão' (S5.1)", () => {
     expect(hugoCk).toMatchObject({ kind: "checkin", name: "Hugo Lima", controle: true, outcome: "primeira_visita" });
     expect(convite).toMatchObject({ kind: "convite", name: "Ana Souza", slot: { days: [2, 3, 4], startMin: 900, endMin: 1080 } });
     expect(anaCk).toMatchObject({ kind: "checkin", name: "Ana Souza", controle: false });
-    expect(leitura).toMatchObject({ kind: "leitura", piece: "Display mesa A" });
+    expect(leitura).toMatchObject({ kind: "leitura", piece: "Display de mesa A" });
     expect(new Set(feed.items.map((i) => i.id)).size).toBe(feed.items.length);
     expect(JSON.stringify(feed)).not.toContain("Gerado");
     // Outro dia em SP: vazio.

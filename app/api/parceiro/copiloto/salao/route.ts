@@ -5,7 +5,7 @@ import { readSalonSentence } from "@/src/modules/agente/application/salon-senten
 import { fakeCopilotEnabled, fakeCopilotGateway } from "@/src/modules/agente/adapters/fake-copilot-gateway";
 import { consume } from "@/src/shared/rate-limit";
 import { rejectCrossSite } from "@/src/web/guards";
-import { readJson, tooMany } from "@/src/web/http";
+import { readJson, tooLarge, tooMany } from "@/src/web/http";
 import { requireStore } from "@/src/web/portal-guards";
 
 export const dynamic = "force-dynamic";
@@ -21,7 +21,9 @@ export async function POST(req: Request) {
   if (!(await getFlags(db)).copiloto) return Response.json({ erro: "desligado" }, { status: 404 });
   const auth = await requireStore({ draft: true });
   if (auth instanceof Response) return auth;
-  const parsed = body.safeParse(await readJson(req));
+  const raw = await readJson(req);
+  if (raw.erro === "grande") return tooLarge();
+  const parsed = body.safeParse(raw.value);
   if (!parsed.success) return Response.json({ erro: "formato" }, { status: 400 });
   const now = new Date();
   if (auth.s.owner.via !== "e2e") {

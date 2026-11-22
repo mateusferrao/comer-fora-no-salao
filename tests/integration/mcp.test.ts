@@ -46,6 +46,8 @@ describe("MCP (flag; D219)", () => {
     // Notificação → 202 sem corpo; lote → 400.
     expect((await rpc(token, { jsonrpc: "2.0", method: "notifications/initialized" })).status).toBe(202);
     expect((await rpc(token, [{ jsonrpc: "2.0", id: 1, method: "ping" }])).status).toBe(400);
+    // S9 (segurança M4): corpo declarado acima de 64 KB → 413 antes do token, sem ler o corpo.
+    expect((await rpc(null, { jsonrpc: "2.0", id: 1, method: "ping" }, { "content-length": String(70_000) })).status).toBe(413);
     await revokeTokens(getDb(), VITRINE_ID, NOW);
     expect(await resolveToken(getDb(), token)).toBeNull();
     expect((await rpc(token, { jsonrpc: "2.0", id: 1, method: "ping" })).status).toBe(401);

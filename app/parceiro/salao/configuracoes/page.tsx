@@ -39,11 +39,11 @@ export default async function ConfigPage({ searchParams }: { searchParams: Promi
     <main className="mx-auto flex max-w-5xl flex-col gap-4 px-4 py-6 sm:px-8">
       <header>
         <h1 className="text-2xl font-bold text-ink">Configurações</h1>
-        <p className="mt-1 text-sm text-ink-muted">Tudo o que a IA propôs é editável. Cada mudança vira uma nova versão; convites já emitidos continuam com a oferta e o horário de quando foram emitidos.</p>
+        <p className="mt-1 text-sm text-ink-muted">Tudo o que a IA propôs é editável. Cada mudança vira uma nova versão; convites já entregues continuam com a oferta e o horário de quando foram entregues.</p>
       </header>
       {applied && (
         <p role="status" className="rounded-sm border border-red-text bg-nav-active px-4 py-3 text-sm font-semibold text-ink">
-          ✓ Atualizado pelo assistente: {applied}
+          ✓ Mudança aplicada pelo Assistente do salão: {applied}
         </p>
       )}
       <ConfigManager
@@ -55,7 +55,7 @@ export default async function ConfigPage({ searchParams }: { searchParams: Promi
         notify={notify}
         flags={{ agendador: flags.agendador, resumo_email: flags.resumo_email, plano_agente: flags.plano_agente, aprende: flags.aprende }}
         initialTab={typeof aba === "string" && /^[a-z]{2,20}$/.test(aba) ? aba : "agora"}
-        integrations={mcp ? <AgentSection initial={tokens} endpoint={`${publicBaseUrl()}/api/mcp`} /> : undefined}
+        integrations={mcp ? <AgentSection initial={tokens} endpoint={`${publicBaseUrl()}/api/mcp`} can={{ clientes: flags.mcp_clientes, edicao: flags.mcp_edicao }} /> : undefined}
       />
     </main>
   );

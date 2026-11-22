@@ -41,9 +41,9 @@ test("plano da semana: 'Por que esta oferta?' abre o painel com opções, fatos,
     .first()
     .click();
   const panel = page.getByRole("dialog", { name: "Por que esta oferta?" });
-  await expect(panel.getByRole("heading", { name: /O código separou \d+ opç(ão|ões) para esta faixa/ })).toBeVisible();
-  await expect(panel.getByText("Nota do código: quanto menor o custo perto do ticket médio, maior a nota.")).toBeVisible();
-  await expect(panel.getByRole("heading", { name: /^(A IA escolheu .+|Escolhida pela maior nota do código)$/ })).toBeVisible();
+  await expect(panel.getByRole("heading", { name: /O sistema achou \d+ ofertas? possíve(l|is) para / })).toBeVisible();
+  await expect(panel.getByText("Custo-benefício: quanto menor o custo comparado ao ticket médio, maior o número.")).toBeVisible();
+  await expect(panel.getByRole("heading", { name: /^(A IA escolheu .+|Escolhida pelo melhor custo-benefício)$/ })).toBeVisible();
   await panel.getByText("Como a IA decidiu").click();
   await expect(panel.getByText(/Sem chamada de IA registrada para esta oferta\.|Modelo: .+/)).toBeVisible();
   await axe(page);

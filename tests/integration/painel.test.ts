@@ -73,8 +73,20 @@ describe("painel do dono (S3 §4.2) na vitrine semeada", () => {
     const [r] = await q(sql`select id from restaurants where slug = ${E2E_SLUG}`);
     const d = (await getDashboard(getDb(), String(r!.id), NOW))!;
     expect(d.metric.inc.state).toBe("amostra_insuficiente");
-    expect(d.metric.missingHoldout).toBe(30);
+    // A13: conta os dois grupos (sem clientes ainda, faltam 30 em cada).
+    expect(d.metric.missing).toEqual({ controle: 30, convidados: 30 });
     expect(d.metric.margin).toBeNull();
+  });
+
+  it("'Ver minha página' abre pelo QR do display A em uso, como o cliente chega (A9)", async () => {
+    const d = (await getDashboard(getDb(), VITRINE_ID, NOW))!;
+    const [v] = await q(sql`select r.slug, pv.qr_token from piece_variants pv join kit_pieces kp on kp.id = pv.piece_id join restaurants r on r.id = pv.restaurant_id
+                            where pv.restaurant_id = ${VITRINE_ID} and kp.kind = 'display' and pv.label = 'A' and pv.retired_at is null`);
+    expect(d.customerPath).toBe(`/r/${String(v!.slug)}?p=${String(v!.qr_token)}`);
+    // Sem display de mesa (kit não gerado): a página sem peça.
+    const [r] = await q(sql`select id from restaurants where slug = ${E2E_SLUG}`);
+    await getDb().execute(sql`delete from kit_pieces where restaurant_id = ${String(r!.id)} and kind = 'display'`);
+    expect((await getDashboard(getDb(), String(r!.id), NOW))!.customerPath).toBe(`/r/${E2E_SLUG}`);
   });
 
   it("segmentos: contagens coerentes, frequentes separados e contato completo fictício no exemplo (D237)", async () => {

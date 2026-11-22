@@ -23,7 +23,7 @@ export function RecentCheckins({ list }: { list: RecentCheckin[] }) {
               <span className="font-medium text-ink">{c.name}</span>
               <span className="text-ink-muted">{c.firstVisit ? "1ª visita" : "volta"}</span>
               {c.validated && <span className="text-ink-muted">· código validado</span>}
-              {c.controle && <span className="rounded-xs bg-surface-muted px-1.5 py-0.5 text-xs text-ink">grupo de controle · sem convite (mede o efeito)</span>}
+              {c.controle && <span className="rounded-xs bg-surface-muted px-1.5 py-0.5 text-xs text-ink">grupo sem convite (para comparar)</span>}
             </li>
           ))}
         </ul>

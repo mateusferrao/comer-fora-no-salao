@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { restaurantFromStopToken } from "@/src/modules/planos/application/digest";
 import { StopDigest } from "./StopDigest";
 
@@ -15,7 +16,17 @@ export default async function StopDigestPage({ searchParams }: { searchParams: P
     <main className="mx-auto flex min-h-[calc(100dvh-3rem)] max-w-md flex-col items-center justify-center gap-4 px-4 py-10 text-center">
       <h1 className="text-2xl font-bold text-ink">Parar o resumo semanal por e-mail</h1>
       <p className="text-sm text-ink-muted">O plano da semana continua no Portal. Você pode religar o resumo em Configurações › Avisos e automação.</p>
-      {valid ? <StopDigest token={token} /> : <p className="text-base text-ink">Este link não vale. Desligue o resumo em Configurações › Avisos e automação.</p>}
+      {valid ? (
+        <StopDigest token={token} />
+      ) : (
+        <p className="text-base text-ink">
+          Este link não vale mais. Desligue o resumo no Portal, em{" "}
+          <Link className="font-semibold text-red-text underline" href="/parceiro/salao/configuracoes?aba=avisos">
+            Configurações › Avisos e automação
+          </Link>
+          .
+        </p>
+      )}
     </main>
   );
 }

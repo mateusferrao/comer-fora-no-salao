@@ -8,10 +8,11 @@ export function RulesSheet({ open, onClose, restaurantName }: { open: boolean; o
   const rules = [
     "Cada check-in gera 1 selo",
     "Limitado a 1 check-in por dia",
-    "Após primeiro check-in, a cartela vence em 90 dias",
-    "Cada cartela gera 1 recompensa",
-    `Recompensas válidas apenas pra consumo no local, na unidade ${restaurantName}`,
+    "A cartela vale 90 dias a partir do 1º selo",
+    "Com 6 selos, a cartela completa vale 1 recompensa",
+    `Benefícios e recompensas valem só para consumo no local, no restaurante ${restaurantName}`,
     "O benefício de 1ª visita vale 1 vez por cliente, em qualquer horário de funcionamento",
+    "Cada código do benefício vale só no dia do check-in",
     "Benefícios e recompensas valem depois que o garçom confirma o código",
   ];
   return (
@@ -28,7 +29,8 @@ export function RulesSheet({ open, onClose, restaurantName }: { open: boolean; o
       <div className="text-left">
         <h3 className="text-base font-semibold">Como usar</h3>
         <ul className="mt-3 list-disc space-y-2 pl-5 text-sm text-ink-muted marker:text-ink">
-          <li>Você terá que fazer check-in depois</li>
+          <li>Toque em Fazer check-in e entre com seu e-mail</li>
+          <li>Mostre ao garçom o código do benefício que aparece na tela</li>
         </ul>
         <h3 className="mt-6 text-base font-semibold">Regras</h3>
         <ul className="mt-3 list-disc space-y-2 pl-5 text-sm text-ink-muted marker:text-ink">

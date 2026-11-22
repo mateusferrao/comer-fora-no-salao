@@ -6,7 +6,7 @@ import { fakeCopilotEnabled, fakeCopilotGateway } from "@/src/modules/agente/ada
 import { keyKindFor } from "@/src/modules/ia/gateway-factory";
 import { consume } from "@/src/shared/rate-limit";
 import { rejectCrossSite } from "@/src/web/guards";
-import { readJson, tooMany } from "@/src/web/http";
+import { readJson, tooLarge, tooMany } from "@/src/web/http";
 import { requireStore } from "@/src/web/portal-guards";
 
 export const dynamic = "force-dynamic";
@@ -26,7 +26,9 @@ export async function POST(req: Request) {
   if (!(await getFlags(db)).copiloto) return Response.json({ erro: "desligado" }, { status: 404 });
   const auth = await requireStore();
   if (auth instanceof Response) return auth;
-  const parsed = body.safeParse(await readJson(req));
+  const raw = await readJson(req);
+  if (raw.erro === "grande") return tooLarge();
+  const parsed = body.safeParse(raw.value);
   if (!parsed.success || parsed.data.turns.at(-1)!.role !== "user") return Response.json({ erro: "formato" }, { status: 400 });
   const now = new Date();
   const o = auth.s.owner;

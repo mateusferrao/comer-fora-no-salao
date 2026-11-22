@@ -38,7 +38,7 @@ export function vitrineSpec(activatedAt: Date, o: VitrineOptions = {}): Restaura
       "Cantina de bairro com massas frescas, pizzas de fermentação longa e sobremesas da casa.",
     address: "Rua Nonna Lucia, 120 – São Paulo – SP",
     heroImage: "/fotos/salao.jpg",
-    recado: "Massa fresca feita todo dia. Boa visita!",
+    recado: "Massa fresca feita todo dia.",
     protected: !o.copy,
     activatedAt,
     menu: [
@@ -73,14 +73,14 @@ export function vitrineSpec(activatedAt: Date, o: VitrineOptions = {}): Restaura
       {
         kind: "display",
         variants: [
-          { label: "A", token: tok("nl-display-a"), texts: { titulo: "Ganhe um doce no seu check-in" } },
-          { label: "B", token: tok("nl-display-b"), texts: { titulo: "Fez check-in, ganhou sobremesa" } },
+          { label: "A", token: tok("nl-display-a"), texts: { titulo: "Ganhe um doce no seu 1º check-in" } },
+          { label: "B", token: tok("nl-display-b"), texts: { titulo: "Na 1ª visita, a sobremesa é por conta da casa" } },
         ],
       },
       {
         kind: "cartaz",
         variants: [
-          { label: "A", token: tok("nl-cartaz-a"), texts: { titulo: "Faça check-in e ganhe um doce" } },
+          { label: "A", token: tok("nl-cartaz-a"), texts: { titulo: "Na 1ª visita, faça check-in e ganhe um doce" } },
           { label: "B", token: tok("nl-cartaz-b"), texts: { titulo: "Sobremesa por conta da casa no 1º check-in" } },
         ],
       },

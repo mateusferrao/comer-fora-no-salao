@@ -39,7 +39,7 @@ export function KitPiece({ kind, restaurantName, texts, qrSrc, versionLabel }: {
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src="/logo-ifood.svg" alt="iFood" style={{ height: mm(s.name * 0.9) }} />
         <span className="text-ink-muted">
-          Comer Fora · versão {versionLabel} · <span data-testid="rodape-prototipo">Protótipo de case · não é produto oficial do iFood</span>
+          Comer Fora · {versionLabel} · <span data-testid="rodape-prototipo">Protótipo de case · não é produto oficial do iFood</span>
         </span>
       </div>
     </div>
@@ -60,7 +60,8 @@ export function WaiterCard({ restaurantName, frase }: { restaurantName: string; 
         {frase}
       </p>
       <p className="mt-auto text-ink-muted" style={{ fontSize: "3mm" }}>
-        Validar: Portal do Parceiro › Comer Fora no salão › Validar código
+        {/* Com o link do garçom ligado, a frase já aponta para ele (waiterPhrase); o rodapé acompanha (S9). */}
+        {frase.includes("link do garçom") ? "Validar: abra o link do garçom no celular" : "Validar: Portal do Parceiro › Comer Fora no Salão › Validar código"}
       </p>
     </div>
   );

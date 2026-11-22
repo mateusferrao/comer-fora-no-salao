@@ -4,7 +4,7 @@ import { getFlags } from "@/src/modules/config/application/app-config";
 import { decideProposal } from "@/src/modules/agente/application/proposals";
 import { consume } from "@/src/shared/rate-limit";
 import { rejectCrossSite } from "@/src/web/guards";
-import { readJson, tooMany } from "@/src/web/http";
+import { readJson, tooLarge, tooMany } from "@/src/web/http";
 import { requireStore } from "@/src/web/portal-guards";
 import { scheduleInviteEmails } from "@/src/web/invite-emails";
 
@@ -20,7 +20,9 @@ export async function POST(req: Request) {
   if (!(await getFlags(db)).copiloto) return Response.json({ erro: "desligado" }, { status: 404 });
   const auth = await requireStore();
   if (auth instanceof Response) return auth;
-  const parsed = body.safeParse(await readJson(req));
+  const raw = await readJson(req);
+  if (raw.erro === "grande") return tooLarge();
+  const parsed = body.safeParse(raw.value);
   if (!parsed.success) return Response.json({ erro: "formato" }, { status: 400 });
   const now = new Date();
   const lim = await consume(db, `copiloto:aplicar:${auth.r.id}`, 60, 3600, now);

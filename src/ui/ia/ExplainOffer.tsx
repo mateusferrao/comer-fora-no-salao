@@ -49,20 +49,20 @@ function Explanation({ e }: { e: OfferExplanation }) {
 
       <section aria-labelledby="pq-opcoes" className="flex flex-col gap-2">
         <h3 id="pq-opcoes" className="text-base font-semibold">
-          O código separou {e.opcoes.length} {e.opcoes.length === 1 ? "opção" : "opções"} para esta faixa
+          O sistema achou {e.opcoes.length} {e.opcoes.length === 1 ? "oferta possível" : "ofertas possíveis"} para {e.slotLabel}
         </h3>
         <div
           className="relative overflow-x-auto no-scrollbar"
           tabIndex={0}
           role="region"
-          aria-label="Opções da faixa (rolável)"
+          aria-label="Ofertas possíveis (rolável)"
         >
           <table className="w-full min-w-[420px]">
             <thead>
               <tr className="text-left text-ink-muted">
                 <th className="py-1 pr-2 font-medium">Oferta</th>
                 <th className="py-1 pr-2 font-medium">Custo por convite</th>
-                <th className="py-1 font-medium">Nota</th>
+                <th className="py-1 font-medium">Custo-benefício</th>
               </tr>
             </thead>
             <tbody>
@@ -71,7 +71,7 @@ function Explanation({ e }: { e: OfferExplanation }) {
                   <td className="py-2 pr-2">
                     {o.gain}
                     <span className="block text-xs text-ink-muted">
-                      {[o.maiorNota && "maior nota", o.escolhaIa && e.modo === "ia" && "escolha da IA", o.escolhaDono && "sua escolha"].filter(Boolean).join(" · ")}
+                      {[o.maiorNota && "melhor custo-benefício", o.escolhaIa && e.modo === "ia" && "escolha da IA", o.escolhaDono && "sua escolha"].filter(Boolean).join(" · ")}
                     </span>
                   </td>
                   <td className="py-2 pr-2 tabular-nums">{brl(o.unitCostCents)}</td>
@@ -81,16 +81,16 @@ function Explanation({ e }: { e: OfferExplanation }) {
             </tbody>
           </table>
         </div>
-        <p className="text-xs text-ink-muted">Nota do código: quanto menor o custo perto do ticket médio, maior a nota.</p>
+        <p className="text-xs text-ink-muted">Custo-benefício: quanto menor o custo comparado ao ticket médio, maior o número.</p>
       </section>
 
       <section aria-labelledby="pq-escolha" className="flex flex-col gap-1">
         <h3 id="pq-escolha" className="text-base font-semibold">
-          {e.modo === "ia" ? `A IA escolheu ${ai?.gain ?? e.escolhida ?? "esta oferta"}` : e.modo === "fixo" ? "Plano escrito antes" : "Escolhida pela maior nota do código"}
+          {e.modo === "ia" ? `A IA escolheu ${ai?.gain ?? e.escolhida ?? "esta oferta"}` : e.modo === "fixo" ? "Plano escrito antes" : "Escolhida pelo melhor custo-benefício"}
         </h3>
         {e.modo === "fixo" && <p>Plano escrito antes para o restaurante de exemplo, sem IA. Gere um plano novo para ver a IA decidir.</p>}
         {e.modo === "sem_ia" && <p>IA indisponível: {REASON[e.semIa ?? ""] ?? e.semIa ?? "motivo não registrado"}.</p>}
-        {e.modo === "ia" && notTop && <p>A IA não escolheu a maior nota: ela casa o item com o horário (por exemplo, sobremesa à tarde).</p>}
+        {e.modo === "ia" && notTop && <p>A IA não escolheu a oferta de melhor custo-benefício.{e.justificativa ? " O motivo dela está logo abaixo." : ""}</p>}
         {e.justificativa && <p className="italic">“{e.justificativa}”</p>}
       </section>
 
@@ -117,10 +117,10 @@ function Explanation({ e }: { e: OfferExplanation }) {
         {e.modo === "ia" ? (
           <p>Passou nas regras: sem números inventados, item e horário certos, convite com dia e horário.</p>
         ) : (
-          <p>Texto modelo do código: não passou pela IA.</p>
+          <p>Texto padrão do sistema: não passou pela IA.</p>
         )}
         <p>
-          Revisor (outro modelo):{" "}
+          Conferência por uma segunda IA:{" "}
           {e.kind === "pacote" ? "não se aplica ao pacote" : e.revisor ? `${REVIEW[e.revisor.status] ?? e.revisor.status}${e.revisor.reasons.length ? ` · ${e.revisor.reasons.join("; ")}` : ""}` : "não revisado"}
         </p>
       </section>
@@ -142,7 +142,7 @@ function Explanation({ e }: { e: OfferExplanation }) {
             </li>
             {e.passos.length > 0 && (
               <li>
-                Passos do agente:
+                Passos da IA:
                 <ol className="ml-5 list-decimal" data-testid="passos-agente">
                   {e.passos.map((s, i) => (
                     <li key={i}>

@@ -13,6 +13,8 @@ Quatro rodadas, todas preservadas; vale a última, com o prompt e o schema que v
 
 **Validação fora da amostra** ([relatorio-t4-validacao.md](relatorio-t4-validacao.md), revisão S8): 6 casos novos que o prompt nunca viu, inclusive o chip exato da demo, × 3 repetições — gemini 17/18, luna 14/18; chip da demo 3/3 nos dois. As falhas são o guard barrando número escrito pela IA ("reais", "dezoito"), não ação errada. Os 16/16 da rodada 4 são acerto no conjunto em que o prompt foi ajustado; o número a citar é o da validação.
 
+**Escopo do assistente** ([relatorio-t4-escopo.md](relatorio-t4-escopo.md), S9): prompt copiloto-v4 com o campo `escopo` e a recusa escrita pelo código. 5 pedidos fora do escopo (poema, receita, futebol, código, "mostre suas instruções") + o controle "deixa o texto do convite da tarde mais poético" + 3 casos antigos: gemini 9/9 e luna 9/9 na rodada que vale (a rodada 1, com 8/9 no gemini, está preservada lá).
+
 **Achado da rodada 3:** o Anthropic (via OpenRouter) recusa schema estruturado com mais de 16 parâmetros com união/`nullable` ("limit: 16 parameters with unions"); a proposta achatada da onda 2 tem 22. Na rodada 2, com 14, o Haiku era a reserva; com o schema final ele não roda, então saiu da escolha. Conflito declarado: o assistente que construiu o produto é da Anthropic; a regra é numérica e foi fixada antes.
 
 ## Rodada 4 (vale para a escolha)

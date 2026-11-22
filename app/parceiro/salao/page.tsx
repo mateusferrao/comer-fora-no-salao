@@ -39,7 +39,7 @@ export default async function VisaoGeralPage() {
       <header className="flex flex-col gap-1">
         <h1 className="text-2xl font-bold text-ink">Visão geral</h1>
         <p className="text-sm text-ink-muted">
-          {cur ? `${cur.name} · ` : ""}Seu salão cheio divulga seu horário vazio.
+          {cur ? `${cur.name} · ` : ""}Quem voltou com convite e quanto isso rendeu.
         </p>
         {cur?.copiedFrom && (
           <p className="text-sm text-ink-muted">
@@ -52,10 +52,10 @@ export default async function VisaoGeralPage() {
         )}
         {cur && (cur.status === "ativo" || cur.copiedFrom) && (
           <p className="text-sm">
-            <a className="text-red-text underline" href={`/r/${cur.slug}`} target="_blank" rel="noreferrer">
+            <a className="text-red-text underline" href={dash?.customerPath ?? `/r/${cur.slug}`} target="_blank" rel="noreferrer">
               Ver minha página
             </a>{" "}
-            <span className="text-ink-muted">(como o cliente vê; abre em nova aba)</span>
+            <span className="text-ink-muted">{dash?.customerPath.includes("?p=") ? "(como o cliente que lê o QR do display de mesa; abre em nova aba)" : "(como o cliente vê; abre em nova aba)"}</span>
           </p>
         )}
         {offSince && (
@@ -80,7 +80,7 @@ export default async function VisaoGeralPage() {
         </section>
       )}
 
-      {steps && cur && <FirstSteps steps={steps} slug={cur.slug} />}
+      {steps && cur && <FirstSteps steps={steps} customerPath={dash?.customerPath ?? `/r/${cur.slug}`} />}
       {dash && <Dashboard key={`${cur?.id}:${dash.restaurant.simulated}`} initial={dash} />}
       {ops && flags && <Operations view={ops} showAb={flags.ab} showAlerts={flags.insight_operacao} />}
 

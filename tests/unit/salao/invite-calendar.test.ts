@@ -75,7 +75,7 @@ describe("inviteIcs (RFC 5545, 1 evento — D169)", () => {
       .split("\r\n")
       .find((l) => l.startsWith("DESCRIPTION:"))!;
     expect(desc).toContain(
-      "Chegando ao restaurante\\, faça check-in no app e mostre ao garçom o código do benefício.",
+      "Ao chegar\\, faça check-in e mostre ao garçom o código do benefício.",
     );
     expect(desc).toContain("https://exemplo.invalid/app/jornada");
     expect(ics).not.toContain("�");

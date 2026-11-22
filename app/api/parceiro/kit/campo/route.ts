@@ -5,7 +5,7 @@ import { editVersionField, newKitVersion, promoteWinner, regenerateField } from 
 import { getFlags } from "@/src/modules/config/application/app-config";
 import { VERSION_FIELDS } from "@/src/modules/kit/domain/templates";
 import { rejectCrossSite } from "@/src/web/guards";
-import { readJson, tooMany } from "@/src/web/http";
+import { readJson, tooLarge, tooMany } from "@/src/web/http";
 import { requireStore } from "@/src/web/portal-guards";
 
 export const dynamic = "force-dynamic";
@@ -19,7 +19,9 @@ export async function PUT(req: Request) {
   if (blocked) return blocked;
   const auth = await requireStore();
   if (auth instanceof Response) return auth;
-  const body = target.extend({ value: z.string().max(200) }).safeParse(await readJson(req));
+  const raw = await readJson(req);
+  if (raw.erro === "grande") return tooLarge();
+  const body = target.extend({ value: z.string().max(200) }).safeParse(raw.value);
   if (!body.success) return Response.json({ erro: "formato" }, { status: 400 });
   const r = await editVersionField(getDb(), { restaurantId: auth.r.id, ...body.data, now: new Date() });
   return r.ok ? Response.json(r) : Response.json(r, { status: r.erro === "texto" ? 422 : r.erro === "travado" ? 409 : 404 });
@@ -31,7 +33,9 @@ export async function PATCH(req: Request) {
   if (blocked) return blocked;
   const auth = await requireStore();
   if (auth instanceof Response) return auth;
-  const body = z.union([z.object({ label: z.enum(["A", "B"]) }), z.object({ promover: z.enum(["display", "cartaz"]) })]).safeParse(await readJson(req));
+  const raw = await readJson(req);
+  if (raw.erro === "grande") return tooLarge();
+  const body = z.union([z.object({ label: z.enum(["A", "B"]) }), z.object({ promover: z.enum(["display", "cartaz"]) })]).safeParse(raw.value);
   if (!body.success) return Response.json({ erro: "formato" }, { status: 400 });
   if ("promover" in body.data) {
     if (!(await getFlags(getDb())).ab) return Response.json({ erro: "desligado" }, { status: 404 });
@@ -48,7 +52,9 @@ export async function POST(req: Request) {
   if (blocked) return blocked;
   const auth = await requireStore();
   if (auth instanceof Response) return auth;
-  const body = target.safeParse(await readJson(req));
+  const raw = await readJson(req);
+  if (raw.erro === "grande") return tooLarge();
+  const body = target.safeParse(raw.value);
   if (!body.success) return Response.json({ erro: "formato" }, { status: 400 });
   const r = await regenerateField(getDb(), { restaurantId: auth.r.id, ownerId: auth.s.owner.id, ...body.data, now: new Date(), schedule: (fn) => after(fn) });
   if (!r.ok) return r.erro === "limite" ? tooMany(r.retryAfterSec) : Response.json(r, { status: r.erro === "travado" ? 409 : 404 });

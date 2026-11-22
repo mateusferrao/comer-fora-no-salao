@@ -149,6 +149,14 @@ jobs:
           EXPECTED_SHA: ${{ steps.prod.outputs.sha }}
           # D123: libera o login dos e-mails de teste e2e-dono+N@exemplo.invalid (sem envio).
           E2E_LOGIN_TOKEN: ${{ secrets.E2E_LOGIN_TOKEN }}
-          # Flags da S5/S6 ligadas em produção (21/11): as asserções seguem o estado de produção.
+          # Flags da S5/S6/S8 ligadas em produção (21/11): as asserções seguem o estado de produção.
           E2E_FLAGS: "on"
-        run: npx playwright test tests/e2e/fumaca.spec.ts tests/e2e/cliente.spec.ts tests/e2e/dono.spec.ts tests/e2e/painel.spec.ts tests/e2e/volta.spec.ts tests/e2e/entrada.spec.ts tests/e2e/apresentacao.spec.ts --trace off
+        # S9 (revisão de requisitos A4): também os `*.on.spec.ts` feitos para rodar em produção com E2E_FLAGS=on
+        # (topo em R$, garçom, resumo, conversão, "Por que esta oferta?", porta-conta, MCP). Rodam na passada
+        # `flags-on`, depois das de sempre; o `flags.setup.ts` não grava nada em produção.
+        run: >-
+          npx playwright test --trace off
+          tests/e2e/fumaca.spec.ts tests/e2e/cliente.spec.ts tests/e2e/dono.spec.ts tests/e2e/painel.spec.ts
+          tests/e2e/volta.spec.ts tests/e2e/entrada.spec.ts tests/e2e/apresentacao.spec.ts
+          tests/e2e/painel.on.spec.ts tests/e2e/garcom.on.spec.ts tests/e2e/resumo.on.spec.ts tests/e2e/conversao.on.spec.ts
+          tests/e2e/explicar.on.spec.ts tests/e2e/porta-conta.on.spec.ts tests/e2e/agente.on.spec.ts

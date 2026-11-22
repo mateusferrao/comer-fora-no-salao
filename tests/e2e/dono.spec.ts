@@ -42,19 +42,23 @@ test("conta nova ganha a própria vitrine (60 dias): check-in de cliente nela e 
   await page.goto("/parceiro/salao");
   await waitExampleReady(page);
   await expect(page.getByText("Restaurante de exemplo · histórico gerado")).toBeVisible();
-  const href = (await page.getByRole("link", { name: "Ver minha página" }).getAttribute("href"))!;
+  // A9: o link abre a página como o cliente chega, pelo QR do display A (`?p=<token>`).
+  const link = new URL((await page.getByRole("link", { name: "Ver minha página" }).getAttribute("href"))!, "http://x");
+  const href = link.pathname;
   expect(href).toMatch(/^\/r\/cantina-nonna-lucia-[a-z2-9]{6}$/);
+  const p = link.searchParams.get("p");
+  expect(p).toBeTruthy();
   const ctx = await page.context().browser()!.newContext();
   await loginCustomer(ctx.request, `/api${href}`, "Dani Teste");
-  const ck = await ctx.request.post(`/api${href}/checkin`, { data: { gpsStatus: "negado", idempotencyKey: crypto.randomUUID() } });
+  const ck = await ctx.request.post(`/api${href}/checkin`, { data: { gpsStatus: "negado", idempotencyKey: crypto.randomUUID(), p } });
   const code = ((await ck.json()) as { codes: Array<{ code: string; type: string }> }).codes.find((c) => c.type === "primeira_visita")!.code;
   await ctx.close();
   await page.goto("/parceiro/salao/validar");
-  await page.getByLabel("Código do cliente").fill(code);
-  await page.getByRole("button", { name: "Consultar" }).click();
+  await page.getByLabel("Código do benefício").fill(code);
+  await page.getByRole("button", { name: "Conferir código" }).click();
   await expect(page.getByRole("region", { name: "Código encontrado" })).toContainText("Dani Teste");
-  await page.getByRole("button", { name: "Confirmar" }).click();
-  await expect(page.getByText(/Código validado ✓/)).toBeVisible();
+  await page.getByRole("button", { name: "Confirmar e entregar" }).click();
+  await expect(page.getByText(/Confirmado às \d{2}:\d{2}\. Pode entregar:/)).toBeVisible();
 });
 
 test("isolamento: a conta 2 não abre nem valida nada da conta 1", async ({ page, browser }) => {
@@ -142,7 +146,7 @@ test("assistente completo com exemplo: salão pré-preenchido → revisão → p
   await axe(page);
   await page.keyboard.press("Escape");
   await expect(panel).toBeHidden();
-  await page.getByLabel("Teto de convites por semana").first().fill("10");
+  await page.getByLabel("Teto semanal de convites").first().fill("10");
   await expect(page.getByText(/até 10 convites\/semana ≈ 3 mesas/)).toBeVisible();
   // D244: texto apagado → mensagem no campo, na hora; "Revisar e ativar" não sai do passo e leva o foco ao campo.
   const texto = page.getByRole("textbox", { name: /Texto do convite/ }).first();
@@ -162,7 +166,7 @@ test("assistente completo com exemplo: salão pré-preenchido → revisão → p
   await expect(page.getByRole("region", { name: /Prévia do convite · / }).first().getByTestId("invite-message")).toBeVisible();
   await axe(page);
   await page.getByRole("button", { name: "Ativar Comer Fora no salão" }).click();
-  await expect(page.getByRole("heading", { name: "Comer Fora no salão ativo!" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Comer Fora no salão ativado" })).toBeVisible();
   const slug = (await page.getByRole("link", { name: "Ver minha página" }).getAttribute("href"))!.replace("/r/", "");
 
   // Kit: gerado depois da ativação (sem IA no CI/local), aprovar, "no salão", impressão com QR.
@@ -174,7 +178,7 @@ test("assistente completo com exemplo: salão pré-preenchido → revisão → p
   await display.getByRole("button", { name: "Aprovar peça" }).click();
   await display.getByRole("switch", { name: "Está no salão" }).click();
   await expect(display.getByText("No salão")).toBeVisible();
-  const qrHref = await display.getByRole("link", { name: "Abrir este QR" }).first().getAttribute("href");
+  const qrHref = await display.getByRole("link", { name: "Testar este QR como cliente" }).first().getAttribute("href");
   expect(qrHref).toMatch(new RegExp(`^/r/${slug}\\?p=`));
   await display.getByRole("link", { name: "Imprimir versão A" }).click();
   await expect(page.getByRole("img", { name: "QR da versão A" })).toBeVisible();
@@ -189,7 +193,8 @@ test("assistente completo com exemplo: salão pré-preenchido → revisão → p
     const ck = await req.post(`/api/r/${slug}/checkin`, { data: { gpsStatus: "negado", idempotencyKey: crypto.randomUUID() } });
     const j = (await ck.json()) as { invite: { message: string | null } | null; codes: Array<{ code: string; type: string }> };
     if (j.invite) {
-      expect(j.invite.message).toMatch(/aproveite|.+/);
+      // S9: o texto que só repete o cabeçalho do convite ("Volte {horario} e aproveite {oferta}") sai da tela (null).
+      expect(j.invite.message === null || j.invite.message.length > 0).toBe(true);
       code = j.codes.find((c) => c.type === "primeira_visita")!.code;
     }
     await ctx.close();
@@ -198,21 +203,21 @@ test("assistente completo com exemplo: salão pré-preenchido → revisão → p
 
   // Garçom valida no Portal.
   await page.goto("/parceiro/salao/validar");
-  await page.getByLabel("Código do cliente").fill(code);
-  await page.getByRole("button", { name: "Consultar" }).click();
+  await page.getByLabel("Código do benefício").fill(code);
+  await page.getByRole("button", { name: "Conferir código" }).click();
   const found = page.getByRole("region", { name: "Código encontrado" });
   await expect(found).toContainText("1ª visita");
   await expect(found).toContainText("Bia Teste");
   await axe(page);
-  await found.getByRole("button", { name: "Confirmar" }).click();
-  await expect(page.getByText(/Código validado ✓ às \d{2}:\d{2}/)).toBeVisible();
+  await found.getByRole("button", { name: "Confirmar e entregar" }).click();
+  await expect(page.getByText(/Confirmado às \d{2}:\d{2}\. Pode entregar:/)).toBeVisible();
   await page.getByRole("button", { name: "Validar outro código" }).click();
-  await page.getByLabel("Código do cliente").fill(code);
-  await page.getByRole("button", { name: "Consultar" }).click();
+  await page.getByLabel("Código do benefício").fill(code);
+  await page.getByRole("button", { name: "Conferir código" }).click();
   await expect(page.getByText(/Este código já foi usado às/)).toBeVisible();
   await page.getByRole("button", { name: "Validar outro código" }).click();
-  await page.getByLabel("Código do cliente").fill("ZZZZZZ");
-  await page.getByRole("button", { name: "Consultar" }).click();
+  await page.getByLabel("Código do benefício").fill("ZZZZZZ");
+  await page.getByRole("button", { name: "Conferir código" }).click();
   await expect(page.getByText("Código não encontrado. Confira as letras e números com o cliente.")).toBeVisible();
 });
 
@@ -256,10 +261,10 @@ test("restaurante cadastrado: Primeiros passos no lugar do roteiro de teste; nad
 });
 
 /**
- * D256: "+ Nova loja" no seletor (o card "Cadastre outro restaurante" saiu da Visão geral), logo do iFood leva à Visão
+ * D256: "+ Novo restaurante" no seletor (o card "Cadastre outro restaurante" saiu da Visão geral), logo do iFood leva à Visão
  * geral e, no celular, o rodapé da gaveta (usuário logado e Sair) fica preso embaixo. Conta própria (e2e-dono+37).
  */
-test("Portal: + Nova loja no seletor, logo leva à Visão geral e rodapé da gaveta no celular", async ({ page }) => {
+test("Portal: + Novo restaurante no seletor, logo leva à Visão geral e rodapé da gaveta no celular", async ({ page }) => {
   test.setTimeout(180_000);
   await loginE2E(page.request, 37);
   await page.goto("/parceiro/salao");
@@ -267,13 +272,13 @@ test("Portal: + Nova loja no seletor, logo leva à Visão geral e rodapé da gav
   for (const id of await storeIds(page)) await page.request.delete("/api/parceiro/restaurantes", { data: { restaurantId: id } });
   await page.reload();
   await waitExampleReady(page);
-  // 1º cadastro: botão na Visão geral. Depois, só "+ Nova loja" no seletor.
+  // 1º cadastro: botão na Visão geral. Depois, só "+ Novo restaurante" no seletor.
   await page.getByRole("button", { name: "Cadastrar meu restaurante" }).click();
   await expect(page).toHaveURL(/\/parceiro\/salao\/ativar/);
   await page.getByRole("link", { name: "iFood · ir para a Visão geral" }).first().click();
   await expect(page.getByRole("heading", { name: "Visão geral", level: 1 })).toBeVisible();
   await expect(page.getByRole("heading", { name: /Cadastre (o seu|outro) restaurante/ })).toHaveCount(0);
-  await pickOption(page, "Trocar loja", /Nova loja/);
+  await pickOption(page, "Trocar restaurante", /Novo restaurante/);
   await expect(page).toHaveURL(/\/parceiro\/salao\/ativar/);
   // Celular: gaveta com o rodapé visível embaixo.
   await page.setViewportSize({ width: 390, height: 844 });

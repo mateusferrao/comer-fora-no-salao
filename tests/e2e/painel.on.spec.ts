@@ -22,9 +22,11 @@ for (const width of [1280, 390]) {
     await openCopy(page);
     const top = page.getByTestId("valor-topo");
     await expect(top).toHaveAttribute("data-kind", "causal_positivo");
-    await expect(top).toContainText(/R\$\s?[\d.]+ a mais em margem entre [\d.]+ convidados até agora/);
+    await expect(top).toContainText("Quanto os convites renderam");
+    await expect(top).toContainText(/R\$\s?[\d.]+ de margem a mais/);
+    await expect(top).toContainText("Já descontado o custo dos convites");
     await expect(page.getByRole("heading", { name: "Metas desta semana" })).toBeVisible();
-    await expect(page.getByTestId("metas").getByRole("progressbar").first()).toHaveAttribute("aria-label", /mesas? a mais por semana/);
+    await expect(page.getByTestId("metas").getByRole("progressbar").first()).toHaveAttribute("aria-label", /mesas? com convite nesta semana/);
     // A métrica em visitas continua, abaixo.
     await expect(page.getByTestId("metric-state")).toHaveAttribute("data-state", "positivo");
     await axe(page);
@@ -36,13 +38,13 @@ test("check-in de um cliente aparece em 'Hoje no salão' em até 5 s", async ({ 
   await openCopy(page);
   await expect(page.getByRole("heading", { name: "Hoje no salão" })).toBeVisible();
   await expect(page.getByRole("heading", { name: "Últimos check-ins de hoje" })).toHaveCount(0);
-  const href = (await page.getByRole("link", { name: "Ver minha página" }).getAttribute("href"))!;
+  const href = (await page.getByRole("link", { name: "Ver minha página" }).getAttribute("href"))!.split("?")[0]!; // A9: sem o `?p=` do display
   const ctx = await browser.newContext();
   await loginCustomer(ctx.request, `/api${href}`, "Lia Moraes");
   const ck = await ctx.request.post(`/api${href}/checkin`, { data: { gpsStatus: "negado", idempotencyKey: crypto.randomUUID() } });
   expect(ck.ok()).toBe(true);
   await ctx.close();
   await expect(page.getByTestId("hoje-no-salao")).toContainText("Lia Moraes fez check-in", { timeout: 5_000 });
-  await expect(page.getByTestId("hoje-contagens")).toContainText(/Hoje: \d+ leituras? · [1-9]\d* check-ins/);
+  await expect(page.getByTestId("hoje-contagens")).toContainText(/Hoje: \d+ leituras? · [1-9]\d* check-ins?/);
   await axe(page);
 });
