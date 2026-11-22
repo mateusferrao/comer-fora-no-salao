@@ -3,7 +3,6 @@
  * (`restaurants.onboarding_step`) e com entrada/conclusão de cada passo registrada (abandono — H5).
  */
 import { slugify } from "@/src/shared/slug";
-import { mentionsIfood } from "@/src/shared/brand";
 import { randomSuffix } from "@/src/shared/random";
 import { and, eq, inArray, notInArray } from "drizzle-orm";
 import { z } from "zod";
@@ -13,6 +12,7 @@ import { idleSlots, kitPieces, menuExtractions, menuItems, menus, onboardingEven
 import { MENU_CATEGORIES } from "@/src/modules/beneficios/domain/menu";
 import { INTENSITIES, openingBlockSchema, validateSlot, type SlotError } from "@/src/modules/beneficios/domain/slots";
 import { cleanItemName, PRICE_BANDS } from "../domain/menu-extraction";
+import { dishNameProblem, restaurantNameProblem } from "../domain/safe-name";
 
 export async function recordStep(ex: Executor, restaurantId: string, step: number, event: "entrou" | "concluiu", now: Date): Promise<void> {
   await ex.insert(onboardingEvents).values({ restaurantId, step, event, at: now });
@@ -45,10 +45,12 @@ export const salonInputSchema = z.object({
 });
 export type SalonInput = z.infer<typeof salonInputSchema>;
 
-export type SaveSalonResult = { ok: true; slotIds: string[] } | { ok: false; erro: "faixas"; slotErrors: SlotError[][] } | { ok: false; erro: "nome_marca" };
+export type SaveSalonResult = { ok: true; slotIds: string[] } | { ok: false; erro: "faixas"; slotErrors: SlotError[][] } | { ok: false; erro: "nome_marca" | "nome_contato" };
 
 export async function saveSalon(db: Db, restaurantId: string, input: SalonInput, now: Date): Promise<SaveSalonResult> {
-  if (mentionsIfood(input.name)) return { ok: false, erro: "nome_marca" };
+  // S9 (M1): o nome vai no assunto e no corpo dos e-mails; sem contato e sem a marca iFood.
+  const nameProblem = restaurantNameProblem(input.name);
+  if (nameProblem) return { ok: false, erro: nameProblem };
   const slotErrors = input.slots.map((s) => validateSlot({ id: s.id ?? "nova", ...s }, input.opening));
   if (slotErrors.some((e) => e.length)) return { ok: false, erro: "faixas", slotErrors };
   return db.transaction(async (tx) => {
@@ -99,9 +101,12 @@ export const menuInputSchema = z.object({
 export type MenuInput = z.infer<typeof menuInputSchema>;
 
 /** Grava o cardápio revisado (só antes de ativar; depois, pelas Configurações). Registra a edição do dono. */
-export async function saveMenu(db: Db, restaurantId: string, input: MenuInput, now: Date): Promise<{ ok: true; count: number } | { ok: false; erro: "ja_ativo" | "vazio" }> {
+export async function saveMenu(db: Db, restaurantId: string, input: MenuInput, now: Date): Promise<{ ok: true; count: number } | { ok: false; erro: "ja_ativo" | "vazio" | "item_contato" | "item_marca" }> {
   const items = input.items.map((i) => ({ ...i, nome: cleanItemName(i.nome) })).filter((i) => i.nome);
   if (!items.length) return { ok: false, erro: "vazio" };
+  // S9 (M1): o nome do prato vai nos e-mails do convite; com contato ou a marca iFood, o cardápio não grava.
+  const dishProblem = items.map((i) => dishNameProblem(i.nome)).find((x) => x !== null);
+  if (dishProblem) return { ok: false, erro: dishProblem };
   return db.transaction(async (tx) => {
     const [r] = await tx.select({ status: restaurants.status }).from(restaurants).where(eq(restaurants.id, restaurantId)).for("update");
     if (r?.status === "ativo") return { ok: false as const, erro: "ja_ativo" as const };
