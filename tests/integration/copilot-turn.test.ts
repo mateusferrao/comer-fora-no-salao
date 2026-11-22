@@ -5,7 +5,7 @@ import { agentProposals, aiCalls, restaurants } from "@/src/db/schema";
 import type { AiGateway, AiGenerateRequest } from "@/src/modules/ia/gateway";
 import { runCopilotTurn } from "@/src/modules/agente/application/copilot-turn";
 import { getCopilotMetrics } from "@/src/modules/agente/application/metrics";
-import { OUT_OF_SCOPE_ANSWER, OUT_OF_SCOPE_SUGGESTIONS } from "@/src/modules/ia/tasks/copilot";
+import { FORMAT_FALLBACK_ANSWER, FORMAT_FALLBACK_WITH_PROPOSAL, OUT_OF_SCOPE_ANSWER, OUT_OF_SCOPE_SUGGESTIONS } from "@/src/modules/ia/tasks/copilot";
 import { createRestaurant, resetDb } from "./helpers/db";
 
 const NOW = new Date("2026-11-23T16:00:00Z");
@@ -126,6 +126,43 @@ describe("turno do copiloto (S8)", () => {
     const m = await getCopilotMetrics(getDb());
     expect(m.outOfScope).toEqual({ total: 2, byGate: 1 });
     expect(m.turns).toBe(2);
+  });
+
+  it("revisão S9: falha só de formato nos 2 modelos, com proposta válida → cartão fica e o texto é do código", async () => {
+    const r = await createRestaurant();
+    const long = (req: AiGenerateRequest) => ({
+      escopo: "salao",
+      resposta: "Preparei a proposta abaixo. O convite muda. O teto fica. A cartela segue.",
+      propostas: [{ ...empty, acao: "oferta", papel: "convite", faixa: "A", prato: alias(req.system, "Bruschetta"), tipo: "entrada_gratis" }],
+      sugestoes: ["Mudar o teto desse horário"],
+    });
+    const gw = scripted({ "*": long });
+    const out = await runCopilotTurn(getDb(), { restaurantId: r.restaurantId, ownerId: r.ownerId, turns: [{ role: "user", text: "troca a oferta da tarde" }], page: "configuracoes", now: NOW, gateway: gw });
+    expect(gw.calls).toHaveLength(2);
+    expect(out).toMatchObject({ resposta: FORMAT_FALLBACK_WITH_PROPOSAL, generatedBy: "ia", sugestoes: ["Mudar o teto desse horário"] });
+    expect(out.foraDoEscopo).toBeUndefined();
+    expect(out.propostas).toHaveLength(1);
+    expect(out.propostas[0]).toMatchObject({ status: "pendente" });
+    const [call] = await getDb().select().from(aiCalls).where(eq(aiCalls.task, "copiloto"));
+    expect(JSON.stringify(call!.attempts)).toContain("resposta_do_codigo");
+    expect((await getCopilotMetrics(getDb())).outOfScope.total).toBe(0);
+  });
+
+  it("revisão S9: falha só de formato sem proposta → pede um pedido mais direto (não é a recusa de escopo)", async () => {
+    const r = await createRestaurant();
+    const gw = scripted({ "*": () => ({ escopo: "salao", resposta: "O convite vale,\no teto protege,\no cliente volta,\na cartela enche", propostas: [], sugestoes: [] }) });
+    const out = await runCopilotTurn(getDb(), { restaurantId: r.restaurantId, ownerId: r.ownerId, turns: [{ role: "user", text: "me explica tudo" }], page: "painel", now: NOW, gateway: gw });
+    expect(out).toMatchObject({ resposta: FORMAT_FALLBACK_ANSWER, propostas: [], generatedBy: "ia" });
+    expect(out.foraDoEscopo).toBeUndefined();
+  });
+
+  it("revisão S9: o nome da casa com número por extenso não reprova a resposta", async () => {
+    const r = await createRestaurant();
+    await getDb().update(restaurants).set({ name: "Bar Dois Irmãos" }).where(eq(restaurants.id, r.restaurantId));
+    const gw = scripted({ "*": () => ({ escopo: "salao", resposta: "O Bar Dois Irmãos teve {fato:checkins_30d} no último mês.", propostas: [], sugestoes: [] }) });
+    const out = await runCopilotTurn(getDb(), { restaurantId: r.restaurantId, ownerId: r.ownerId, turns: [{ role: "user", text: "como foi o mês?" }], page: "painel", now: NOW, gateway: gw });
+    expect(out.resposta).toMatch(/^O Bar Dois Irmãos teve \d+ check-ins? no último mês\.$/);
+    expect(gw.calls).toHaveLength(1);
   });
 
   it("restaurante em rascunho → só dúvidas: prompt sem dados do restaurante e nenhuma proposta", async () => {

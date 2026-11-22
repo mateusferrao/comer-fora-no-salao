@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildKitPrompt, kitGuard, resolveKit } from "@/src/modules/ia/tasks/kit";
+import { buildKitPrompt, KIT_PROMPT_VERSION, kitGuard, resolveKit } from "@/src/modules/ia/tasks/kit";
 import { BILL_TEMPLATE, FALLBACK_KIT, INVITE_LINE, sentenceCount, WAITER_TEMPLATE, waiterPhrase, waiterTemplate } from "@/src/modules/kit/domain/templates";
 import { guardText } from "@/src/modules/ia/guardrails";
 import { qrUrl } from "@/src/modules/kit/domain/qr";
@@ -23,10 +23,21 @@ describe("kit — holdout protegido (revisão P-I2)", () => {
     expect(bad.ok).toBe(false);
     expect(bad.ok === false && bad.reasons).toEqual(expect.arrayContaining(["A.subtitulo:dia_turno:terca", "A.subtitulo:dia_turno:tarde", "menciona_convite", "recado:numero"]));
   });
-  it("prompt kit-v2 (S9): sem exclamação, sem travessão, sem fórmulas de anúncio; benefício da 1ª visita", () => {
+  it("prompt kit-v3 (S9): sem exclamação, sem travessão, sem fórmulas de anúncio; benefício da primeira visita", () => {
+    expect(KIT_PROMPT_VERSION).toBe("kit-v3");
     expect(kp.system).toContain("Sem ponto de exclamação e sem travessão");
     expect(kp.system).toContain('"descubra"');
-    expect(kp.text).toContain("o cliente ganha na 1ª visita");
+    expect(kp.text).toContain("o cliente ganha na primeira visita");
+  });
+  it("kit-v3 (revisão S9): o prompt não induz algarismo nem ordinal que o guard barra", () => {
+    // O guard reprova dígito no texto da IA: o prompt não pode ensinar "1ª visita" nem "6º selo".
+    expect(`${kp.system}\n${kp.text}`).not.toMatch(/\d[ªº]/);
+    expect(guardText("Na primeira visita, ganhe {beneficio}.", kp.ctx, { allowed: ["beneficio"], maxLen: 90, field: "kit", mode: "ia", forbidDayTurn: true }).ok).toBe(true);
+  });
+  it("nome da casa com número por extenso não reprova o kit ('Bar Dois Irmãos')", () => {
+    const k = buildKitPrompt({ restaurantName: "Bar Dois Irmãos", cuisine: "Mil sabores", beneficio: "Panna cotta grátis", recompensa: "Tiramisù grátis", menu, inviteItemIds: [] });
+    expect(kitGuard(k)({ ...good, recado: "O Bar Dois Irmãos agradece a visita." })).toEqual({ ok: true });
+    expect(kitGuard(k)({ ...good, recado: "Duas visitas e o Bar Dois Irmãos agradece." }).ok).toBe(false);
   });
   it("apelidos viram ids", () => {
     expect(resolveKit(kp, good).B.titulo).toBe("Prove {prato:i-pizza4}");

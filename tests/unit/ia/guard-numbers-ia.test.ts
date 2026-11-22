@@ -44,3 +44,32 @@ describe("promessa extra no convite e no kit (S9, A1)", () => {
     expect(ia("textoConvite", "Volte {horario:A} e aproveite a cortesia: {oferta}.").ok).toBe(true);
   });
 });
+
+describe("nome do restaurante e culinária não contam como número (S9, revisão)", () => {
+  const own = (field: GuardField, t: string, ownNames: string[]) => guardText(t, ctx, { allowed, maxLen: 400, field, mode: "ia", ownNames });
+  it("'Bar Dois Irmãos' e 'Mil Sabores' passam quando são o nome da casa", () => {
+    expect(own("kit", "O Bar Dois Irmãos te espera com {beneficio}.", ["Bar Dois Irmãos"]).ok).toBe(true);
+    expect(own("chat", "No mil sabores, o convite vale no horário vazio.", ["Mil Sabores", "comida árabe"]).ok).toBe(true);
+    expect(own("kit", "Na Cozinha dos Três Reis, do jeito da casa.", ["Cozinha dos Três Reis"]).ok).toBe(true);
+  });
+  it("o mesmo número fora do nome continua barrado", () => {
+    const g = own("kit", "O Bar Dois Irmãos dá duas sobremesas.", ["Bar Dois Irmãos"]);
+    expect(!g.ok && g.reasons).toEqual(["numero_extenso:duas"]);
+  });
+  it("sem o nome nas opções, segue barrando", () => {
+    expect(ia("kit", "O Bar Dois Irmãos te espera.").ok).toBe(false);
+  });
+});
+
+describe("ordinais que inventam meta e 'zero' (S9, revisão)", () => {
+  it.each(["Na segunda visita você ganha mais", "Na terceira vez é especial", "No quinto selo tem surpresa", "Décimo check-in com prêmio", "No sétimo selo", "Quartas visitas contam", "Nona vez"])("'%s' reprova", (t) => {
+    const g = ia("kit", t);
+    expect(!g.ok && g.reasons.some((r) => r.startsWith("numero_extenso:"))).toBe(true);
+  });
+  it("'zero' reprova", () => {
+    expect(ia("chat", "Foram zero check-ins.").ok).toBe(false);
+  });
+  it.each(["Na primeira visita, ganhe {beneficio}", "Segunda-feira o salão abre cedo", "Uma visita, um selo", "Volte na segunda e faça check-in"])("'%s' continua livre", (t) => {
+    expect(ia("chat", t).ok).toBe(true);
+  });
+});

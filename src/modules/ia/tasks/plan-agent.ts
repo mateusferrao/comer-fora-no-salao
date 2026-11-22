@@ -83,7 +83,7 @@ export function buildPlanAgentTools(pp: PackagePrompt, cands: readonly SlotCandi
         const allowed = campo === "textoConvite" ? (["prato", "horario", "oferta"] as const) : (["fato", "prato", "horario", "oferta"] as const);
         const maxLen = campo === "textoConvite" ? 160 : campo === "justificativa" ? 400 : 300;
         const ctx = { ...pp.ctxBase, oferta: oferta ?? "a oferta" };
-        const g = guardText(texto, ctx, { allowed, maxLen, field: campo, mode: "ia", avoid: pp.avoid, ...(campo === "textoConvite" && faixa ? { requireSlot: faixa } : {}) });
+        const g = guardText(texto, ctx, { allowed, maxLen, field: campo, mode: "ia", avoid: pp.avoid, ownNames: pp.ownNames, ...(campo === "textoConvite" && faixa ? { requireSlot: faixa } : {}) });
         // O agente lê o texto como vai ficar (revisão da 1ª rodada da T3: "Volte no terça" passou sem ninguém ler).
         const renderizado = renderReferences(texto, ctx);
         return g.ok ? { ok: true, renderizado } : { ok: false, problemas: g.reasons, renderizado };

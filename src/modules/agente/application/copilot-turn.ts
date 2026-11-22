@@ -14,7 +14,7 @@ import { runTask } from "@/src/modules/ia/run-task";
 import { langfuseTracer } from "@/src/modules/ia/tracing";
 import { systemClock } from "@/src/shared/clock";
 import { parseAiFeatures } from "@/src/modules/config/domain/ai-profile";
-import { buildCopilotPrompt, buildCopilotTask, buildOnboardingPrompt, buildCopilotTools, COPILOT_PROMPT_VERSION, normalizeHistory, OUT_OF_SCOPE_ANSWER, OUT_OF_SCOPE_SUGGESTIONS, OUT_OF_SCOPE_SUGGESTIONS_ACTIVATION, renderAnswer, scopeCheck, toPayload } from "@/src/modules/ia/tasks/copilot";
+import { buildCopilotPrompt, buildCopilotTask, buildOnboardingPrompt, buildCopilotTools, COPILOT_PROMPT_VERSION, FORMAT_FALLBACK_ANSWER, FORMAT_FALLBACK_ANSWER_ACTIVATION, FORMAT_FALLBACK_WITH_PROPOSAL, normalizeHistory, OUT_OF_SCOPE_ANSWER, OUT_OF_SCOPE_SUGGESTIONS, OUT_OF_SCOPE_SUGGESTIONS_ACTIVATION, renderAnswer, scopeCheck, toPayload, type FormatHold, type ScopeResult } from "@/src/modules/ia/tasks/copilot";
 import type { ProposalPayload } from "../domain/proposals";
 import { createProposals, type ProposalCard } from "./proposals";
 import { loadAgentContext } from "./context";
@@ -31,8 +31,12 @@ export type TurnResult = {
   atalhos: Shortcut[];
 };
 
-/** Marcas em `ai_calls` para a métrica "fora do escopo" (sem conteúdo): o motivo diz se foi a IA ou o portão. */
-const scopeNotes = (motivo: string) => ["fora_do_escopo", `escopo:${motivo}`];
+/**
+ * Marcas em `ai_calls` (sem conteúdo): "fora do escopo" com o motivo (a IA ou o portão); revisão S9: resposta trocada
+ * pelo texto do código porque falhou só no formato.
+ */
+const scopeNotes = (s: ScopeResult | null): { notes?: string[] } =>
+  !s ? {} : s.fora ? { notes: ["fora_do_escopo", `escopo:${s.motivo}`] } : s.formato ? { notes: ["resposta_do_codigo", `formato:${s.formato}`] } : {};
 const outOfScope = (sugestoes: string[]): TurnResult => ({ resposta: OUT_OF_SCOPE_ANSWER, propostas: [], sugestoes, generatedBy: "ia", foraDoEscopo: true, atalhos: [] });
 
 const NO_AI = "Não consegui responder agora. Você pode fazer a mesma mudança direto nas Configurações:";
@@ -67,32 +71,40 @@ export async function runCopilotTurn(
   // Ativação (D265): só dúvidas, com o guia do produto (sem dados nem propostas).
   if (onboarding) {
     const cp = buildOnboardingPrompt(p.page);
-    const res = await runTask({ ...buildCopilotTask(cp, MODELS.copiloto, [], p.sessionId) }, cp.system, { messages: turns }, { gateway, clock: systemClock, trace: langfuseTracer });
-    const scope = res.status === "ok" ? scopeCheck(res.data) : null;
-    await recordAiCall(db, { task: "copiloto", promptVersion: `${COPILOT_PROMPT_VERSION}-ativacao`, restaurantId: p.restaurantId, result: res, keyKind, ...(scope?.fora ? { notes: scopeNotes(scope.motivo) } : {}) });
-    if (res.status !== "ok" || !scope) return { ...noAi("falha", "Não consegui responder agora. Siga os passos da ativação; cada campo explica o que pede."), atalhos: [] };
+    const hold: FormatHold = { last: null };
+    const res = await runTask({ ...buildCopilotTask(cp, MODELS.copiloto, [], p.sessionId, hold) }, cp.system, { messages: turns }, { gateway, clock: systemClock, trace: langfuseTracer });
+    // Revisão S9: nenhum modelo acertou o formato → a última saída que falhou só nisso; o texto vira o do código.
+    const data = res.status === "ok" ? res.data : hold.last;
+    const scope = data ? scopeCheck(data, { ctx: cp.ctx }) : null;
+    await recordAiCall(db, { task: "copiloto", promptVersion: `${COPILOT_PROMPT_VERSION}-ativacao`, restaurantId: p.restaurantId, result: res, keyKind, ...scopeNotes(scope) });
+    if (!data || !scope) return { ...noAi("falha", "Não consegui responder agora. Siga os passos da ativação; cada campo explica o que pede."), atalhos: [] };
     if (scope.fora) return outOfScope(OUT_OF_SCOPE_SUGGESTIONS_ACTIVATION);
-    return { resposta: renderAnswer(res.data.resposta, cp.ctx), propostas: [], sugestoes: scope.sugestoes.map((x) => renderAnswer(x, cp.ctx)), generatedBy: "ia", atalhos: [] };
+    const resposta = scope.formato ? FORMAT_FALLBACK_ANSWER_ACTIVATION : renderAnswer(data.resposta, cp.ctx);
+    return { resposta, propostas: [], sugestoes: scope.sugestoes.map((x) => renderAnswer(x, cp.ctx)), generatedBy: "ia", atalhos: [] };
   }
 
   const input = await loadAgentContext(db, { restaurantId: p.restaurantId, restaurantName: r.name, tone: r.aiTone, page: p.page, now: p.now });
   if (!input) return noAi("inativo");
   const cp = buildCopilotPrompt(input);
-  const task = buildCopilotTask(cp, MODELS.copiloto, buildCopilotTools(input), p.sessionId);
+  const hold: FormatHold = { last: null };
+  const task = buildCopilotTask(cp, MODELS.copiloto, buildCopilotTools(input), p.sessionId, hold);
   const res = await runTask(task, cp.system, { messages: turns }, { gateway, clock: systemClock, trace: langfuseTracer });
+  // Revisão S9: nenhum modelo acertou o formato → a última saída que falhou só nisso (as propostas dela valem).
+  const data = res.status === "ok" ? res.data : hold.last;
+  const mapped = (data?.propostas ?? []).map((x) => toPayload(cp, x));
+  const payloads = mapped.filter((x): x is ProposalPayload => !("erro" in x));
   // Escopo (S9, item 17): classificação da IA + portão determinístico do código; fora → recusa fixa, nada é proposto.
-  const scope = res.status === "ok" ? scopeCheck(res.data) : null;
-  const aiCallId = await recordAiCall(db, { task: "copiloto", promptVersion: COPILOT_PROMPT_VERSION, restaurantId: p.restaurantId, result: res, keyKind, ...(scope?.fora ? { notes: scopeNotes(scope.motivo) } : {}) });
-  if (res.status !== "ok" || !scope) return noAi("falha");
+  const scope = data ? scopeCheck(data, { ctx: cp.ctx, propostas: payloads.length }) : null;
+  const aiCallId = await recordAiCall(db, { task: "copiloto", promptVersion: COPILOT_PROMPT_VERSION, restaurantId: p.restaurantId, result: res, keyKind, ...scopeNotes(scope) });
+  if (!data || !scope) return noAi("falha");
   if (scope.fora) return outOfScope(OUT_OF_SCOPE_SUGGESTIONS);
 
-  const mapped = res.data.propostas.map((x) => toPayload(cp, x));
-  const payloads = mapped.filter((x): x is ProposalPayload => !("erro" in x));
   const created = payloads.length ? await createProposals(db, { restaurantId: p.restaurantId, origin: "copiloto", payloads, aiCallId, now: p.now, snap: input.snap }) : [];
   // Revisão S8 (produto 5): proposta incompleta não some em silêncio; vira cartão com o motivo.
   const incomplete: ProposalCard[] = mapped.filter((x): x is { erro: string } => "erro" in x).map(() => ({ id: null, status: "recusada", motivo: "Faltou informação para montar a mudança (o prato, o horário ou o tipo da oferta). Diga o que trocar e pelo quê.", payload: { acao: "tom", tone: "" } }));
   const propostas = [...created, ...incomplete];
-  let resposta = renderAnswer(res.data.resposta, cp.ctx);
+  // Revisão S9: falhou só no formato → o texto é do código; com proposta válida, o cartão fala por si.
+  let resposta = scope.formato ? (payloads.length ? FORMAT_FALLBACK_WITH_PROPOSAL : FORMAT_FALLBACK_ANSWER) : renderAnswer(data.resposta, cp.ctx);
   // O texto da IA não pode prometer um cartão que não há (revisão S8, produto 5).
   if (!propostas.some((c) => c.status === "pendente") && /proposta abaixo|preparei (a|uma) proposta/i.test(resposta)) {
     resposta = propostas.length ? "Não preparei a mudança: veja o motivo abaixo." : "Não consegui montar essa mudança. Diga o prato e o horário, ou faça pelo formulário.";

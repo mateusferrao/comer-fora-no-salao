@@ -5,7 +5,8 @@ import { aiCalls } from "@/src/db/schema";
 import { endOfDaySP } from "@/src/shared/tz";
 import type { TaskResult } from "./run-task";
 
-export type KeyKind = "publica" | "demo";
+/** "e2e" (S9): conta da E2E, sempre no modo sem IA (só aparece gravada com a IA falsa do servidor local). */
+export type KeyKind = "publica" | "demo" | "e2e";
 /** Teto diário da chave pública [C] (US$): acima disso, as tarefas caem no modo sem IA, com aviso. */
 export const PUBLIC_DAILY_CAP_USD = 0.5;
 

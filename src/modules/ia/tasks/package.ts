@@ -69,6 +69,8 @@ export type PackagePrompt = {
   avoid: readonly string[];
   /** S9 (A4): candidatas iguais a uma oferta com veredito "trocar" na mesma faixa (apelido → faixa). */
   swapped: ReadonlyMap<string, string>;
+  /** S9 (revisão): nome da casa e culinária saem do texto antes das checagens de número ("Bar Dois Irmãos"). */
+  ownNames?: readonly string[];
 };
 
 const clean = (s: string) => s.replace(/[{}<>\n\r]/g, "").slice(0, 60);
@@ -148,7 +150,7 @@ export function buildPackagePrompt(p: {
   const swapped = new Map([...candByAlias].filter(([, c]) => swapIds.has(c.id)).map(([a, c]) => [a, c.slotAlias] as const));
   const rules = `${RULES}\n${learnedByAlias.size ? RULE_LEARNED : RULE_FIRST}`;
   const system = `${p.instructions ?? PACKAGE_INSTRUCTIONS}\n\n${rules}${hasOwnerData(p.owner) ? `\n\n${OWNER_DATA_SYSTEM}` : ""}`;
-  return { system, text, slotByAlias, candByAlias, itemByAlias, ctxBase, learnedByAlias, avoid: p.owner?.avoid ?? [], swapped };
+  return { system, text, slotByAlias, candByAlias, itemByAlias, ctxBase, learnedByAlias, avoid: p.owner?.avoid ?? [], swapped, ownNames: [p.restaurantName, p.cuisine ?? ""].filter(Boolean) };
 }
 
 /** Confere a saída contra as candidatas e os textos contra as regras fixas (guard da camada 2). */
@@ -167,9 +169,9 @@ export function packageGuard(pp: PackagePrompt): (d: PackageOut) => GuardResult 
       if (pp.swapped.get(e.candidata) === e.faixa && others) reasons.push(`manteve_oferta_trocar:${e.faixa}`);
       const ctx = { ...pp.ctxBase, oferta: c?.gain };
       // D226: o convite cita o {horario:X} da própria faixa, sem artigo antes e sem repetir a oferta (determinístico).
-      const g1 = guardText(e.textoConvite, ctx, { allowed: ["prato", "horario", "oferta"], maxLen: 160, field: "textoConvite", mode: "ia", avoid: pp.avoid, requireSlot: e.faixa });
+      const g1 = guardText(e.textoConvite, ctx, { allowed: ["prato", "horario", "oferta"], maxLen: 160, field: "textoConvite", mode: "ia", avoid: pp.avoid, ownNames: pp.ownNames, requireSlot: e.faixa });
       if (!g1.ok) reasons.push(...g1.reasons.map((r) => `textoConvite:${r}`));
-      const g2 = guardText(e.justificativa, ctx, { allowed: ["fato", "prato", "horario", "oferta"], maxLen: 400, field: "justificativa", mode: "ia", avoid: pp.avoid });
+      const g2 = guardText(e.justificativa, ctx, { allowed: ["fato", "prato", "horario", "oferta"], maxLen: 400, field: "justificativa", mode: "ia", avoid: pp.avoid, ownNames: pp.ownNames });
       if (!g2.ok) reasons.push(...g2.reasons.map((r) => `justificativa:${r}`));
     }
     for (const a of slotAliasesSet) if (!seen.has(a)) reasons.push(`faixa_sem_escolha:${a}`);
@@ -182,7 +184,7 @@ export function packageGuard(pp: PackagePrompt): (d: PackageOut) => GuardResult 
         continue;
       }
       seenL.add(l.ofertaKey);
-      const g = guardText(l.texto, { ...pp.ctxBase, oferta: li.gain }, { allowed: ["fato", "prato", "horario", "oferta"], maxLen: 300, field: "aprendemos", mode: "ia", avoid: pp.avoid });
+      const g = guardText(l.texto, { ...pp.ctxBase, oferta: li.gain }, { allowed: ["fato", "prato", "horario", "oferta"], maxLen: 300, field: "aprendemos", mode: "ia", avoid: pp.avoid, ownNames: pp.ownNames });
       if (!g.ok) reasons.push(...g.reasons.map((r) => `aprendemos:${r}`));
     }
     for (const a of pp.learnedByAlias.keys()) if (!seenL.has(a)) reasons.push(`aprendemos_faltando:${a}`);
