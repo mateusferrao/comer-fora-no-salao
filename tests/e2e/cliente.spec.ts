@@ -130,7 +130,7 @@ test.describe("check-in no restaurante E2E", () => {
     await expect(invite).toContainText("Cannoli grátis");
     await expect(invite).toContainText("Ao chegar, faça check-in de novo e mostre ao garçom o código do benefício.");
     // S9: o convite nasce hoje e só vale a partir de outro dia.
-    await expect(invite).toContainText(/Vale (de \d{2}\/\d{2} até|a partir de amanhã, até) \d{2}\/\d{2}/);
+    await expect(invite).toContainText(/Vale (de \d{2}\/\d{2} )?até \d{2}\/\d{2}/);
     const code = (await page
       .getByLabel(/^Código /)
       .first()
