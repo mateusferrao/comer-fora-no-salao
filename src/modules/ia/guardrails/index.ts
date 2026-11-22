@@ -38,6 +38,13 @@ export const FORBIDDEN = ["gratis", "de graca", "metade", "dobro", "garantid", "
 export const CHAT_FORBIDDEN = ["metade", "dobro", "garantid", "ifood paga", "reais", "r$"];
 /** Números por extenso (S8): a IA não escreve número, nem em palavras ("um/uma" ficam de fora: são artigos). */
 const NUMBER_WORDS = ["dois", "duas", "tres", "quatro", "cinco", "seis", "sete", "oito", "nove", "dez", "onze", "doze", "treze", "catorze", "quatorze", "quinze", "dezesseis", "dezessete", "dezoito", "dezenove", "vinte", "trinta", "quarenta", "cinquenta", "sessenta", "setenta", "oitenta", "noventa", "cem", "cento", "duzentos", "trezentos", "quinhentos", "mil", "milhao", "milhoes", "dezena", "duzia"];
+/** Multiplicadores (S9, A1): "dobrar", "triplicar"… são número disfarçado; casam pelo começo da palavra. */
+const MULTIPLIERS = ["dobrar", "duplic", "triplic", "quadruplic", "quintuplic", "triplo", "quadruplo"];
+/**
+ * Promessa extra que o código não controla (S9, A1), só no convite e no kit: "de brinde", "por conta da casa".
+ * "cortesia" fica de fora: é o nome de um tipo de oferta.
+ */
+const EXTRA_PROMISE = ["brinde", "por conta da casa"];
 const URL_RE = /https?:\/\/|www\.|\b[a-z0-9-]+(\.[a-z0-9-]+)*\.(com|br|net|org|io|app|me|ly|info|site|online|link|xyz)\b/i;
 const CONVITE_ONLY = ["desconto"];
 const DAY_TURN = ["segunda", "terca", "quarta", "quinta", "sexta", "sabado", "domingo", "manha", "tarde", "noite", "almoco", "jantar", "madrugada", "happy hour", "fim de semana"];
@@ -63,10 +70,15 @@ export function guardText(text: string, ctx: RefContext, o: GuardOptions): TextG
   if (/\d/.test(bare) || bare.includes("%")) soft("numero");
   const n = norm(bare);
   for (const w of o.forbidden ?? FORBIDDEN) if (hasWord(n, w)) soft(`proibida:${w}`);
-  if (o.field === "chat") {
+  // S9 (A1): número por extenso vale em todo texto da IA (convite, kit, justificativa, aprendemos, chat); as
+  // referências já saíram (`bare`), então o nome de um prato citado por {prato:…} não conta.
+  if (o.field === "chat" || o.mode === "ia") {
     for (const w of NUMBER_WORDS) if (new RegExp(`(^|[^a-z0-9])${w}([^a-z0-9]|$)`).test(n)) soft(`numero_extenso:${w}`);
-    if (URL_RE.test(bare)) reasons.push("url");
+    if (/(^|[^a-z0-9])por cento([^a-z0-9]|$)/.test(n)) soft("numero_extenso:por cento");
+    for (const w of MULTIPLIERS) if (hasWord(n, w)) soft(`numero_extenso:${w}`);
   }
+  if (o.field === "chat" && URL_RE.test(bare)) reasons.push("url");
+  if (o.field === "textoConvite" || o.field === "kit") for (const w of EXTRA_PROMISE) if (hasWord(n, w)) soft(`proibida:${w}`);
   if (o.field === "textoConvite") for (const w of CONVITE_ONLY) if (hasWord(n, w)) soft(`proibida:${w}`);
   if (o.requireSlot !== undefined) for (const r of conviteReasons(text, o.requireSlot)) soft(r);
   // Sem as referências: o nome de um prato citado por {prato:…} não conta como uso do termo.
