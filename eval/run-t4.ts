@@ -80,6 +80,18 @@ const CASES: Array<{ id: string; ask: string; ok: Expect }> = [
   { id: "desconto_60", ask: "coloca um desconto de 60% na lasanha no convite da noite", ok: (p) => none(p) || p.some((x) => x.acao === "oferta" && x.slotId === "slotB" && x.offer.itemId === "lasanha" && x.offer.kind === "desconto") },
 ];
 
+/** Validação (revisão S8, aderência 6): casos que o prompt nunca viu, inclusive o chip exato da demo; 3 repetições. */
+const VALIDATION: typeof CASES = [
+  { id: "v_chip_demo", ask: "Trocar a oferta do convite de Ter, Qua, Qui · 15h–18h por Gelato artesanal", ok: (p) => p.some((x) => x.acao === "oferta" && x.slotId === "slotA" && x.offer.itemId === "gelato") },
+  { id: "v_noite_bruschetta", ask: "no convite da noite quero dar a panna cotta em vez da bruschetta", ok: (p) => p.some((x) => x.acao === "oferta" && x.slotId === "slotB" && x.offer.itemId === "panna") },
+  { id: "v_nhoque_sumiu", ask: "tira o nhoque do cardápio, não fazemos mais", ok: (p) => p.some((x) => x.acao === "item" && x.itemId === "nhoque" && x.mudanca === "indisponivel") },
+  { id: "v_resumo_sexta", ask: "manda o resumo semanal na sexta às 18h", ok: (p) => p.some((x) => x.acao === "avisos" && x.weekday === 5 && x.minute === 18 * 60) },
+  { id: "v_margem", ask: "nossa margem é uns 55%", ok: (p) => p.some((x) => x.acao === "restaurante" && x.marginPct === 55) },
+  { id: "v_duvida_holdout", ask: "por que alguns clientes não recebem convite?", ok: (p) => p.length === 0 },
+];
+const SET = process.env.T4_SET === "validacao" ? VALIDATION : CASES;
+const REPS = Number(process.env.T4_REPS ?? (process.env.T4_SET === "validacao" ? 3 : 1));
+
 const median = (xs: number[]) => {
   const s = [...xs].sort((a, b) => a - b);
   return s.length ? (s.length % 2 ? s[(s.length - 1) / 2]! : (s[s.length / 2 - 1]! + s[s.length / 2]!) / 2) : 0;
@@ -92,7 +104,7 @@ async function main() {
   const tools = buildCopilotTools(input);
   const rows: Array<{ model: string; id: string; rulesOk: boolean; right: boolean; ms: number; cost: number; resposta: string; propostas: unknown; reasons?: string }> = [];
   for (const model of MODELS) {
-    for (const c of CASES) {
+    for (const c of SET.flatMap((x) => Array.from({ length: REPS }, () => x))) {
       const task = { ...buildCopilotTask(cp, [model], tools), privateTrace: true };
       const t0 = Date.now();
       let res = await runTask(task, cp.system, { messages: [{ role: "user", text: c.ask }] }, { gateway, clock: systemClock, trace: noopTracer });
@@ -114,9 +126,16 @@ async function main() {
   }
   const summary = MODELS.map((m) => {
     const r = rows.filter((x) => x.model === m.id);
-    return { model: m.id, acerto: r.filter((x) => x.right).length, regras: r.filter((x) => x.rulesOk).length, p50: median(r.map((x) => x.ms)), custo: r.reduce((a, x) => a + x.cost, 0) };
+    return { model: m.id, acerto: r.filter((x) => x.right).length, total: r.length, regras: r.filter((x) => x.rulesOk).length, p50: median(r.map((x) => x.ms)), custo: r.reduce((a, x) => a + x.cost, 0) };
   });
   const ranked = [...summary].sort((a, b) => b.acerto - a.acerto || a.p50 - b.p50);
+  if (process.env.T4_SET === "validacao") {
+    const v = ["# T4 — validação fora da amostra (revisão S8)", "", `Casos novos (o prompt nunca foi ajustado neles), inclusive o chip exato da demo; ${REPS} repetições. Não reescolhe o modelo: confere se a escolha da rodada 4 se sustenta.`, "", "| Modelo | Acerto | Regras ok | p50 | Custo |", "|---|---|---|---|---|", ...summary.map((x) => `| ${x.model} | ${x.acerto}/${x.total} | ${x.regras}/${x.total} | ${(x.p50 / 1000).toFixed(1)} s | US$ ${x.custo.toFixed(4)} |`), "", "| Caso | Pedido | " + MODELS.map((m) => m.id.split("/")[1]).join(" | ") + " |", "|---|---|" + MODELS.map(() => "---").join("|") + "|", ...SET.map((c) => `| ${c.id} | ${c.ask} | ` + MODELS.map((m) => { const rr = rows.filter((x) => x.model === m.id && x.id === c.id); return `${rr.filter((x) => x.right).length}/${rr.length}`; }).join(" | ") + " |")].join("\n");
+    writeFileSync("eval/relatorio-t4-validacao.md", v + "\n");
+    writeFileSync("eval/resultados-t4-validacao.json", JSON.stringify({ summary, rows }, null, 2));
+    console.log(v);
+    return;
+  }
   const md = [
     "# T4 — mini-avaliação do copiloto (S8, D266)",
     "",

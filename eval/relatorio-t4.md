@@ -11,6 +11,8 @@ Quatro rodadas, todas preservadas; vale a última, com o prompt e o schema que v
 
 **Escolha (rodada 4):** principal `google/gemini-3.8-flash`, reserva `openai/gpt-6-luna` (outro provedor).
 
+**Validação fora da amostra** ([relatorio-t4-validacao.md](relatorio-t4-validacao.md), revisão S8): 6 casos novos que o prompt nunca viu, inclusive o chip exato da demo, × 3 repetições — gemini 17/18, luna 14/18; chip da demo 3/3 nos dois. As falhas são o guard barrando número escrito pela IA ("reais", "dezoito"), não ação errada. Os 16/16 da rodada 4 são acerto no conjunto em que o prompt foi ajustado; o número a citar é o da validação.
+
 **Achado da rodada 3:** o Anthropic (via OpenRouter) recusa schema estruturado com mais de 16 parâmetros com união/`nullable` ("limit: 16 parameters with unions"); a proposta achatada da onda 2 tem 22. Na rodada 2, com 14, o Haiku era a reserva; com o schema final ele não roda, então saiu da escolha. Conflito declarado: o assistente que construiu o produto é da Anthropic; a regra é numérica e foi fixada antes.
 
 ## Rodada 4 (vale para a escolha)
@@ -80,7 +82,7 @@ Conflito declarado: o assistente que construiu o produto é da Anthropic; o `cla
 
 Conflito declarado: o assistente que construiu o produto é da Anthropic; o `claude-haiku-5.5` concorre e a regra é numérica, fixada antes.
 
-Duas rodadas, as duas preservadas. A 1ª (`copiloto-v1`) mostrou 2 falhas de contexto, não de modelo: para explicar a recusa do desconto de 60%, os 3 modelos escreveram o número ou "metade" (o teto de 50% não era um fato citável) e o gpt-6-luna achou que mudar o teto exigia plano da semana. O prompt `copiloto-v2` ganhou o fato `desconto_maximo_pct` e a frase "o teto e a oferta de um convite mudam direto". A escolha vale pela 2ª rodada, com a mesma regra fixada antes.
+(Rodadas 1 e 2, preservadas; a escolha vale pela rodada 4, acima.)
 
 ## Rodada 2 (`copiloto-v2`)
 12 pedidos com gabarito sobre um retrato da Cantina × 3 modelos × 1 repetição, cada modelo sozinho. Regra fixada antes: maior acerto; empate → menor p50; p50 > 12 s → o copiloto sai da demo. Amostra pequena: resultado indicativo ("teste de fumaça").
