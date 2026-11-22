@@ -22,6 +22,9 @@ export async function axe(page: Page) {
   let ids: string[] = [];
   for (let i = 0; i < 3; i++) {
     await expect.poll(() => page.title(), { timeout: 5_000 }).not.toBe("");
+    // Animações de entrada (ex.: o cartão do convite surge com opacidade): o axe mede contraste no meio do fade e
+    // reprova um texto que, parado, passa. Espera as animações finitas terminarem (as infinitas, como o indicador de carregando, ficam de fora).
+    await page.evaluate(() => Promise.all(document.getAnimations().filter((a) => a.effect?.getComputedTiming().iterations !== Infinity).map((a) => a.finished.catch(() => null))));
     const r = await new AxeBuilder({ page }).analyze();
     ids = r.violations.map((v) => `${v.id}: ${v.nodes.map((n) => n.target.join(" ")).join(", ")}`);
     if (!(r.violations.length === 1 && r.violations[0]!.id === "document-title")) break;
