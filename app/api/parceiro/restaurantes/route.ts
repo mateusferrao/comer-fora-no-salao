@@ -3,7 +3,7 @@ import { getDb } from "@/src/db/client";
 import { createTestRestaurant, deleteTestRestaurant } from "@/src/modules/onboarding/application/test-restaurants";
 import { clientIp } from "@/src/shared/rate-limit-memory";
 import { rejectCrossSite } from "@/src/web/guards";
-import { readJson, tooMany } from "@/src/web/http";
+import { readJson, tooLarge, tooMany } from "@/src/web/http";
 import { getOwnerSession, setCurrentRestaurant } from "@/src/web/owner-session";
 
 export const dynamic = "force-dynamic";
@@ -28,7 +28,9 @@ export async function DELETE(req: Request) {
   if (blocked) return blocked;
   const s = await getOwnerSession();
   if (!s) return Response.json({ erro: "sessao" }, { status: 401 });
-  const body = del.safeParse(await readJson(req));
+  const raw = await readJson(req);
+  if (raw.erro === "grande") return tooLarge();
+  const body = del.safeParse(raw.value);
   if (!body.success) return Response.json({ erro: "formato" }, { status: 400 });
   const ok = await deleteTestRestaurant(getDb(), { ownerId: s.owner.id, restaurantId: body.data.restaurantId });
   return ok ? Response.json({ ok: true }) : Response.json({ erro: "nao_encontrado" }, { status: 404 });

@@ -12,7 +12,7 @@ import { consume } from "@/src/shared/rate-limit";
 import { clientIp } from "@/src/shared/rate-limit-memory";
 import { bastidoresEnabled, checkPassword, clearBastidores, isBastidores, writeBastidores } from "@/src/web/bastidores-session";
 import { rejectCrossSite } from "@/src/web/guards";
-import { tooMany } from "@/src/web/http";
+import { readJson, tooLarge, tooMany } from "@/src/web/http";
 import { getOwnerSession } from "@/src/web/owner-session";
 
 export const dynamic = "force-dynamic";
@@ -40,7 +40,9 @@ export async function POST(req: Request, ctx: { params: Promise<{ acao: string }
   if (blocked) return blocked;
   const { acao } = await ctx.params;
   const now = new Date();
-  const raw = await req.json().catch(() => null);
+  const read = await readJson(req);
+  if (read.erro === "grande") return tooLarge();
+  const raw = read.value;
   if (acao === "entrar") {
     if (!bastidoresEnabled()) return Response.json({ erro: "desligado" }, { status: 503 });
     const lim = await consume(getDb(), `bastidores:${clientIp(req.headers)}`, 5, 900, now);

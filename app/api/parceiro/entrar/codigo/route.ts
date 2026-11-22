@@ -3,7 +3,7 @@ import { getDb } from "@/src/db/client";
 import { verifyLoginCode } from "@/src/modules/contas/application/verify-code";
 import { clientIp } from "@/src/shared/rate-limit-memory";
 import { rejectCrossSite } from "@/src/web/guards";
-import { readJson, tooMany } from "@/src/web/http";
+import { readJson, tooLarge, tooMany } from "@/src/web/http";
 import { writeOwnerSession } from "@/src/web/owner-session";
 import { afterLogin } from "@/src/web/account-bootstrap";
 
@@ -15,7 +15,9 @@ const STATUS = { email_invalido: 400, formato: 400, incorreto: 401, expirado: 41
 export async function POST(req: Request) {
   const blocked = rejectCrossSite(req);
   if (blocked) return blocked;
-  const body = input.safeParse(await readJson(req));
+  const raw = await readJson(req);
+  if (raw.erro === "grande") return tooLarge();
+  const body = input.safeParse(raw.value);
   if (!body.success) return Response.json({ erro: "formato" }, { status: 400 });
   const r = await verifyLoginCode(getDb(), { email: body.data.email, code: body.data.codigo, ip: clientIp(req.headers), now: new Date() });
   if (r.ok) {

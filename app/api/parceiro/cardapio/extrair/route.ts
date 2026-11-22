@@ -6,7 +6,7 @@ import { startAiExtraction, startCachedExtraction } from "@/src/modules/onboardi
 import { recordStep } from "@/src/modules/onboarding/application/wizard";
 import { clientIp } from "@/src/shared/rate-limit-memory";
 import { rejectCrossSite } from "@/src/web/guards";
-import { tooMany } from "@/src/web/http";
+import { readJson, tooLarge, tooMany } from "@/src/web/http";
 import { requireStore, sniffImage } from "@/src/web/portal-guards";
 
 export const dynamic = "force-dynamic";
@@ -32,7 +32,9 @@ export async function POST(req: Request) {
   const now = new Date();
 
   if (ctype.includes("application/json")) {
-    const body = cached.safeParse(await req.json().catch(() => null));
+    const raw = await readJson(req);
+    if (raw.erro === "grande") return tooLarge();
+    const body = cached.safeParse(raw.value);
     if (!body.success || (body.data.source === "exemplo" && !isExampleId(body.data.exampleId ?? ""))) return Response.json({ erro: "formato" }, { status: 400 });
     const id = await startCachedExtraction(db, { restaurantId: auth.r.id, source: body.data.source, exampleId: body.data.exampleId as never, now });
     await recordStep(db, auth.r.id, 1, "concluiu", now);

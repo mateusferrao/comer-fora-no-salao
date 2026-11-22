@@ -12,7 +12,7 @@ import { getPlanView } from "@/src/modules/planos/application/plan-view";
 import { explainOffer } from "@/src/modules/planos/application/explain-offer";
 import { getFlags } from "@/src/modules/config/application/app-config";
 import { rejectCrossSite } from "@/src/web/guards";
-import { tooMany } from "@/src/web/http";
+import { readJson, tooLarge, tooMany } from "@/src/web/http";
 import { consume } from "@/src/shared/rate-limit";
 import { requireStore } from "@/src/web/portal-guards";
 
@@ -50,7 +50,9 @@ export async function POST(req: Request, ctx: { params: Promise<{ acao: string }
   if (auth instanceof Response) return auth;
   const { acao } = await ctx.params;
   const now = new Date();
-  const body = await req.json().catch(() => null);
+  const raw = await readJson(req);
+  if (raw.erro === "grande") return tooLarge();
+  const body = raw.value;
   // Toda rota que grava tem limite (regras.md): aprovar e descartar, 30/h por restaurante (gerar tem o seu, 10/dia).
   if (acao === "aprovar" || acao === "descartar") {
     const lim = await consume(getDb(), `plano:${acao}:${auth.r.id}`, 30, 3600, now);

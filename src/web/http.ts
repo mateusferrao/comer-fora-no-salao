@@ -45,15 +45,31 @@ async function readLimited(req: Request): Promise<string | null> {
 }
 
 /**
- * Corpo JSON ou `null` (inválido ou acima do teto). As rotas que chamam `rejectCrossSite` já respondem 413 pelo
- * `content-length`; aqui fica a 2ª barreira, que nunca guarda mais de 64 KB na memória.
+ * Corpo JSON lido com o teto (S9). `erro: "grande"` (acima de 64 KB, declarado ou lido em pedaços): a rota
+ * responde `tooLarge()` (413). `erro: "invalido"` (JSON quebrado ou corpo vazio): `value` é `null` e o schema da
+ * rota responde 400 como sempre. Uso nas rotas:
+ *
+ *   const raw = await readJson(req);
+ *   if (raw.erro === "grande") return tooLarge();
+ *   const body = input.safeParse(raw.value);
+ *
+ * As rotas que chamam `rejectCrossSite` já respondem 413 pelo `content-length`; aqui fica a 2ª barreira, que nunca
+ * guarda mais de 64 KB na memória. Ler o corpo direto (`req.json()`) fura o teto: `tests/unit/web/routes-body.test.ts`.
  */
-export async function readJson<T>(req: Request): Promise<T | null> {
-  if (declaredTooLarge(req)) return null;
+export type JsonBody = { ok: true; value: unknown; erro?: undefined } | { ok: false; erro: "grande" | "invalido"; value: null };
+
+export async function readJson(req: Request): Promise<JsonBody> {
+  if (declaredTooLarge(req)) return { ok: false, erro: "grande", value: null };
+  let text: string | null;
   try {
-    const text = await readLimited(req);
-    return text === null ? null : (JSON.parse(text) as T);
+    text = await readLimited(req);
   } catch {
-    return null;
+    return { ok: false, erro: "invalido", value: null };
+  }
+  if (text === null) return { ok: false, erro: "grande", value: null };
+  try {
+    return { ok: true, value: JSON.parse(text) as unknown };
+  } catch {
+    return { ok: false, erro: "invalido", value: null };
   }
 }

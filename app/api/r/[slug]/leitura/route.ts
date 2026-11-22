@@ -6,6 +6,7 @@ import { hashDevice } from "@/src/shared/crypto";
 import { systemClock } from "@/src/shared/clock";
 import { readDeviceId } from "@/src/web/customer-session";
 import { overLimit, rejectCrossSite } from "@/src/web/guards";
+import { readJson } from "@/src/web/http";
 
 export const dynamic = "force-dynamic";
 const bodySchema = z.object({ p: z.string().max(64).optional() });
@@ -18,7 +19,10 @@ export async function POST(req: Request, { params }: { params: Promise<{ slug: s
   // Sem o cookie do aparelho (criado ao abrir a página), a leitura não conta: evita inflar a contagem com scripts.
   const device = await readDeviceId();
   if (!device) return new Response(null, { status: 204 });
-  const parsed = bodySchema.safeParse(await req.json().catch(() => ({})));
+  const raw = await readJson(req);
+  if (raw.erro === "grande") return new Response(null, { status: 413 });
+  // Beacon sem corpo (ou corpo quebrado) conta como leitura sem token, como antes.
+  const parsed = bodySchema.safeParse(raw.ok ? raw.value : {});
   if (!parsed.success) return new Response(null, { status: 400 });
   const db = getDb();
   const r = await findRestaurantBySlug(db, slug);

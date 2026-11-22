@@ -29,7 +29,9 @@ export async function POST(req: Request) {
   const now = new Date();
   const lim = await consume(db, `mcp:${tok.tokenId}`, 60, 3600, now);
   if (!lim.ok) return err(429, -32002, "Too many requests", { "retry-after": String(lim.retryAfterSec ?? 3600) });
-  const body = await readJson(req);
+  const raw = await readJson(req);
+  if (raw.erro === "grande") return err(413, -32600, "Request too large");
+  const body = raw.value;
   if (Array.isArray(body)) return err(400, -32600, "Batch not supported");
   if (body === null || typeof body !== "object") return err(400, -32700, "Parse error");
   const res = await handleRpc(db, tok.restaurantId, body, now, { schedule: (fn) => after(fn), onApproved: (rid, ids) => scheduleInviteEmails(rid, ids) });

@@ -29,30 +29,33 @@ function streamOf(bytes: number, chunk = 8 * 1024) {
   return { stream, state };
 }
 
+const GRANDE = { ok: false, erro: "grande", value: null };
+
 describe("readJson com teto de corpo", () => {
-  it("lê o JSON pequeno como antes e devolve null para JSON inválido", async () => {
-    expect(await readJson(post(JSON.stringify({ email: "ana@exemplo.com" })))).toEqual({ email: "ana@exemplo.com" });
-    expect(await readJson(post("{nao é json"))).toBeNull();
+  it("lê o JSON pequeno; JSON inválido é 'invalido' (a rota responde 400), separado de 'grande' (413)", async () => {
+    expect(await readJson(post(JSON.stringify({ email: "ana@exemplo.com" })))).toEqual({ ok: true, value: { email: "ana@exemplo.com" } });
+    expect(await readJson(post("{nao é json"))).toEqual({ ok: false, erro: "invalido", value: null });
+    expect(await readJson(post(""))).toEqual({ ok: false, erro: "invalido", value: null });
   });
 
   it("aceita exatamente 64 KB", async () => {
     const s = JSON.stringify({ t: "a".repeat(MAX_JSON_BYTES - 8) });
     expect(s.length).toBe(MAX_JSON_BYTES);
-    expect(await readJson(post(s))).toEqual({ t: "a".repeat(MAX_JSON_BYTES - 8) });
+    expect(await readJson(post(s))).toEqual({ ok: true, value: { t: "a".repeat(MAX_JSON_BYTES - 8) } });
   });
 
   it("content-length acima de 64 KB: recusa sem ler o corpo", async () => {
     const req = post(JSON.stringify({ t: "a".repeat(MAX_JSON_BYTES) }), { "content-length": String(MAX_JSON_BYTES + 20) });
-    expect(await readJson(req)).toBeNull();
+    expect(await readJson(req)).toEqual(GRANDE);
     expect(req.bodyUsed).toBe(false);
   });
 
   it("sem content-length (corpo em pedaços): para de ler ao passar de 64 KB", async () => {
     const big = streamOf(10 * 1024 * 1024);
-    expect(await readJson(post(big.stream))).toBeNull();
+    expect(await readJson(post(big.stream))).toEqual(GRANDE);
     expect(big.state.pulled).toBeLessThan(20);
     const small = streamOf(1024);
-    expect(await readJson(post(small.stream))).toEqual({ t: "a".repeat(1024) });
+    expect(await readJson(post(small.stream))).toEqual({ ok: true, value: { t: "a".repeat(1024) } });
   });
 });
 

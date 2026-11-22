@@ -7,7 +7,7 @@ import { getDb } from "@/src/db/client";
 import { confirmCode, lookupCode } from "@/src/modules/salao/application/validate-code";
 import { consume } from "@/src/shared/rate-limit";
 import { rejectCrossSite } from "@/src/web/guards";
-import { readJson, tooMany } from "@/src/web/http";
+import { readJson, tooLarge, tooMany } from "@/src/web/http";
 import { readWaiterSession, writeWaiterSession } from "@/src/web/waiter-session";
 
 export const dynamic = "force-dynamic";
@@ -27,7 +27,9 @@ export async function POST(req: Request, ctx: { params: Promise<{ acao: string }
   if (acao !== "consultar" && acao !== "confirmar") return Response.json({ erro: "nao_encontrado" }, { status: 404 });
   const lim = await consume(db, `garcom:${acao}:${s.tokenId}`, 30, 60, now);
   if (!lim.ok) return tooMany(lim.retryAfterSec);
-  const raw = await readJson(req);
+  const body = await readJson(req);
+  if (body.erro === "grande") return tooLarge();
+  const raw = body.value;
   if (acao === "consultar") {
     const b = consultar.safeParse(raw);
     if (!b.success) return Response.json({ status: "INVALIDO" }, { status: 400 });

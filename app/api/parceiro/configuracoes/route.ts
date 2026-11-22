@@ -25,7 +25,7 @@ import {
 import { notifySettingsInput } from "@/src/modules/config/domain/notify-settings";
 import { consume } from "@/src/shared/rate-limit";
 import { rejectCrossSite } from "@/src/web/guards";
-import { readJson, tooMany } from "@/src/web/http";
+import { readJson, tooLarge, tooMany } from "@/src/web/http";
 import { requireStore } from "@/src/web/portal-guards";
 
 export const dynamic = "force-dynamic";
@@ -77,7 +77,9 @@ export async function POST(req: Request) {
   const auth = await requireStore();
   if (auth instanceof Response) return auth;
   if (auth.r.status !== "ativo") return Response.json({ erro: "rascunho" }, { status: 409 });
-  const parsed = body.safeParse(await readJson(req));
+  const raw = await readJson(req);
+  if (raw.erro === "grande") return tooLarge();
+  const parsed = body.safeParse(raw.value);
   if (!parsed.success) return Response.json({ erro: "formato" }, { status: 400 });
   const db = getDb();
   const now = new Date();
