@@ -55,3 +55,7 @@ _A preencher antes do congelamento (15h)._
 
 ## Ambiente de desenvolvimento (nuvem)
 - Docker Hub e o frontend `# syntax=` respondem 429 a partir do proxy deste ambiente; para teste local, a imagem `node:22-bookworm-slim` vem de `mirror.gcr.io` e a CA do proxy entra por um Dockerfile de teste fora do repositório. O Dockerfile do repositório não depende disso.
+
+## Fumaça manual em produção (S7, 22/11)
+- Workflow `.github/workflows/fumaca-producao.yml` (`workflow_dispatch`): roda só a fumaça contra produção, com a mesma lista de specs do job `deploy`, sem build nem deploy. Entrada opcional `expected_sha`.
+- Uso: antes de enviar o link e depois de "Recriar minha demo"/"Recriar vitrine" na manhã de 23/11.

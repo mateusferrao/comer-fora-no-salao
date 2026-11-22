@@ -1,0 +1,49 @@
+name: Fumaça em produção
+
+# S7 (planejamento, achado técnico B3): roda só a fumaça contra produção, sem build nem deploy.
+# Uso: antes de enviar o link e depois de recriar a demo (manhã de 23/11). Mesma lista de specs do job `deploy` do ci.yml.
+on:
+  workflow_dispatch:
+    inputs:
+      expected_sha:
+        description: "SHA esperado no /api/health (vazio = não conferir)"
+        required: false
+        default: ""
+
+permissions:
+  contents: read
+
+concurrency:
+  group: fumaca-producao
+  cancel-in-progress: false
+
+env:
+  NEXT_TELEMETRY_DISABLED: "1"
+  PROD_URL: https://sites-case-salao-app.lyv8st.easypanel.host
+
+jobs:
+  fumaca:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - run: npx playwright install --with-deps chromium
+      - name: Produção no ar
+        run: curl -fsS --max-time 15 "$PROD_URL/api/health"
+      - name: Fumaça contra produção
+        env:
+          BASE_URL: ${{ env.PROD_URL }}
+          EXPECTED_SHA: ${{ inputs.expected_sha }}
+          E2E_LOGIN_TOKEN: ${{ secrets.E2E_LOGIN_TOKEN }}
+          E2E_FLAGS: "on"
+        run: >-
+          npx playwright test --trace off
+          tests/e2e/fumaca.spec.ts tests/e2e/cliente.spec.ts tests/e2e/dono.spec.ts tests/e2e/painel.spec.ts
+          tests/e2e/volta.spec.ts tests/e2e/entrada.spec.ts tests/e2e/apresentacao.spec.ts
+          tests/e2e/painel.on.spec.ts tests/e2e/garcom.on.spec.ts tests/e2e/resumo.on.spec.ts tests/e2e/conversao.on.spec.ts
+          tests/e2e/explicar.on.spec.ts tests/e2e/porta-conta.on.spec.ts tests/e2e/agente.on.spec.ts
