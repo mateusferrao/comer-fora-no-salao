@@ -1585,3 +1585,8 @@ As decisões sobre a preparação pessoal do candidato para a apresentação (D2
 **D325 — Frase extra do convite não começa com "!" ou "?"** (22/11, IA [C]; achado na recaptura do vídeo, E5) ✅
 - Achado: o cliente via "“! Esperamos você.”" embaixo do convite. A IA escreveu "Volte {horario} e ganhe {oferta}! Esperamos você."; `inviteExtra` (S9) tira a parte que repete a 1ª linha, mas só limpava espaço, dois-pontos, vírgula, ponto e traço no começo do resto.
 - Correção: o "!" e o "?" também saem. Casos novos em `tests/unit/salao/invite-text.test.ts`.
+
+**D326 — Vídeo da demo dentro do repositório, não em release** (22/11, candidato) ✅
+- Muda a D299 só na hospedagem do GitHub: o vídeo (14 MB) fica em `docs/entrega/video-demo.mp4`, e o README aponta para ele. O Google Drive continua como 2º link.
+- Alternativa: asset de uma release `entrega`. Trade-off: com a release, o repositório fica mais leve, mas criar a release seria passo manual do candidato (não há ferramenta para isso nesta sessão) e o link do README ficaria quebrado até lá. No repositório, o vídeo entra no histórico para sempre (+14 MB), mas o link funciona desde o primeiro push.
+- Também decidido na auditoria do repositório público (E7): as citações à infra de envio (domínio e usuário IAM de outro projeto, D132/D135) ficam, porque não são segredo e fazem parte do raciocínio documentado.
