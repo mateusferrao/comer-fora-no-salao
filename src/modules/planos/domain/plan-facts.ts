@@ -1,6 +1,6 @@
 /**
  * Textos-modelo de "o que aprendemos" por veredito (modo sem IA e planos fixos da vitrine — D220, D145) e a
- * justificativa-modelo (modo sem IA e linha de base da T3 — revisão T-I6). Só referências: o código escreve os
+ * justificativa-modelo (modo sem IA e linha de base da T3 — revisão T-I6). Só referências: o sistema escreve os
  * números. `alias` = apelido da faixa nas chaves de fato (A, B…); `slotRef` = o que vai em `{horario:…}`.
  */
 import type { Verdict } from "@/src/modules/analytics/domain/verdict";
@@ -11,7 +11,7 @@ export const issuedFactKey = (alias: string) => `convites7d_${alias}`;
 export function learnedTemplate(v: Verdict, alias: string, slotRef: string): string {
   if (v === "manter") return `{fato:${usageFactKey(alias)}} dos convites de {horario:${slotRef}} foram usados em até uma semana: a oferta está funcionando.`;
   if (v === "trocar") return `Só {fato:${usageFactKey(alias)}} dos convites de {horario:${slotRef}} foram usados em até uma semana: vale trocar a oferta.`;
-  return `Ainda há poucos convites com uma semana em {horario:${slotRef}} para julgar esta oferta.`;
+  return `Ainda é cedo para julgar a oferta de {horario:${slotRef}}: poucos convites completaram uma semana.`;
 }
 
 export function justificationTemplate(alias: string, slotRef: string, facts: Record<string, number | string>): string {

@@ -195,7 +195,8 @@ describe("plano da semana (S3 §4.3–4.4)", () => {
     expect(e.opcoes.filter((o) => o.escolhaIa)).toHaveLength(1);
     expect(e.opcoes.filter((o) => o.maiorNota)).toHaveLength(1);
     expect(e.fatos.length).toBeGreaterThan(0);
-    expect(e.fatos[0]!.label).toMatch(/^Faixa [A-H]: quanto fica vazia$/);
+    expect(e.fatos[0]!.label).toMatch(/: quanto fica vazio$/);
+    expect(e.fatos[0]!.label).not.toMatch(/Faixa/); // S9: horário legível ou "Horário vazio A"
     expect(e.justificativa).not.toMatch(/\{fato:/);
     expect(e.tecnico).toMatchObject({ task: "plano", reserva: true, promptVersion: expect.stringMatching(/^plano-v/) });
     expect(e.tecnico!.attempts[0]).toMatchObject({ ok: false, error: "guard" });
