@@ -193,7 +193,8 @@ test("assistente completo com exemplo: salão pré-preenchido → revisão → p
     const ck = await req.post(`/api/r/${slug}/checkin`, { data: { gpsStatus: "negado", idempotencyKey: crypto.randomUUID() } });
     const j = (await ck.json()) as { invite: { message: string | null } | null; codes: Array<{ code: string; type: string }> };
     if (j.invite) {
-      expect(j.invite.message).toMatch(/aproveite|.+/);
+      // S9: o texto que só repete o cabeçalho do convite ("Volte {horario} e aproveite {oferta}") sai da tela (null).
+      expect(j.invite.message === null || j.invite.message.length > 0).toBe(true);
       code = j.codes.find((c) => c.type === "primeira_visita")!.code;
     }
     await ctx.close();

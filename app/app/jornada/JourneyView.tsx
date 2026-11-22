@@ -123,10 +123,10 @@ export function JourneyView({
           </Link>
         </p>
         {/* S9: só o que existe (Reservas e Avaliações com zero fixo saíram). */}
-        <dl className="mt-6 flex flex-col items-center text-center">
-          <dd className="text-3xl font-semibold">{journey.visits}</dd>
-          <dt className="mt-1 text-base text-ink-muted">{journey.visits === 1 ? "Visita" : "Visitas"}</dt>
-        </dl>
+        <p className="mt-6 flex flex-col items-center text-center">
+          <span className="text-3xl font-semibold">{journey.visits}</span>
+          <span className="mt-1 text-base text-ink-muted">{journey.visits === 1 ? "Visita" : "Visitas"}</span>
+        </p>
 
         <h2 className="mt-10 text-xl font-semibold">Seus restaurantes</h2>
         {journey.restaurants.length === 0 ? (

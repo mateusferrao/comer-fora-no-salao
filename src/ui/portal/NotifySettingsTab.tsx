@@ -14,7 +14,7 @@ const DAYS = ["Domingo", "Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sáb
 const hhmm = (m: number) => `${String(Math.floor(m / 60)).padStart(2, "0")}:${String(m % 60).padStart(2, "0")}`;
 const TIMES = Array.from({ length: (22 * 60 - 6 * 60) / 30 + 1 }, (_, i) => 6 * 60 + i * 30);
 const HOURS = Array.from({ length: 24 }, (_, i) => i + 1);
-const OFF_HINT = "O envio automático está desligado neste protótipo. Veja a prévia do e-mail em Plano da semana.";
+const OFF_HINT = "O envio automático está desligado. Veja a prévia do e-mail em Plano da semana.";
 
 /**
  * "Avisos e automação" (S6.1 — D196): o que o sistema faz sozinho e o que vai por e-mail, em 3 grupos. Tudo ligado

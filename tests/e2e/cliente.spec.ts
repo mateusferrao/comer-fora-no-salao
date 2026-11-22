@@ -214,7 +214,7 @@ test.describe("check-in no restaurante E2E", () => {
     await page.getByRole("button", { name: "Fazer check-in" }).click();
     await page.getByRole("button", { name: "Confirmar localização" }).click();
     await uiLogin(page);
-    await expect(page.getByRole("alert").filter({ hasText: "Não conseguimos" })).toContainText("Não conseguimos fazer seu check-in.");
+    await expect(page.getByRole("alert").filter({ hasText: "não foi registrado" })).toContainText("Seu check-in não foi registrado.");
     await page.getByRole("button", { name: "Tentar de novo" }).click();
     await expect(page.getByRole("heading", { name: "Check-in feito" })).toBeVisible();
     expect(new Set(keys).size).toBe(1);
