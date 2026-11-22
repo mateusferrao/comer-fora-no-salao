@@ -5,20 +5,21 @@
  * MESMAS funções das Configurações, que revalidam tudo.
  */
 import { createHash } from "node:crypto";
-import { and, eq, gt, sql } from "drizzle-orm";
+import { and, eq, gt, lte, sql } from "drizzle-orm";
 import type { Db } from "@/src/db/client";
 import { agentProposals } from "@/src/db/schema";
 import { describeOffer, offerFromInput } from "@/src/modules/beneficios/domain/offers";
 import { slotPhrase } from "@/src/modules/beneficios/domain/slot-text";
 import { guardText } from "@/src/modules/ia/guardrails";
 import { textIssues } from "@/src/modules/ia/guardrails/messages";
-import { addMenuItem, deactivateSlot, getSettingsView, setItemOfferAllowed, setMenuItemActive, updateMenuItem, updateNotifySettings, updateOffer, updateRestaurantInfo, updateSlot, updateTone } from "@/src/modules/config/application/update-settings";
+import { addMenuItem, deactivateSlot, getSettingsView, setItemOfferAllowed, setMenuItemActive, updateMenuItem, updateNotifySettings, updateOffer, updateRestaurantFinance, updateSlot, updateTone } from "@/src/modules/config/application/update-settings";
 import { parseNotifySettings } from "@/src/modules/config/domain/notify-settings";
 import { validateTone } from "@/src/modules/config/domain/tone";
 import { FORBIDDEN } from "@/src/modules/ia/guardrails";
 import { approvePlan, finalFromStored, latestPlan, type ApproveVia } from "@/src/modules/planos/application/approve-plan";
 import { getPlanView } from "@/src/modules/planos/application/plan-view";
 import { restaurants } from "@/src/db/schema";
+import type { RestaurantContext } from "@/src/modules/salao/application/context";
 import { previewProposal, proposalPayloadSchema, type PreviewOk, type ProposalPayload, type Snapshot } from "../domain/proposals";
 
 export const PROPOSAL_TTL_MS = 30 * 60_000;
@@ -34,8 +35,8 @@ export function stableJson(v: unknown): string {
 }
 export const baseHash = (antes: unknown) => createHash("sha256").update(stableJson(antes)).digest("hex");
 
-export async function loadSnapshot(db: Db, restaurantId: string, opts: { plan?: boolean; now?: Date } = {}): Promise<Snapshot | null> {
-  const v = await getSettingsView(db, restaurantId);
+export async function loadSnapshot(db: Db, restaurantId: string, opts: { plan?: boolean; now?: Date; ctx?: RestaurantContext } = {}): Promise<Snapshot | null> {
+  const v = await getSettingsView(db, restaurantId, opts.ctx);
   if (!v) return null;
   const [r] = await db.select({ notify: restaurants.notifySettings }).from(restaurants).where(eq(restaurants.id, restaurantId));
   // Plano proposto (onda 2): só quando a ação é aprovar (a prévia da reativação custa consultas).
@@ -72,9 +73,15 @@ function inviteTextProblem(snap: Snapshot, p: Extract<ProposalPayload, { acao: "
   return textIssues(g, { maxLen: 160 }).errors[0] ?? "O texto do convite não passou nas regras.";
 }
 
-/** Prévia + gravação (status `pendente`). Recusas do código voltam com o motivo e não são gravadas. */
-export async function createProposals(db: Db, p: { restaurantId: string; origin: Origin; payloads: readonly ProposalPayload[]; aiCallId?: string | null; now: Date }): Promise<ProposalCard[]> {
-  const snap = await loadSnapshot(db, p.restaurantId, { plan: p.payloads.some((x) => x.acao === "plano"), now: p.now });
+/**
+ * Prévia + gravação (status `pendente`). Recusas do código voltam com o motivo e não são gravadas.
+ * `snap`: retrato já carregado no turno (revisão S8, item 23). Seguro: o "antes" da prévia vira o `base_hash`, e a
+ * aplicação confere com o estado do momento — se algo mudou durante o turno, a proposta expira em vez de aplicar.
+ * Aprovar o plano precisa do plano no retrato: aí recarrega.
+ */
+export async function createProposals(db: Db, p: { restaurantId: string; origin: Origin; payloads: readonly ProposalPayload[]; aiCallId?: string | null; now: Date; snap?: Snapshot }): Promise<ProposalCard[]> {
+  const needsPlan = p.payloads.some((x) => x.acao === "plano");
+  const snap = p.snap && !needsPlan ? p.snap : await loadSnapshot(db, p.restaurantId, { plan: needsPlan, now: p.now });
   if (!snap) return p.payloads.map((payload) => ({ id: null, status: "recusada" as const, motivo: "Restaurante não encontrado.", payload }));
   const out: ProposalCard[] = [];
   for (const payload of p.payloads) {
@@ -126,6 +133,26 @@ export type DecideResult =
 /** Reserva presa em `aplicando` (processo caiu no meio) vira `falhou` depois deste tempo (revisão S8, técnica A2). */
 export const APPLYING_STALE_MS = 2 * 60_000;
 
+/**
+ * Faxina do agendador (revisão S8, item 25): pendente que ninguém decidiu em 30 min vira `expirada` (motivo
+ * `sem_decisao`) e reserva presa vira `falhou` — antes isso só acontecia quando alguém tentava aplicar, e a métrica
+ * "vencidas" subcontava. Nada é apagado: as linhas não têm dado pessoal e apagar só as não aplicadas inflaria o
+ * "% aplicadas" com o tempo.
+ */
+export async function sweepProposals(db: Db, now: Date): Promise<{ expired: number; failed: number }> {
+  const expired = await db
+    .update(agentProposals)
+    .set({ status: "expirada", error: "sem_decisao", decidedAt: now })
+    .where(and(eq(agentProposals.status, "pendente"), lte(agentProposals.createdAt, new Date(now.getTime() - PROPOSAL_TTL_MS))))
+    .returning({ id: agentProposals.id });
+  const failed = await db
+    .update(agentProposals)
+    .set({ status: "falhou", error: "reserva_presa", decidedAt: now })
+    .where(and(eq(agentProposals.status, "aplicando"), lte(agentProposals.createdAt, new Date(now.getTime() - PROPOSAL_TTL_MS - APPLYING_STALE_MS))))
+    .returning({ id: agentProposals.id });
+  return { expired: expired.length, failed: failed.length };
+}
+
 const APPLY_ERR: Record<string, string> = {
   em_uso: "O prato está numa oferta em vigor. Troque a oferta antes.",
   ultima_faixa: "É o único horário vazio: o convite precisa de pelo menos um.",
@@ -167,12 +194,8 @@ async function run(db: Db, restaurantId: string, payload: ProposalPayload, snap:
       const r = await addMenuItem(db, { restaurantId, name: payload.name, category: payload.category, priceCents: payload.priceCents, now });
       return r.ok ? { ok: true } : { ok: false, erro: "texto" };
     }
-    case "restaurante": {
-      const v = await getSettingsView(db, restaurantId);
-      if (!v) return { ok: false, erro: "nao_encontrado" };
-      const x = v.restaurant;
-      return updateRestaurantInfo(db, { restaurantId, name: x.name, ticketCents: payload.ticketCents !== undefined ? payload.ticketCents : x.ticketCents, marginPct: payload.marginPct !== undefined ? payload.marginPct : x.marginPct, tables: x.tables, weeklyCustomers: x.weeklyCustomers, description: x.description, address: x.address, opening: x.opening, now });
-    }
+    case "restaurante":
+      return updateRestaurantFinance(db, { restaurantId, ticketCents: payload.ticketCents, marginPct: payload.marginPct, now });
     case "avisos": {
       const [r] = await db.select({ notify: restaurants.notifySettings }).from(restaurants).where(eq(restaurants.id, restaurantId));
       const cur = parseNotifySettings(r?.notify);

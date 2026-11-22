@@ -29,10 +29,10 @@ Pronta para merge. 4 revisores independentes (aderência, técnica, produto/UX, 
 | 19 | médio | produto | Chips ambíguos, modal do celular aberto após aplicar, área fixa alta, aviso falso de edição não salva, custo antes ausente | capturas | Chips "…" preenchem; celular fecha; chips em 1 linha; salvar zera o aviso; linha "Custo máximo por semana" | corrigido |
 | 20 | médio | aderência | Teto US$ 0,20 pode esgotar | `ai-calls.ts` | Avaliadores entram pelo link (chave demo, sem esse teto); teto único somando copiloto + frase | parcial: teto mantido |
 | 21 | médio-alto | aderência | Ícone do iFood na aba (D272) | `app/favicon.ico` | — | não corrigir: pedido explícito do candidato, risco registrado na D272 |
-| 22 | médio | técnica | Dependência circular `ia`↔`agente`; JSON Schema do MCP escrito à mão | `copilot.ts:11`, `catalog.ts` | Mover `toPayload`/ferramentas para `agente`, gerar schema do Zod | corrigir depois (pós-entrega) |
-| 23 | médio | técnica | ~20 consultas por turno (`loadContext` 3×, todos os clientes) | `context.ts` | Reaproveitar retrato; clientes só na ferramenta | corrigir depois |
+| 22 | médio | técnica | Dependência circular `ia`↔`agente`; JSON Schema do MCP escrito à mão | `copilot.ts:11`, `catalog.ts` | Ciclo não existe no nível de arquivo (padrão do projeto); regra `no-circular`; schema do MCP gerado do Zod, 8 ações descritas | corrigido (D275, `4505bf3`) |
+| 23 | médio | técnica | ~20 consultas por turno (`loadContext` 3×, todos os clientes) | `context.ts` | Um só `loadContext`; retrato reaproveitado: 29 → 19 consultas (teste com orçamento ≤ 20) | corrigido (D275, `ef57f1b`) |
 | 24 | baixo | segurança | Guard do chat sem dia/turno | `guardrails` | — | não corrigir: "tarde/noite" são palavras comuns; horário vai por referência |
-| 25 | baixo | técnica | `agent_proposals` sem limpeza; ação `restaurante` regrava campos lidos agora | — | — | corrigir depois (dívida) |
+| 25 | baixo | técnica | `agent_proposals` sem limpeza; ação `restaurante` regrava campos lidos agora | — | Faxina no tique do agendador (expira/falha, sem apagar); `updateRestaurantFinance` só ticket/margem; teste do `privateTrace` | corrigido (D275, `e3b8860`, `330ef77`) |
 | 26 | baixo | E2E | 1ª cópia do exemplo lenta sob carga (apresentação, garçom) | logs | Esperas de 120 s, como a `navegacao.spec` | corrigido (teste) |
 
 Não procedem: nenhum.
@@ -68,6 +68,10 @@ Flags `copiloto`, `mcp_clientes` e `mcp_edicao` ligadas nos Bastidores depois do
 | MCP pela rota real | 10 ferramentas; clientes sem contato; propor → aplicar → já estava; 70% recusado; sem token 401 | tudo como esperado | `mcp-e2e.js` | ok |
 | Console e rede | sem erros | `ERROS []` | simulação | ok |
 | Ícone da aba | o novo `.ico` | md5 igual ao do repositório | curl | ok |
+| Dívidas pagas (D275): health | SHA do merge, `fakeAi:false` | `58e90ef`, `fakeAi:false`, `ia.teto: suspenso` (D254) | curl | ok |
+| D275: MCP `tools/list` | `propor_mudanca` com as 8 ações; sem `pattern`/`$schema`; filtros de `buscar_clientes` opcionais | tudo como esperado; "tom" proposto e descartado pela rota real | `mcp-list.js` | ok |
+| D275: copiloto com IA real | chip → cartão → Aplicar; recusa; clientes; teto; semana | ok; 4,2–8,8 s; console e rede `ERROS []` | simulação `prod-d275` | ok |
+| D275: 390 px com pedido em andamento | axe limpo | `scrollable-region-focusable` na fileira de sugestões (chips `disabled` enquanto a resposta não chega) → chips com `aria-disabled`; E2E nova segura a resposta e roda o axe (falha sem a correção) | `axe390c.js`, `copiloto.on.spec.ts` | corrigido |
 
 ## 5. Console, rede, tempos e acessibilidade
 - Console e rede: nenhum erro nas simulações (`ERROS []`).
@@ -85,4 +89,5 @@ Flags `copiloto`, `mcp_clientes` e `mcp_edicao` ligadas nos Bastidores depois do
 | 11, 16, 26 | `556128b` | E2E copiloto 6 ok; `dono.spec` com flag ligada ok |
 
 ## 7. Decisões novas registradas
+- D275 [C] — dívidas técnicas pagas depois da entrega (itens 22, 23, 25) → `decisoes-e-tradeoffs.md`.
 - D274 [C] — decisões da revisão da S8 (esta tabela) → `decisoes-e-tradeoffs.md`.

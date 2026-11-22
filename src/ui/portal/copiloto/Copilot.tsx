@@ -286,7 +286,9 @@ export function Copilot({ chips, scope }: { chips: Chips; scope: string }) {
           <ul className="no-scrollbar mb-2 flex gap-2 overflow-x-auto" aria-label="Sugestões">
             {suggestions.map((s) => (
               <li key={s} className="shrink-0">
-                <button type="button" disabled={busy} onClick={() => pickChip(s)} className="min-h-11 rounded-full bg-surface-muted px-3 text-sm whitespace-nowrap text-ink hover:bg-divider disabled:opacity-60">
+                {/* aria-disabled (não `disabled`): os chips seguem focáveis enquanto a resposta chega, e a fileira rolável
+                    continua alcançável pelo teclado (axe scrollable-region-focusable a 390 px, produção — D275). */}
+                <button type="button" aria-disabled={busy} onClick={() => !busy && pickChip(s)} className="min-h-11 rounded-full bg-surface-muted px-3 text-sm whitespace-nowrap text-ink hover:bg-divider aria-disabled:opacity-60">
                   {s}
                 </button>
               </li>

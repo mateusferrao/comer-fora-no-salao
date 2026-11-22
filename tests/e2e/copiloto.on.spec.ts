@@ -62,7 +62,18 @@ test.describe("copiloto (local, IA roteirizada)", () => {
     await page.getByRole("button", { name: "Assistente" }).click();
     const dlg = page.getByRole("dialog", { name: "Assistente do salão" });
     await expect(dlg).toBeVisible();
+    // Resposta segurada: com o pedido em andamento, a fileira rolável de sugestões segue alcançável pelo teclado
+    // (axe scrollable-region-focusable visto em produção a 390 px — D275).
+    let release: () => void = () => {};
+    const held = new Promise<void>((r) => (release = r));
+    await page.route("**/api/parceiro/copiloto", async (route) => {
+      await held;
+      await route.continue();
+    });
     await dlg.getByRole("button", { name: "Como foi a semana?" }).click();
+    await expect(dlg.getByText("Consultando os dados do restaurante…")).toBeVisible();
+    await axe(page);
+    release();
     await expect(dlg.getByText(/No último mês foram/)).toBeVisible({ timeout: 30_000 });
     await axe(page);
     await dlg.getByRole("button", { name: "Fechar o assistente" }).click();

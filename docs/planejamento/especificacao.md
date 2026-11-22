@@ -682,7 +682,22 @@ Todas as rotas são validadas com Zod, têm limite de uso e tiram o restaurante 
 ## 9. Roadmap (fora do protótipo)
 - **Fase 1 — piloto:** ~50 restaurantes em 1–2 cidades do Comer Fora; holdout por cliente e mesas alternadas com e sem display. Aqui sai a **prova estatística** do incremento. Critério de parada definido.
 - **Fase 2 — integração:**
-  - cardápio vindo do Portal;
+  - **ativação conectada ao iFood** (D276): na primeira entrada, o sistema puxa do iFood os dados do restaurante do dono logado, em vez de pedir foto/PDF do cardápio e números declarados. Entram:
+    - cardápio com preços e categorias;
+    - horário de funcionamento e endereço;
+    - ticket médio;
+    - clientes e frequência (pedidos e visitas do Comer Fora).
+
+    Ganhos:
+    - a ativação cai de minutos para poucos cliques;
+    - números medidos substituem estimativas do dono (ticket, clientes por semana);
+    - o plano da semana e o copiloto já começam com histórico, sem esperar os primeiros check-ins.
+
+    Pré-requisitos e cuidados:
+    - login iFood real (hoje fora de escopo, §10);
+    - base legal e transparência para usar dados de clientes de delivery numa ação de salão;
+    - para a IA vai o mesmo recorte de hoje: nome curto, nunca contato (D262, D268);
+    - o dono confere o que veio antes de ativar (mesmo padrão da revisão do cardápio no passo 3);
   - convite como uma trilha de marketing nativa;
   - QR que abre o app (deep link/login iFood);
   - reativação real pelo CRM/Giftback;
