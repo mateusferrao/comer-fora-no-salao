@@ -127,6 +127,17 @@ export function RestaurantView({ page, token, copyV2 = false, recentCheckins = n
             <path d="m15 5-7 7 7 7" />
           </svg>
         </Link>
+        {/* D259: entrada da Jornada (convites e "Seus dados"; quem não entrou vê "Entrar com e-mail"), no lugar do perfil. */}
+        <Link
+          href="/app/jornada"
+          aria-label="Sua jornada (convites e seus dados)"
+          className="absolute right-4 top-4 flex size-11 items-center justify-center rounded-full bg-black/55 text-white focus-visible:outline-2 focus-visible:outline-white"
+        >
+          <svg aria-hidden="true" viewBox="0 0 24 24" className="size-5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="12" cy="8" r="4" />
+            <path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7" />
+          </svg>
+        </Link>
       </header>
       <main className="relative -mt-6 rounded-t-xl bg-surface px-5 pb-[calc(6rem+env(safe-area-inset-bottom))] pt-6">
         <h1 className="text-2xl font-semibold leading-8">{page.name}</h1>

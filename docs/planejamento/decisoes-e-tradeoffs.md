@@ -1425,3 +1425,6 @@ Detalhes, perguntas, revisão independente (2 subagentes) e itens [C] em [docs/f
   - ganha velocidade de ativação e números medidos em vez de declarados;
   - pede base legal e transparência para usar dados de clientes de delivery no salão (hoje "convite a clientes de delivery" está fora de escopo);
   - o dono continua conferindo antes de ativar.
+
+**D259 — Entrada da Jornada na página do restaurante** (22/11, candidato: "qual caminho pro usuário comum acessar?") ✅
+- A página do restaurante (onde o cliente cai ao ler o QR) não tinha caminho para a Jornada; só a tela do check-in e os e-mails levavam até lá. Agora há um ícone de conta no canto superior direito da foto (espelho do "Voltar", lugar do perfil no app): leva à Jornada, onde quem não entrou vê "Entrar com e-mail" (D257) e quem entrou vê os convites e a engrenagem › "Seus dados".
