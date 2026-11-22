@@ -231,6 +231,17 @@ test.describe("check-in no restaurante E2E", () => {
     await expect(id.getByText(/Ao continuar, você ativa: Doce grátis · Panna cotta/)).toBeVisible();
   });
 
+  test("página do restaurante leva à Jornada pelo ícone de conta; sem login, 'Entrar com e-mail' (D259)", async ({ page }) => {
+    for (const width of [390, 1280]) {
+      await page.setViewportSize({ width, height: 844 });
+      await page.goto(`/r/${E2E}`);
+      await page.getByRole("link", { name: "Sua jornada (convites e seus dados)" }).click();
+      await expect(page).toHaveURL(/\/app\/jornada$/);
+      await expect(page.getByRole("button", { name: "Entrar com e-mail" })).toBeVisible();
+    }
+    await axe(page);
+  });
+
   test("na moldura do celular (1280 px), o aviso abre dentro da tela do celular e Esc fecha (D258)", async ({ page }) => {
     await page.setViewportSize({ width: 1280, height: 900 });
     await page.goto(`/r/${E2E}`);
