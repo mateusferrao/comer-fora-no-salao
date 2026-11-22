@@ -43,7 +43,10 @@ Não procede: "a linha 'você pode ganhar um convite' contraria a §3.5" (a §3.
 - `/api/health` (22/11 05:03 UTC): `ok: true`, `sha: f8560c7`, `ia.teto: ativo`, chaves pública e demo `ok`, `fakeAi: false`.
 - Landing em produção a 1280 e 390 px: título novo, sem rolagem lateral, recorte do cartão de reais no celular (`visao-geral-topo.webp`), 0 erros de console ([prod-landing-1280.png](capturas/prod-landing-1280.png), [prod-landing-390.png](capturas/prod-landing-390.png)).
 - Página do QR: a seta Voltar leva a `/app/jornada` (não à landing do dono).
-- Fumaça do CI na `main` (inclui os `*.on.spec.ts`): em andamento no momento deste registro — conferir o run 125.
+- Fumaça do CI na `main` (inclui os `*.on.spec.ts`):
+  - run 125 (`f8560c7`): 82 passaram; falhou 1 teste por corrida (um push de docs na `main` trocou a versão de produção no meio da fumaça; o SHA esperado ficou velho). Reexecução: falhou o teste do grupo de controle porque a conta fixa de teste esgotou o teto semanal de convites em produção ("sem convite" por teto lido como grupo de controle). Nenhum defeito de produto.
+  - correção só no teste (`b30b8af`): em produção, conta nova por execução.
+  - run 126 (`b30b8af`): **verde** — check, integração, E2E, deploy e fumaça contra produção: 95 passaram, 8 pulados (só local), 1 instável que passou na 2ª tentativa (a cópia do exemplo da conta nova levou mais de 120 s na 1ª).
 
 ## 5. Pendências fora da fatia (S7 e operação, 23/11)
 - Religar o teto diário de IA (tirar `IA_SEM_TETO_DIARIO`, Restart, conferir `ia.teto: ativo`).
