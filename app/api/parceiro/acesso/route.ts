@@ -2,7 +2,7 @@ import { z } from "zod";
 import { getDb } from "@/src/db/client";
 import { openEvaluatorLink } from "@/src/modules/contas/application/evaluator-link";
 import { rejectCrossSite } from "@/src/web/guards";
-import { readJson, tooMany } from "@/src/web/http";
+import { readJson, tooLarge, tooMany } from "@/src/web/http";
 import { writeOwnerSession } from "@/src/web/owner-session";
 import { afterLogin } from "@/src/web/account-bootstrap";
 
@@ -14,7 +14,9 @@ const input = z.object({ token: z.string().min(1).max(200) });
 export async function POST(req: Request) {
   const blocked = rejectCrossSite(req);
   if (blocked) return blocked;
-  const body = input.safeParse(await readJson(req));
+  const raw = await readJson(req);
+  if (raw.erro === "grande") return tooLarge();
+  const body = input.safeParse(raw.value);
   if (!body.success) return Response.json({ erro: "invalido" }, { status: 404 });
   const r = await openEvaluatorLink(getDb(), { token: body.data.token, expected: process.env.EVALUATOR_LINK_TOKEN, now: new Date() });
   if (!r.ok) return r.erro === "limite" ? tooMany(r.retryAfterSec) : Response.json({ erro: "invalido" }, { status: 404 });

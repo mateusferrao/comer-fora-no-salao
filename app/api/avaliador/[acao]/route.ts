@@ -9,7 +9,7 @@ import { advanceRestaurantOneDay, pickReactivatedCustomer } from "@/src/modules/
 import { findRestaurantBySlug } from "@/src/modules/salao/application/context";
 import { writeCustomerId } from "@/src/web/customer-session";
 import { overLimit, rejectCrossSite } from "@/src/web/guards";
-import { readJson } from "@/src/web/http";
+import { readJson, tooLarge } from "@/src/web/http";
 import { getOwnerSession } from "@/src/web/owner-session";
 import { and, eq } from "drizzle-orm";
 import { restaurants } from "@/src/db/schema";
@@ -31,7 +31,9 @@ export async function POST(req: Request, ctx: { params: Promise<{ acao: string }
   const db = getDb();
   const now = new Date();
   if (acao === "avancar") {
-    const body = avancar.safeParse(await readJson(req));
+    const raw = await readJson(req);
+    if (raw.erro === "grande") return tooLarge();
+    const body = avancar.safeParse(raw.value);
     if (!body.success) return Response.json({ erro: "dados_invalidos" }, { status: 400 });
     let restaurantId = body.data.restaurantId;
     let allowE2e = false;
@@ -48,7 +50,9 @@ export async function POST(req: Request, ctx: { params: Promise<{ acao: string }
   // S6.1: "Rodar o ciclo agora neste restaurante" — plano automático, resumo (se houver e-mail) e lembretes, sem
   // esperar o horário; só no restaurante dado e só se for do dono da sessão (revisão de produto B1).
   if (acao === "ciclo") {
-    const body = avancar.safeParse(await readJson(req));
+    const raw = await readJson(req);
+    if (raw.erro === "grande") return tooLarge();
+    const body = avancar.safeParse(raw.value);
     const rid = body.success ? body.data.restaurantId : undefined;
     if (!rid) return Response.json({ erro: "dados_invalidos" }, { status: 400 });
     const [mine] = await db.select({ id: restaurants.id }).from(restaurants).where(and(eq(restaurants.id, rid), eq(restaurants.ownerId, s.owner.id)));

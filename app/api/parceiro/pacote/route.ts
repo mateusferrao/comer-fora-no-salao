@@ -4,7 +4,7 @@ import { weeklyPlans } from "@/src/db/schema";
 import { finalPackageSchema } from "@/src/modules/onboarding/application/activate";
 import { getPackageView, proposePackage } from "@/src/modules/onboarding/application/package";
 import { rejectCrossSite } from "@/src/web/guards";
-import { readJson, tooMany } from "@/src/web/http";
+import { readJson, tooLarge, tooMany } from "@/src/web/http";
 import { requireStore } from "@/src/web/portal-guards";
 
 export const dynamic = "force-dynamic";
@@ -34,7 +34,9 @@ export async function PUT(req: Request) {
   if (blocked) return blocked;
   const auth = await requireStore({ draft: true });
   if (auth instanceof Response) return auth;
-  const body = finalPackageSchema.safeParse(await readJson(req));
+  const raw = await readJson(req);
+  if (raw.erro === "grande") return tooLarge();
+  const body = finalPackageSchema.safeParse(raw.value);
   if (!body.success) return Response.json({ erro: "formato" }, { status: 400 });
   const db = getDb();
   const [plan] = await db.select().from(weeklyPlans).where(and(eq(weeklyPlans.restaurantId, auth.r.id), eq(weeklyPlans.status, "proposto")));

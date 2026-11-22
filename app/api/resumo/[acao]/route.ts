@@ -11,6 +11,7 @@ import { eq } from "drizzle-orm";
 import { weeklyPlans } from "@/src/db/schema";
 import { hasContactInfo } from "@/src/modules/salao/domain/contact-info";
 import { overLimit, rejectCrossSite } from "@/src/web/guards";
+import { readJson, tooLarge } from "@/src/web/http";
 import { scheduleInviteEmails } from "@/src/web/invite-emails";
 
 export const dynamic = "force-dynamic";
@@ -24,7 +25,9 @@ export async function POST(req: Request, ctx: { params: Promise<{ acao: string }
   if (limited) return limited;
   if (!(await getFlags(getDb())).resumo_email) return Response.json({ erro: "nao_encontrado" }, { status: 404 });
   const { acao } = await ctx.params;
-  const b = body.safeParse(await req.json().catch(() => null));
+  const raw = await readJson(req);
+  if (raw.erro === "grande") return tooLarge();
+  const b = body.safeParse(raw.value);
   if (!b.success) return Response.json({ erro: "entrada" }, { status: 400 });
   const now = new Date();
   if (acao === "aprovar") {

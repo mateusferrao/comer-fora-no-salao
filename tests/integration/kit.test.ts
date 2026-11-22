@@ -1,9 +1,10 @@
 import { afterAll, beforeEach, describe, expect, it } from "vitest";
 import { eq } from "drizzle-orm";
 import { closeDb, getDb } from "@/src/db/client";
-import { kitPieces, pieceVariants, restaurants, scans } from "@/src/db/schema";
+import { kitPieces, ownerEdits, pieceVariants, restaurants, scans } from "@/src/db/schema";
 import type { AiGateway } from "@/src/modules/ia/gateway";
-import { approvePiece, editRecado, editVersionField, generateKit, getKit, markInSalon, newKitVersion } from "@/src/modules/kit/application/kit";
+import { approvePiece, editRecado, editVersionField, generateKit, getKit, markInSalon, newKitVersion, reviewKit } from "@/src/modules/kit/application/kit";
+import { getRestaurantPage } from "@/src/modules/salao/application/queries";
 import { createRestaurant, resetDb } from "./helpers/db";
 import { setFlag } from "@/src/modules/config/application/app-config";
 
@@ -140,5 +141,82 @@ describe("kit (Postgres)", () => {
     const d2 = k2.pieces.find((p) => p.kind === "display")!;
     expect(d2.variants[0]!.review?.status).toBe("nao_revisado");
     expect(await approvePiece(getDb(), { restaurantId: r2.restaurantId, pieceId: d2.id, now: NOW })).toBe(true);
+  });
+  /** Revisor que devolve um veredito fixo. */
+  const verdict = (veredito: "ok" | "atencao" | "bloquear"): AiGateway => ({ generate: async () => ({ output: { veredito, motivos: veredito === "ok" ? [] : ["Motivo."] }, usage: { inTokens: 5, outTokens: 5 }, model: "fake-revisor" }) });
+  const publicRecado = async (restaurantId: string) => {
+    const [row] = await getDb().select({ slug: restaurants.slug }).from(restaurants).where(eq(restaurants.id, restaurantId));
+    return (await getRestaurantPage(getDb(), row!.slug, NOW))!.recado;
+  };
+  /** Gera o kit com o revisor na fila e reescreve as duas versões enquanto ele roda (a peça deixa de esperar). */
+  async function kitEditedWhileReviewing(reviewer: AiGateway) {
+    await setFlag(getDb(), "revisor", true);
+    const r = await createRestaurant({ pieces: [] });
+    await getDb().update(restaurants).set({ recado: null }).where(eq(restaurants.id, r.restaurantId));
+    const jobs: Array<() => Promise<void>> = [];
+    await generateKit(getDb(), { restaurantId: r.restaurantId, ownerId: r.ownerId, now: NOW, gateway: good, reviewerGateway: reviewer, schedule: (fn) => void jobs.push(fn) });
+    for (const label of ["A", "B"] as const) await editVersionField(getDb(), { restaurantId: r.restaurantId, label, field: "titulo", value: "Faça check-in e ganhe {beneficio}", now: NOW });
+    const display = (await getKit(getDb(), r.restaurantId, NOW))!.pieces.find((p) => p.kind === "display")!;
+    return { r, display, runReviewer: () => Promise.all(jobs.map((j) => j())) };
+  }
+
+  it("S9: recado da IA não escapa da revisão quando o dono edita a peça durante 'revisando'", async () => {
+    const { r, display, runReviewer } = await kitEditedWhileReviewing(verdict("bloquear"));
+    // A peça foi reescrita pelo dono e pode ser aprovada; o recado da IA ainda espera o revisor.
+    expect(await approvePiece(getDb(), { restaurantId: r.restaurantId, pieceId: display.id, now: NOW })).toBe(true);
+    expect(await publicRecado(r.restaurantId)).toBeNull();
+    expect((await getKit(getDb(), r.restaurantId, NOW))!.recadoPendente).toBe(true);
+    await runReviewer();
+    expect(await publicRecado(r.restaurantId)).toBeNull();
+    const k = (await getKit(getDb(), r.restaurantId, NOW))!;
+    expect(k).toMatchObject({ recado: null, recadoPendente: false });
+  });
+
+  it("S9: revisor 'ok' depois da aprovação publica o recado; 'atenção' deixa o recado só como sugestão", async () => {
+    const ok = await kitEditedWhileReviewing(verdict("ok"));
+    await approvePiece(getDb(), { restaurantId: ok.r.restaurantId, pieceId: ok.display.id, now: NOW });
+    expect(await publicRecado(ok.r.restaurantId)).toBeNull();
+    await ok.runReviewer();
+    expect(await publicRecado(ok.r.restaurantId)).toBe("Que bom ter você aqui!");
+
+    const warn = await kitEditedWhileReviewing(verdict("atencao"));
+    await warn.runReviewer();
+    await approvePiece(getDb(), { restaurantId: warn.r.restaurantId, pieceId: warn.display.id, now: NOW });
+    expect(await publicRecado(warn.r.restaurantId)).toBeNull();
+    expect((await getKit(getDb(), warn.r.restaurantId, NOW))!).toMatchObject({ recado: "Que bom ter você aqui!", recadoPendente: true, recadoRevisao: "atencao" });
+  });
+
+  it("S9: revisor que não responde em 20 s libera o recado na aprovação (não revisado)", async () => {
+    const { r, display } = await kitEditedWhileReviewing(verdict("bloquear"));
+    await approvePiece(getDb(), { restaurantId: r.restaurantId, pieceId: display.id, now: new Date(NOW.getTime() + 25_000) });
+    expect(await publicRecado(r.restaurantId)).toBe("Que bom ter você aqui!");
+  });
+
+  it("S9: 'bloquear' retira da página pública o recado da IA já publicado, nunca o do dono", async () => {
+    await setFlag(getDb(), "revisor", false);
+    const r = await createRestaurant({ pieces: [] });
+    await getDb().update(restaurants).set({ recado: null }).where(eq(restaurants.id, r.restaurantId));
+    await generateKit(getDb(), { restaurantId: r.restaurantId, ownerId: r.ownerId, now: NOW, gateway: good });
+    const display = (await getKit(getDb(), r.restaurantId, NOW))!.pieces.find((p) => p.kind === "display")!;
+    await approvePiece(getDb(), { restaurantId: r.restaurantId, pieceId: display.id, now: NOW });
+    expect(await publicRecado(r.restaurantId)).toBe("Que bom ter você aqui!");
+    await reviewKit(getDb(), { restaurantId: r.restaurantId, now: NOW, gateway: verdict("bloquear") });
+    expect(await publicRecado(r.restaurantId)).toBeNull();
+
+    // O recado do dono fica, mesmo com "bloquear" depois.
+    expect(await editRecado(getDb(), { restaurantId: r.restaurantId, value: "Boa refeição.", now: NOW })).toMatchObject({ ok: true });
+    await reviewKit(getDb(), { restaurantId: r.restaurantId, now: NOW, gateway: verdict("bloquear") });
+    expect(await publicRecado(r.restaurantId)).toBe("Boa refeição.");
+  });
+
+  it("S9: editar o recado mede a edição contra o recado pendente da IA", async () => {
+    await setFlag(getDb(), "revisor", false);
+    const r = await createRestaurant({ pieces: [] });
+    await getDb().update(restaurants).set({ recado: null }).where(eq(restaurants.id, r.restaurantId));
+    await generateKit(getDb(), { restaurantId: r.restaurantId, ownerId: r.ownerId, now: NOW, gateway: good });
+    await editRecado(getDb(), { restaurantId: r.restaurantId, value: "Que bom ter você aqui.", now: NOW });
+    const edits = await getDb().select({ suggested: ownerEdits.suggested, final: ownerEdits.final }).from(ownerEdits).where(eq(ownerEdits.restaurantId, r.restaurantId));
+    expect(edits.filter((e) => e.final === "Que bom ter você aqui.")).toEqual([{ suggested: "Que bom ter você aqui!", final: "Que bom ter você aqui." }]);
+    expect((await getKit(getDb(), r.restaurantId, NOW))!).toMatchObject({ recado: "Que bom ter você aqui.", recadoPendente: false });
   });
 });

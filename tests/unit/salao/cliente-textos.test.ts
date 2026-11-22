@@ -6,9 +6,11 @@ const offer = { title: "Doce grátis", subtitle: "Convite", itemName: "Cannoli",
 const inv = (o: Partial<InviteView>): InviteView => ({ state: "novo", days: [2, 3, 4], startMin: 900, endMin: 1080, untilDay: "2026-12-07", offer, message: null, ...o });
 
 describe("textos do convite ao cliente (S9)", () => {
-  it("convite que nasceu hoje não vale hoje: a validade diz o 1º dia (ou 'a partir de amanhã')", () => {
+  it("convite que nasceu hoje não vale hoje: a validade diz o 1º dia; sem janela pela frente, só até quando vale", () => {
     expect(inviteValidity(inv({ state: "novo", firstDay: "2026-11-25" }))).toBe("Vale de 25/11 até 07/12");
-    expect(inviteValidity(inv({ state: "novo" }))).toBe("Vale a partir de amanhã, até 07/12");
+    // `firstDay` nulo = nenhuma janela antes do fim da validade: não promete "a partir de amanhã".
+    expect(inviteValidity(inv({ state: "novo", firstDay: null }))).toBe("Vale até 07/12");
+    expect(inviteValidity(inv({ state: "novo" }))).toBe("Vale até 07/12");
     expect(inviteValidity(inv({ state: "lembrete", firstDay: "2026-11-26" }))).toBe("Vale até 07/12");
   });
   it("frase: 'Volte…' para depois; no dia em que vale, manda mostrar o código", () => {

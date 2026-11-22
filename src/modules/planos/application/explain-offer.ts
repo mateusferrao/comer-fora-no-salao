@@ -4,13 +4,13 @@
  * usados, regras e revisor. Camada técnica: a chamada de IA mais recente da tarefa ligada ao plano (`ai_calls.plan_id`).
  * Sempre filtrado pelo restaurante da sessão (revisão técnica I2). Sem PII: só nomes de pratos e chaves de fatos.
  */
-import { and, desc, eq } from "drizzle-orm";
+import { and, asc, desc, eq } from "drizzle-orm";
 import type { Db } from "@/src/db/client";
 import { aiCalls, idleSlots, menuItems, weeklyPlans } from "@/src/db/schema";
 import { describeOffer, type Offer, type OfferKind } from "@/src/modules/beneficios/domain/offers";
 import type { MenuItem } from "@/src/modules/beneficios/domain/menu";
 import { slotAliases, slotLabel, slotPhrase } from "@/src/modules/beneficios/domain/slot-text";
-import { loadContext } from "@/src/modules/salao/application/context";
+import type { Intensity } from "@/src/modules/beneficios/domain/slots";
 import { factLabel } from "@/src/modules/textos/domain/fact-labels";
 import { formatFact, referencesIn, renderReferences } from "@/src/modules/textos/domain/references";
 import type { StoredReview } from "@/src/modules/ia/tasks/reviewer";
@@ -60,9 +60,14 @@ export async function explainOffer(db: Db, restaurantId: string, planId: string,
   const raw = choices.find((c) => c.slotId === slotId)?.justificativa ?? "";
   const chosenGain = opcoes.find((o) => o.escolhaDono)?.gain ?? opcoes.find((o) => o.escolhaIa)?.gain;
   const rctx = { facts, items: Object.fromEntries(menu.map((m) => [m.id, m.name])), slots: { [slot.id]: slotPhrase(slot) }, oferta: chosenGain };
-  // S9: o dono vê o horário ("ter a qui · 15h–18h"), não o apelido "A" (mesma ordem de apelidos do plano).
-  const ctx = await loadContext(db, restaurantId);
-  const slotNames: Record<string, string> = Object.fromEntries(slotAliases(ctx?.slots ?? []).map((a) => [a.alias, slotLabel(a.slot)]));
+  // S9: o dono vê o horário ("ter a qui · 15h–18h"), não o apelido "A". Mesmas faixas e mesma ordem do plano
+  // (`loadContext`: ativas, por posição; `slotAliases` ordena por prioridade), numa consulta só.
+  const slotRows = await db
+    .select({ id: idleSlots.id, days: idleSlots.days, startMin: idleSlots.startMin, endMin: idleSlots.endMin, intensity: idleSlots.intensity, extraTables: idleSlots.extraTables })
+    .from(idleSlots)
+    .where(and(eq(idleSlots.restaurantId, restaurantId), eq(idleSlots.active, true)))
+    .orderBy(asc(idleSlots.position), asc(idleSlots.createdAt));
+  const slotNames: Record<string, string> = Object.fromEntries(slotAliases(slotRows.map((s) => ({ ...s, intensity: s.intensity as Intensity }))).map((a) => [a.alias, slotLabel(a.slot)]));
   const keys = [...new Set(referencesIn(raw).filter((r) => r.kind === "fato" && facts[r.key] !== undefined).map((r) => r.key))];
 
   // Plano por agente (S6.3b): a chamada que valeu é a do agente quando ele deu certo; senão, a chamada única.

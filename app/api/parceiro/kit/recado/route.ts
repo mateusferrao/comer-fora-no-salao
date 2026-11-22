@@ -2,7 +2,7 @@ import { z } from "zod";
 import { getDb } from "@/src/db/client";
 import { editRecado } from "@/src/modules/kit/application/kit";
 import { rejectCrossSite } from "@/src/web/guards";
-import { readJson } from "@/src/web/http";
+import { readJson, tooLarge } from "@/src/web/http";
 import { requireStore } from "@/src/web/portal-guards";
 
 export const dynamic = "force-dynamic";
@@ -13,7 +13,9 @@ export async function PUT(req: Request) {
   if (blocked) return blocked;
   const auth = await requireStore();
   if (auth instanceof Response) return auth;
-  const body = z.object({ value: z.string().max(200) }).safeParse(await readJson(req));
+  const raw = await readJson(req);
+  if (raw.erro === "grande") return tooLarge();
+  const body = z.object({ value: z.string().max(200) }).safeParse(raw.value);
   if (!body.success) return Response.json({ erro: "formato" }, { status: 400 });
   const r = await editRecado(getDb(), { restaurantId: auth.r.id, value: body.data.value, now: new Date() });
   return r.ok ? Response.json(r) : Response.json(r, { status: 422 });

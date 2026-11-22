@@ -7,7 +7,7 @@ import { requestCustomerCode } from "@/src/modules/salao/application/customer-lo
 import { clientIp } from "@/src/shared/rate-limit-memory";
 import { writeCustomerId } from "@/src/web/customer-session";
 import { isE2eRestaurant, overLimit, rejectCrossSite } from "@/src/web/guards";
-import { readJson, tooMany } from "@/src/web/http";
+import { readJson, tooLarge, tooMany } from "@/src/web/http";
 
 export const dynamic = "force-dynamic";
 
@@ -18,7 +18,9 @@ export async function POST(req: Request, { params }: { params: Promise<{ slug: s
   const { slug } = await params;
   const blocked = rejectCrossSite(req);
   if (blocked) return blocked;
-  const body = input.safeParse(await readJson(req));
+  const raw = await readJson(req);
+  if (raw.erro === "grande") return tooLarge();
+  const body = input.safeParse(raw.value);
   if (!body.success) return Response.json({ erro: "dados_invalidos" }, { status: 400 });
   const db = getDb();
   const r = await findRestaurantBySlug(db, slug);

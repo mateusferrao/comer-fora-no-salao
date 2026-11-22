@@ -45,11 +45,12 @@ export function inviteSentence(inv: InviteView): string {
 
 /**
  * Validade do convite (S9): o código do convite nunca nasce no dia da emissão (`decide-checkin`), então o convite
- * novo diz o 1º dia em que vale (`nextValidWindow`) ou, sem ele, "a partir de amanhã".
+ * novo diz o 1º dia em que vale (`nextValidWindow`). Sem esse dia (nenhuma janela antes do fim da validade), só
+ * "Vale até dd/mm", como no e-mail (`deliver-messages`): nada de prometer "a partir de amanhã".
  */
 export function inviteValidity(inv: Pick<InviteView, "state" | "untilDay" | "firstDay">): string {
-  if (inv.state !== "novo") return `Vale até ${ddmm(inv.untilDay)}`;
-  return inv.firstDay ? `Vale de ${ddmm(inv.firstDay)} até ${ddmm(inv.untilDay)}` : `Vale a partir de amanhã, até ${ddmm(inv.untilDay)}`;
+  if (inv.state === "novo" && inv.firstDay) return `Vale de ${ddmm(inv.firstDay)} até ${ddmm(inv.untilDay)}`;
+  return `Vale até ${ddmm(inv.untilDay)}`;
 }
 
 /** Folha do GPS (S9): longe × sem localização (permissão negada, sem resposta ou sem GPS), sem acusar o cliente. */

@@ -10,7 +10,7 @@ import { getDb } from "@/src/db/client";
 import { linkPatchAllowed, listCustomerPrefs, prefsTarget, setCustomerPrefs } from "@/src/modules/salao/application/preferences";
 import { readCustomerId } from "@/src/web/customer-session";
 import { overLimit, rejectCrossSite } from "@/src/web/guards";
-import { readJson } from "@/src/web/http";
+import { readJson, tooLarge } from "@/src/web/http";
 
 export const dynamic = "force-dynamic";
 
@@ -28,7 +28,9 @@ export async function POST(req: Request) {
   if (blocked) return blocked;
   const limited = await overLimit(req, "resumo");
   if (limited) return limited;
-  const b = body.safeParse(await readJson(req));
+  const raw = await readJson(req);
+  if (raw.erro === "grande") return tooLarge();
+  const b = body.safeParse(raw.value);
   if (!b.success) return Response.json({ erro: "entrada" }, { status: 400 });
   let target: { customerId: string; restaurantId: string } | null;
   if ("t" in b.data) {

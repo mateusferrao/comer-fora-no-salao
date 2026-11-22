@@ -5,7 +5,7 @@ import { getFlags } from "@/src/modules/config/application/app-config";
 import { requestCustomerCode } from "@/src/modules/salao/application/customer-login";
 import { clientIp } from "@/src/shared/rate-limit-memory";
 import { rejectCrossSite } from "@/src/web/guards";
-import { readJson, tooMany } from "@/src/web/http";
+import { readJson, tooLarge, tooMany } from "@/src/web/http";
 
 export const dynamic = "force-dynamic";
 
@@ -18,7 +18,9 @@ const input = z.object({ email: z.string().max(320) });
 export async function POST(req: Request) {
   const blocked = rejectCrossSite(req);
   if (blocked) return blocked;
-  const body = input.safeParse(await readJson(req));
+  const raw = await readJson(req);
+  if (raw.erro === "grande") return tooLarge();
+  const body = input.safeParse(raw.value);
   if (!body.success) return Response.json({ erro: "dados_invalidos" }, { status: 400 });
   const db = getDb();
   const res = await requestCustomerCode(db, {

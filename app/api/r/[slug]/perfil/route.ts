@@ -3,7 +3,7 @@ import { findRestaurantBySlug } from "@/src/modules/salao/application/context";
 import { profileInputSchema, saveCustomerProfile } from "@/src/modules/salao/application/customer-login";
 import { readCustomerId } from "@/src/web/customer-session";
 import { isE2eRestaurant, overLimit, rejectCrossSite } from "@/src/web/guards";
-import { readJson } from "@/src/web/http";
+import { readJson, tooLarge } from "@/src/web/http";
 
 export const dynamic = "force-dynamic";
 
@@ -12,7 +12,9 @@ export async function POST(req: Request, { params }: { params: Promise<{ slug: s
   const { slug } = await params;
   const blocked = rejectCrossSite(req);
   if (blocked) return blocked;
-  const parsed = profileInputSchema.safeParse(await readJson(req));
+  const raw = await readJson(req);
+  if (raw.erro === "grande") return tooLarge();
+  const parsed = profileInputSchema.safeParse(raw.value);
   if (!parsed.success) {
     const campos = [...new Set(parsed.error.issues.map((i) => String(i.path[0] ?? "")))];
     return Response.json({ erro: "dados_invalidos", campos }, { status: 400 });
