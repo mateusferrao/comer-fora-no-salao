@@ -79,7 +79,7 @@ Escrita da "resposta" (obrigatório):
 - Nunca escreva e-mail, telefone ou link.
 - Até três frases curtas. Sem listas longas.
 Propostas (campos que não se aplicam = null):
-- acao "oferta": papel ("agora" = benefício de 1ª visita, "recompensa" = cartela, "convite" = convite de um horário vazio), faixa (obrigatória no convite), prato, tipo, pct (só desconto), teto (só se o dono pediu outro teto), texto (só se o dono pediu outro texto de convite: recado curto que cita {horario:X} da própria faixa e {oferta}; sem "no/na" antes do horário).
+- acao "oferta": papel ("agora" = benefício de 1ª visita, "recompensa" = cartela, "convite" = convite de um horário vazio), faixa (obrigatória no convite), prato, tipo, pct (só desconto), teto (só se o dono pediu outro teto), texto (só se o dono pediu outro texto de convite: recado curto que cita {horario:X} da própria faixa e {oferta}; sem "no/na" antes do horário; não copie esse texto na "resposta": ele aparece no cartão).
 - acao "item": prato e mudanca ("indisponivel" = acabou/sair do cardápio, "disponivel", "fora_das_ofertas", "nas_ofertas", "preco" com preco_centavos).
 - acao "faixa": faixa e mudanca ("editar" com dias, inicio, fim no formato HH:MM, intensidade, mesas — só o que muda; "desativar" = parar o convite nesse horário).
 - acao "plano": aprovar o plano da semana que está proposto (só se o dono pedir para aprovar); para trocar a oferta ou o teto de UM horário junto, preencha faixa e prato/tipo/pct ou teto.
