@@ -1619,3 +1619,8 @@ As decisões sobre a preparação pessoal do candidato para a apresentação (D2
 **D331 — E-mail com 1 anexo e 1 vídeo** (22/11, candidato) ✅
 - Anexo: só a apresentação. O texto diz que o slide do processo é o slide 6 e mantém o link do arquivo separado (D329), para o item obrigatório continuar fácil de achar.
 - Vídeo: só o pitch (D327). O vídeo da demo sai do e-mail e fica no repositório como reserva. Motivos: o pitch já mostra telas reais, a demo é ao vivo na sessão e o avaliador tem o link do app; dois vídeos parecidos dividem a atenção.
+
+**D332 — Roda do mouse move as fileiras que rolam para o lado** (23/11, IA [C]; achado do candidato no computador) ✅
+- Achado: as abas de Configurações e as sugestões do assistente rolam só para o lado, com a barra escondida (`no-scrollbar`). No computador, a roda do mouse é vertical e não as movia; só Shift + roda ou as setas. Os avaliadores usam computador.
+- Correção: `useHorizontalWheel` transforma a roda vertical em rolagem lateral enquanto a fileira tiver para onde ir; na ponta, a página rola normalmente. Barra fina visível a partir de `sm`; no celular nada muda (toque).
+- Alternativas: quebrar as abas em duas linhas (o traço da aba ativa desalinha do divisor) ou setas ‹ › (mais componentes, mais risco perto do congelamento). E2E novo a 1024 px; suíte E2E local inteira verde.

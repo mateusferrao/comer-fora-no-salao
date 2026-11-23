@@ -108,3 +108,24 @@ test("Configurações: alteração sem salvar mostra o aviso no bloco", async ({
   await nav.click();
   await expect(page).toHaveURL(/\/parceiro\/salao\/plano/);
 });
+
+/**
+ * D332: no computador, a roda do mouse (vertical) rola para o lado a fileira de abas que não cabe na tela.
+ * Antes, sem barra visível, só Shift + roda ou as setas do teclado moviam as abas.
+ */
+test("abas de Configurações: a roda do mouse rola a fileira para o lado no computador", async ({ page }) => {
+  test.setTimeout(120_000);
+  await page.setViewportSize({ width: 1024, height: 800 });
+  await loginE2E(page.request, 45);
+  await page.goto("/parceiro/salao");
+  await waitExampleReady(page);
+  await page.goto("/parceiro/salao/configuracoes");
+  const bar = page.getByRole("tablist", { name: /.+/ }).first();
+  await expect(bar).toBeVisible();
+  const overflow = await bar.evaluate((el) => el.scrollWidth - el.clientWidth);
+  test.skip(overflow <= 0, "as abas cabem nesta largura");
+  expect(await bar.evaluate((el) => el.scrollLeft)).toBe(0);
+  await bar.hover();
+  await page.mouse.wheel(0, 400);
+  await expect.poll(() => bar.evaluate((el) => el.scrollLeft)).toBeGreaterThan(0);
+});

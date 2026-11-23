@@ -2,6 +2,7 @@
 
 import { useEffect, useId, useRef, type KeyboardEvent, type ReactNode } from "react";
 import { cn } from "../cn";
+import { useHorizontalWheel } from "./use-horizontal-wheel";
 
 export type TabItem = { id: string; label: string; content: ReactNode };
 
@@ -16,6 +17,8 @@ type Props = {
 export function Tabs({ items, value, onValueChange, label }: Props) {
   const base = useId();
   const refs = useRef<Array<HTMLButtonElement | null>>([]);
+  const listRef = useRef<HTMLDivElement | null>(null);
+  useHorizontalWheel(listRef);
   // A aba ativa sempre à vista na barra (ex.: abrir direto em "Integrações", a última): rola só a barra, não a página.
   useEffect(() => {
     const el = refs.current[items.findIndex((t) => t.id === value)];
@@ -54,9 +57,10 @@ export function Tabs({ items, value, onValueChange, label }: Props) {
       {/* Degradê na borda direita quando há mais abas do que cabem (S6.3a; revisão de produto I6). */}
       <div className="relative">
         <div
+          ref={listRef}
           role="tablist"
           aria-label={label}
-          className="flex gap-6 overflow-x-auto overflow-y-hidden border-b border-divider pr-8 no-scrollbar"
+          className="flex gap-6 overflow-x-auto overflow-y-hidden border-b border-divider pr-8 [scrollbar-width:thin] max-sm:no-scrollbar"
         >
           {items.map((item, i) => {
             const selected = item.id === value;

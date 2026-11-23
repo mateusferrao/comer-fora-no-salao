@@ -5,6 +5,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useId, useRef, useState, useSyncExternalStore, type FormEvent, type ReactNode } from "react";
 import { Button } from "@/src/ui/components/Button";
 import { useModalDialog } from "@/src/ui/components/useModalDialog";
+import { useHorizontalWheel } from "@/src/ui/components/use-horizontal-wheel";
 import { abaHref, ProposalCard, type Card, type CardEstado } from "./ProposalCard";
 
 type Msg = {
@@ -209,6 +210,9 @@ export function Copilot({ chips, scope }: { chips: Chips; scope: string }) {
   const last = state?.msgs.at(-1);
   const lastAsked = [...(state?.msgs ?? [])].reverse().find((m) => m.role === "user")?.text;
   const suggestions = (last?.role === "assistant" && last.sugestoes?.length ? last.sugestoes : pageChips).filter((s) => s !== lastAsked);
+  // D332: no computador, a roda do mouse rola a fileira de sugestões para o lado.
+  const chipsRef = useRef<HTMLUListElement>(null);
+  useHorizontalWheel(chipsRef, open && suggestions.length > 0);
 
   const body: ReactNode = (
     <div className="flex h-full flex-col">
@@ -283,7 +287,7 @@ export function Copilot({ chips, scope }: { chips: Chips; scope: string }) {
       <div className="border-t border-divider px-4 py-3">
         {suggestions.length > 0 && (
           // Uma linha só, com rolagem lateral (revisão S8, produto 11: a área fixa ocupava 1/3 da altura).
-          <ul className="no-scrollbar mb-2 flex gap-2 overflow-x-auto" aria-label="Sugestões">
+          <ul ref={chipsRef} className="mb-2 flex gap-2 overflow-x-auto [scrollbar-width:thin] max-sm:no-scrollbar" aria-label="Sugestões">
             {suggestions.map((s) => (
               <li key={s} className="shrink-0">
                 {/* aria-disabled (não `disabled`): os chips seguem focáveis enquanto a resposta chega, e a fileira rolável
