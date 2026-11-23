@@ -132,7 +132,7 @@ flowchart TD
 | Cardápio e ofertas | `menus`, `menu_items`, `menu_extractions`, `benefits`, `benefit_versions` | Ofertas versionadas: mudar a regra não muda convites já emitidos |
 | Kit | `kit_pieces`, `piece_variants` | Um QR por peça e versão (atribuição e A/B) |
 | Clientes | `customers`, `customer_contacts`, `restaurant_customers`, `customer_login_codes`, `customer_messages` | E-mail e telefone guardados como HMAC (busca) e criptografados (AES-256-GCM); o grupo do experimento é gravado uma única vez |
-| Eventos (só inserção) | `scans`, `checkins`, `codes`, `invites`, `invite_quota` | Chave de idempotência; teto reservado de forma atômica (`UPDATE … WHERE usados < teto`); no máximo 1 convite ativo por cliente (índice único parcial) |
+| Eventos (só inserção) | `scans`, `checkins`, `codes`, `invites`, `invite_quota` | Chave de idempotência; teto reservado sob lock (`SELECT … FOR UPDATE` na linha do teto + recontagem dos convites reais); no máximo 1 convite ativo por cliente (índice único parcial) |
 | Planos e IA | `weekly_plans`, `plan_sends`, `plan_send_members`, `weekly_digests`, `digest_tokens`, `owner_edits`, `ai_calls`, `agent_proposals`, `onboarding_events` | Toda chamada de IA registrada com modelo, versão do prompt, custo, latência e resultado dos guardrails |
 | Configuração e proteção | `app_config`, `app_config_versions`, `rate_limits`, `simulation_runs` | Flags e prompts com versões imutáveis; limites por IP, e-mail e global |
 

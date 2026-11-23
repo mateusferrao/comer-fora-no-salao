@@ -397,7 +397,7 @@ O diferencial do produto. A divisão é fixa: **o código decide tudo que é nú
     - `emitido_em`, `expira_em`;
     - origem `mesa|reativacao`;
     - índice único parcial "1 ativo por cliente por restaurante";
-  - `invite_quota`: restaurante, `slot_id`, semana ISO, teto, usados (reserva atômica com `UPDATE … WHERE usados < teto`);
+  - `invite_quota`: restaurante, `slot_id`, semana ISO, teto, usados (reserva atômica; implementada com `SELECT … FOR UPDATE` na linha do teto + recontagem dos convites reais da faixa e semana, em `reserveQuota`);
   - `stamps`.
 - **Planos e IA:**
   - `weekly_plans`: semana, fatos, candidatas, escolha, textos, "o que aprendemos", decisão, versão;
